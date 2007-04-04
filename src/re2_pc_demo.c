@@ -94,6 +94,8 @@ void re2pcdemo_load_adt_bg(const char *filename)
 		}
 
 		SDL_FreeRW(src);
+	} else {
+		printf("Can not load %s\n", filename);
 	}
 }
 
