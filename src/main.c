@@ -22,14 +22,23 @@
 #include <SDL.h>
 
 #include "state.h"
+#include "parameters.h"
 #include "re1_ps1_demo.h"
+#include "re2_pc_demo.h"
 
 int main(int argc, char **argv)
 {
 	int quit=0;
 	int reload_bg = 1;
 	int redraw_bg = 1;
+	int switch_fs = 0;
+	int videoflags;
 	SDL_Surface *screen;
+
+	if (!CheckParm(argc,argv)) {
+		DisplayUsage();
+		exit(1);
+	}
 
 	state_init();
 	/*re1ps1demo_init(&game_state);*/
@@ -46,6 +55,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
 		return 0;
 	}
+	videoflags = screen->flags;
 	SDL_WM_SetCaption("Reevengi", NULL); 
 
 	while (!quit) {
@@ -61,6 +71,11 @@ int main(int argc, char **argv)
 					switch (event.key.keysym.sym) {
 						case SDLK_ESCAPE:
 							quit=1;
+							break;
+						case SDLK_RETURN:
+							if (event.key.keysym.mod & KMOD_ALT) {
+								switch_fs=1;
+							}
 							break;
 						case SDLK_a:
 							game_state.stage -= 1;
@@ -118,7 +133,6 @@ int main(int argc, char **argv)
 
 			/* redraw */
 			if (game_state.surface_bg) {
-				printf("redraw\n");
 				if (SDL_MUSTLOCK(screen)) {
 					SDL_LockSurface(screen);
 				}
@@ -132,6 +146,14 @@ int main(int argc, char **argv)
 					SDL_UpdateRect(screen, 0,0,0,0);
 				}
 			}
+		}
+
+		if (switch_fs) {
+			switch_fs=0;
+			videoflags ^= SDL_FULLSCREEN;
+			screen = SDL_SetVideoMode(320, 240, 16, videoflags);
+			videoflags = screen->flags;
+			reload_bg=1;
 		}
 
 		SDL_Delay(1);

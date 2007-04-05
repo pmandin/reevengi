@@ -25,12 +25,13 @@
 #include "state.h"
 #include "re2_pc_demo.h"
 #include "depack_adt.h"
+#include "parameters.h"
 
 /*--- Types ---*/
 
 /*--- Variables ---*/
 
-static const char *basedir = "/windows_d/ResidentEvil2-Demo2";
+/*static const char *basedir = "/windows_d/ResidentEvil2-Demo2";*/
 static const char *re1ps1demo_bg = "common/stage%d/rc%d%02x%1x.adt";
 
 static char *finalpath = NULL;

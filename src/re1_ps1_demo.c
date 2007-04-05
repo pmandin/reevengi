@@ -26,12 +26,13 @@
 #include "file.h"
 #include "state.h"
 #include "re1_ps1_demo.h"
+#include "parameters.h"
 
 /*--- Types ---*/
 
 /*--- Variables ---*/
 
-static const char *basedir = "/windows_d/re1ps1";
+/*static const char *basedir = "/windows_d/re1ps1";*/
 static const char *re1ps1demo_bg = "psx/stage%d/room%d%02x.bss";
 
 static char *finalpath = NULL;
