@@ -28,6 +28,7 @@
 
 #define DEFAULT_BASEDIR "."
 #define DEFAULT_VERBOSE 0
+#define DEFAULT_GAMMA 1.2
 
 /*--- Global variables ---*/
 
@@ -36,6 +37,9 @@ unsigned char *basedir=DEFAULT_BASEDIR;
 
 /* Verbose mode */
 int verbose=DEFAULT_VERBOSE;
+
+/* Gamma level */
+float gamma = DEFAULT_GAMMA;
 
 /*---- Variables ---*/
 
@@ -68,6 +72,12 @@ int CheckParm(int argc,char **argv)
 		verbose = atoi(argv[p+1]);
 	}
 
+	/*--- Check for gamma ---*/
+	p = ParmPresent("-gamma", argc, argv);
+	if (p && p < argc-1) {
+		gamma = atof(argv[p+1]);
+	}
+
 	/*--- Check for base directory ---*/
 	p = ParmPresent("-basedir", argc, argv);
 	if (p && p < argc-1) {
@@ -83,9 +93,11 @@ void DisplayUsage(void)
 	printf("----  by Patrice Mandin  ----\n");
 	printf("Usage:\n");
 	printf( "  [-basedir </path/to/gamedir>] (default=%s)\n"
+		"  [-gamma <n>] (default=%.3f)\n"
 		"  [-verbose <n>] (default=%d)\n"
 		"  [-help] (print this message)\n",
 		DEFAULT_BASEDIR,
+		DEFAULT_GAMMA,
 		DEFAULT_VERBOSE
 	);
 }

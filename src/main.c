@@ -21,6 +21,10 @@
 #include <stdio.h>
 #include <SDL.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "state.h"
 #include "parameters.h"
 #include "re1_ps1_demo.h"
@@ -56,7 +60,8 @@ int main(int argc, char **argv)
 		return 0;
 	}
 	videoflags = screen->flags;
-	SDL_WM_SetCaption("Reevengi", NULL); 
+	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
+	SDL_SetGamma(gamma, gamma, gamma);
 
 	while (!quit) {
 		SDL_Event event;

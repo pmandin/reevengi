@@ -29,6 +29,9 @@ extern int verbose;
 /* Base directory for files */
 extern unsigned char *basedir;
 
+/* Gamma level */
+extern float gamma;
+
 /*--- Functions prototypes ---*/
 
 extern void DisplayUsage(void);
