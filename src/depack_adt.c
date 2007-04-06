@@ -29,7 +29,7 @@ static int dstOffset;
 
 static Uint8 *srcPointer;
 static int srcOffset;
-static int srcByte;
+static unsigned char srcByte;
 static int srcNumBit;
 
 static Uint8 *tmp32k, *tmp16k;
