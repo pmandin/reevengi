@@ -18,7 +18,7 @@ AC_CHECK_HEADERS([fcntl.h])
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
-AC_FUNC_MALLOC
+#AC_FUNC_MALLOC
 AC_HEADER_STDC
 AC_CHECK_FUNCS([memset])
 
