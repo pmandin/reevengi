@@ -45,8 +45,20 @@ int main(int argc, char **argv)
 	}
 
 	state_init();
-	/*re1ps1demo_init(&game_state);*/
-	re2pcdemo_init(&game_state);
+	printf("Game version: ");
+	switch(game_state.version) {
+		case GAME_RE1_PS1_DEMO:
+			printf("Resident Evil, PS1, Demo\n");
+			re1ps1demo_init(&game_state);
+			break;
+		case GAME_RE2_PC_DEMO:
+			printf("Resident Evil 2, PC, Demo\n");
+			re2pcdemo_init(&game_state);
+			break;
+		default:
+			printf("No known version\n");
+			exit(1);
+	}
 
 	if (SDL_Init(SDL_INIT_VIDEO)<0) {
 		fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());

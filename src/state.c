@@ -22,10 +22,17 @@
 #include <SDL.h>
 
 #include "state.h"
+#include "parameters.h"
+#include "re1_ps1_demo.h"
+#include "re2_pc_demo.h"
 
 /*--- Variables ---*/
 
 state_t game_state;
+
+/*--- Functions prototypes ---*/
+
+static void state_detect(void);
 
 /*--- Functions ---*/
 
@@ -36,6 +43,8 @@ void state_init(void)
 	game_state.stage = 1;
 	game_state.room = 0;
 	game_state.camera = 0;
+
+	state_detect();
 }
 
 void state_setstage(int new_stage)
@@ -72,5 +81,18 @@ void state_unloadbackground(void)
 	if (game_state.background) {
 		free(game_state.background);
 		game_state.background=NULL;
+	}
+}
+
+/* Detect some game version */
+
+static void state_detect(void)
+{
+	game_state.version = GAME_UNKNOWN;
+
+	if (re2pcdemo_detect()) {
+		game_state.version = GAME_RE2_PC_DEMO;
+	} else if (re1ps1demo_detect()) {
+		game_state.version = GAME_RE1_PS1_DEMO;
 	}
 }

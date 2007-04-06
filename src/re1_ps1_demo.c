@@ -28,11 +28,14 @@
 #include "re1_ps1_demo.h"
 #include "parameters.h"
 
+/*--- Defines ---*/
+
+#define GAME_CHECK_FILE "slpm_800.27"
+
 /*--- Types ---*/
 
 /*--- Variables ---*/
 
-/*static const char *basedir = "/windows_d/re1ps1";*/
 static const char *re1ps1demo_bg = "psx/stage%d/room%d%02x.bss";
 
 static char *finalpath = NULL;
@@ -74,4 +77,26 @@ void re1ps1demo_loadbackground(void)
 	}
 
 	free(filepath);
+}
+
+int re1ps1demo_detect(void)
+{
+	SDL_RWops *file;
+	char *filename;
+	int detected = 0;
+	
+	filename = malloc(strlen(basedir)+strlen(GAME_CHECK_FILE)+4);
+	if (filename) {
+		sprintf(filename, "%s/%s", basedir, GAME_CHECK_FILE);
+
+		file = SDL_RWFromFile(filename, "rb");
+		if (file) {
+			detected = 1;
+			SDL_FreeRW(file);
+		}
+
+		free(filename);
+	}
+
+	return detected;
 }

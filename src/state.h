@@ -23,9 +23,20 @@
 
 #include <SDL.h>
 
+/*--- Enums ---*/
+
+enum {
+	GAME_UNKNOWN,
+	GAME_RE1_PS1_DEMO,
+	GAME_RE2_PC_DEMO
+};
+
 /*--- Types ---*/
 
 typedef struct {
+	/*--- Game version ---*/
+	int version;
+
 	/*--- Data ---*/
 
 	/* Stage of game */

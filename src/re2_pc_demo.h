@@ -27,4 +27,6 @@ void re2pcdemo_init(state_t *game_state);
 
 void re2pcdemo_loadbackground(void);
 
+int re2pcdemo_detect(void);
+
 #endif /* RE2PCDEMO_H */

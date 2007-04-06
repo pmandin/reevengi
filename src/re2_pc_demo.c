@@ -27,11 +27,14 @@
 #include "depack_adt.h"
 #include "parameters.h"
 
+/*--- Defines ---*/
+
+#define GAME_CHECK_FILE "resident.exe"
+
 /*--- Types ---*/
 
 /*--- Variables ---*/
 
-/*static const char *basedir = "/windows_d/ResidentEvil2-Demo2";*/
 static const char *re1ps1demo_bg = "common/stage%d/rc%d%02x%1x.adt";
 
 static char *finalpath = NULL;
@@ -100,3 +103,24 @@ void re2pcdemo_load_adt_bg(const char *filename)
 	}
 }
 
+int re2pcdemo_detect(void)
+{
+	SDL_RWops *file;
+	char *filename;
+	int detected = 0;
+	
+	filename = malloc(strlen(basedir)+strlen(GAME_CHECK_FILE)+4);
+	if (filename) {
+		sprintf(filename, "%s/%s", basedir, GAME_CHECK_FILE);
+
+		file = SDL_RWFromFile(filename, "rb");
+		if (file) {
+			detected = 1;
+			SDL_FreeRW(file);
+		}
+
+		free(filename);
+	}
+
+	return detected;
+}
