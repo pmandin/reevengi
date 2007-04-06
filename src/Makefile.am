@@ -1,7 +1,8 @@
 bin_PROGRAMS = reevengi
 
 AM_CFLAGS = $(SDL_CFLAGS)
-AM_LDFLAGS = $(SDL_LIBS)
+
+LIBS = $(SDL_LIBS)
 
 reevengi_SOURCES = main.c file.c state.c re1_ps1_demo.c re2_pc_demo.c \
 	depack_adt.c parameters.c
