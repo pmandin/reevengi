@@ -194,10 +194,10 @@ static int initUnpackBlockArray2(unpackArray_t *array)
 	array->ptr16[(curArrayIndex<<2)+3]=0xffffffff;
 
 	for (i=0; i<array->length; i++) {
-		curLength = array->length;
-
 		int curPtr8Start = array->ptr8[i].start;
 		int curPtr8Length = array->ptr8[i].length;
+
+		curLength = array->length;
 
 		for (j=0; j<curPtr8Length; j++) {
 			int curMask = 1<<(curPtr8Length-j-1);
