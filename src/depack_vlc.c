@@ -324,14 +324,10 @@ void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 	*dstBufPtr = NULL;
 	*dstLength = 0;
 
-	if ( !SDL_RWread( src, &vlcHeader, sizeof(vlc_header_t), 1 ) ) {
-		return;
-	}
-
-	vlcHeader.length = SDL_SwapLE16(vlcHeader.length);
-	vlcHeader.id = SDL_SwapLE16(vlcHeader.id);
-	vlcHeader.version = SDL_SwapLE16(vlcHeader.version);
-	vlcHeader.quant = SDL_SwapLE16(vlcHeader.quant);
+	vlcHeader.length = SDL_ReadLE16(src);
+	vlcHeader.id = SDL_ReadLE16(src);
+	vlcHeader.quant = SDL_ReadLE16(src);
+	vlcHeader.version = SDL_ReadLE16(src);
 
 	if (vlcHeader.id != VLC_ID) {
 		return;
