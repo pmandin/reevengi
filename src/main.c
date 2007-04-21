@@ -101,13 +101,13 @@ int main(int argc, char **argv)
 						case SDLK_a:
 							game_state.stage -= 1;
 							if (game_state.stage < 1) {
-								game_state.stage = 2;
+								game_state.stage = 7;
 							}
 							reload_bg = 1;
 							break;						
 						case SDLK_q:
 							game_state.stage += 1;
-							if (game_state.stage > 2) {
+							if (game_state.stage > 7) {
 								game_state.stage = 1;
 							}
 							reload_bg = 1;
