@@ -51,6 +51,10 @@ int main(int argc, char **argv)
 			printf("Resident Evil, PS1, Demo\n");
 			re1ps1demo_init(&game_state);
 			break;
+		case GAME_RE2_PS1_DEMO:
+			printf("Resident Evil 2, PS1, Demo\n");
+			re2ps1demo_init(&game_state);
+			break;
 		case GAME_RE2_PC_DEMO:
 			printf("Resident Evil 2, PC, Demo\n");
 			re2pcdemo_init(&game_state);

@@ -123,6 +123,8 @@ static void state_detect(void)
 
 	if (game_file_exists("resident.exe")) {
 		game_state.version = GAME_RE2_PC_DEMO;
+	} else if (game_file_exists("slps_009.99")) {
+		game_state.version = GAME_RE2_PS1_DEMO;
 	} else if (game_file_exists("slpm_800.27")) {
 		game_state.version = GAME_RE1_PS1_DEMO;
 	}
