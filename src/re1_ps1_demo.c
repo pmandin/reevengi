@@ -35,6 +35,8 @@
 #define WIDTH 320
 #define HEIGHT 240
 
+#define CHUNK_SIZE 32768
+
 /*--- Types ---*/
 
 /*--- Variables ---*/
@@ -102,13 +104,13 @@ void re1ps1demo_load_bss_bg(const char *filename)
 		return;
 	}
 
-	game_state.num_cameras = SDL_RWseek(src, 0, RW_SEEK_END) / 32768;
+	game_state.num_cameras = SDL_RWseek(src, 0, RW_SEEK_END) / CHUNK_SIZE;
 	if (game_state.camera<0) {
 		game_state.camera=0;
 	} else if (game_state.camera>=game_state.num_cameras) {
 		game_state.camera = game_state.num_cameras-1;
 	}
-	SDL_RWseek(src, game_state.camera * 32768, RW_SEEK_SET);
+	SDL_RWseek(src, game_state.camera * CHUNK_SIZE, RW_SEEK_SET);
 	printf("Selected angle %d/%d\n", game_state.camera, game_state.num_cameras);
 
 	vlc_depack(src, &dstBuffer, &dstBufLen);
