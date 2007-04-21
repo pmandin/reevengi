@@ -26,12 +26,14 @@
 #include "file.h"
 #include "state.h"
 #include "depack_vlc.h"
+#include "depack_mdec.h"
 #include "re1_ps1_demo.h"
 #include "parameters.h"
 
 /*--- Defines ---*/
 
-#define GAME_CHECK_FILE "slpm_800.27"
+#define WIDTH 320
+#define HEIGHT 240
 
 /*--- Types ---*/
 
@@ -44,12 +46,22 @@ static char *finalpath = NULL;
 /*--- Functions prototypes ---*/
 
 static void re1ps1demo_load_bss_bg(const char *filename);
+static void re1ps1demo_load_mdec_bg(void *buffer, int length);
 
 /*--- Functions ---*/
 
 void re1ps1demo_init(state_t *game_state)
 {
 	game_state->load_background = re1ps1demo_loadbackground;
+	game_state->shutdown = re1ps1demo_shutdown;
+}
+
+void re1ps1demo_shutdown(void)
+{
+	if (finalpath) {
+		free(finalpath);
+		finalpath=NULL;
+	}
 }
 
 void re1ps1demo_loadbackground(void)
@@ -81,59 +93,70 @@ void re1ps1demo_loadbackground(void)
 void re1ps1demo_load_bss_bg(const char *filename)
 {
 	SDL_RWops *src;
+	Uint8 *dstBuffer;
+	int dstBufLen;
 	
 	src = SDL_RWFromFile(filename, "rb");
-	if (src) {
-		Uint8 *dstBuffer;
-		int dstBufLen;
-
-		game_state.num_cameras = SDL_RWseek(src, 0, RW_SEEK_END) / 32768;
-		if (game_state.camera<0) {
-			game_state.camera=0;
-		} else if (game_state.camera>=game_state.num_cameras) {
-			game_state.camera = game_state.num_cameras-1;
-		}
-		SDL_RWseek(src, game_state.camera * 32768, RW_SEEK_SET);
-		printf("Selected angle %d/%d\n", game_state.camera, game_state.num_cameras);
-
-		vlc_depack(src, &dstBuffer, &dstBufLen);
-
-		if (dstBuffer && dstBufLen) {
-			printf("Loaded %s at 0x%08x, length %d\n", filename, dstBuffer, dstBufLen);
-
-			saveFile("/tmp/room.vlc", dstBuffer, dstBufLen);
-			free(dstBuffer);
-
-/* 			if (dstBufLen == 320*256*2) {
-				game_state.background = dstBuffer;
-				game_state.surface_bg = adt_surface((Uint16 *) game_state.background);
-			}
- */		}
-
-		SDL_FreeRW(src);
-	} else {
-		printf("Can not load %s\n", filename);
+	if (src==NULL) {
+		fprintf(stderr,"Can not load from file %s\n", filename);
+		return;
 	}
+
+	game_state.num_cameras = SDL_RWseek(src, 0, RW_SEEK_END) / 32768;
+	if (game_state.camera<0) {
+		game_state.camera=0;
+	} else if (game_state.camera>=game_state.num_cameras) {
+		game_state.camera = game_state.num_cameras-1;
+	}
+	SDL_RWseek(src, game_state.camera * 32768, RW_SEEK_SET);
+	printf("Selected angle %d/%d\n", game_state.camera, game_state.num_cameras);
+
+	vlc_depack(src, &dstBuffer, &dstBufLen);
+
+	if (dstBuffer && dstBufLen) {
+		printf("vlc: loaded %s at 0x%08x, length %d\n", filename, dstBuffer, dstBufLen);
+
+		saveFile("/tmp/room.vlc", dstBuffer, dstBufLen);
+
+		re1ps1demo_load_mdec_bg(dstBuffer, dstBufLen);
+
+		free(dstBuffer);
+
+/*		if (dstBufLen == 320*256*2) {
+			game_state.background = dstBuffer;
+			game_state.surface_bg = adt_surface((Uint16 *) game_state.background);
+		}
+ */	}
+
+	SDL_FreeRW(src);
 }
 
-int re1ps1demo_detect(void)
+static void re1ps1demo_load_mdec_bg(void *buffer, int length)
 {
-	SDL_RWops *file;
-	char *filename;
-	int detected = 0;
-	
-	filename = malloc(strlen(basedir)+strlen(GAME_CHECK_FILE)+4);
-	if (filename) {
-		sprintf(filename, "%s/%s", basedir, GAME_CHECK_FILE);
+	SDL_RWops *src;
+	Uint8 *dstBuffer;
+	int dstBufLen;
 
-		file = SDL_RWFromFile(filename, "rb");
-		if (file) {
-			detected = 1;
-			SDL_FreeRW(file);
-		}
+	printf("load mdec from 0x%08x, length %d\n", buffer, length);
 
-		free(filename);
+	src = SDL_RWFromMem(buffer, length);
+	if (src==NULL) {
+		fprintf(stderr,"Can not read from 0x%08x, length %d\n", buffer, length);
+		return;
 	}
 
-	return detected;
+	mdec_depack(src, &dstBuffer, &dstBufLen, WIDTH, HEIGHT);
+
+	if (dstBuffer && dstBufLen) {
+		printf("mdec: loaded at 0x%08x, length %d\n", dstBuffer, dstBufLen);
+
+		/*saveFile("/tmp/room.rgb", dstBuffer, dstBufLen);*/
+
+		game_state.background = dstBuffer;
+		game_state.surface_bg = mdec_surface((Uint8 *) game_state.background, WIDTH, HEIGHT);
+	} else {
+		fprintf(stderr, "mdec: failed depacking frame\n");
+	}
+		
+	SDL_FreeRW(src);
 }

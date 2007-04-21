@@ -177,6 +177,7 @@ int main(int argc, char **argv)
 	}
 	
 	state_unloadbackground();
+	state_shutdown();
 
 	return 0;
 }

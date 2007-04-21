@@ -26,9 +26,8 @@
 /*--- Functions ---*/
 
 void re1ps1demo_init(state_t *game_state);
+void re1ps1demo_shutdown(void);
 
 void re1ps1demo_loadbackground(void);
-
-int re1ps1demo_detect(void);
 
 #endif /* RE1PS1DEMO_H */

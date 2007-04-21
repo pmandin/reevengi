@@ -29,8 +29,6 @@
 
 /*--- Defines ---*/
 
-#define GAME_CHECK_FILE "resident.exe"
-
 /*--- Types ---*/
 
 /*--- Variables ---*/
@@ -48,6 +46,15 @@ static void re2pcdemo_load_adt_bg(const char *filename);
 void re2pcdemo_init(state_t *game_state)
 {
 	game_state->load_background = re2pcdemo_loadbackground;
+	game_state->shutdown = re2pcdemo_shutdown;
+}
+
+void re2pcdemo_shutdown(void)
+{
+	if (finalpath) {
+		free(finalpath);
+		finalpath=NULL;
+	}
 }
 
 void re2pcdemo_loadbackground(void)
@@ -101,26 +108,4 @@ void re2pcdemo_load_adt_bg(const char *filename)
 	} else {
 		printf("Can not load %s\n", filename);
 	}
-}
-
-int re2pcdemo_detect(void)
-{
-	SDL_RWops *file;
-	char *filename;
-	int detected = 0;
-	
-	filename = malloc(strlen(basedir)+strlen(GAME_CHECK_FILE)+4);
-	if (filename) {
-		sprintf(filename, "%s/%s", basedir, GAME_CHECK_FILE);
-
-		file = SDL_RWFromFile(filename, "rb");
-		if (file) {
-			detected = 1;
-			SDL_FreeRW(file);
-		}
-
-		free(filename);
-	}
-
-	return detected;
 }

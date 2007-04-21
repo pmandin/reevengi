@@ -33,6 +33,7 @@ state_t game_state;
 /*--- Functions prototypes ---*/
 
 static void state_detect(void);
+static int game_file_exists(char *filename);
 
 /*--- Functions ---*/
 
@@ -45,6 +46,13 @@ void state_init(void)
 	game_state.camera = 0;
 
 	state_detect();
+}
+
+void state_shutdown(void)
+{
+	if (game_state.shutdown) {
+		(*game_state.shutdown)();
+	}
 }
 
 void state_setstage(int new_stage)
@@ -86,13 +94,36 @@ void state_unloadbackground(void)
 
 /* Detect some game version */
 
+static int game_file_exists(char *filename)
+{
+	char *filenamedir;
+	int detected = 0;
+	
+	filenamedir = malloc(strlen(basedir)+strlen(filename)+4);
+	if (filenamedir) {
+		int handle;
+
+		sprintf(filenamedir, "%s/%s", basedir, filename);
+
+		handle = open(filenamedir, 0644);
+		if (handle>=0) {
+			detected = 1;
+			close(handle);
+		}
+
+		free(filenamedir);
+	}
+
+	return detected;
+}
+
 static void state_detect(void)
 {
 	game_state.version = GAME_UNKNOWN;
 
-	if (re2pcdemo_detect()) {
+	if (game_file_exists("resident.exe")) {
 		game_state.version = GAME_RE2_PC_DEMO;
-	} else if (re1ps1demo_detect()) {
+	} else if (game_file_exists("slpm_800.27")) {
 		game_state.version = GAME_RE1_PS1_DEMO;
 	}
 }

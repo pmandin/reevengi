@@ -55,6 +55,8 @@ typedef struct {
 
 	/*--- Functions ---*/
 	void (*load_background)(void);
+
+	void (*shutdown)(void);
 } state_t;
 
 /*--- Variables ---*/
@@ -64,6 +66,7 @@ extern state_t game_state;
 /*--- Functions ---*/
 
 void state_init(void);
+void state_shutdown(void);
 
 void state_setstage(int new_stage);
 void state_setroom(int new_room);

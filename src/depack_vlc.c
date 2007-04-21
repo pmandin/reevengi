@@ -216,7 +216,7 @@ static void vlc_decode(SDL_RWops *src)
 {
 	Uint16	tmp0[2];
 	Uint32	bitbuf;
-	int incnt, q_code, n;
+	int incnt, q_code, n, total_length;
 	int last_dc[3];
 
 	/* Init buffer */
@@ -227,7 +227,9 @@ static void vlc_decode(SDL_RWops *src)
 
 	q_code = vlcHeader.quant << 10;
 	n = last_dc[0] = last_dc[1] = last_dc[2] = 0;
-	while(dstOffset < vlcHeader.length + 2) {
+	total_length = (vlcHeader.length+2) << 1;
+	/*printf("%d , %d\n", dstOffset, total_length);*/
+	while(dstOffset < total_length) {
 		Uint32 code2;
 
 		/* DC */
@@ -282,6 +284,7 @@ static void vlc_decode(SDL_RWops *src)
 		for(;;) {
 #define	code code2
 #define	SBIT	17
+			/*printf("%d: 0x%04x\n", dstOffset, code2);*/
 			dstPointer[dstOffset++]= SDL_SwapLE16(code2);
 			Flush_Buffer(BITOF(code2));
 			code = Show_Bits(SBIT);
@@ -310,13 +313,15 @@ static void vlc_decode(SDL_RWops *src)
 			} else {
 				do {
 					dstPointer[dstOffset++] = SDL_SwapLE16(EOB);
-				} while(dstOffset < vlcHeader.length + 2);
+				} while(dstOffset < total_length);
+	/*printf("vlc: end at %d bytes written\n", dstOffset*2);*/
 				return;
 			}
 		}
 		dstPointer[dstOffset++] = SDL_SwapLE16(code2); /* EOB code */
 		Flush_Buffer(2); /* EOB bitlen */
 	}
+	/*printf("vlc: end at %d bytes written\n", dstOffset*2);*/
 }
 
 void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
@@ -347,6 +352,8 @@ void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 	dstPointer[dstOffset++] = SDL_SwapLE16(VLC_ID);
 
 	vlc_decode(src);
+
+	/*printf("vlc: final offset: 0x%08x\n", dstOffset);*/
 
 	/* Return depacked buffer */
 	*dstBufPtr = (Uint8 *) dstPointer;
