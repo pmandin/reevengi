@@ -350,7 +350,7 @@ void adt_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 		return;
 	}
 
-	SDL_RWseek(src, 4, SEEK_SET);
+	SDL_RWseek(src, 4, RW_SEEK_CUR);
 
 	initTmpArray(&array1, 8, 16);
 	initTmpArray(&array2, 8, 512);
