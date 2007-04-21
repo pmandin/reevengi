@@ -285,7 +285,12 @@ static void vlc_decode(SDL_RWops *src)
 #define	code code2
 #define	SBIT	17
 			/*printf("%d: 0x%04x\n", dstOffset, code2);*/
-			dstPointer[dstOffset++]= SDL_SwapLE16(code2);
+			if (dstOffset<total_length) {
+				dstPointer[dstOffset++]= SDL_SwapLE16(code2);
+			} else {
+				fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset*2);
+				break;
+			}
 			Flush_Buffer(BITOF(code2));
 			code = Show_Bits(SBIT);
 			if (code>=1<<(SBIT- 2)) {
@@ -318,7 +323,11 @@ static void vlc_decode(SDL_RWops *src)
 				return;
 			}
 		}
-		dstPointer[dstOffset++] = SDL_SwapLE16(code2); /* EOB code */
+		if (dstOffset<total_length) {
+			dstPointer[dstOffset++] = SDL_SwapLE16(code2); /* EOB code */
+		} else {
+			fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset*2);
+		}
 		Flush_Buffer(2); /* EOB bitlen */
 	}
 	/*printf("vlc: end at %d bytes written\n", dstOffset*2);*/
@@ -340,7 +349,7 @@ void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 
 	/*printf("vlc: length=0x%04x, quant=%d\n", vlcHeader.length, vlcHeader.quant);*/
 
-	dstBufLen = (vlcHeader.length + 2) * sizeof(Uint32);
+	dstBufLen = (vlcHeader.length + 2) * sizeof(Uint32) * 2;
 	dstPointer = (Uint16 *) malloc(dstBufLen);
 	if (dstPointer == NULL) {
 		return;
