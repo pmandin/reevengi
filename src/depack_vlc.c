@@ -227,7 +227,7 @@ static void vlc_decode(SDL_RWops *src)
 
 	q_code = vlcHeader.quant << 10;
 	n = last_dc[0] = last_dc[1] = last_dc[2] = 0;
-	total_length = (vlcHeader.length+2) << 1;
+	total_length = dstBufLen>>1 /*(vlcHeader.length+2+32) << 1*/;
 	/*printf("%d , %d\n", dstOffset, total_length);*/
 	while(dstOffset < total_length) {
 		Uint32 code2;
@@ -289,7 +289,7 @@ static void vlc_decode(SDL_RWops *src)
 				dstPointer[dstOffset++]= SDL_SwapLE16(code2);
 			} else {
 				fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset*2);
-				break;
+				/*break;*/
 			}
 			Flush_Buffer(BITOF(code2));
 			code = Show_Bits(SBIT);
