@@ -118,7 +118,7 @@ void re1ps1demo_load_bss_bg(const char *filename)
 	if (dstBuffer && dstBufLen) {
 		printf("vlc: loaded %s at 0x%08x, length %d\n", filename, dstBuffer, dstBufLen);
 
-		saveFile("/tmp/room.vlc", dstBuffer, dstBufLen);
+		/*saveFile("/tmp/room.vlc", dstBuffer, dstBufLen);*/
 
 		re1ps1demo_load_mdec_bg(dstBuffer, dstBufLen);
 

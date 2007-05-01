@@ -1,5 +1,5 @@
 /*
-	RE1
+	RE2
 	PS1
 	Demo
 

@@ -1,5 +1,7 @@
 /*
-	RE2 PC Demo
+	RE2
+	PC
+	Demo
 
 	Copyright (C) 2007	Patrice Mandin
 
