@@ -28,6 +28,7 @@
 #include "state.h"
 #include "parameters.h"
 #include "re1_ps1_demo.h"
+#include "re1_pc_game.h"
 #include "re2_pc_demo.h"
 #include "re2_ps1_demo.h"
 #include "re3_ps1_game.h"
@@ -60,6 +61,10 @@ int main(int argc, char **argv)
 		case GAME_RE3_PS1_GAME:
 			printf("Resident Evil 3, PS1, Game\n");
 			re3ps1game_init(&game_state);
+			break;
+		case GAME_RE1_PC_GAME:
+			printf("Resident Evil, PC, Game\n");
+			re1pcgame_init(&game_state);
 			break;
 		case GAME_RE2_PC_DEMO:
 			printf("Resident Evil 2, PC, Demo\n");

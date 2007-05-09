@@ -111,16 +111,17 @@ void pak_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 {
 	int num_bits_to_read, i;
 	int lzwnew, c, lzwold, lzwnext;
+	int stop = 0;
 
 	*dstBufPtr = dstPointer = NULL;
-	*dstLength = dstBufLen = 0;
+	*dstLength = dstBufLen = dstOffset = 0;
 
 	tmpMask = 0x80;
 	srcByte = 0;	
 
 	memset(tmpArray2, 0, sizeof(tmpArray2));
 
-	for(;;) {
+	while (!stop) {
 		for (i=0; i<DECODE_SIZE; i++) {
 			tmpArray2[i].flag = 0xffffffff;
 		}
@@ -139,8 +140,8 @@ void pak_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 			lzwnew = pak_read_bits(src, num_bits_to_read);
 
 			if (lzwnew == 0x100) {
-				dstLength = dstOffset;
-				return;
+				stop = 1;
+				break;
 			}
 
 			if (lzwnew == 0x102) {
@@ -175,5 +176,5 @@ void pak_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 
 	/* Return depacked buffer */
 	*dstBufPtr = (Uint8 *) dstPointer;
-	*dstLength = dstBufLen;
+	*dstLength = dstOffset;
 }

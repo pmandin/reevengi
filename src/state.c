@@ -121,10 +121,12 @@ static void state_detect(void)
 {
 	game_state.version = GAME_UNKNOWN;
 
-	if (game_file_exists("ResidentEvil3.exe")) {
+	if (game_file_exists("rofs1.dat")) {
 		game_state.version = GAME_RE3_PC_DEMO;
-	} else if (game_file_exists("resident.exe")) {
+	} else if (game_file_exists("common/datu/warning.adt")) {
 		game_state.version = GAME_RE2_PC_DEMO;
+	} else if (game_file_exists("usa/data/chris02.pix")) {
+		game_state.version = GAME_RE1_PC_GAME;
 	} else if (game_file_exists("sles_025.30")) {
 		game_state.version = GAME_RE3_PS1_GAME;
 	} else if (game_file_exists("slps_009.99")) {

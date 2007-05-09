@@ -25,15 +25,11 @@
 
 #include "file.h"
 #include "state.h"
-#include "depack_vlc.h"
-#include "depack_mdec.h"
-#include "re1_ps1_demo.h"
+#include "depack_pak.h"
+#include "re1_pc_game.h"
 #include "parameters.h"
 
 /*--- Defines ---*/
-
-#define WIDTH 320
-#define HEIGHT 240
 
 /*--- Types ---*/
 
@@ -101,13 +97,16 @@ void re1pcgame_load_pak_bg(const char *filename)
 		pak_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			printf("Loaded %s at 0x%08x, length %d, %d angles\n", filename, dstBuffer, dstBufLen, game_state.num_cameras);
+			game_state.num_cameras = 12;
+			printf("Loaded %s at 0x%08x, length %d\n", filename, dstBuffer, dstBufLen);
 
-			game_state.background = dstBuffer;
+			game_state.background = NULL;
 			game_state.surface_bg = NULL;
 			/*if (dstBufLen == 320*256*2) {
 				game_state.surface_bg = adt_surface((Uint16 *) game_state.background);
 			}*/
+
+			free(dstBuffer);
 		}
 
 		SDL_FreeRW(src);
