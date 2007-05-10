@@ -41,7 +41,7 @@ static char *finalpath = NULL;
 
 /*--- Functions prototypes ---*/
 
-static void re1pcgame_load_pak_bg(const char *filename);
+static int re1pcgame_load_pak_bg(const char *filename);
 
 /*--- Functions ---*/
 
@@ -80,14 +80,19 @@ void re1pcgame_loadbackground(void)
 	}
 	sprintf(filepath, finalpath, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
-	re1pcgame_load_pak_bg(filepath);
+	if (re1pcgame_load_pak_bg(filepath)) {
+		printf("pak: Loaded %s\n", filepath);
+	} else {
+		fprintf(stderr, "pak: Can not load %s\n", filepath);
+	}
 
 	free(filepath);
 }
 
-void re1pcgame_load_pak_bg(const char *filename)
+int re1pcgame_load_pak_bg(const char *filename)
 {
 	SDL_RWops *src;
+	int retval = 0;
 	
 	src = SDL_RWFromFile(filename, "rb");
 	if (src) {
@@ -97,16 +102,24 @@ void re1pcgame_load_pak_bg(const char *filename)
 		pak_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			game_state.num_cameras = 12;
-			printf("pak: Loaded %s\n", filename);
+			SDL_RWops *tim_src;
+			game_state.num_cameras = 8;
+			
+			tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
+			if (tim_src) {
+				game_state.background_surf = background_tim_load(tim_src);
+				if (game_state.background_surf) {
+					retval = 1;
+				}
 
-			game_state.background_surf = NULL;
+				SDL_FreeRW(tim_src);
+			}
 
 			free(dstBuffer);
 		}
 
 		SDL_FreeRW(src);
-	} else {
-		fprintf(stderr, "pak: Can not load %s\n", filename);
 	}
+
+	return retval;
 }

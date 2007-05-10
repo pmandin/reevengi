@@ -1,5 +1,5 @@
 /*
-	IDCT
+	Load background from tim file
 
 	Copyright (C) 2007	Patrice Mandin
 
@@ -18,15 +18,13 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef IDCTFST_H
-#define IDCTFST_H
+#ifndef BACKGROUND_TIM_H
+#define BACKGROUND_TIM_H 1
 
-/*--- Types ---*/
-
-#define	BLOCK		Sint32
+#include <SDL.h>
 
 /*--- Functions ---*/
 
-void IDCT(BLOCK *blk,int k);
+SDL_Surface *background_tim_load(SDL_RWops *src);
 
-#endif /* IDCTFST_H */
+#endif /* BACKGROUND_TIM_H */
