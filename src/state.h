@@ -59,9 +59,7 @@ typedef struct {
 	/* Camera angles in background file */
 	int num_cameras;
 	/* Background image */
-	SDL_Surface *surface_bg;
-	/* Background file */
-	char *background;
+	SDL_Surface *background_surf;
 
 	/*--- Functions ---*/
 	void (*load_background)(void);

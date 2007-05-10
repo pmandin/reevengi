@@ -98,19 +98,15 @@ void re1pcgame_load_pak_bg(const char *filename)
 
 		if (dstBuffer && dstBufLen) {
 			game_state.num_cameras = 12;
-			printf("Loaded %s at 0x%08x, length %d\n", filename, dstBuffer, dstBufLen);
+			printf("pak: Loaded %s\n", filename);
 
-			game_state.background = NULL;
-			game_state.surface_bg = NULL;
-			/*if (dstBufLen == 320*256*2) {
-				game_state.surface_bg = adt_surface((Uint16 *) game_state.background);
-			}*/
+			game_state.background_surf = NULL;
 
 			free(dstBuffer);
 		}
 
 		SDL_FreeRW(src);
 	} else {
-		printf("Can not load %s\n", filename);
+		fprintf(stderr, "pak: Can not load %s\n", filename);
 	}
 }

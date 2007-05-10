@@ -164,11 +164,11 @@ int main(int argc, char **argv)
 			state_loadbackground();
 
 			/* redraw */
-			if (game_state.surface_bg) {
+			if (game_state.background_surf) {
 				if (SDL_MUSTLOCK(screen)) {
 					SDL_LockSurface(screen);
 				}
-				SDL_BlitSurface(game_state.surface_bg, NULL, screen, NULL);
+				SDL_BlitSurface(game_state.background_surf, NULL, screen, NULL);
 				if (SDL_MUSTLOCK(screen)) {
 					SDL_UnlockSurface(screen);
 				}

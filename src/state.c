@@ -81,14 +81,9 @@ void state_loadbackground(void)
 
 void state_unloadbackground(void)
 {
-	if (game_state.surface_bg) {
-		SDL_FreeSurface(game_state.surface_bg);
-		game_state.surface_bg = NULL;
-	}
-
-	if (game_state.background) {
-		free(game_state.background);
-		game_state.background=NULL;
+	if (game_state.background_surf) {
+		SDL_FreeSurface(game_state.background_surf);
+		game_state.background_surf = NULL;
 	}
 }
 

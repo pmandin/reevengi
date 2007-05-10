@@ -98,16 +98,17 @@ void re2pcdemo_load_adt_bg(const char *filename)
 
 		if (dstBuffer && dstBufLen) {
 			game_state.num_cameras = 12;
-			printf("Loaded %s at 0x%08x, length %d, %d angles\n", filename, dstBuffer, dstBufLen, game_state.num_cameras);
+			printf("adt: Loaded %s\n", filename);
 
 			if (dstBufLen == 320*256*2) {
-				game_state.background = dstBuffer;
-				game_state.surface_bg = adt_surface((Uint16 *) game_state.background);
+				game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
 			}
+
+			free(dstBuffer);
 		}
 
 		SDL_FreeRW(src);
 	} else {
-		printf("Can not load %s\n", filename);
+		fprintf(stderr, "adt: Can not load %s\n", filename);
 	}
 }
