@@ -2,8 +2,6 @@
 	PAK file depacker
 
 	Copyright (C) 2007	Patrice Mandin
-	Copyright (C) 2006	The ScummVM project
-	Copyright (C) 1999-2001	Sarien Team
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
