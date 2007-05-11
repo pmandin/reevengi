@@ -86,7 +86,7 @@ static const Uint32 VLCtabnext[12*2] =	{
 /* Table B-14, DCT coefficients	table zero,
 * codes	000001xx ... 00111xxx
 */
-static const u_long VLCtab0[60*2] = {
+static const Uint32 VLCtab0[60*2] = {
 	CODE0(63,0,6), CODE0(63,0,6),CODE0(63,0,6), CODE0(63,0,6), /* ESCAPE */
 	CODE2(2,2,7), CODE2(2,-2,7), CODE2(9,1,7), CODE2(9,-1,7),
 	CODE2(0,4,7), CODE2(0,-4,7), CODE2(8,1,7), CODE2(8,-1,7),
@@ -107,7 +107,7 @@ static const u_long VLCtab0[60*2] = {
 /* Table B-14, DCT coefficients	table zero,
 * codes	0000001000 ... 0000001111
 */
-static const u_long VLCtab1[8*2] =	{
+static const Uint32 VLCtab1[8*2] =	{
 	CODE(16,1,10), CODE(5,2,10), CODE(0,7,10), CODE(2,3,10),
 	CODE(1,4,10), CODE(15,1,10), CODE(14,1,10),	CODE(4,2,10)
 };
@@ -115,7 +115,7 @@ static const u_long VLCtab1[8*2] =	{
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	000000010000 ... 000000011111
 */
-static const u_long VLCtab2[16*2] = {
+static const Uint32 VLCtab2[16*2] = {
 	CODE(0,11,12), CODE(8,2,12), CODE(4,3,12), CODE(0,10,12),
 	CODE(2,4,12), CODE(7,2,12),	CODE(21,1,12), CODE(20,1,12),
 	CODE(0,9,12), CODE(19,1,12), CODE(18,1,12),	CODE(1,5,12),
@@ -125,7 +125,7 @@ static const u_long VLCtab2[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	0000000010000 ... 0000000011111
 */
-static const u_long VLCtab3[16*2] = {
+static const Uint32 VLCtab3[16*2] = {
 	CODE(10,2,13), CODE(9,2,13), CODE(5,3,13), CODE(3,4,13),
 	CODE(2,5,13), CODE(1,7,13),	CODE(1,6,13), CODE(0,15,13),
 	CODE(0,14,13), CODE(0,13,13), CODE(0,12,13), CODE(26,1,13),
@@ -135,7 +135,7 @@ static const u_long VLCtab3[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	00000000010000 ... 00000000011111
 */
-static const u_long VLCtab4[16*2] = {
+static const Uint32 VLCtab4[16*2] = {
 	CODE(0,31,14), CODE(0,30,14), CODE(0,29,14), CODE(0,28,14),
 	CODE(0,27,14), CODE(0,26,14), CODE(0,25,14), CODE(0,24,14),
 	CODE(0,23,14), CODE(0,22,14), CODE(0,21,14), CODE(0,20,14),
@@ -145,7 +145,7 @@ static const u_long VLCtab4[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	000000000010000	...	000000000011111
 */
-static const u_long VLCtab5[16*2] = {
+static const Uint32 VLCtab5[16*2] = {
 	CODE(0,40,15), CODE(0,39,15), CODE(0,38,15), CODE(0,37,15),
 	CODE(0,36,15), CODE(0,35,15), CODE(0,34,15), CODE(0,33,15),
 	CODE(0,32,15), CODE(1,14,15), CODE(1,13,15), CODE(1,12,15),
@@ -155,7 +155,7 @@ static const u_long VLCtab5[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	0000000000010000 ... 0000000000011111
 */
-static const u_long VLCtab6[16*2] = {
+static const Uint32 VLCtab6[16*2] = {
 	CODE(1,18,16), CODE(1,17,16), CODE(1,16,16), CODE(1,15,16),
 	CODE(6,3,16), CODE(16,2,16), CODE(15,2,16),	CODE(14,2,16),
 	CODE(13,2,16), CODE(12,2,16), CODE(11,2,16), CODE(31,1,16),
