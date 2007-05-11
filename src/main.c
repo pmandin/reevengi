@@ -87,6 +87,10 @@ int main(int argc, char **argv)
 			printf("Resident Evil 2, PC, Demo\n");
 			re2pcdemo_init(&game_state);
 			break;
+		case GAME_RE3_PC_DEMO:
+			printf("Resident Evil 3, PC, Demo\n");
+			re3pcdemo_init(&game_state);
+			break;
 		default:
 			printf("No known version\n");
 			exit(1);

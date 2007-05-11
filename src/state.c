@@ -23,8 +23,6 @@
 
 #include "state.h"
 #include "parameters.h"
-#include "re1_ps1_demo.h"
-#include "re2_pc_demo.h"
 
 /*--- Variables ---*/
 
