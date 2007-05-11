@@ -28,7 +28,7 @@
 
 #define DEFAULT_BASEDIR "."
 #define DEFAULT_VERBOSE 0
-#define DEFAULT_GAMMA 1.2
+#define DEFAULT_GAMMA 1.0
 
 /*--- Global variables ---*/
 

@@ -33,6 +33,23 @@
 #include "re2_ps1_demo.h"
 #include "re3_ps1_game.h"
 
+/*--- Defines ---*/
+
+#define KEY_STAGE_DOWN		SDLK_a
+#define KEY_STAGE_UP		SDLK_q
+#define KEY_STAGE_RESET		SDLK_w
+#define KEY_ROOM_DOWN		SDLK_z
+#define KEY_ROOM_UP		SDLK_s
+#define KEY_ROOM_RESET		SDLK_x
+#define KEY_CAMERA_DOWN		SDLK_e
+#define KEY_CAMERA_UP		SDLK_d
+#define KEY_CAMERA_RESET	SDLK_c
+#define KEY_GAMMA_DOWN		SDLK_r
+#define KEY_GAMMA_UP		SDLK_f
+#define KEY_GAMMA_RESET		SDLK_v
+
+/*--- Functions ---*/
+
 int main(int argc, char **argv)
 {
 	int quit=0;
@@ -109,47 +126,77 @@ int main(int argc, char **argv)
 								switch_fs=1;
 							}
 							break;
-						case SDLK_a:
+						case KEY_STAGE_DOWN:
 							game_state.stage -= 1;
 							if (game_state.stage < 1) {
 								game_state.stage = 7;
 							}
 							reload_bg = 1;
 							break;						
-						case SDLK_q:
+						case KEY_STAGE_UP:
 							game_state.stage += 1;
 							if (game_state.stage > 7) {
 								game_state.stage = 1;
 							}
 							reload_bg = 1;
 							break;						
-						case SDLK_z:
+						case KEY_STAGE_RESET:
+							game_state.stage = 1;
+							reload_bg = 1;
+							break;						
+						case KEY_ROOM_DOWN:
 							game_state.room -= 1;
 							if (game_state.room < 0) {
 								game_state.room = 0x1c;
 							}
 							reload_bg = 1;
 							break;						
-						case SDLK_s:
+						case KEY_ROOM_UP:
 							game_state.room += 1;
 							if (game_state.room > 0x1c) {
 								game_state.room = 0;
 							}
 							reload_bg = 1;
 							break;						
-						case SDLK_e:
+						case KEY_ROOM_RESET:
+							game_state.room = 0;
+							reload_bg = 1;
+							break;						
+						case KEY_CAMERA_DOWN:
 							game_state.camera -= 1;
 							if ((game_state.camera<0) && (game_state.num_cameras>0)) {
 								game_state.camera = game_state.num_cameras-1;
 							}
 							reload_bg = 1;
 							break;						
-						case SDLK_d:
+						case KEY_CAMERA_UP:
 							game_state.camera += 1;
 							if (game_state.camera>=game_state.num_cameras) {
 								game_state.camera = 0;
 							}
 							reload_bg = 1;
+							break;						
+						case KEY_CAMERA_RESET:
+							game_state.camera = 0;
+							reload_bg = 1;
+							break;						
+						case KEY_GAMMA_DOWN:
+							gamma -= 0.1;
+							if (gamma<0.1) {
+								gamma = 0.1;
+							}
+							SDL_SetGamma(gamma, gamma, gamma);
+							break;
+						case KEY_GAMMA_UP:
+							gamma += 0.1;
+							if (gamma>2.0) {
+								gamma = 2.0;
+							}
+							SDL_SetGamma(gamma, gamma, gamma);
+							break;
+						case KEY_GAMMA_RESET:
+							gamma = 1.0;
+							SDL_SetGamma(gamma, gamma, gamma);
 							break;						
 					}
 					break;
