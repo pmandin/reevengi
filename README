@@ -1,0 +1,83 @@
+				Reevengi
+
+		A small background image viewer for
+			Resident Evil games
+
+
+
+0 Disclaimer
+------------
+
+This software is just a background image viewer for some versions of the games.
+Use at your own risks.
+
+
+1 Libraries dependencies
+------------------------
+
+- SDL (http://www.libsdl.org) for video and input.
+- SDL_image with libjpeg support (JPEG depacking for Resident Evil 3, PC).
+
+
+2 Command-line parameters
+-------------------------
+
+"-basedir <path>" to give the directory where the game files are.
+  Default is current directory.
+  Example: -basedir /demos/re2demo
+
+"-gamma <value>" to change the gamma correction of the lightmaps.
+  Default is 1.0 .
+  Example: -gamma 1.2
+
+"-verbose <value>" to select verbose level.
+  Disabled atm.
+
+"-help" displays a little help.
+
+
+
+3 Controls
+----------
+
+3.1 Keyboard
+------------
+
+ESC		quit
+A		decrement stage number
+Q		increment stage number
+W		reset stage number
+Z		decrement room number
+S		increment room number
+X		reset room number
+E		decremenet camera number
+D		increment camera number
+C		reset camera number
+R		decrement gamma
+F		increment gamma
+V		reset gamma
+Alt+Enter	toggle between fullscreen and windowed mode.
+
+
+4 Supported games
+-----------------
+
+Resident Evil, PS1, Demo
+Resident Evil, PS1, Game, PAL
+Resident Evil, PC, Game
+Resident Evil 2, PS1, Demo
+Resident Evil 2, PC, Demo
+Resident Evil 3, PS1, Game, PAL
+
+Note:
+
+All PS1 demos and games use same image format, so it should be easy to add
+support for them. I just need a list of all files on each CD (recursive directory
+tree).
+
+Resident Evil 3 PC (demo and maybe game) use a specific archive file format to
+store files datas, and will be supported soon.
+
+-- 
+Patrice Mandin <pmandin -at- caramail -dot -com>
+Web: http://pmandin.atari.org/
