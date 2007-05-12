@@ -98,9 +98,14 @@ static int game_file_exists(char *filename)
 
 		sprintf(filenamedir, "%s/%s", basedir, filename);
 
-		handle = open(filenamedir, 0644);
+		handle = open(filenamedir, 0444);
 		if (handle>=0) {
-			detected = 1;
+			char dummy;
+
+			if (read(handle, &dummy, 1)>0) {
+				detected = 1;
+			}
+
 			close(handle);
 		}
 
@@ -118,12 +123,14 @@ static void state_detect(void)
 		game_state.version = GAME_RE3_PC_DEMO;
 	} else if (game_file_exists("common/datu/warning.adt")) {
 		game_state.version = GAME_RE2_PC_DEMO;
-	} else if (game_file_exists("usa/data/chris02.pix")) {
+	} else if (game_file_exists("horr/usa/data/capcom.ptc")) {
 		game_state.version = GAME_RE1_PC_GAME;
 	} else if (game_file_exists("sles_025.30")) {
 		game_state.version = GAME_RE3_PS1_GAME;
 	} else if (game_file_exists("slps_009.99")) {
 		game_state.version = GAME_RE2_PS1_DEMO;
+	} else if (game_file_exists("sles_002.27")) {
+		game_state.version = GAME_RE1_PS1_GAME;
 	} else if (game_file_exists("slpm_800.27")) {
 		game_state.version = GAME_RE1_PS1_DEMO;
 	}
