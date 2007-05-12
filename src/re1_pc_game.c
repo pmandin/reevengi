@@ -35,7 +35,7 @@
 
 /*--- Variables ---*/
 
-static const char *re1pcgame_bg = "usa/stage%d/rc%d%02x%d.pak";
+static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
 
 static char *finalpath = NULL;
 
