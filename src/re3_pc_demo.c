@@ -23,8 +23,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <SDL.h>
+#ifdef ENABLE_SDLIMAGE
 #include <SDL_image.h>
+#endif
 
 #include "file.h"
 #include "state.h"
@@ -93,6 +99,7 @@ void re3pcdemo_loadbackground(void)
 
 int re3pcdemo_load_jpg_bg(const char *filename)
 {
+#ifdef ENABLE_SDLIMAGE
 	SDL_RWops *src;
 	int retval = 0;
 	
@@ -107,4 +114,9 @@ int re3pcdemo_load_jpg_bg(const char *filename)
 
 		SDL_FreeRW(src);
 	}
+
+	return retval;
+#else
+	return 0;
+#endif
 }

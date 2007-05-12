@@ -36,6 +36,7 @@ AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
 AC_CHECK_LIB(SDL_image, IMG_isJPG, have_sdlimage_lib=yes, have_sdlimage_lib=no)
 if test "x$have_sdlimage_lib" = "xyes"; then
 	SDL_LIBS="$SDL_LIBS -lSDL_image"
+	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
 fi
 
 # Outputs
