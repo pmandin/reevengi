@@ -15,9 +15,12 @@ Use at your own risks.
 1 Libraries dependencies
 ------------------------
 
-- SDL (http://www.libsdl.org) for video and input.
+- SDL for video and input.
+  http://www.libsdl.org/
 - SDL_image with libjpeg support (JPEG depacking for Resident Evil 3, PC).
-
+  http://www.libsdl.org/
+- PhysFS for all filesystems access, and Resident Evil 3 PC archives access.
+  http://www.icculus.org/physfs/
 
 2 Command-line parameters
 -------------------------
@@ -68,15 +71,13 @@ Resident Evil, PC, Game
 Resident Evil 2, PS1, Demo
 Resident Evil 2, PC, Demo
 Resident Evil 3, PS1, Game, PAL
+Resident Evil 3, PC, Demo
 
 Note:
 
 All PS1 demos and games use same image format, so it should be easy to add
 support for them. I just need a list of all files on each CD (recursive directory
 tree).
-
-Resident Evil 3 PC (demo and maybe game) use a specific archive file format to
-store files datas, and will be supported soon.
 
 -- 
 Patrice Mandin <pmandin -at- caramail -dot -com>
