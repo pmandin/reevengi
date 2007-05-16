@@ -44,7 +44,7 @@
 /*--- Variables ---*/
 
 static const char *re3pcdemo_bg = "data_a/bss/r%d%02x%02x.jpg";
-static const char *rofs_dat = "rofs%d.dat";
+static const char *rofs_dat = "%s/rofs%d.dat";
 
 /*--- Functions prototypes ---*/
 
@@ -55,10 +55,10 @@ static int re3pcdemo_load_jpg_bg(const char *filename);
 void re3pcdemo_init(state_t *game_state)
 {
 	int i;
-	char rofsfile[16];
+	char rofsfile[1024];
 
 	for (i=1;i<16;i++) {
-		sprintf(rofsfile, rofs_dat, i);
+		sprintf(rofsfile, rofs_dat, basedir, i);
 		FS_AddArchive(rofsfile);
 	}
 
@@ -79,7 +79,7 @@ void re3pcdemo_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pcdemo_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
+	sprintf(filepath, re3pcdemo_bg, game_state.stage, game_state.room, game_state.camera);
 
 	if (re3pcdemo_load_jpg_bg(filepath)) {
 		printf("jpg: Loaded %s\n", filepath);

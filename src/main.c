@@ -57,7 +57,8 @@ int main(int argc, char **argv)
 	int quit=0;
 	int reload_bg = 1;
 	int redraw_bg = 1;
-	int switch_fs = 0;
+	int switch_fs = 0, switch_mode=0;
+	int width = 320, height = 240;
 	int videoflags;
 	SDL_Surface *screen;
 
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
 	}
 	atexit(SDL_Quit);
 
-	screen = SDL_SetVideoMode(320, 240, 16, 0);
+	screen = SDL_SetVideoMode(width, height, 16, 0);
 	if (!screen) {
 		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
 		FS_Shutdown();
@@ -224,13 +225,25 @@ int main(int argc, char **argv)
 
 		/* Etat */
 		if (reload_bg) {
+			SDL_Surface *bg;
+
 			reload_bg = 0;
 
 			/* depack background image */
 			state_loadbackground();
 
 			/* redraw */
-			if (game_state.background_surf) {
+			bg = game_state.background_surf;
+			if (bg) {
+				if ((bg->w != width) || (bg->h != height)) {
+					width = bg->w;
+					height = bg->h;
+					switch_mode = 1;
+				}
+			}
+
+			if (bg && !switch_mode) {
+
 				if (SDL_MUSTLOCK(screen)) {
 					SDL_LockSurface(screen);
 				}
@@ -247,11 +260,16 @@ int main(int argc, char **argv)
 		}
 
 		if (switch_fs) {
-			switch_fs=0;
 			videoflags ^= SDL_FULLSCREEN;
-			screen = SDL_SetVideoMode(320, 240, 16, videoflags);
+			switch_fs=0;
+			switch_mode=1;
+		}
+
+		if (switch_mode) {
+			screen = SDL_SetVideoMode(width, height, 16, videoflags);
 			videoflags = screen->flags;
 			reload_bg=1;
+			switch_mode=0;
 		}
 
 		SDL_Delay(1);
