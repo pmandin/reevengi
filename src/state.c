@@ -19,7 +19,9 @@
 */
 
 #include <stdlib.h>
+
 #include <SDL.h>
+#include <physfs.h>
 
 #include "state.h"
 #include "parameters.h"
@@ -94,19 +96,19 @@ static int game_file_exists(char *filename)
 	
 	filenamedir = malloc(strlen(basedir)+strlen(filename)+4);
 	if (filenamedir) {
-		int handle;
+		PHYSFS_file	*curfile;
 
 		sprintf(filenamedir, "%s/%s", basedir, filename);
 
-		handle = open(filenamedir, 0444);
-		if (handle>=0) {
+		curfile = PHYSFS_openRead(filename);
+		if (curfile) {
 			char dummy;
 
-			if (read(handle, &dummy, 1)>0) {
+			if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
 				detected = 1;
 			}
 
-			close(handle);
+			PHYSFS_close(curfile);
 		}
 
 		free(filenamedir);

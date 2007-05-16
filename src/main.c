@@ -66,6 +66,12 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	if (!FS_Init(argv[0])) {
+		exit(1);
+	}
+
+	FS_AddArchive(basedir);
+
 	state_init();
 	printf("Game version: ");
 	switch(game_state.version) {
@@ -99,11 +105,13 @@ int main(int argc, char **argv)
 			break;
 		default:
 			printf("No known version\n");
+			FS_Shutdown();
 			exit(1);
 	}
 
 	if (SDL_Init(SDL_INIT_VIDEO)<0) {
 		fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());
+		FS_Shutdown();
 		exit(1);
 	}
 	atexit(SDL_Quit);
@@ -111,7 +119,8 @@ int main(int argc, char **argv)
 	screen = SDL_SetVideoMode(320, 240, 16, 0);
 	if (!screen) {
 		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
-		return 0;
+		FS_Shutdown();
+		exit(1);
 	}
 	videoflags = screen->flags;
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
@@ -250,6 +259,7 @@ int main(int argc, char **argv)
 	
 	state_unloadbackground();
 	state_shutdown();
+	FS_Shutdown();
 
 	return 0;
 }

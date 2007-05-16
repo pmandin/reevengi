@@ -32,7 +32,7 @@
 #include <SDL_image.h>
 #endif
 
-#include "file.h"
+#include "filesystem.h"
 #include "state.h"
 #include "re3_pc_demo.h"
 #include "parameters.h"
@@ -44,8 +44,7 @@
 /*--- Variables ---*/
 
 static const char *re3pcdemo_bg = "data_a/bss/r%d%02x%02x.jpg";
-
-static char *finalpath = NULL;
+static const char *rofs_dat = "rofs%d.dat";
 
 /*--- Functions prototypes ---*/
 
@@ -55,38 +54,32 @@ static int re3pcdemo_load_jpg_bg(const char *filename);
 
 void re3pcdemo_init(state_t *game_state)
 {
+	int i;
+	char rofsfile[16];
+
+	for (i=1;i<16;i++) {
+		sprintf(rofsfile, rofs_dat, i);
+		FS_AddArchive(rofsfile);
+	}
+
 	game_state->load_background = re3pcdemo_loadbackground;
 	game_state->shutdown = re3pcdemo_shutdown;
 }
 
 void re3pcdemo_shutdown(void)
 {
-	if (finalpath) {
-		free(finalpath);
-		finalpath=NULL;
-	}
 }
 
 void re3pcdemo_loadbackground(void)
 {
 	char *filepath;
-	int length;
 
-	if (!finalpath) {
-		finalpath = malloc(strlen(basedir)+strlen(re3pcdemo_bg)+2);
-		if (!finalpath) {
-			fprintf(stderr, "Can not allocate mem for final path\n");
-			return;
-		}
-		sprintf(finalpath, "%s/%s", basedir, re3pcdemo_bg);	
-	}
-
-	filepath = malloc(strlen(finalpath)+8);
+	filepath = malloc(strlen(re3pcdemo_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, finalpath, game_state.stage, game_state.stage, game_state.room, game_state.camera);
+	sprintf(filepath, re3pcdemo_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
 	if (re3pcdemo_load_jpg_bg(filepath)) {
 		printf("jpg: Loaded %s\n", filepath);
@@ -103,7 +96,7 @@ int re3pcdemo_load_jpg_bg(const char *filename)
 	SDL_RWops *src;
 	int retval = 0;
 	
-	src = SDL_RWFromFile(filename, "rb");
+	src = FS_makeRWops(filename);
 	if (src) {
 		game_state.num_cameras = 0x1c;
 

@@ -23,9 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <SDL.h>
-
-#include "file.h"
 #include "state.h"
 #include "re3_ps1_game.h"
 #include "background_bss.h"
@@ -41,8 +38,6 @@
 
 static const char *re3ps1game_bg = "cd_data/stage%d/r%d%02x.bss";
 
-static char *finalpath = NULL;
-
 /*--- Functions prototypes ---*/
 
 /*--- Functions ---*/
@@ -55,32 +50,18 @@ void re3ps1game_init(state_t *game_state)
 
 void re3ps1game_shutdown(void)
 {
-	if (finalpath) {
-		free(finalpath);
-		finalpath=NULL;
-	}
 }
 
 void re3ps1game_loadbackground(void)
 {
 	char *filepath;
-	int length;
 
-	if (!finalpath) {
-		finalpath = malloc(strlen(basedir)+strlen(re3ps1game_bg)+2);
-		if (!finalpath) {
-			fprintf(stderr, "Can not allocate mem for final path\n");
-			return;
-		}
-		sprintf(finalpath, "%s/%s", basedir, re3ps1game_bg);	
-	}
-
-	filepath = malloc(strlen(finalpath)+8);
+	filepath = malloc(strlen(re3ps1game_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, finalpath, game_state.stage, game_state.stage, game_state.room);
+	sprintf(filepath, re3ps1game_bg, game_state.stage, game_state.stage, game_state.room);
 
 	if (background_bss_load(filepath, CHUNK_SIZE)) {
 		printf("bss: Loaded %s\n", filepath);

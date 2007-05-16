@@ -19,9 +19,12 @@
 */
 
 #include <stdlib.h>
+
 #include <SDL.h>
+#include <physfs.h>
 
 #include "state.h"
+#include "filesystem.h"
 #include "background_bss.h"
 #include "depack_vlc.h"
 #include "depack_mdec.h"
@@ -47,7 +50,7 @@ int background_bss_load(const char *filename, int chunk_size)
 	int dstBufLen;
 	int retval = 0;
 	
-	src = SDL_RWFromFile(filename, "rb");
+	src = FS_makeRWops(filename);
 	if (src) {
 		retval = background_vlc_load(src, chunk_size);
 

@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "file.h"
+#include "filesystem.h"
 #include "state.h"
 #include "depack_pak.h"
 #include "re1_pc_game.h"
@@ -36,8 +36,6 @@
 /*--- Variables ---*/
 
 static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
-
-static char *finalpath = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -53,32 +51,18 @@ void re1pcgame_init(state_t *game_state)
 
 void re1pcgame_shutdown(void)
 {
-	if (finalpath) {
-		free(finalpath);
-		finalpath=NULL;
-	}
 }
 
 void re1pcgame_loadbackground(void)
 {
 	char *filepath;
-	int length;
 
-	if (!finalpath) {
-		finalpath = malloc(strlen(basedir)+strlen(re1pcgame_bg)+2);
-		if (!finalpath) {
-			fprintf(stderr, "Can not allocate mem for final path\n");
-			return;
-		}
-		sprintf(finalpath, "%s/%s", basedir, re1pcgame_bg);	
-	}
-
-	filepath = malloc(strlen(finalpath)+8);
+	filepath = malloc(strlen(re1pcgame_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, finalpath, game_state.stage, game_state.stage, game_state.room, game_state.camera);
+	sprintf(filepath, re1pcgame_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
 	if (re1pcgame_load_pak_bg(filepath)) {
 		printf("pak: Loaded %s\n", filepath);
@@ -94,7 +78,7 @@ int re1pcgame_load_pak_bg(const char *filename)
 	SDL_RWops *src;
 	int retval = 0;
 	
-	src = SDL_RWFromFile(filename, "rb");
+	src = FS_makeRWops(filename);
 	if (src) {
 		Uint8 *dstBuffer;
 		int dstBufLen;

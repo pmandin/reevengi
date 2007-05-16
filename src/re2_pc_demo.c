@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "file.h"
+#include "filesystem.h"
 #include "state.h"
 #include "re2_pc_demo.h"
 #include "depack_adt.h"
@@ -35,13 +35,11 @@
 
 /*--- Variables ---*/
 
-static const char *re1ps1demo_bg = "common/stage%d/rc%d%02x%1x.adt";
-
-static char *finalpath = NULL;
+static const char *re2pcdemo_bg = "common/stage%d/rc%d%02x%1x.adt";
 
 /*--- Functions prototypes ---*/
 
-static void re2pcdemo_load_adt_bg(const char *filename);
+static int re2pcdemo_load_adt_bg(const char *filename);
 
 /*--- Functions ---*/
 
@@ -53,43 +51,34 @@ void re2pcdemo_init(state_t *game_state)
 
 void re2pcdemo_shutdown(void)
 {
-	if (finalpath) {
-		free(finalpath);
-		finalpath=NULL;
-	}
 }
 
 void re2pcdemo_loadbackground(void)
 {
 	char *filepath;
-	int length;
 
-	if (!finalpath) {
-		finalpath = malloc(strlen(basedir)+strlen(re1ps1demo_bg)+2);
-		if (!finalpath) {
-			fprintf(stderr, "Can not allocate mem for final path\n");
-			return;
-		}
-		sprintf(finalpath, "%s/%s", basedir, re1ps1demo_bg);	
-	}
-
-	filepath = malloc(strlen(finalpath)+8);
+	filepath = malloc(strlen(re2pcdemo_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, finalpath, game_state.stage, game_state.stage, game_state.room, game_state.camera);
+	sprintf(filepath, re2pcdemo_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
-	re2pcdemo_load_adt_bg(filepath);
+	if (re2pcdemo_load_adt_bg(filepath)) {
+		printf("adt: Loaded %s\n", filepath);
+	} else {
+		fprintf(stderr, "adt: Can not load %s\n", filepath);
+	}
 
 	free(filepath);
 }
 
-void re2pcdemo_load_adt_bg(const char *filename)
+int re2pcdemo_load_adt_bg(const char *filename)
 {
 	SDL_RWops *src;
+	int retval = 0;
 	
-	src = SDL_RWFromFile(filename, "rb");
+	src = FS_makeRWops(filename);
 	if (src) {
 		Uint8 *dstBuffer;
 		int dstBufLen;
@@ -98,17 +87,19 @@ void re2pcdemo_load_adt_bg(const char *filename)
 
 		if (dstBuffer && dstBufLen) {
 			game_state.num_cameras = 12;
-			printf("adt: Loaded %s\n", filename);
 
 			if (dstBufLen == 320*256*2) {
 				game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
+				if (game_state.background_surf) {
+					retval = 1;
+				}
 			}
 
 			free(dstBuffer);
 		}
 
 		SDL_FreeRW(src);
-	} else {
-		fprintf(stderr, "adt: Can not load %s\n", filename);
 	}
+
+	return retval;
 }

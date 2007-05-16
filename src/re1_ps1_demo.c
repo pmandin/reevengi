@@ -23,9 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <SDL.h>
-
-#include "file.h"
 #include "state.h"
 #include "re1_ps1_demo.h"
 #include "background_bss.h"
@@ -41,8 +38,6 @@
 
 static const char *re1ps1demo_bg = "psx/stage%d/room%d%02x.bss";
 
-static char *finalpath = NULL;
-
 /*--- Functions prototypes ---*/
 
 /*--- Functions ---*/
@@ -55,32 +50,18 @@ void re1ps1demo_init(state_t *game_state)
 
 void re1ps1demo_shutdown(void)
 {
-	if (finalpath) {
-		free(finalpath);
-		finalpath=NULL;
-	}
 }
 
 void re1ps1demo_loadbackground(void)
 {
 	char *filepath;
-	int length;
 
-	if (!finalpath) {
-		finalpath = malloc(strlen(basedir)+strlen(re1ps1demo_bg)+2);
-		if (!finalpath) {
-			fprintf(stderr, "Can not allocate mem for final path\n");
-			return;
-		}
-		sprintf(finalpath, "%s/%s", basedir, re1ps1demo_bg);	
-	}
-
-	filepath = malloc(strlen(finalpath)+8);
+	filepath = malloc(strlen(re1ps1demo_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, finalpath, game_state.stage, game_state.stage, game_state.room);
+	sprintf(filepath, re1ps1demo_bg, game_state.stage, game_state.stage, game_state.room);
 
 	if (background_bss_load(filepath, CHUNK_SIZE)) {
 		printf("bss: Loaded %s\n", filepath);
