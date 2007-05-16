@@ -22,6 +22,17 @@ AC_CHECK_HEADERS([fcntl.h])
 AC_HEADER_STDC
 AC_CHECK_FUNCS([memset])
 
+# Checks for target
+
+case "$target" in
+    *-*-cygwin* | *-*-mingw32*)
+	SYS_PHYSFS_ADDLIBS="-lz"
+        ;;
+    *)
+	SYS_PHYSFS_ADDLIBS=""
+	;;
+esac	
+
 # Checks for libraries.
 
 # Math
@@ -39,7 +50,22 @@ if test "x$have_sdlimage_lib" = "xyes"; then
 	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
 fi
 
+# physfs
+
+AC_CHECK_HEADER(physfs.h, have_physfs_h=yes)
+TMP_LIBS=$LIBS
+LIBS="$LIBS $SYS_PHYSFS_ADDLIBS"
+AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
+if test "x$have_physfs_h" = "xyes" -a "x$have_physfs_lib" = "xyes"; then
+	PHYSFS_LIBS="-lphysfs $SYS_PHYSFS_ADDLIBS"
+else
+	AC_MSG_ERROR("*** Install physfs from http://www.icculus.org/physfs ***")
+fi
+LIBS=$TMP_LIBS
+
 # Outputs
+AC_SUBST(PHYSFS_LIBS)
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
