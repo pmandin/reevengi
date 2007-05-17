@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL.h>
+
 #include "filesystem.h"
 #include "state.h"
 #include "re2_pc_demo.h"
@@ -98,7 +100,7 @@ int re2pcdemo_load_adt_bg(const char *filename)
 			free(dstBuffer);
 		}
 
-		SDL_FreeRW(src);
+		SDL_RWclose(src);
 	}
 
 	return retval;

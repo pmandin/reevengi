@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL.h>
+
 #include "filesystem.h"
 #include "state.h"
 #include "depack_pak.h"
@@ -102,7 +104,7 @@ int re1pcgame_load_pak_bg(const char *filename)
 			free(dstBuffer);
 		}
 
-		SDL_FreeRW(src);
+		SDL_RWclose(src);
 	}
 
 	return retval;

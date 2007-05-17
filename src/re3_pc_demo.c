@@ -105,7 +105,7 @@ int re3pcdemo_load_jpg_bg(const char *filename)
 			retval = 1;
 		}
 
-		SDL_FreeRW(src);
+		SDL_RWclose(src);
 	}
 
 	return retval;

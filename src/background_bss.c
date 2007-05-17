@@ -21,7 +21,6 @@
 #include <stdlib.h>
 
 #include <SDL.h>
-#include <physfs.h>
 
 #include "state.h"
 #include "filesystem.h"
@@ -54,7 +53,7 @@ int background_bss_load(const char *filename, int chunk_size)
 	if (src) {
 		retval = background_vlc_load(src, chunk_size);
 
-		SDL_FreeRW(src);
+		SDL_RWclose(src);
 	}
 
 	return retval;
