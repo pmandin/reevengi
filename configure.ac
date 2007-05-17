@@ -39,16 +39,25 @@ esac
 # Checks for libraries.
 
 # Math
+
 if test "x$ac_cv_func_pow" = "xno"; then
 	LIBS="$LIBS -lm"
 fi
 
 # SDL
+
 AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
 
+# Zlib
+
+CHECK_ZLIB()
+
 # SDL_image
+
 TMP_CFLAGS=$CFLAGS
+TMP_CPPFLAGS=$CPPFLAGS
 CFLAGS="$CFLAGS $SDL_CFLAGS"
+CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
 AC_CHECK_HEADER(SDL_image.h,
 	have_sdlimage_h=yes, havesdlimage_h=no)
 AC_CHECK_LIB(SDL_image, IMG_isJPG,
@@ -61,6 +70,7 @@ else
 	AC_MSG_ERROR([*** SDL_image not found!])
 fi
 CFLAGS=$TMP_CFLAGS
+CPPFLAGS=$TMP_CPPFLAGS
 
 # physfs
 
