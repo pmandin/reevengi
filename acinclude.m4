@@ -85,7 +85,7 @@ else
   AC_MSG_RESULT(no)
 fi])
 
-ZLIB_HOME=/usr/local
+ZLIB_HOME=$prefix
 if test ! -f "${ZLIB_HOME}/include/zlib.h"
 then
         ZLIB_HOME=/usr
