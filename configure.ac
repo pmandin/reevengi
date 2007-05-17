@@ -24,15 +24,10 @@ AC_CHECK_FUNCS([memset])
 
 # Checks for target
 
-SYS_PHYSFS_ADDLIBS=""
 SYS_SDLIMAGE_ADDLIBS=""
 case "$target" in
-    *-*-cygwin* | *-*-mingw32*)
-	SYS_PHYSFS_ADDLIBS="-lz"
-        ;;
     *-*-mint*)
-	SYS_SDLIMAGE_ADDLIBS="-ljpeg -ltiff -lpng -lz"
-	SYS_PHYSFS_ADDLIBS="-lz"
+	SYS_SDLIMAGE_ADDLIBS="-ljpeg -ltiff -lpng"
         ;;
 esac	
 
@@ -64,7 +59,7 @@ AC_CHECK_LIB(SDL_image, IMG_isJPG,
 	have_sdlimage_lib=yes, have_sdlimage_lib=no,
 	$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
 if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
-	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS"
+	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS"
 	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
 else
 	AC_MSG_ERROR([*** SDL_image not found!])
@@ -75,17 +70,19 @@ CPPFLAGS=$TMP_CPPFLAGS
 # physfs
 
 TMP_LIBS=$LIBS
-LIBS="$LIBS $SYS_PHYSFS_ADDLIBS"
+LIBS="$LIBS $ZLIB_LIBS"
 AC_CHECK_HEADER(physfs.h, have_physfs_h=yes, have_physfs_h=no)
 AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
 if test "x$have_physfs_h" = "xyes" -a "x$have_physfs_lib" = "xyes"; then
-	PHYSFS_LIBS="-lphysfs $SYS_PHYSFS_ADDLIBS"
+	PHYSFS_LIBS="-lphysfs"
 else
 	AC_MSG_ERROR([*** PhysicsFS not found!])
 fi
 LIBS=$TMP_LIBS
 
 # Outputs
+AC_SUBST(ZLIB_CFLAGS)
+AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDLIMAGE_LIBS)
 AC_SUBST(PHYSFS_LIBS)
 
