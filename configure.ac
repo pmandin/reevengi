@@ -47,26 +47,31 @@ fi
 AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
 
 # SDL_image
-TMP_LIBS=$LIBS
-LIBS="$LIBS $SDL_LIBS $SYS_SDLIMAGE_ADDLIBS"
-AC_CHECK_HEADER(SDL_image.h, have_sdlimage_h=yes)
-AC_CHECK_LIB(SDL_image, IMG_isJPG, have_sdlimage_lib=yes, have_sdlimage_lib=no)
+TMP_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS $SDL_CFLAGS"
+AC_CHECK_HEADER(SDL_image.h,
+	have_sdlimage_h=yes, havesdlimage_h=no)
+AC_CHECK_LIB(SDL_image, IMG_isJPG,
+	have_sdlimage_lib=yes, have_sdlimage_lib=no,
+	$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
 if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
 	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS"
 	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
+else
+	AC_MSG_ERROR([*** SDL_image not found!])
 fi
-LIBS=$TMP_LIBS
+CFLAGS=$TMP_CFLAGS
 
 # physfs
 
-AC_CHECK_HEADER(physfs.h, have_physfs_h=yes)
 TMP_LIBS=$LIBS
 LIBS="$LIBS $SYS_PHYSFS_ADDLIBS"
+AC_CHECK_HEADER(physfs.h, have_physfs_h=yes, have_physfs_h=no)
 AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
 if test "x$have_physfs_h" = "xyes" -a "x$have_physfs_lib" = "xyes"; then
 	PHYSFS_LIBS="-lphysfs $SYS_PHYSFS_ADDLIBS"
 else
-	AC_MSG_ERROR("*** Install physfs from http://www.icculus.org/physfs ***")
+	AC_MSG_ERROR([*** PhysicsFS not found!])
 fi
 LIBS=$TMP_LIBS
 
