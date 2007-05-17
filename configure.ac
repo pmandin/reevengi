@@ -24,13 +24,16 @@ AC_CHECK_FUNCS([memset])
 
 # Checks for target
 
+SYS_PHYSFS_ADDLIBS=""
+SYS_SDLIMAGE_ADDLIBS=""
 case "$target" in
     *-*-cygwin* | *-*-mingw32*)
 	SYS_PHYSFS_ADDLIBS="-lz"
         ;;
-    *)
-	SYS_PHYSFS_ADDLIBS=""
-	;;
+    *-*-mint*)
+	SYS_SDLIMAGE_ADDLIBS="-ljpeg -ltiff -lpng -lz"
+	SYS_PHYSFS_ADDLIBS="-lz"
+        ;;
 esac	
 
 # Checks for libraries.
@@ -44,11 +47,15 @@ fi
 AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
 
 # SDL_image
+TMP_LIBS=$LIBS
+LIBS="$LIBS $SDL_LIBS $SYS_SDLIMAGE_ADDLIBS"
+AC_CHECK_HEADER(SDL_image.h, have_sdlimage_h=yes)
 AC_CHECK_LIB(SDL_image, IMG_isJPG, have_sdlimage_lib=yes, have_sdlimage_lib=no)
-if test "x$have_sdlimage_lib" = "xyes"; then
-	SDL_LIBS="$SDL_LIBS -lSDL_image"
+if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
+	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS"
 	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
 fi
+LIBS=$TMP_LIBS
 
 # physfs
 
@@ -64,6 +71,7 @@ fi
 LIBS=$TMP_LIBS
 
 # Outputs
+AC_SUBST(SDLIMAGE_LIBS)
 AC_SUBST(PHYSFS_LIBS)
 
 AC_CONFIG_FILES([
