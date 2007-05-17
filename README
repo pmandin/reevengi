@@ -17,10 +17,16 @@ Use at your own risks.
 
 - SDL for video and input.
   http://www.libsdl.org/
-- SDL_image with libjpeg support (JPEG depacking for Resident Evil 3, PC).
+
+- SDL_image with libjpeg support.
   http://www.libsdl.org/
-- PhysFS for all filesystems access, and Resident Evil 3 PC archives access.
+
+- PhysicsFS for all filesystem access.
   http://www.icculus.org/physfs/
+
+  Note: You need to apply the patch in the diff directory to the stable 1.0
+  release of PhysicsFS to have support for Resident Evil 3 PC archives.
+
 
 2 Command-line parameters
 -------------------------
@@ -33,11 +39,7 @@ Use at your own risks.
   Default is 1.0 .
   Example: -gamma 1.2
 
-"-verbose <value>" to select verbose level.
-  Disabled atm.
-
 "-help" displays a little help.
-
 
 
 3 Controls
@@ -53,7 +55,7 @@ W		reset stage number
 Z		decrement room number
 S		increment room number
 X		reset room number
-E		decremenet camera number
+E		decrement camera number
 D		increment camera number
 C		reset camera number
 R		decrement gamma

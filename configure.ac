@@ -68,6 +68,7 @@ AC_SUBST(PHYSFS_LIBS)
 
 AC_CONFIG_FILES([
 Makefile
+diff/Makefile
 src/Makefile
 ])
 AC_OUTPUT

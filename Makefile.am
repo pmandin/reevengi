@@ -1,2 +1,1 @@
-SUBDIRS = src
-
+SUBDIRS = diff src
