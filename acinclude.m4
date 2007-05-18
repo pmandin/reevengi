@@ -73,7 +73,7 @@ AC_ARG_WITH(zlib,
 [  --with-zlib=DIR root directory path of zlib installation [defaults to
                     /usr/local or /usr if not found in /usr/local]
   --without-zlib to disable zlib usage completely],
-[if test "$withval" != no ; then
+[if test "x$withval" != "xno" ; then
   AC_MSG_RESULT(yes)
   if test -d "$withval"
   then
@@ -85,7 +85,9 @@ else
   AC_MSG_RESULT(no)
 fi])
 
-ZLIB_HOME=$prefix
+if test -z "${ZLIB_HOME}"; then
+	ZLIB_HOME="$prefix"
+fi
 if test ! -f "${ZLIB_HOME}/include/zlib.h"
 then
         ZLIB_HOME=/usr
