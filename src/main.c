@@ -55,12 +55,12 @@
 int main(int argc, char **argv)
 {
 	int quit=0;
-	int reload_bg = 1;
-	int redraw_bg = 1;
+	int reload_bg = 0, redraw_bg = 0;
 	int switch_fs = 0, switch_mode=0;
 	int width = 320, height = 240;
-	int videoflags;
-	SDL_Surface *screen;
+	int videoflags = 0;
+	SDL_Surface *screen, *texture;
+	SDL_Surface *bg;
 
 	if (!CheckParm(argc,argv)) {
 		DisplayUsage();
@@ -103,6 +103,29 @@ int main(int argc, char **argv)
 		case GAME_RE3_PC_DEMO:
 			printf("Resident Evil 3, PC, Demo\n");
 			re3pcdemo_init(&game_state);
+#if 0
+			{
+				SDL_RWops *src;
+				
+				/*src = FS_makeRWops("data_a/pld/pl006.tim");*/
+				/*src = FS_makeRWops("data_a/pld/pl000.tim");*/
+				/*src = FS_makeRWops("data/etc/capcom.tim");*/
+				src = FS_makeRWops("data/etc/eidos.tim");
+				if (src) {
+					texture = background_tim_load(src);
+					if (texture) {
+						printf("Loaded %dx%d image\n", texture->w, texture->h);
+						SDL_SaveBMP(texture, "coincoin.bmp");
+					} else {
+						fprintf(stderr, "Can not load texture from tim\n");
+					}
+				
+					SDL_RWclose(src);
+				} else {
+					fprintf(stderr, "Can not load texture\n");
+				}
+			}
+#endif
 			break;
 		default:
 			printf("No known version\n");
@@ -117,7 +140,7 @@ int main(int argc, char **argv)
 	}
 	atexit(SDL_Quit);
 
-	screen = SDL_SetVideoMode(width, height, 16, 0);
+	screen = SDL_SetVideoMode(width, height, 16, videoflags);
 	if (!screen) {
 		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
 		FS_Shutdown();
@@ -126,6 +149,7 @@ int main(int argc, char **argv)
 	videoflags = screen->flags;
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
 	SDL_SetGamma(gamma, gamma, gamma);
+	bg = NULL;
 
 	while (!quit) {
 		SDL_Event event;
@@ -224,9 +248,7 @@ int main(int argc, char **argv)
 		}
 
 		/* Etat */
-		if (reload_bg) {
-			SDL_Surface *bg;
-
+		if (reload_bg || !bg) {
 			reload_bg = 0;
 
 			/* depack background image */
@@ -235,27 +257,29 @@ int main(int argc, char **argv)
 			/* redraw */
 			bg = game_state.background_surf;
 			if (bg) {
+				redraw_bg = 1;
 				if ((bg->w != width) || (bg->h != height)) {
 					width = bg->w;
 					height = bg->h;
 					switch_mode = 1;
+					redraw_bg = 0;
 				}
 			}
+		}
 
-			if (bg && !switch_mode) {
+		if (bg && redraw_bg) {
 
-				if (SDL_MUSTLOCK(screen)) {
-					SDL_LockSurface(screen);
-				}
-				SDL_BlitSurface(game_state.background_surf, NULL, screen, NULL);
-				if (SDL_MUSTLOCK(screen)) {
-					SDL_UnlockSurface(screen);
-				}
-				if (screen->flags & SDL_DOUBLEBUF) {
-					SDL_Flip(screen);
-				} else {
-					SDL_UpdateRect(screen, 0,0,0,0);
-				}
+			if (SDL_MUSTLOCK(screen)) {
+				SDL_LockSurface(screen);
+			}
+			SDL_BlitSurface(game_state.background_surf, NULL, screen, NULL);
+			if (SDL_MUSTLOCK(screen)) {
+				SDL_UnlockSurface(screen);
+			}
+			if (screen->flags & SDL_DOUBLEBUF) {
+				SDL_Flip(screen);
+			} else {
+				SDL_UpdateRect(screen, 0,0,0,0);
 			}
 		}
 
@@ -268,7 +292,7 @@ int main(int argc, char **argv)
 		if (switch_mode) {
 			screen = SDL_SetVideoMode(width, height, 16, videoflags);
 			videoflags = screen->flags;
-			reload_bg=1;
+			redraw_bg=1;
 			switch_mode=0;
 		}
 
