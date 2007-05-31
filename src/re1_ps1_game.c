@@ -63,11 +63,9 @@ void re1ps1game_loadbackground(void)
 	}
 	sprintf(filepath, re1ps1game_bg, game_state.stage, game_state.stage, game_state.room);
 
-	if (background_bss_load(filepath, CHUNK_SIZE)) {
-		printf("bss: Loaded %s\n", filepath);
-	} else {
-		fprintf(stderr, "bss: Can not load %s\n", filepath);
-	}
+	printf("bss: Loading %s ... %s\n", filepath,
+		background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed"
+	);
 
 	free(filepath);
 }

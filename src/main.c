@@ -55,7 +55,7 @@
 int main(int argc, char **argv)
 {
 	int quit=0;
-	int reload_bg = 0, redraw_bg = 0;
+	int reload_bg = 1, redraw_bg = 0;
 	int switch_fs = 0, switch_mode=0;
 	int width = 320, height = 240;
 	int videoflags = 0;
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
 		}
 
 		/* Etat */
-		if (reload_bg || !bg) {
+		if (reload_bg) {
 			reload_bg = 0;
 
 			/* depack background image */

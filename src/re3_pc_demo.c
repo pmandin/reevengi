@@ -81,11 +81,9 @@ void re3pcdemo_loadbackground(void)
 	}
 	sprintf(filepath, re3pcdemo_bg, game_state.stage, game_state.room, game_state.camera);
 
-	if (re3pcdemo_load_jpg_bg(filepath)) {
-		printf("jpg: Loaded %s\n", filepath);
-	} else {
-		fprintf(stderr, "jpg: Can not load %s\n", filepath);
-	}
+	printf("jpg: Loading %s ... %s\n", filepath,
+		re3pcdemo_load_jpg_bg(filepath) ? "done" : "failed"
+	);
 
 	free(filepath);
 }

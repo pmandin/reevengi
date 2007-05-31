@@ -66,11 +66,9 @@ void re2pcdemo_loadbackground(void)
 	}
 	sprintf(filepath, re2pcdemo_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
-	if (re2pcdemo_load_adt_bg(filepath)) {
-		printf("adt: Loaded %s\n", filepath);
-	} else {
-		fprintf(stderr, "adt: Can not load %s\n", filepath);
-	}
+	printf("adt: Loading %s ... %s\n", filepath,
+		re2pcdemo_load_adt_bg(filepath) ? "done" : "failed"
+	);
 
 	free(filepath);
 }

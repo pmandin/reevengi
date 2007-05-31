@@ -66,11 +66,9 @@ void re1pcgame_loadbackground(void)
 	}
 	sprintf(filepath, re1pcgame_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
-	if (re1pcgame_load_pak_bg(filepath)) {
-		printf("pak: Loaded %s\n", filepath);
-	} else {
-		fprintf(stderr, "pak: Can not load %s\n", filepath);
-	}
+	printf("pak: Loading %s ... %s\n", filepath,
+		re1pcgame_load_pak_bg(filepath) ? "done" : "failed"
+	);
 
 	free(filepath);
 }
