@@ -25,7 +25,7 @@ Use at your own risks.
   http://www.icculus.org/physfs/
 
   Note: You need to apply the patch in the diff directory to the stable 1.0
-  release of PhysicsFS to have support for Resident Evil 3 PC archives.
+  release of PhysicsFS to have support for Resident Evil 3 PC archive files.
 
 
 2 Command-line parameters

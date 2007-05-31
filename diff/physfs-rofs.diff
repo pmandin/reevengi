@@ -1,5 +1,5 @@
-diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exclude=configure --exclude=depcomp --exclude=install-sh --exclude=ltmain.sh --exclude=missing /home/patrice/src/cvs/Icculus/physfs-stable-1.0/archivers/Makefile.am physfs/archivers/Makefile.am
---- /home/patrice/src/cvs/Icculus/physfs-stable-1.0/archivers/Makefile.am	2007-05-05 23:27:01.000000000 +0200
+diff -Naur --exclude=aclocal.m4 --exclude=config.guess --exclude=config.h.in --exclude=config.sub --exclude=configure --exclude=Makefile.in --exclude=depcomp --exclude=ltmain.sh --exclude=install-sh --exclude=missing physfs-orig/archivers/Makefile.am physfs/archivers/Makefile.am
+--- physfs-orig/archivers/Makefile.am	2007-05-31 19:02:08.000000000 +0200
 +++ physfs/archivers/Makefile.am	2007-05-07 17:34:39.000000000 +0200
 @@ -12,6 +12,7 @@
  	wad.c		\
@@ -9,10 +9,10 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
  	zip.c		\
  	qpak.c
  
-diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exclude=configure --exclude=depcomp --exclude=install-sh --exclude=ltmain.sh --exclude=missing /home/patrice/src/cvs/Icculus/physfs-stable-1.0/archivers/rofs.c physfs/archivers/rofs.c
---- /home/patrice/src/cvs/Icculus/physfs-stable-1.0/archivers/rofs.c	1970-01-01 01:00:00.000000000 +0100
-+++ physfs/archivers/rofs.c	2007-05-17 12:21:19.000000000 +0200
-@@ -0,0 +1,923 @@
+diff -Naur --exclude=aclocal.m4 --exclude=config.guess --exclude=config.h.in --exclude=config.sub --exclude=configure --exclude=Makefile.in --exclude=depcomp --exclude=ltmain.sh --exclude=install-sh --exclude=missing physfs-orig/archivers/rofs.c physfs/archivers/rofs.c
+--- physfs-orig/archivers/rofs.c	1970-01-01 01:00:00.000000000 +0100
++++ physfs/archivers/rofs.c	2007-05-31 18:45:39.000000000 +0200
+@@ -0,0 +1,1126 @@
 +/*
 + * Resident Evil 3 rofs<n>.dat support routines for PhysicsFS.
 + *
@@ -43,11 +43,15 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +{
 +    PHYSFS_uint32 startPos;
 +    PHYSFS_uint32 size;
-+    PHYSFS_uint32 rawStartPos; /* offset in archive to file header */
-+    int compression;
-+    int decrypted, depacked; /* status of data */
 +    char name[16+16+16]; /* room to store /dir1/dir2/filename */
-+    char *data; /* buffer to decrypted and depacked file */
++
++    int compression;
++
++    /* Block infos */
++    int num_blocks;
++    PHYSFS_uint32 *block_alloc;
++    PHYSFS_uint32 *block_startkey;
++    PHYSFS_uint32 *block_length;
 +} ROFSentry;
 +
 +/* rofsinfo -> rofsentry level1 -> rofsentry level2 -> rofsentry files */
@@ -61,13 +65,38 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +    ROFSentry *entries;
 +} ROFSinfo;
 +
++typedef struct {
++    /* Current decryption infos */
++    PHYSFS_uint32 curblock, curoffset;
++    PHYSFS_uint32 curkey, blockindex;
++    PHYSFS_uint8 xorkey, baseindex;
++} rofs_decrypt_t;
++
++typedef struct {
++    int state; /* 0=UNPACK_BYTE, 1=UNPACKING_BLOCK,2=ERROR */
++
++    int src_num_bit, src_byte_num;
++    PHYSFS_uint8 src_bytes[2];
++    int lzss_pos, lzss_start, lzss_length;
++    PHYSFS_uint8 *lzss_dict;
++} rofs_depack_t;
++
 +typedef struct
 +{
 +    void *handle;
 +    ROFSentry *entry;
 +    PHYSFS_uint32 curPos;
++
++    rofs_decrypt_t decrypt;
++    rofs_depack_t depack;
 +} ROFSfileinfo;
 +
++typedef struct {
++	unsigned short offset;
++	unsigned short num_keys;
++	unsigned long length;
++	unsigned char ident[8];
++} rofs_dat_file_t;
 +
 +
 +static void ROFS_dirClose(DirHandle *h);
@@ -94,6 +123,8 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +static FileHandle *ROFS_openAppend(DirHandle *h, const char *name);
 +static int ROFS_remove(DirHandle *h, const char *name);
 +static int ROFS_mkdir(DirHandle *h, const char *name);
++
++static PHYSFS_uint8 rofs_decrypt_byte(FileHandle *handle, PHYSFS_uint8 value);
 +
 +const PHYSFS_ArchiveInfo __PHYSFS_ArchiveInfo_ROFS =
 +{
@@ -138,21 +169,149 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +
 +static void ROFS_dirClose(DirHandle *h)
 +{
++    int i;
++
 +    ROFSinfo *info = ((ROFSinfo *) h->opaque);
 +    free(info->filename);
++    for (i=0; i<info->entryCount; i++) {
++        if (info->entries[i].block_alloc) {
++            free(info->entries[i].block_alloc);
++	}
++    }
 +    free(info->entries);
 +    free(info);
 +    free(h);
 +} /* ROFS_dirClose */
 +
-+/*--- Decryption ---*/
++/*--- Decompression ---*/
 +
-+typedef struct {
-+	unsigned short offset;
-+	unsigned short num_keys;
-+	unsigned long length;
-+	unsigned char ident[8];
-+} rofs_dat_file_t;
++static void rofs_depack_block_init(FileHandle *handle)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
++    ROFSentry *entry = finfo->entry;
++    int i;
++
++    if (!finfo->depack.lzss_dict) {
++        finfo->depack.lzss_dict = (PHYSFS_uint8 *) malloc(4096+256);
++    }
++
++    if (finfo->depack.lzss_dict) {
++        for (i=0; i<256; i++) {
++            memset(&(finfo->depack.lzss_dict)[i*16], i, 16);
++        }
++	memset(&(finfo->depack.lzss_dict)[4096], 0, 256);
++    }
++
++    finfo->depack.state = 0;
++    finfo->depack.src_num_bit = 8;
++    finfo->depack.src_byte_num = 1;
++    finfo->depack.src_bytes[0] = 0;
++    finfo->depack.src_bytes[1] = 0;
++    finfo->depack.lzss_pos = 0;
++    finfo->depack.lzss_start = 0;
++    finfo->depack.lzss_length = 0;
++}
++
++#define ROFS_READ_BYTE() \
++{	\
++	PHYSFS_uint8 dummy;	\
++\
++        if (finfo->decrypt.curoffset >= entry->block_length[finfo->decrypt.curblock]) {	\
++		finfo->depack.state = 2;	\
++		break;	\
++	}	\
++\
++	if (__PHYSFS_platformRead(finfo->handle, &dummy, 1, 1) != 1) {	\
++		finfo->depack.state = 2;	\
++		break;	\
++	}	\
++\
++	dummy = rofs_decrypt_byte(handle, dummy);	\
++        finfo->decrypt.curoffset++;	\
++\
++	finfo->depack.src_byte_num ^= 1;	\
++	finfo->depack.src_bytes[finfo->depack.src_byte_num] = dummy;	\
++}
++
++static int rofs_depack_block(FileHandle *handle, void *buffer,
++                             PHYSFS_uint32 srcLength, PHYSFS_uint32 dstLength)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
++    ROFSentry *entry = finfo->entry;
++    PHYSFS_uint8 *dstBuffer = (PHYSFS_uint8 *) buffer;
++    int dstIndex = 0;
++
++    if (!finfo->depack.lzss_dict) {
++        return(0);
++    }
++
++    while ((dstIndex < dstLength) && (finfo->depack.state!=2)) {
++        switch(finfo->depack.state) {
++            case 0:
++	        {
++	            PHYSFS_uint16 src_bitfield;
++
++                    if (finfo->depack.lzss_pos > 4095) {
++                        finfo->depack.lzss_pos = 0;
++                    }
++
++                    if (finfo->depack.src_num_bit==8) {
++                        finfo->depack.src_num_bit = 0;
++			ROFS_READ_BYTE();
++                    }
++
++                    finfo->depack.src_num_bit++;
++
++                    src_bitfield =
++		        finfo->depack.src_bytes[finfo->depack.src_byte_num] << finfo->depack.src_num_bit;
++
++                    ROFS_READ_BYTE();
++
++                    src_bitfield |=
++		        finfo->depack.src_bytes[finfo->depack.src_byte_num] >> (8-finfo->depack.src_num_bit);
++                    
++                    if (src_bitfield & (1<<8)) {
++                        /* Init copy from lzss dict */
++                        int value2;
++
++                        value2 =
++			    finfo->depack.src_bytes[finfo->depack.src_byte_num] << finfo->depack.src_num_bit;
++
++                        ROFS_READ_BYTE();
++
++                        value2 |= 
++			    finfo->depack.src_bytes[finfo->depack.src_byte_num] >> (8-finfo->depack.src_num_bit);
++			
++			finfo->depack.lzss_start = (value2 >> 4) & 0xfff;
++			finfo->depack.lzss_start |= (src_bitfield & 0xff) << 4;
++			finfo->depack.lzss_length = (value2 & 0x0f)+2;
++                        finfo->depack.state = 1;
++                    } else {
++                        /* Copy byte */
++                        dstBuffer[dstIndex++] =
++                            finfo->depack.lzss_dict[finfo->depack.lzss_pos++] =
++                            src_bitfield;
++                    }
++		}
++		break;
++            case 1:
++	    	{
++		    /* Copy from dictionnary */
++                    dstBuffer[dstIndex++] =
++		        finfo->depack.lzss_dict[finfo->depack.lzss_pos++] =
++			finfo->depack.lzss_dict[finfo->depack.lzss_start++];
++		    if (--finfo->depack.lzss_length <= 0) {
++                        finfo->depack.state = 0;
++		    }
++		}
++		break;
++	}
++    }
++
++    return(dstIndex);
++}
++
++/*--- Decryption ---*/
 +
 +const unsigned short base_array[64]={
 +	0x00e6, 0x01a4, 0x00e6, 0x01c5,
@@ -181,96 +340,31 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +	return (*key >> 24);
 +}
 +
-+static void rofs_decrypt_block(unsigned char *src, PHYSFS_uint32 key, PHYSFS_uint32 length)
++static void rofs_decrypt_block_init(FileHandle *handle)
 +{
-+	PHYSFS_uint8 xor_key, base_index;
-+	int i, block_index;
-+	
-+	xor_key = rofs_next_key(&key);
-+	base_index = rofs_next_key(&key) % 0x3f;
++    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
++    ROFSentry *entry = finfo->entry;
 +
-+	block_index = 0;
-+	for (i=0; i<length; i++) {
-+		if (block_index>base_array[base_index]) {
-+			base_index = rofs_next_key(&key) % 0x3f;
-+			xor_key = rofs_next_key(&key);
-+			block_index = 0;
-+		}
-+		src[i] ^= xor_key;
-+		block_index++;
-+	}
++    finfo->decrypt.curoffset = 0;
++    finfo->decrypt.curkey = entry->block_startkey[finfo->decrypt.curblock];
++    finfo->decrypt.blockindex = 0;
++    finfo->decrypt.xorkey = rofs_next_key(&finfo->decrypt.curkey);
++    finfo->decrypt.baseindex = rofs_next_key(&finfo->decrypt.curkey) % 0x3f;
 +}
 +
-+static int rofs_decrypt(void *fh, ROFSentry *entry)
++static PHYSFS_uint8 rofs_decrypt_byte(FileHandle *handle, PHYSFS_uint8 value)
 +{
-+    PHYSFS_sint64 location, offset, file_offset;
-+    rofs_dat_file_t file_header;
-+    int rc = 0, i, data_offset;
-+    PHYSFS_uint32 *array_alloc = NULL;
-+    PHYSFS_uint32 *array_keys, *array_length;
++    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
++    ROFSentry *entry = finfo->entry;
 +
-+    /* Save current position */
-+    location = __PHYSFS_platformTell(fh);
-+
-+    __PHYSFS_platformSeek(fh, entry->rawStartPos);
-+
-+    /* Read header */
-+    if (__PHYSFS_platformRead(fh, &file_header, sizeof(rofs_dat_file_t), 1) != 1)
-+        goto rofs_decrypt_failed;
-+
-+    file_header.num_keys = PHYSFS_swapULE16(file_header.num_keys);
-+    file_header.offset = PHYSFS_swapULE16(file_header.offset);
-+
-+    /* Alloc mem to read array of keys */
-+    array_alloc = (PHYSFS_uint32 *) malloc(file_header.num_keys*2*sizeof(PHYSFS_uint32));
-+    if (!array_alloc)
-+        goto rofs_decrypt_failed;
-+
-+    /* Read keys */
-+    if (__PHYSFS_platformRead(fh, array_alloc, sizeof(PHYSFS_uint32), file_header.num_keys*2) != file_header.num_keys*2)
-+        goto rofs_decrypt_failed;
-+
-+    array_keys = array_alloc;
-+    array_length = &array_alloc[file_header.num_keys];
-+
-+    file_offset = entry->rawStartPos + file_header.offset;
-+    data_offset = 0;
-+    rc = 1;
-+    for (i=0; i<file_header.num_keys; i++) {
-+        array_keys[i] = PHYSFS_swapULE32(array_keys[i]);
-+        array_length[i] = PHYSFS_swapULE32(array_length[i]);
-+
-+        if (!__PHYSFS_platformSeek(fh, file_offset)) {
-+            rc = 0;
-+            break;
-+	}
-+
-+        if (__PHYSFS_platformRead(fh, &entry->data[data_offset], array_length[i], 1) != 1) {
-+            rc = 0;
-+            break;
-+	}
-+
-+        rofs_decrypt_block(&entry->data[data_offset], array_keys[i], array_length[i]);
-+
-+	file_offset += array_length[i];
-+	data_offset += array_length[i];
++    if (finfo->decrypt.blockindex>base_array[finfo->decrypt.baseindex]) {
++        finfo->decrypt.baseindex = rofs_next_key(&finfo->decrypt.curkey) % 0x3f;
++        finfo->decrypt.xorkey = rofs_next_key(&finfo->decrypt.curkey);
++        finfo->decrypt.blockindex = 0;
 +    }
++    finfo->decrypt.blockindex++;
 +
-+rofs_decrypt_failed:
-+    if (array_alloc)
-+        free(array_alloc);
-+
-+    /* Restore location */
-+    __PHYSFS_platformSeek(fh, location);
-+
-+    return rc;
-+}
-+
-+/*--- Decompression ---*/
-+
-+static int rofs_depack(void *fh, ROFSentry *entry)
-+{
-+	return 0;
++    return (value ^ finfo->decrypt.xorkey);
 +}
 +
 +static PHYSFS_sint64 ROFS_read(FileHandle *handle, void *buffer,
@@ -280,45 +374,58 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +    ROFSentry *entry = finfo->entry;
 +    PHYSFS_uint32 bytesLeft = entry->size - finfo->curPos;
 +    PHYSFS_uint32 objsLeft = (bytesLeft / objSize);
-+    PHYSFS_sint64 rc;
++    PHYSFS_uint8 *dstBuffer = (PHYSFS_uint8 *) buffer;
++    int srcLength, dstLength, objCountRead;
 +
 +    if (objsLeft < objCount)
 +        objCount = objsLeft;
 +
-+	/*printf("rofs_read(%d,%d),curPos=%d\n",objSize,objCount, finfo->curPos);*/
++    dstLength = objCount * objSize;
++    while (dstLength>0) {
++        /* Limit to number of bytes to read */
++        srcLength = entry->block_length[finfo->decrypt.curblock] - finfo->decrypt.curoffset;
 +
-+    /* Allocate buffer if needed */
-+    if (!entry->data) {
-+        entry->data = calloc(1, entry->size);
-+        if (!entry->data) {
-+            return(0);
++        if (entry->compression) {
++            /* read max srcLength, or depack max 32K */
++            int dstDepacked;
++
++            /* Read till end of current block */
++            dstDepacked = rofs_depack_block(handle, dstBuffer, srcLength, dstLength);
++
++            dstBuffer += dstDepacked;
++            finfo->curPos += dstDepacked;
++            dstLength -= dstDepacked;
++	} else {
++            int i;
++
++            if (srcLength > dstLength) {
++                srcLength = dstLength;
++            }
++
++            if (__PHYSFS_platformRead(finfo->handle, dstBuffer, srcLength, 1) != 1) {
++                return(0);
++            }
++
++            for (i=0; i<srcLength; i++) {
++                *dstBuffer++ = rofs_decrypt_byte(handle, *dstBuffer);        
++            }
++
++            finfo->decrypt.curoffset += srcLength;
++            finfo->curPos += srcLength;
++            dstLength -= srcLength;
 +	}
-+	/*printf("rofs_read(): allocated %d bytes at 0x%08x\n", entry->size, entry->data);*/
++
++        /* Next block ? */
++        if (finfo->decrypt.curoffset >= entry->block_length[finfo->decrypt.curblock]) {
++            finfo->decrypt.curblock++;
++            rofs_decrypt_block_init(handle);
++            if (entry->compression) {
++                rofs_depack_block_init(handle);
++            }
++        }
 +    }
 +
-+    /* Decrypt if needed */
-+    if (!entry->decrypted) {
-+	/*printf("rofs_read(): decrypt needed\n");*/
-+        entry->decrypted = rofs_decrypt(finfo->handle, entry);
-+        if (!entry->decrypted) {
-+            return(0);
-+	}
-+    }
-+
-+    /* Depack if needed */
-+    if (entry->compression && !entry->depacked) {
-+	/*printf("rofs_read(): depack needed\n");*/
-+        entry->depacked = rofs_depack(finfo->handle, entry);
-+        if (!entry->depacked) {
-+            return(0);
-+	}
-+    }
-+
-+    rc = objCount;
-+    memcpy(buffer, &entry->data[finfo->curPos], objSize * objCount);
-+    finfo->curPos += (PHYSFS_uint32) (objSize * rc);
-+
-+    return(rc);
++    return(objCount - (dstLength / objSize));
 +} /* ROFS_read */
 +
 +
@@ -343,16 +450,87 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +} /* ROFS_tell */
 +
 +
++static int rofs_seek_start(FileHandle *handle)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
++    ROFSentry *entry = finfo->entry;
++
++    /* Init decryption */
++    finfo->decrypt.curblock = 0;
++    rofs_decrypt_block_init(handle);
++
++    /* Init decompression */
++    if (entry->compression) {
++        rofs_depack_block_init(handle);
++    }
++
++    finfo->curPos = 0;
++
++    return __PHYSFS_platformSeek(finfo->handle, entry->startPos);
++}
++
++
++static int rofs_seek_relative(FileHandle *handle, PHYSFS_uint64 rel_offset)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
++    ROFSentry *entry = finfo->entry;
++    int i, srcLength;
++
++    /* Number of source bytes to read till next block */
++    srcLength = entry->block_length[finfo->decrypt.curblock] - finfo->decrypt.curoffset;
++
++    /* Skip to next block ? */
++    while (rel_offset > srcLength) {
++        finfo->decrypt.curblock++;
++        rofs_decrypt_block_init(handle);
++        if (entry->compression) {
++            rofs_depack_block_init(handle);
++        }
++
++        rel_offset -= srcLength;
++        finfo->curPos += srcLength;
++        srcLength = entry->block_length[finfo->decrypt.curblock] - finfo->decrypt.curoffset;
++    }
++
++    /* Now skip remaining bytes */
++    if (entry->compression) {
++        for (i=0; i<rel_offset; i++) {
++            PHYSFS_uint8 dummy;
++            if (!rofs_depack_block(handle, &dummy, 32768, 1)) {
++                return(0);
++	    }
++        }
++    } else {
++        /* Run decryption steps */
++        for (i=0; i<rel_offset; i++) {
++            PHYSFS_uint8 dummy;
++            if (__PHYSFS_platformRead(finfo->handle, &dummy, 1, 1) != 1) {
++                return(0);
++            }
++            dummy = rofs_decrypt_byte(handle, dummy);
++        }
++        finfo->curPos += rel_offset;
++    }
++
++    return(1);
++}
++
++
 +static int ROFS_seek(FileHandle *handle, PHYSFS_uint64 offset)
 +{
 +    ROFSfileinfo *finfo = (ROFSfileinfo *) (handle->opaque);
 +    ROFSentry *entry = finfo->entry;
-+    int rc;
++    int rc = 1;
 +
 +    BAIL_IF_MACRO(offset < 0, ERR_INVALID_ARGUMENT, 0);
 +    BAIL_IF_MACRO(offset >= entry->size, ERR_PAST_EOF, 0);
 +
-+    finfo->curPos = (PHYSFS_uint32) offset;
++    if (offset < finfo->curPos) {
++        rc = rofs_seek_start(handle);
++    }
++    if (rc) {
++        rc = rofs_seek_relative(handle, offset - finfo->curPos);
++    }
 +
 +    return(rc);
 +} /* ROFS_seek */
@@ -370,11 +548,9 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +    ROFSfileinfo *finfo = ((ROFSfileinfo *) handle->opaque);
 +    ROFSentry *entry = finfo->entry;
 +    BAIL_IF_MACRO(!__PHYSFS_platformClose(finfo->handle), NULL, 0);
-+    if (entry->data) {
-+	/*printf("rofs: fileclose(0x%08x)\n", entry->data);*/
-+        free(entry->data);
-+        entry->data = NULL;
-+        entry->depacked = entry->decrypted = 0;
++    if (finfo->depack.lzss_dict) {
++        free(finfo->depack.lzss_dict);
++	finfo->depack.lzss_dict = NULL;
 +    }
 +    free(finfo);
 +    free(handle);
@@ -382,18 +558,18 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +} /* ROFS_fileClose */
 +
 +/* All rofs<n>.dat files start with this */
-+static const char rofs_id[14]={
++static const char rofs_id[21]={
 +	3, 0, 0, 0,
 +	1, 0, 0, 0,
 +	4, 0, 0, 0,
-+	0, 1
++	0, 1, 1, 0,
++	0, 4, 0, 0,
++	0
 +};
 +
-+static int rofs_open(const char *filename, int forWriting,
-+                    void **fh, PHYSFS_uint32 *count)
++static int rofs_open(const char *filename, int forWriting, void **fh)
 +{
-+    PHYSFS_uint8 buf[14];
-+    PHYSFS_uint32 num_files;
++    PHYSFS_uint8 buf[21];
 +
 +    *fh = NULL;
 +    BAIL_IF_MACRO(forWriting, ERR_ARC_IS_READ_ONLY, 0);
@@ -402,24 +578,14 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +    BAIL_IF_MACRO(*fh == NULL, NULL, 0);
 +    
 +    /* Check if known header */
-+    if (__PHYSFS_platformRead(*fh, buf, 14, 1) != 1)
++    if (__PHYSFS_platformRead(*fh, buf, sizeof(rofs_id), 1) != 1)
 +        goto openRofs_failed;
 +
-+    if (memcmp(buf, rofs_id, 14) != 0)
++    if (memcmp(buf, rofs_id, sizeof(rofs_id)) != 0)
 +    {
 +        __PHYSFS_setError(ERR_UNSUPPORTED_ARCHIVE);
 +        goto openRofs_failed;
 +    } /* if */
-+
-+    /* Seek to offset 0x1000 to read number of files */
-+    if (!__PHYSFS_platformSeek(*fh, 0x1000))
-+        goto openRofs_failed;
-+
-+    if (__PHYSFS_platformRead(*fh, &num_files, sizeof (PHYSFS_uint32), 1) != 1)
-+        goto openRofs_failed;
-+
-+    *count = PHYSFS_swapULE32(num_files);
-+	/*printf("rofs: %d files in archive\n", *count);*/
 +
 +    return(1);
 +
@@ -427,7 +593,6 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +    if (*fh != NULL)
 +        __PHYSFS_platformClose(*fh);
 +
-+    *count = -1;
 +    *fh = NULL;
 +    return(0);
 +} /* rofs_open */
@@ -436,8 +601,7 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +static int ROFS_isArchive(const char *filename, int forWriting)
 +{
 +    void *fh;
-+    PHYSFS_uint32 fileCount;
-+    int retval = rofs_open(filename, forWriting, &fh, &fileCount);
++    int retval = rofs_open(filename, forWriting, &fh);
 +
 +    if (fh != NULL)
 +        __PHYSFS_platformClose(fh);
@@ -484,16 +648,7 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +
 +static int rofs_load_header(void *fh, ROFSinfo *info)
 +{
-+    PHYSFS_sint64 location, loclevel2;
-+
-+    /* Save current position */
-+    location = __PHYSFS_platformTell(fh);
-+
-+    /* Read directory name to be appended to all files */
-+    if (__PHYSFS_platformSeek(fh, 0x15) != 1) {
-+        __PHYSFS_platformClose(fh);
-+        return(0);
-+    }
++    PHYSFS_uint32 dir_location, dir_length;
 +
 +    /* Till now all tested rofs.dat file archives have 2 levels */
 +    if (!rofs_read_filename(fh, info->dirs[0].name, sizeof(info->dirs[0].name))) {
@@ -501,24 +656,29 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +        return(0);
 +    }
 +
-+    loclevel2 = 30 + strlen(info->dirs[0].name);
-+    if (__PHYSFS_platformSeek(fh, loclevel2) != 1)
++    if (__PHYSFS_platformRead(fh, &dir_location, sizeof(dir_location), 1) != 1)
 +    {
 +        __PHYSFS_platformClose(fh);
 +        return(0);
 +    } /* if */
++
++    dir_location = PHYSFS_swapULE32(dir_location) << 3;
++
++    if (__PHYSFS_platformRead(fh, &dir_length, sizeof(dir_length), 1) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    dir_length = PHYSFS_swapULE32(dir_length);
 +
 +    if (!rofs_read_filename(fh, info->dirs[1].name, sizeof(info->dirs[1].name))) {
 +        __PHYSFS_platformClose(fh);
 +        return(0);
 +    }
 +
-+    /* Back to directory */
-+    if (__PHYSFS_platformSeek(fh, location) != 1)
-+    {
-+        __PHYSFS_platformClose(fh);
-+        return(0);
-+    } /* if */
++    info->dirs[0].startPos = info->dirs[1].startPos = dir_location;
++    info->dirs[0].size = info->dirs[1].size = dir_length;
 +
 +    return(1);
 +}
@@ -532,47 +692,62 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +    char *ptr;
 +    char compstring[8];
 +    char shortname[16];
-+    int i;
++    int i, retval;
 +
-+    BAIL_IF_MACRO(!rofs_open(name, forWriting, &fh, &fileCount), NULL, 0);
++    BAIL_IF_MACRO(!rofs_open(name, forWriting, &fh), NULL, 0);
 +
 +    if (!rofs_load_header(fh, info)) {
 +        __PHYSFS_platformClose(fh);
 +        return(0);
 +    }
 +
-+    info->entryCount = fileCount;
-+    info->entries = (ROFSentry *) malloc(sizeof (ROFSentry) * fileCount);
++    if (__PHYSFS_platformSeek(fh, info->dirs[0].startPos) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    if (__PHYSFS_platformRead(fh, &info->entryCount, sizeof(info->entryCount), 1) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    info->entryCount = PHYSFS_swapULE32(info->entryCount);
++    fileCount = info->entryCount;
++
++    info->entries = (ROFSentry *) calloc(fileCount, sizeof (ROFSentry));
 +    if (info->entries == NULL)
 +    {
 +        __PHYSFS_platformClose(fh);
 +        BAIL_MACRO(ERR_OUT_OF_MEMORY, 0);
 +    } /* if */
 +
++    retval = 1;
 +    for (entry = info->entries; fileCount > 0; fileCount--, entry++)
 +    {
-+        if (__PHYSFS_platformRead(fh, &entry->rawStartPos, sizeof(entry->rawStartPos), 1) != 1)
++        rofs_dat_file_t fileHeader;
++
++        if (__PHYSFS_platformRead(fh, &entry->startPos, sizeof(entry->startPos), 1) != 1)
 +        {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
++            retval = 0;
++	    break;
 +        } /* if */
 +
-+	entry->startPos = 0;
-+
-+        entry->rawStartPos = PHYSFS_swapULE32(entry->rawStartPos) << 3;
++        entry->startPos = PHYSFS_swapULE32(entry->startPos) << 3;
 +
 +        if (__PHYSFS_platformRead(fh, &entry->size, sizeof(entry->size), 1) != 1)
 +        {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
++            retval = 0;
++	    break;
 +        } /* if */
 +
-+        entry->size = 0; /* Not real size */
++        entry->size = 0; /* This was compressed size */
 +
 +        /* Read NULL terminated string */
 +        if (!rofs_read_filename(fh, shortname, sizeof(shortname))) {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
++            retval = 0;
++	    break;
 +        }
 +
 +        /* Generate long filename */
@@ -582,51 +757,77 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +        /* Now go read real file size */
 +        location = __PHYSFS_platformTell(fh);
 +
-+        if (__PHYSFS_platformSeek(fh, entry->rawStartPos + 4) != 1)
++        if (__PHYSFS_platformSeek(fh, entry->startPos) != 1)
 +        {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
++            retval = 0;
++	    break;
 +        } /* if */
 +
-+        if (__PHYSFS_platformRead(fh, &entry->size, sizeof(entry->size), 1) != 1)
++        if (__PHYSFS_platformRead(fh, &fileHeader, sizeof(fileHeader), 1) != 1)
 +        {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
++            retval = 0;
++	    break;
 +        } /* if */
 +
-+        entry->size = PHYSFS_swapULE32(entry->size);
-+	/*printf("rofs_load_entries: %s, %d bytes\n", shortname, entry->size);*/
-+
-+	/* Read compression string */
-+        if (__PHYSFS_platformRead(fh, compstring, sizeof(compstring), 1) != 1)
-+        {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
-+        } /* if */
-+
++        fileHeader.offset = PHYSFS_swapULE16(fileHeader.offset);
++	fileHeader.num_keys = PHYSFS_swapULE16(fileHeader.num_keys);
++	fileHeader.length = PHYSFS_swapULE32(fileHeader.length);
 +	for (i=0; i<8; i++) {
-+		compstring[i] ^= compstring[7];
++		fileHeader.ident[i] ^= fileHeader.ident[7];
 +	}
 +
-+	entry->compression = (strcmp("Hi_Comp", compstring)==0);
++        entry->size = fileHeader.length;
 +
-+	entry->decrypted =
-+	entry->depacked = 0;
-+	entry->data = NULL;
++	/* Decryption info */
++	entry->num_blocks = fileHeader.num_keys;
++	entry->block_alloc = (PHYSFS_uint32 *) calloc(fileHeader.num_keys, 2*sizeof(PHYSFS_uint32));
++	if (!entry->block_alloc) {
++            retval = 0;
++	    break;
++	}
++	
++        if (__PHYSFS_platformRead(fh, entry->block_alloc, fileHeader.num_keys*2*sizeof(PHYSFS_uint32), 1) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++
++	entry->block_startkey = entry->block_alloc;
++	entry->block_length = &entry->block_alloc[fileHeader.num_keys];
++	for (i=0; i<entry->num_blocks; i++) {
++		entry->block_startkey[i] = PHYSFS_swapULE32(entry->block_startkey[i]);
++		entry->block_length[i] = PHYSFS_swapULE32(entry->block_length[i]);
++	}
++
++	/* Decompression info */
++	entry->compression = (strcmp("Hi_Comp", fileHeader.ident)==0);
++
++	/* Fix offset to start of encrypted/packed data */
++	entry->startPos += fileHeader.offset;
 +
 +        /* Back to directory */
 +        if (__PHYSFS_platformSeek(fh, location) != 1)
 +        {
-+            __PHYSFS_platformClose(fh);
-+            return(0);
++            retval = 0;
++	    break;
 +        } /* if */
 +    } /* for */
 +
 +    __PHYSFS_platformClose(fh);
++    if (retval) {
++        __PHYSFS_sort(info->entries, info->entryCount, rofs_entry_cmp,
++	    rofs_entry_swap);
++    } else {
++        /* Cleanup */
++        for (i=0; i<info->entryCount; i++) {
++            if (info->entries[i].block_alloc) {
++                free(info->entries[i].block_alloc);
++		info->entries[i].block_alloc = NULL;
++	    }
++	}
++    }
 +
-+    __PHYSFS_sort(info->entries, info->entryCount,
-+                  rofs_entry_cmp, rofs_entry_swap);
-+    return(1);
++    return(retval);
 +} /* rofs_load_entries */
 +
 +
@@ -884,7 +1085,7 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +
 +    retval = (FileHandle *) malloc(sizeof (FileHandle));
 +    BAIL_IF_MACRO(retval == NULL, ERR_OUT_OF_MEMORY, NULL);
-+    finfo = (ROFSfileinfo *) malloc(sizeof (ROFSfileinfo));
++    finfo = (ROFSfileinfo *) calloc(1, sizeof (ROFSfileinfo));
 +    if (finfo == NULL)
 +    {
 +        free(retval);
@@ -900,11 +1101,14 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +        return(NULL);
 +    } /* if */
 +
-+    finfo->curPos = 0;
 +    finfo->entry = entry;
++
 +    retval->opaque = (void *) finfo;
 +    retval->funcs = &__PHYSFS_FileFunctions_ROFS;
 +    retval->dirHandle = h;
++
++    rofs_seek_start(retval);
++
 +    return(retval);
 +} /* ROFS_openRead */
 +
@@ -935,9 +1139,8 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
 +#endif  /* defined PHYSFS_SUPPORTS_ROFS */
 +
 +/* end of rofs.c ... */
-+
-diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exclude=configure --exclude=depcomp --exclude=install-sh --exclude=ltmain.sh --exclude=missing /home/patrice/src/cvs/Icculus/physfs-stable-1.0/configure.in physfs/configure.in
---- /home/patrice/src/cvs/Icculus/physfs-stable-1.0/configure.in	2007-05-05 23:27:08.000000000 +0200
+diff -Naur --exclude=aclocal.m4 --exclude=config.guess --exclude=config.h.in --exclude=config.sub --exclude=configure --exclude=Makefile.in --exclude=depcomp --exclude=ltmain.sh --exclude=install-sh --exclude=missing physfs-orig/configure.in physfs/configure.in
+--- physfs-orig/configure.in	2007-05-31 19:02:11.000000000 +0200
 +++ physfs/configure.in	2007-05-07 17:36:23.000000000 +0200
 @@ -172,6 +172,15 @@
  fi
@@ -955,8 +1158,8 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
  dnl Check for qpak archiver inclusion...
  AC_ARG_ENABLE(qpak,
  [  --enable-qpak              enable Quake PAK support [default=yes]],
-diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exclude=configure --exclude=depcomp --exclude=install-sh --exclude=ltmain.sh --exclude=missing /home/patrice/src/cvs/Icculus/physfs-stable-1.0/physfs.c physfs/physfs.c
---- /home/patrice/src/cvs/Icculus/physfs-stable-1.0/physfs.c	2007-05-05 23:27:08.000000000 +0200
+diff -Naur --exclude=aclocal.m4 --exclude=config.guess --exclude=config.h.in --exclude=config.sub --exclude=configure --exclude=Makefile.in --exclude=depcomp --exclude=ltmain.sh --exclude=install-sh --exclude=missing physfs-orig/physfs.c physfs/physfs.c
+--- physfs-orig/physfs.c	2007-05-31 19:02:11.000000000 +0200
 +++ physfs/physfs.c	2007-05-14 21:48:04.000000000 +0200
 @@ -74,6 +74,11 @@
  extern const DirFunctions         __PHYSFS_DirFunctions_MVL;
@@ -992,8 +1195,8 @@ diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exc
  #if (defined PHYSFS_SUPPORTS_WAD)
      &__PHYSFS_DirFunctions_WAD,
  #endif
-diff -Naur --exclude=Makefile.in --exclude=aclocal.m4 --exclude='config.*' --exclude=configure --exclude=depcomp --exclude=install-sh --exclude=ltmain.sh --exclude=missing /home/patrice/src/cvs/Icculus/physfs-stable-1.0/physfs_internal.h physfs/physfs_internal.h
---- /home/patrice/src/cvs/Icculus/physfs-stable-1.0/physfs_internal.h	2007-05-05 23:27:08.000000000 +0200
+diff -Naur --exclude=aclocal.m4 --exclude=config.guess --exclude=config.h.in --exclude=config.sub --exclude=configure --exclude=Makefile.in --exclude=depcomp --exclude=ltmain.sh --exclude=install-sh --exclude=missing physfs-orig/physfs_internal.h physfs/physfs_internal.h
+--- physfs-orig/physfs_internal.h	2007-05-31 19:02:11.000000000 +0200
 +++ physfs/physfs_internal.h	2007-05-07 18:09:55.000000000 +0200
 @@ -52,6 +52,7 @@
   #define QPAK_ARCHIVE_DESCRIPTION "Quake I/II format"

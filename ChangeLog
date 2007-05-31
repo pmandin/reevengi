@@ -1,3 +1,7 @@
+v 0.3
+
+- Don't reload image if switching between fullscreen and windowed.
+
 v 0.2
 
 - Replaced all filesystems access by Physfs library, also used to access
