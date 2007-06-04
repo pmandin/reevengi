@@ -49,19 +49,24 @@ Use at your own risks.
 ------------
 
 ESC		quit
+F1		screenshot
+Alt+Enter	toggle between fullscreen and windowed mode.
+
 A		decrement stage number
 Q		increment stage number
 W		reset stage number
+
 Z		decrement room number
 S		increment room number
 X		reset room number
+
 E		decrement camera number
 D		increment camera number
 C		reset camera number
+
 R		decrement gamma
 F		increment gamma
 V		reset gamma
-Alt+Enter	toggle between fullscreen and windowed mode.
 
 
 4 Supported games

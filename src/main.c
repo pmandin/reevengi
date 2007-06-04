@@ -50,6 +50,14 @@
 #define KEY_GAMMA_UP		SDLK_f
 #define KEY_GAMMA_RESET		SDLK_v
 
+/*--- Variables ---*/
+
+int num_screenshot = 0;
+
+/*--- Functions prototypes ---*/
+
+void screenshot(SDL_Surface *screen);
+
 /*--- Functions ---*/
 
 int main(int argc, char **argv)
@@ -164,6 +172,9 @@ int main(int argc, char **argv)
 					switch (event.key.keysym.sym) {
 						case SDLK_ESCAPE:
 							quit=1;
+							break;
+						case SDLK_F1:
+							screenshot(screen);
 							break;
 						case SDLK_RETURN:
 							if (event.key.keysym.mod & KMOD_ALT) {
@@ -304,4 +315,14 @@ int main(int argc, char **argv)
 	FS_Shutdown();
 
 	return 0;
+}
+
+void screenshot(SDL_Surface *screen)
+{
+	char filename[16];
+
+	sprintf(filename, "%08d.bmp", num_screenshot++);
+
+	printf("Screenshot %s: %s\n", filename,
+		SDL_SaveBMP(screen, filename)==0 ? "done" : "failed");
 }
