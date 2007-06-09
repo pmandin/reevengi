@@ -129,6 +129,10 @@ static void state_detect(void)
 		game_state.version = GAME_RE1_PC_GAME;
 	} else if (game_file_exists("sles_025.30")) {
 		game_state.version = GAME_RE3_PS1_GAME;
+	} else if (game_file_exists("sles_009.73")) {
+		game_state.version = GAME_RE2_PS1_GAME_LEON;
+	} else if (game_file_exists("sles_109.73")) {
+		game_state.version = GAME_RE2_PS1_GAME_CLAIRE;
 	} else if (game_file_exists("slps_009.99")) {
 		game_state.version = GAME_RE2_PS1_DEMO;
 	} else if (game_file_exists("sles_002.27")) {
