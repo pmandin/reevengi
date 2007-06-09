@@ -1,7 +1,7 @@
 /*
-	RE1
+	RE2
 	PS1
-	Game
+	Demo, Game Leon, Game Claire
 
 	Copyright (C) 2007	Patrice Mandin
 
@@ -20,14 +20,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RE1PS1GAME_H
-#define RE1PS1GAME_H
+#ifndef RE2PS1_H
+#define RE2PS1_H
 
 /*--- Functions ---*/
 
-void re1ps1game_init(state_t *game_state);
-void re1ps1game_shutdown(void);
+void re2ps1_init(state_t *game_state);
+void re2ps1_shutdown(void);
 
-void re1ps1game_loadbackground(void);
+void re2ps1_loadbackground(void);
 
-#endif /* RE1PS1GAME_H */
+#endif /* RE2PS1_H */

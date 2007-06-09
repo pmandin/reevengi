@@ -27,10 +27,9 @@
 
 #include "state.h"
 #include "parameters.h"
-#include "re1_ps1_demo.h"
-#include "re1_ps1_game.h"
+#include "re1_ps1.h"
 #include "re1_pc_game.h"
-#include "re2_ps1_demo.h"
+#include "re2_ps1.h"
 #include "re2_pc_demo.h"
 #include "re3_ps1_game.h"
 #include "re3_pc_demo.h"
@@ -86,15 +85,23 @@ int main(int argc, char **argv)
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
 			printf("Resident Evil, PS1, Demo\n");
-			re1ps1demo_init(&game_state);
+			re1ps1_init(&game_state);
 			break;
 		case GAME_RE1_PS1_GAME:
 			printf("Resident Evil, PS1, Game\n");
-			re1ps1game_init(&game_state);
+			re1ps1_init(&game_state);
 			break;
 		case GAME_RE2_PS1_DEMO:
 			printf("Resident Evil 2, PS1, Demo\n");
-			re2ps1demo_init(&game_state);
+			re2ps1_init(&game_state);
+			break;
+		case GAME_RE2_PS1_GAME_LEON:
+			printf("Resident Evil 2, PS1, Game Leon\n");
+			re2ps1_init(&game_state);
+			break;
+		case GAME_RE2_PS1_GAME_CLAIRE:
+			printf("Resident Evil 2, PS1, Game Claire\n");
+			re2ps1_init(&game_state);
 			break;
 		case GAME_RE3_PS1_GAME:
 			printf("Resident Evil 3, PS1, Game\n");

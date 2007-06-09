@@ -1,7 +1,7 @@
 /*
-	RE1
+	RE2
 	PS1
-	Demo
+	Demo, Game Leon, Game Claire
 
 	Copyright (C) 2007	Patrice Mandin
 
@@ -23,45 +23,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL.h>
+
 #include "state.h"
-#include "re1_ps1_demo.h"
+#include "re2_ps1.h"
 #include "background_bss.h"
 #include "parameters.h"
 
 /*--- Defines ---*/
 
-#define CHUNK_SIZE 32768
+#define CHUNK_SIZE 65536
 
 /*--- Types ---*/
 
 /*--- Variables ---*/
 
-static const char *re1ps1demo_bg = "psx/stage%d/room%d%02x.bss";
+static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
 
 /*--- Functions prototypes ---*/
 
 /*--- Functions ---*/
 
-void re1ps1demo_init(state_t *game_state)
+void re2ps1_init(state_t *game_state)
 {
-	game_state->load_background = re1ps1demo_loadbackground;
-	game_state->shutdown = re1ps1demo_shutdown;
+	game_state->load_background = re2ps1_loadbackground;
+	game_state->shutdown = re2ps1_shutdown;
 }
 
-void re1ps1demo_shutdown(void)
+void re2ps1_shutdown(void)
 {
 }
 
-void re1ps1demo_loadbackground(void)
+void re2ps1_loadbackground(void)
 {
 	char *filepath;
 
-	filepath = malloc(strlen(re1ps1demo_bg)+8);
+	filepath = malloc(strlen(re2ps1_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1ps1demo_bg, game_state.stage, game_state.stage, game_state.room);
+	sprintf(filepath, re2ps1_bg, game_state.stage, game_state.room);
 
 	printf("bss: Loading %s ... %s\n", filepath,
 		background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed"
