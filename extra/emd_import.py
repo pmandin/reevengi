@@ -45,7 +45,38 @@ import Blender, meshtools
 import struct, StringIO
 from Blender import NMesh
 
+gRelPos = []
+
+def readMeshRelativePosition(file, start_offset):
+	global gRelPos
+
+	offset1 = struct.unpack("<H",file.read(2))[0]
+	offset2 = struct.unpack("<H",file.read(2))[0]
+	count = struct.unpack("<H",file.read(2))[0]
+	size = struct.unpack("<H",file.read(2))[0]
+
+	if offset2>8:
+		# Read relative positions
+		rel1_pos = []
+		for i in range(count):
+			relx = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+			rely = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+			relz = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+			rel1_pos.append([relx,rely,relz])
+
+		gRelPos = rel1_pos
+
 def add_mesh(file, start_offset, num_mesh):
+	global gRelPos
+
+	rx = (num_mesh-len(gRelPos)) * 10.0
+	ry = 0
+	rz = 0
+	if num_mesh<len(gRelPos):
+		rx = gRelPos[num_mesh][0]
+		ry = gRelPos[num_mesh][1]
+		rz = gRelPos[num_mesh][2]
+
 	tri_vtx_offset = start_offset + struct.unpack("<L",file.read(4))[0]
 	tri_vtx_count = struct.unpack("<L",file.read(4))[0]
 	tri_nor_offset = start_offset + struct.unpack("<L",file.read(4))[0]
@@ -68,11 +99,13 @@ def add_mesh(file, start_offset, num_mesh):
 		file.seek(tri_vtx_offset)
 		for i in range(tri_vtx_count):
 			#print "Reading triangle vertex %d" % i
-			x = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			y = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			y += num_mesh * 4.0
-			z = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			w = float(struct.unpack("<h",file.read(2))[0]) / 256.0
+			x = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+			x += rx
+			y = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+			y += ry
+			z = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+			z += rz
+			w = float(struct.unpack("<h",file.read(2))[0]) / 100.0
 			mesh.verts.append(NMesh.Vert(x,y,z))
 
 		# nor_list = []
@@ -106,21 +139,24 @@ def add_mesh(file, start_offset, num_mesh):
 			file.seek(quad_vtx_offset)
 			for i in range(quad_vtx_count):
 				#print "Reading quad vertex %d" % i
-				x = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-				y = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-				y += num_mesh * 4.0
-				z = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-				w = float(struct.unpack("<h",file.read(2))[0]) / 256.0
+				x = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+				x += rx
+				y = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+				y += ry
+				z = float(struct.unpack("<h",file.read(2))[0]) / 100.0
+				z += rz
+				w = float(struct.unpack("<h",file.read(2))[0]) / 100.0
 				mesh.verts.append(NMesh.Vert(x,y,z))
 
 		# nor_list = []
-		# file.seek(quad_nor_offset)
-		# for i in range(tri_quad_count):
-		# 	x = struct.unpack("<H",file.read(2))[0]
-		# 	y = struct.unpack("<H",file.read(2))[0]
-		# 	z = struct.unpack("<H",file.read(2))[0]
-		# 	w = struct.unpack("<H",file.read(2))[0]
-		# 	nor_list.append(x,y,z)
+		# if (quad_nor_offset != tri_nor_offset) or (quad_nor_count != tri_nor_count):
+		# 	file.seek(quad_nor_offset)
+		# 		for i in range(tri_quad_count):
+		# 		x = struct.unpack("<H",file.read(2))[0]
+		# 		y = struct.unpack("<H",file.read(2))[0]
+		# 		z = struct.unpack("<H",file.read(2))[0]
+		# 		w = struct.unpack("<H",file.read(2))[0]
+		# 		nor_list.append(x,y,z)
 
 		file.seek(quad_offset)
 		for i in range(quad_count):
@@ -148,6 +184,12 @@ def read(filename):
 
  		dir_offset = struct.unpack("<L",file.read(4))[0]
 		# dir_size = struct.unpack("<L",file.read(4))[0]
+
+		# Seek to dir object 2
+ 		file.seek(dir_offset + 4*2)
+		file_offset = struct.unpack("<L", file.read(4))[0]
+		file.seek(file_offset)
+		readMeshRelativePosition(file, file_offset)
 
 		# Seek to dir object 7
  		file.seek(dir_offset + 4*7)
