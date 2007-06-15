@@ -100,15 +100,18 @@ def add_mesh(file, start_offset, num_mesh):
 			mesh.faces.append(f)
 
 	if quad_count>0:
-		file.seek(quad_vtx_offset)
-		for i in range(quad_vtx_count):
-			#print "Reading quad vertex %d" % i
-			x = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			y = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			y += num_mesh * 4.0
-			z = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			w = float(struct.unpack("<h",file.read(2))[0]) / 256.0
-			mesh.verts.append(NMesh.Vert(x,y,z))
+		start_vtx_count = 0
+		if (quad_vtx_offset != tri_vtx_offset) or (quad_vtx_count != tri_vtx_count):
+			start_vtx_count = tri_vtx_count
+			file.seek(quad_vtx_offset)
+			for i in range(quad_vtx_count):
+				#print "Reading quad vertex %d" % i
+				x = float(struct.unpack("<h",file.read(2))[0]) / 256.0
+				y = float(struct.unpack("<h",file.read(2))[0]) / 256.0
+				y += num_mesh * 4.0
+				z = float(struct.unpack("<h",file.read(2))[0]) / 256.0
+				w = float(struct.unpack("<h",file.read(2))[0]) / 256.0
+				mesh.verts.append(NMesh.Vert(x,y,z))
 
 		# nor_list = []
 		# file.seek(quad_nor_offset)
@@ -131,10 +134,10 @@ def add_mesh(file, start_offset, num_mesh):
 			n3 = struct.unpack("<H",file.read(2))[0]
 			v3 = struct.unpack("<H",file.read(2))[0]
 			f=NMesh.Face()
-			f.v.append(mesh.verts[tri_vtx_count+v0])
-			f.v.append(mesh.verts[tri_vtx_count+v1])
-			f.v.append(mesh.verts[tri_vtx_count+v3])
-			f.v.append(mesh.verts[tri_vtx_count+v2])
+			f.v.append(mesh.verts[start_vtx_count+v0])
+			f.v.append(mesh.verts[start_vtx_count+v1])
+			f.v.append(mesh.verts[start_vtx_count+v3])
+			f.v.append(mesh.verts[start_vtx_count+v2])
 			mesh.faces.append(f)
 
 	return mesh
