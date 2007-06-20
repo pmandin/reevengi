@@ -47,6 +47,12 @@ from Blender import NMesh
 
 gRelPos = []
 
+gTexturePalettes = []
+gTextureData = []
+gTextureBpp = 0
+gTextureWidth = 0
+gTextureHeight = 0
+
 def readMeshRelativePosition(file, start_offset):
 	global gRelPos
 
@@ -111,11 +117,38 @@ def add_mesh(file, start_offset, num_mesh):
 		# nor_list = []
 		# file.seek(tri_nor_offset)
 		# for i in range(tri_nor_count):
-		# 	x = struct.unpack("<H",file.read(2))[0]
-		# 	y = struct.unpack("<H",file.read(2))[0]
-		# 	z = struct.unpack("<H",file.read(2))[0]
-		# 	w = struct.unpack("<H",file.read(2))[0]
+		# 	x = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 	y = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 	z = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 	w = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
 		# 	nor_list.append(x,y,z)
+
+		# Read uv info
+		uv_list = []
+		file.seek(tri_tex_offset)
+		for i in range(tri_count):
+			# often, num_palette = offset, so don't bother
+			u0 = struct.unpack("B",file.read(1))[0]
+			v0 = struct.unpack("B",file.read(1))[0]
+			num_palette = struct.unpack("<H",file.read(2))[0] & 0x1f
+			u1 = struct.unpack("B",file.read(1))[0]
+			v1 = struct.unpack("B",file.read(1))[0]
+			offset = struct.unpack("<H",file.read(2))[0] & 0x3f
+			offset <<= 6
+			u2 = struct.unpack("B",file.read(1))[0]
+			v2 = struct.unpack("B",file.read(1))[0]
+			unknown = struct.unpack("<H",file.read(2))[0]
+
+			u0 = float(u0+offset) / float(gTextureWidth)
+			u1 = float(u1+offset) / float(gTextureWidth)
+			u2 = float(u2+offset) / float(gTextureWidth)
+			v0 = float(v0) / float(gTextureHeight)
+			v1 = float(v1) / float(gTextureHeight)
+			v2 = float(v2) / float(gTextureHeight)
+
+			uv_list.append([u0,v0])
+			uv_list.append([u1,v1])
+			uv_list.append([u2,v2])
 
 		file.seek(tri_offset)
 		for i in range(tri_count):
@@ -127,6 +160,9 @@ def add_mesh(file, start_offset, num_mesh):
 			n2 = struct.unpack("<H",file.read(2))[0]
 			v2 = struct.unpack("<H",file.read(2))[0]
 			f=NMesh.Face()
+			f.uv.append(uv_list[i*3])
+			f.uv.append(uv_list[i*3+1])
+			f.uv.append(uv_list[i*3+2])
 			f.v.append(mesh.verts[v0])
 			f.v.append(mesh.verts[v1])
 			f.v.append(mesh.verts[v2])
@@ -152,11 +188,44 @@ def add_mesh(file, start_offset, num_mesh):
 		# if (quad_nor_offset != tri_nor_offset) or (quad_nor_count != tri_nor_count):
 		# 	file.seek(quad_nor_offset)
 		# 		for i in range(tri_quad_count):
-		# 		x = struct.unpack("<H",file.read(2))[0]
-		# 		y = struct.unpack("<H",file.read(2))[0]
-		# 		z = struct.unpack("<H",file.read(2))[0]
-		# 		w = struct.unpack("<H",file.read(2))[0]
-		# 		nor_list.append(x,y,z)
+		# 			x = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 			y = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 			z = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 			w = float(struct.unpack("<H",file.read(2))[0]) / 4096.0
+		# 			nor_list.append(x,y,z)
+
+		# Read uv info
+		uv_list = []
+		file.seek(quad_tex_offset)
+		for i in range(quad_count):
+			# often, num_palette = offset, so don't bother
+			u0 = struct.unpack("B",file.read(1))[0]
+			v0 = struct.unpack("B",file.read(1))[0]
+			num_palette = struct.unpack("<H",file.read(2))[0] & 0x1f
+			u1 = struct.unpack("B",file.read(1))[0]
+			v1 = struct.unpack("B",file.read(1))[0]
+			offset = struct.unpack("<H",file.read(2))[0] & 0x3f
+			offset <<= 6
+			u2 = struct.unpack("B",file.read(1))[0]
+			v2 = struct.unpack("B",file.read(1))[0]
+			unknown = struct.unpack("<H",file.read(2))[0]
+			u3 = struct.unpack("B",file.read(1))[0]
+			v3 = struct.unpack("B",file.read(1))[0]
+			unknown = struct.unpack("<H",file.read(2))[0]
+
+			u0 = float(u0+offset) / float(gTextureWidth)
+			u1 = float(u1+offset) / float(gTextureWidth)
+			u2 = float(u2+offset) / float(gTextureWidth)
+			u3 = float(u3+offset) / float(gTextureWidth)
+			v0 = float(v0) / float(gTextureHeight)
+			v1 = float(v1) / float(gTextureHeight)
+			v2 = float(v2) / float(gTextureHeight)
+			v3 = float(v3) / float(gTextureHeight)
+
+			uv_list.append([u0,v0])
+			uv_list.append([u1,v1])
+			uv_list.append([u2,v2])
+			uv_list.append([u3,v3])
 
 		file.seek(quad_offset)
 		for i in range(quad_count):
@@ -170,6 +239,10 @@ def add_mesh(file, start_offset, num_mesh):
 			n3 = struct.unpack("<H",file.read(2))[0]
 			v3 = struct.unpack("<H",file.read(2))[0]
 			f=NMesh.Face()
+			f.uv.append(uv_list[i*4])
+			f.uv.append(uv_list[i*4+1])
+			f.uv.append(uv_list[i*4+3])
+			f.uv.append(uv_list[i*4+2])
 			f.v.append(mesh.verts[start_vtx_count+v0])
 			f.v.append(mesh.verts[start_vtx_count+v1])
 			f.v.append(mesh.verts[start_vtx_count+v3])
@@ -178,7 +251,70 @@ def add_mesh(file, start_offset, num_mesh):
 
 	return mesh
 
+def texture_read(filename):
+	global gTexturePalettes
+	global gTextureData
+	global gTextureBpp
+	global gTextureWidth
+	global gTextureHeight
+
+	try:
+		file = open(filename, "rb")
+
+		tim_id = struct.unpack("<L",file.read(4))[0]
+		if (tim_id != 0x10):
+			print "%s not a TIM file" % filename
+			file.close()
+			return 0
+
+		tim_type = struct.unpack("<L",file.read(4))[0]
+		tim_offset = struct.unpack("<L",file.read(4))[0]
+		file.seek(4, 1)
+		num_colors = struct.unpack("<H",file.read(2))[0]
+		num_palettes = struct.unpack("<H",file.read(2))[0]
+
+		gTextureBpp = 16
+		if tim_type == 0x08:
+			gTextureBpp = 4
+		if tim_type == 0x09:
+			gTextureBpp = 8
+
+		if gTextureBpp<16:
+			for i in range(num_palettes):
+				palette = []
+				for j in range(num_colors):
+					value = struct.unpack("<H",file.read(2))[0]
+					r = (value<<3) & 0xf8
+					g = (value>>2) & 0xf8
+					b = (value>>7) & 0xf8
+					r |= r>>5
+					g |= g>>5
+					b |= b>>5
+					r = float(r) / 255.0
+					g = float(g) / 255.0
+					b = float(b) / 255.0
+					palette.append([r,g,b])
+				gTexturePalettes.append(palette)
+
+		file.seek(tim_offset+16)
+		gTextureWidth = struct.unpack("<H",file.read(2))[0]
+		if gTextureBpp==4:
+			gTextureWidth <<= 2
+		if gTextureBpp==8:
+			gTextureWidth <<= 1
+		gTextureHeight = struct.unpack("<H",file.read(2))[0]
+		#print "Texture: %dx" % gTextureWidth + "%d" % gTextureHeight
+
+        except IOError, (errno, strerror):
+                file.close()
+                return 0
+
+        file.close()
+        return 1
+
 def read(filename):
+	texture_read(filename[:-4] + ".tim")
+
 	try:
 		file = open(filename, "rb")
 
