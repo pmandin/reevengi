@@ -43,15 +43,15 @@ Run this script from "File->Import" and select the desired EMD file.
 
 import Blender, meshtools
 import struct, StringIO
-from Blender import NMesh
+from Blender import NMesh, Image
 
 gRelPos = []
 
-gTexturePalettes = []
-gTextureData = []
-gTextureBpp = 0
-gTextureWidth = 0
-gTextureHeight = 0
+# Set some default values, will be overwritten later
+gTextureBpp = 8
+gTextureWidth = 256
+gTextureHeight = 256
+gTextureImage = []
 
 def readMeshRelativePosition(file, start_offset):
 	global gRelPos
@@ -74,6 +74,7 @@ def readMeshRelativePosition(file, start_offset):
 
 def add_mesh(file, start_offset, num_mesh):
 	global gRelPos
+	global gTextureBpp
 
 	rx = (num_mesh-len(gRelPos)) * 10.0
 	ry = 0
@@ -134,7 +135,12 @@ def add_mesh(file, start_offset, num_mesh):
 			u1 = struct.unpack("B",file.read(1))[0]
 			v1 = struct.unpack("B",file.read(1))[0]
 			offset = struct.unpack("<H",file.read(2))[0] & 0x3f
-			offset <<= 6
+			if gTextureBpp==4:
+				offset <<= 6+2
+			elif gTextureBpp==8:
+				offset <<= 6+1
+			elif gTextureBpp==16:
+				offset <<= 6
 			u2 = struct.unpack("B",file.read(1))[0]
 			v2 = struct.unpack("B",file.read(1))[0]
 			unknown = struct.unpack("<H",file.read(2))[0]
@@ -160,9 +166,12 @@ def add_mesh(file, start_offset, num_mesh):
 			n2 = struct.unpack("<H",file.read(2))[0]
 			v2 = struct.unpack("<H",file.read(2))[0]
 			f=NMesh.Face()
-			f.uv.append(uv_list[i*3])
-			f.uv.append(uv_list[i*3+1])
-			f.uv.append(uv_list[i*3+2])
+			uv = uv_list[i*3]
+			f.uv.append((uv[0],uv[1]))
+			uv = uv_list[i*3+1]
+			f.uv.append((uv[0],uv[1]))
+			uv = uv_list[i*3+2]
+			f.uv.append((uv[0],uv[1]))
 			f.v.append(mesh.verts[v0])
 			f.v.append(mesh.verts[v1])
 			f.v.append(mesh.verts[v2])
@@ -205,7 +214,12 @@ def add_mesh(file, start_offset, num_mesh):
 			u1 = struct.unpack("B",file.read(1))[0]
 			v1 = struct.unpack("B",file.read(1))[0]
 			offset = struct.unpack("<H",file.read(2))[0] & 0x3f
-			offset <<= 6
+			if gTextureBpp==4:
+				offset <<= 6+2
+			elif gTextureBpp==8:
+				offset <<= 6+1
+			elif gTextureBpp==16:
+				offset <<= 6
 			u2 = struct.unpack("B",file.read(1))[0]
 			v2 = struct.unpack("B",file.read(1))[0]
 			unknown = struct.unpack("<H",file.read(2))[0]
@@ -239,10 +253,14 @@ def add_mesh(file, start_offset, num_mesh):
 			n3 = struct.unpack("<H",file.read(2))[0]
 			v3 = struct.unpack("<H",file.read(2))[0]
 			f=NMesh.Face()
-			f.uv.append(uv_list[i*4])
-			f.uv.append(uv_list[i*4+1])
-			f.uv.append(uv_list[i*4+3])
-			f.uv.append(uv_list[i*4+2])
+			uv = uv_list[i*4]
+			f.uv.append((uv[0],uv[1]))
+			uv = uv_list[i*4+1]
+			f.uv.append((uv[0],uv[1]))
+			uv = uv_list[i*4+3]
+			f.uv.append((uv[0],uv[1]))
+			uv = uv_list[i*4+2]
+			f.uv.append((uv[0],uv[1]))
 			f.v.append(mesh.verts[start_vtx_count+v0])
 			f.v.append(mesh.verts[start_vtx_count+v1])
 			f.v.append(mesh.verts[start_vtx_count+v3])
@@ -252,11 +270,10 @@ def add_mesh(file, start_offset, num_mesh):
 	return mesh
 
 def texture_read(filename):
-	global gTexturePalettes
-	global gTextureData
 	global gTextureBpp
 	global gTextureWidth
 	global gTextureHeight
+	global gTextureImage
 
 	try:
 		file = open(filename, "rb")
@@ -279,6 +296,7 @@ def texture_read(filename):
 		if tim_type == 0x09:
 			gTextureBpp = 8
 
+		txPalettes = []
 		if gTextureBpp<16:
 			for i in range(num_palettes):
 				palette = []
@@ -294,7 +312,7 @@ def texture_read(filename):
 					g = float(g) / 255.0
 					b = float(b) / 255.0
 					palette.append([r,g,b])
-				gTexturePalettes.append(palette)
+				txPalettes.append(palette)
 
 		file.seek(tim_offset+16)
 		gTextureWidth = struct.unpack("<H",file.read(2))[0]
@@ -304,6 +322,59 @@ def texture_read(filename):
 			gTextureWidth <<= 1
 		gTextureHeight = struct.unpack("<H",file.read(2))[0]
 		#print "Texture: %dx" % gTextureWidth + "%d" % gTextureHeight
+
+		gTextureImage = Image.New("image", gTextureWidth, gTextureHeight, 24)
+		if gTextureBpp==4:
+			for y in range(gTextureHeight):
+				i = 0
+				j = 0
+				mi = gTextureWidth / num_palettes
+				for x in range(gTextureWidth/2):
+					c = struct.unpack("B",file.read(1))[0]
+					c1 = (c >> 4) & 0xf
+					r = txPalettes[j][c1][0]
+					g = txPalettes[j][c1][1]
+					b = txPalettes[j][c1][2]
+					gTextureImage.setPixelF(x*2,y, (r,g,b,1.0))
+					c2 = c & 0xf
+					r = txPalettes[j][c2][0]
+					g = txPalettes[j][c2][1]
+					b = txPalettes[j][c2][2]
+					gTextureImage.setPixelF(x*2+1,y, (r,g,b,1.0))
+					i+=2
+					if (i>=mi):
+						i=0
+						j+=1
+		elif gTextureBpp==8:
+			for y in range(gTextureHeight):
+				i = 0
+				j = 0
+				mi = gTextureWidth / num_palettes
+				for x in range(gTextureWidth):
+					c = struct.unpack("B",file.read(1))[0]
+					r = txPalettes[j][c][0]
+					g = txPalettes[j][c][1]
+					b = txPalettes[j][c][2]
+					gTextureImage.setPixelF(x,y, (r,g,b,1.0))
+					i+=1
+					if (i>=mi):
+						i=0
+						j+=1
+					
+		elif gTextureBpp==16:
+			for y in range(gTextureHeight):
+				for x in range(gTextureWidth):
+					c = struct.unpack("<H",file.read(2))[0]
+					r = (c<<3) & 0xf8
+					g = (c>>2) & 0xf8
+					b = (c>>7) & 0xf8
+					r |= r>>5
+					g |= g>>5
+					b |= b>>5
+					r = float(r) / 255.0
+					g = float(g) / 255.0
+					b = float(b) / 255.0
+					gTextureImage.setPixelF(x,y, (r,g,b,1.0))
 
         except IOError, (errno, strerror):
                 file.close()
