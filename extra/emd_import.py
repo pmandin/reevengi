@@ -43,9 +43,14 @@ Run this script from "File->Import" and select the desired EMD file.
 
 import Blender, meshtools
 import struct, StringIO
-from Blender import NMesh, Image
+from Blender import NMesh, Image, Material, Texture
 
+# Relative position of meshes
 gRelPos = []
+
+# Material,texture
+gMat = None
+gTexObj = None
 
 # Set some default values, will be overwritten later
 gTextureBpp = 8
@@ -76,13 +81,16 @@ def add_mesh(file, start_offset, num_mesh):
 	global gRelPos
 	global gTextureBpp
 
-	rx = (num_mesh-len(gRelPos)) * 10.0
-	ry = 0
+	#rx = (num_mesh-len(gRelPos)) * 10.0
+	#ry = 0
+	#rz = 0
+	#if num_mesh<len(gRelPos):
+	#	rx = gRelPos[num_mesh][0]
+	#	ry = gRelPos[num_mesh][1]
+	#	rz = gRelPos[num_mesh][2]
+	rx = (num_mesh / 5) * 10.0
+	ry = (num_mesh % 5) * 10.0
 	rz = 0
-	if num_mesh<len(gRelPos):
-		rx = gRelPos[num_mesh][0]
-		ry = gRelPos[num_mesh][1]
-		rz = gRelPos[num_mesh][2]
 
 	tri_vtx_offset = start_offset + struct.unpack("<L",file.read(4))[0]
 	tri_vtx_count = struct.unpack("<L",file.read(4))[0]
@@ -113,7 +121,7 @@ def add_mesh(file, start_offset, num_mesh):
 			z = float(struct.unpack("<h",file.read(2))[0]) / 100.0
 			z += rz
 			w = float(struct.unpack("<h",file.read(2))[0]) / 100.0
-			mesh.verts.append(NMesh.Vert(x,y,z))
+			mesh.verts.append(NMesh.Vert(x,-y,z))
 
 		# nor_list = []
 		# file.seek(tri_nor_offset)
@@ -175,6 +183,9 @@ def add_mesh(file, start_offset, num_mesh):
 			f.v.append(mesh.verts[v0])
 			f.v.append(mesh.verts[v1])
 			f.v.append(mesh.verts[v2])
+			f.mode |= NMesh.FaceModes.TEX
+			f.transp = NMesh.FaceTranspModes.SOLID
+			f.flag = NMesh.FaceFlags.ACTIVE
 			mesh.faces.append(f)
 
 	if quad_count>0:
@@ -191,7 +202,7 @@ def add_mesh(file, start_offset, num_mesh):
 				z = float(struct.unpack("<h",file.read(2))[0]) / 100.0
 				z += rz
 				w = float(struct.unpack("<h",file.read(2))[0]) / 100.0
-				mesh.verts.append(NMesh.Vert(x,y,z))
+				mesh.verts.append(NMesh.Vert(x,-y,z))
 
 		# nor_list = []
 		# if (quad_nor_offset != tri_nor_offset) or (quad_nor_count != tri_nor_count):
@@ -265,11 +276,17 @@ def add_mesh(file, start_offset, num_mesh):
 			f.v.append(mesh.verts[start_vtx_count+v1])
 			f.v.append(mesh.verts[start_vtx_count+v3])
 			f.v.append(mesh.verts[start_vtx_count+v2])
+			f.mode |= NMesh.FaceModes.TEX
+			f.transp = NMesh.FaceTranspModes.SOLID
+			f.flag = NMesh.FaceFlags.ACTIVE
 			mesh.faces.append(f)
 
+	mesh.materials.append(gMat)
 	return mesh
 
 def texture_read(filename):
+	global gMat
+	global gTexObj
 	global gTextureBpp
 	global gTextureWidth
 	global gTextureHeight
@@ -326,6 +343,8 @@ def texture_read(filename):
 		gTextureImage = Image.New("image", gTextureWidth, gTextureHeight, 24)
 		if gTextureBpp==4:
 			for y in range(gTextureHeight):
+				if (y & 15) == 0:
+					Blender.Window.DrawProgressBar(float(y) / gTextureHeight, "Loading texture")
 				i = 0
 				j = 0
 				mi = gTextureWidth / num_palettes
@@ -347,6 +366,8 @@ def texture_read(filename):
 						j+=1
 		elif gTextureBpp==8:
 			for y in range(gTextureHeight):
+				if (y & 15) == 0:
+					Blender.Window.DrawProgressBar(float(y) / gTextureHeight, "Loading texture")
 				i = 0
 				j = 0
 				mi = gTextureWidth / num_palettes
@@ -363,6 +384,8 @@ def texture_read(filename):
 					
 		elif gTextureBpp==16:
 			for y in range(gTextureHeight):
+				if (y & 15) == 0:
+					Blender.Window.DrawProgressBar(float(y) / gTextureHeight, "Loading texture")
 				for x in range(gTextureWidth):
 					c = struct.unpack("<H",file.read(2))[0]
 					r = (c<<3) & 0xf8
@@ -375,6 +398,17 @@ def texture_read(filename):
 					g = float(g) / 255.0
 					b = float(b) / 255.0
 					gTextureImage.setPixelF(x,y, (r,g,b,1.0))
+
+		# Create texture
+		gTexObj = Texture.New("emd_tex")
+		gTexObj.setType("Image") 
+		gTexObj.setImage(gTextureImage)
+
+		# Create material
+		gMat = Material.New("emd_mat")
+		gMat.mode |= Material.Modes.TEXFACE
+		gMat.mode |= Material.Modes.SHADELESS
+		gMat.setTexture(0, gTexObj, Texture.TexCo.UV)
 
         except IOError, (errno, strerror):
                 file.close()
