@@ -123,7 +123,13 @@ static void state_detect(void)
 
 	if (game_file_exists("rofs1.dat")) {
 		game_state.version = GAME_RE3_PC_DEMO;
-	} else if (game_file_exists("common/datu/warning.adt")) {
+	} else if (game_file_exists("REGIST/LEONF.EXE")) {
+		game_state.version = GAME_RE2_PC_GAME_LEON;
+	} else if (game_file_exists("REGIST/CLAIREF.EXE")) {
+		game_state.version = GAME_RE2_PC_GAME_CLAIRE;
+	} else if (game_file_exists("Regist/LeonP.exe")) {
+		game_state.version = GAME_RE2_PC_DEMO;
+	} else if (game_file_exists("regist/leonu.exe")) {
 		game_state.version = GAME_RE2_PC_DEMO;
 	} else if (game_file_exists("horr/usa/data/capcom.ptc")) {
 		game_state.version = GAME_RE1_PC_GAME;
