@@ -117,13 +117,11 @@ int main(int argc, char **argv)
 			break;
 		case GAME_RE2_PC_GAME_LEON:
 			printf("Resident Evil 2, PC, Game Leon\n");
-			FS_Shutdown();
-			exit(1);
+			re2pcgame_init(&game_state);
 			break;
 		case GAME_RE2_PC_GAME_CLAIRE:
 			printf("Resident Evil 2, PC, Game Claire\n");
-			FS_Shutdown();
-			exit(1);
+			re2pcgame_init(&game_state);
 			break;
 		case GAME_RE3_PC_DEMO:
 			printf("Resident Evil 3, PC, Demo\n");
