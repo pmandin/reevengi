@@ -34,9 +34,28 @@
 
 /*--- Types ---*/
 
-/*--- Variables ---*/
+/*--- Constant ---*/
 
 static const char *re3ps1game_bg = "cd_data/stage%d/r%d%02x.bss";
+
+static const char *re3ps1game_movies[] = {
+	"cd_data/zmovie/enda.str",
+	"cd_data/zmovie/endb.str",
+	"cd_data/zmovie/ins01.str",
+	"cd_data/zmovie/ins02.str",
+	"cd_data/zmovie/ins03.str",
+	"cd_data/zmovie/ins04.str",
+	"cd_data/zmovie/ins05.str",
+	"cd_data/zmovie/ins06.str",
+	"cd_data/zmovie/ins07.str",
+	"cd_data/zmovie/ins08.str",
+	"cd_data/zmovie/ins09.str",
+	"cd_data/zmovie/opn.str",
+	"cd_data/zmovie/roopne.str",
+	NULL
+};
+
+/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 

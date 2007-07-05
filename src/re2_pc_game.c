@@ -40,11 +40,42 @@ typedef struct {
 	long length;
 } re2_images_t;
 
+/*--- Constant ---*/
+
+static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
+
+static const char *re2pcgame_leon_movies[] = {
+	"PL0/ZMOVIE/OPN1STL.BIN",
+	"PL0/ZMOVIE/OPN2NDL.BIN",
+	"PL0/ZMOVIE/OPN2NDRL.BIN",
+	"PL0/ZMOVIE/R108L.BIN",
+	"PL0/ZMOVIE/R204L.BIN",
+	"PL0/ZMOVIE/R409.BIN",
+	"PL0/ZMOVIE/R700L.BIN",
+	"PL0/ZMOVIE/R703L.BIN",
+	"PL0/ZMOVIE/R704LE.BIN",
+	"PL0/ZMOVIE/TITLELE.BIN",
+	NULL
+};
+
+static const char *re2pcgame_claire_movies[] = {
+	"PL1/ZMOVIE/OPN1STC.BIN",
+	"PL1/ZMOVIE/OPN2NDC.BIN",
+	"PL1/ZMOVIE/OPN2NDRC.BIN",
+	"PL1/ZMOVIE/R108C.BIN",
+	"PL1/ZMOVIE/R204C.BIN",
+	"PL1/ZMOVIE/R408.BIN",
+	"PL1/ZMOVIE/R700C.BIN",
+	"PL1/ZMOVIE/R703C.BIN",
+	"PL1/ZMOVIE/R704CE.BIN",
+	"PL1/ZMOVIE/TITLECE.BIN",
+	NULL
+};
+
 /*--- Variables ---*/
 
 static re2_images_t *re2_images = NULL;
 static int num_re2_images = 0;
-static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
 
 /*--- Functions prototypes ---*/
 

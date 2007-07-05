@@ -34,9 +34,50 @@
 
 /*--- Types ---*/
 
-/*--- Variables ---*/
+/*--- Constant ---*/
 
 static const char *re1ps1_bg = "psx/stage%d/room%d%02x.bss";
+
+static const char *re1ps1demo_movies[] = {
+	"psx/movie/capcom.str",
+	"psx/movie/dm1.str",
+	"psx/movie/dm2.str",
+	"psx/movie/dm3.str",
+	"psx/movie/oj.str",
+	"psx/movie/pj.str",
+	NULL
+};
+
+static const char *re1ps1game_movies[] = {
+	"psx/movie/capcom.str",
+	"psx/movie/dm1.str",
+	"psx/movie/dm2.str",
+	"psx/movie/dm3.str",
+	"psx/movie/dm4.str",
+	"psx/movie/dm6.str",
+	"psx/movie/dm7.str",
+	"psx/movie/dm8.str",
+	"psx/movie/dmb.str",
+	"psx/movie/dmc.str",
+	"psx/movie/dmd.str",
+	"psx/movie/dme.str",
+	"psx/movie/dmf.str",
+	"psx/movie/ed1.str",
+	"psx/movie/ed2.str",
+	"psx/movie/ed3.str",
+	"psx/movie/ed4.str",
+	"psx/movie/ed5.str",
+	"psx/movie/ed6.str",
+	"psx/movie/ed7.str",
+	"psx/movie/ed8.str",
+	"psx/movie/oj.str",
+	"psx/movie/pj.str",
+	"psx/movie/stfc.str",
+	"psx/movie/stfj.str",
+	NULL
+};
+
+/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 

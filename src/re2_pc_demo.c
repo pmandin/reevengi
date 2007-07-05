@@ -35,9 +35,11 @@
 
 /*--- Types ---*/
 
-/*--- Variables ---*/
+/*--- Constant ---*/
 
 static const char *re2pcdemo_bg = "common/stage%d/rc%d%02x%1x.adt";
+
+/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 

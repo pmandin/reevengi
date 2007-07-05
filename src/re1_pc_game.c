@@ -35,9 +35,42 @@
 
 /*--- Types ---*/
 
-/*--- Variables ---*/
+/*--- Constant ---*/
 
 static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
+
+static const char *re1pcgame_movies[] = {
+	"horr/usa/movie/capcom.avi",
+	"horr/usa/movie/dm1.avi",
+	"horr/usa/movie/dm2.avi",
+	"horr/usa/movie/dm3.avi",
+	"horr/usa/movie/dm4.avi",
+	"horr/usa/movie/dm6.avi",
+	"horr/usa/movie/dm7.avi",
+	"horr/usa/movie/dm8.avi",
+	"horr/usa/movie/dmb.avi",
+	"horr/usa/movie/dmc.avi",
+	"horr/usa/movie/dmd.avi",
+	"horr/usa/movie/dme.avi",
+	"horr/usa/movie/dmf.avi",
+	"horr/usa/movie/ed1.avi",
+	"horr/usa/movie/ed2.avi",
+	"horr/usa/movie/ed3.avi",
+	"horr/usa/movie/ed6.avi",
+	"horr/usa/movie/ed7.avi",
+	"horr/usa/movie/ed8.avi",
+	"horr/usa/movie/eu4.avi",
+	"horr/usa/movie/eu5.avi",
+	"horr/usa/movie/ou.avi",
+	"horr/usa/movie/pu.avi",
+	"horr/usa/movie/staf_r.avi",
+	"horr/usa/movie/stfc_r.avi",
+	"horr/usa/movie/stfj_r.avi",
+	"horr/usa/movie/stfz_r.avi",
+	NULL
+};
+
+/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 

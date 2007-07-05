@@ -36,9 +36,56 @@
 
 /*--- Types ---*/
 
-/*--- Variables ---*/
+/*--- Constant ---*/
 
 static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
+
+static const char *re2ps1demo_movies[] = {
+	"zmovie/capcom.str",
+	"zmovie/info.str",
+	"zmovie/r10b.str",
+	NULL
+};
+
+static const char *re2ps1game_leon_movies[] = {
+	"pl0/zmovie/opn1stl.str",
+	"pl0/zmovie/opn2ndl.str",
+	"pl0/zmovie/opn2ndrl.str",
+	"pl0/zmovie/r108l.str",
+	"pl0/zmovie/r204l.str",
+	"pl0/zmovie/r409.str",
+	"pl0/zmovie/r700l.str",
+	"pl0/zmovie/r703l.str",
+	"pl0/zmovie/r704l.str",
+	"pl0/zmovie/titlel.str",
+	"zmovie/r109.str",
+	"zmovie/r10b.str",
+	"zmovie/r200.str",
+	"zmovie/r505.str",
+	"zmovie/virgin.str",
+	NULL
+};
+
+static const char *re2ps1game_claire_movies[] = {
+	"pl1/zmovie/opn1stc.str",
+	"pl1/zmovie/opn2ndc.str",
+	"pl1/zmovie/opn2ndrc.str",
+	"pl1/zmovie/r108c.str",
+	"pl1/zmovie/r204c.str",
+	"pl1/zmovie/r408.str",
+	"pl1/zmovie/r700c.str",
+	"pl1/zmovie/r703c.str",
+	"pl1/zmovie/r704c.str",
+	"pl1/zmovie/titlec.str",
+	"zmovie/r109.str",
+	"zmovie/r10b.str",
+	"zmovie/r200.str",
+	"zmovie/r505.str",
+	"zmovie/virgin.str",
+	NULL
+};
+
+/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 

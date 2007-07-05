@@ -41,10 +41,19 @@
 
 /*--- Types ---*/
 
-/*--- Variables ---*/
+/*--- Constant ---*/
 
 static const char *re3pcdemo_bg = "data_a/bss/r%d%02x%02x.jpg";
 static const char *rofs_dat = "%s/rofs%d.dat";
+
+static const char *re3pcdemo_movies[] = {
+	"zmovie/ins01.dat",
+	"zmovie/opn.dat",
+	"zmovie/roopne.dat",
+	NULL
+};
+
+/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 
