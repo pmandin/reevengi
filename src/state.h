@@ -67,6 +67,8 @@ typedef struct {
 	char *movies_list;
 	/* Currently playing movie */
 	int num_movie;
+	/* Movie filename */
+	char *cur_movie;
 
 	/*--- Functions ---*/
 	void (*load_background)(void);
@@ -88,5 +90,8 @@ void state_setroom(int new_room);
 void state_setcamera(int new_camera);
 
 void state_unloadbackground(void);
+
+void state_newmovie(void);
+int state_getnummovies(void);
 
 #endif /* STATE_H */

@@ -65,6 +65,8 @@ void re3ps1game_init(state_t *game_state)
 {
 	game_state->load_background = re3ps1game_loadbackground;
 	game_state->shutdown = re3ps1game_shutdown;
+
+	game_state->movies_list = re3ps1game_movies;
 }
 
 void re3ps1game_shutdown(void)

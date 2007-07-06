@@ -87,6 +87,12 @@ void re1ps1_init(state_t *game_state)
 {
 	game_state->load_background = re1ps1_loadbackground;
 	game_state->shutdown = re1ps1_shutdown;
+
+	if (game_state->version == GAME_RE1_PS1_DEMO) {
+		game_state->movies_list = re1ps1demo_movies;
+	} else {
+		game_state->movies_list = re1ps1game_movies;
+	}
 }
 
 void re1ps1_shutdown(void)

@@ -47,6 +47,7 @@ void state_init(void)
 
 	game_state.movies_list = NULL;
 	game_state.num_movie = 0;
+	game_state.cur_movie = NULL;
 
 	state_detect();
 }
@@ -88,6 +89,29 @@ void state_unloadbackground(void)
 		SDL_FreeSurface(game_state.background_surf);
 		game_state.background_surf = NULL;
 	}
+}
+
+void state_newmovie(void)
+{
+	char **movie = game_state.movies_list;
+	int i;
+
+	for (i=0; movie[i]; i++) {
+		if (i==game_state.num_movie) {
+			game_state.cur_movie = movie[i];
+			break;
+		}
+	}
+}
+
+int state_getnummovies(void)
+{
+	char **movie = game_state.movies_list;
+	int i;
+
+	for (i=0; movie[i]; i++) {
+	}
+	return i;
 }
 
 /* Detect some game version */

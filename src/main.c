@@ -148,6 +148,7 @@ int main(int argc, char **argv)
 			FS_Shutdown();
 			exit(1);
 	}
+	state_newmovie();
 
 	if (SDL_Init(SDL_INIT_VIDEO)<0) {
 		fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());
@@ -280,7 +281,7 @@ int viewer_loop(void)
 		}
 	}
 
-	if (!switch_mode) {
+	if (!switch_mode && cur_surf) {
 		if (SDL_MUSTLOCK(screen)) {
 			SDL_LockSurface(screen);
 		}

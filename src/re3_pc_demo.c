@@ -73,6 +73,8 @@ void re3pcdemo_init(state_t *game_state)
 
 	game_state->load_background = re3pcdemo_loadbackground;
 	game_state->shutdown = re3pcdemo_shutdown;
+
+	game_state->movies_list = re3pcdemo_movies;
 }
 
 void re3pcdemo_shutdown(void)
