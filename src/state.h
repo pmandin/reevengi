@@ -63,6 +63,11 @@ typedef struct {
 	/* Background image */
 	SDL_Surface *background_surf;
 
+	/* List of movies */
+	char *movies_list;
+	/* Currently playing movie */
+	int num_movie;
+
 	/*--- Functions ---*/
 	void (*load_background)(void);
 

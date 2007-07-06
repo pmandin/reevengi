@@ -33,42 +33,34 @@
 #include "re2_pc_demo.h"
 #include "re3_ps1_game.h"
 #include "re3_pc_demo.h"
+#include "view_background.h"
+#include "view_movie.h"
 
 /*--- Defines ---*/
 
-#define KEY_STAGE_DOWN		SDLK_a
-#define KEY_STAGE_UP		SDLK_q
-#define KEY_STAGE_RESET		SDLK_w
-#define KEY_ROOM_DOWN		SDLK_z
-#define KEY_ROOM_UP		SDLK_s
-#define KEY_ROOM_RESET		SDLK_x
-#define KEY_CAMERA_DOWN		SDLK_e
-#define KEY_CAMERA_UP		SDLK_d
-#define KEY_CAMERA_RESET	SDLK_c
-#define KEY_GAMMA_DOWN		SDLK_r
-#define KEY_GAMMA_UP		SDLK_f
-#define KEY_GAMMA_RESET		SDLK_v
+#define KEY_GAMMA_DOWN		SDLK_a
+#define KEY_GAMMA_UP		SDLK_q
+#define KEY_GAMMA_RESET		SDLK_w
 
 /*--- Variables ---*/
 
 int num_screenshot = 0;
+int update_screen = 1;
+int switch_fs = 0, switch_mode=0;
+int width = 320, height = 240;
+int videoflags = 0;
+SDL_Surface *screen = NULL;
+SDL_Surface *cur_surf = NULL;
 
 /*--- Functions prototypes ---*/
 
 void screenshot(SDL_Surface *screen);
+int viewer_loop(void);
 
 /*--- Functions ---*/
 
 int main(int argc, char **argv)
 {
-	int quit=0;
-	int reload_bg = 1, redraw_bg = 0;
-	int switch_fs = 0, switch_mode=0;
-	int width = 320, height = 240;
-	int videoflags = 0;
-	SDL_Surface *screen, *texture;
-	SDL_Surface *bg;
-
 	if (!CheckParm(argc,argv)) {
 		DisplayUsage();
 		exit(1);
@@ -129,6 +121,7 @@ int main(int argc, char **argv)
 #if 0
 			{
 				SDL_RWops *src;
+				SDL_Surface *texture;
 				
 				/*src = FS_makeRWops("data_a/pld/pl006.tim");*/
 				/*src = FS_makeRWops("data_a/pld/pl000.tim");*/
@@ -172,159 +165,13 @@ int main(int argc, char **argv)
 	videoflags = screen->flags;
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
 	SDL_SetGamma(gamma, gamma, gamma);
-	bg = NULL;
 
+	int quit = 0;
 	while (!quit) {
-		SDL_Event event;
-
-		/* Evenements */
-		while (SDL_PollEvent(&event)) {
-			switch(event.type) {
-				case SDL_QUIT:
-					quit=1;
-					break;
-				case SDL_KEYDOWN:
-					switch (event.key.keysym.sym) {
-						case SDLK_ESCAPE:
-							quit=1;
-							break;
-						case SDLK_F1:
-							screenshot(screen);
-							break;
-						case SDLK_RETURN:
-							if (event.key.keysym.mod & KMOD_ALT) {
-								switch_fs=1;
-							}
-							break;
-						case KEY_STAGE_DOWN:
-							game_state.stage -= 1;
-							if (game_state.stage < 1) {
-								game_state.stage = 7;
-							}
-							reload_bg = 1;
-							break;						
-						case KEY_STAGE_UP:
-							game_state.stage += 1;
-							if (game_state.stage > 7) {
-								game_state.stage = 1;
-							}
-							reload_bg = 1;
-							break;						
-						case KEY_STAGE_RESET:
-							game_state.stage = 1;
-							reload_bg = 1;
-							break;						
-						case KEY_ROOM_DOWN:
-							game_state.room -= 1;
-							if (game_state.room < 0) {
-								game_state.room = 0x1c;
-							}
-							reload_bg = 1;
-							break;						
-						case KEY_ROOM_UP:
-							game_state.room += 1;
-							if (game_state.room > 0x1c) {
-								game_state.room = 0;
-							}
-							reload_bg = 1;
-							break;						
-						case KEY_ROOM_RESET:
-							game_state.room = 0;
-							reload_bg = 1;
-							break;						
-						case KEY_CAMERA_DOWN:
-							game_state.camera -= 1;
-							if ((game_state.camera<0) && (game_state.num_cameras>0)) {
-								game_state.camera = game_state.num_cameras-1;
-							}
-							reload_bg = 1;
-							break;						
-						case KEY_CAMERA_UP:
-							game_state.camera += 1;
-							if (game_state.camera>=game_state.num_cameras) {
-								game_state.camera = 0;
-							}
-							reload_bg = 1;
-							break;						
-						case KEY_CAMERA_RESET:
-							game_state.camera = 0;
-							reload_bg = 1;
-							break;						
-						case KEY_GAMMA_DOWN:
-							gamma -= 0.1;
-							if (gamma<0.1) {
-								gamma = 0.1;
-							}
-							SDL_SetGamma(gamma, gamma, gamma);
-							break;
-						case KEY_GAMMA_UP:
-							gamma += 0.1;
-							if (gamma>2.0) {
-								gamma = 2.0;
-							}
-							SDL_SetGamma(gamma, gamma, gamma);
-							break;
-						case KEY_GAMMA_RESET:
-							gamma = 1.0;
-							SDL_SetGamma(gamma, gamma, gamma);
-							break;						
-					}
-					break;
-			}
-		}
-
-		/* Etat */
-		if (reload_bg) {
-			reload_bg = 0;
-
-			/* depack background image */
-			state_loadbackground();
-
-			/* redraw */
-			bg = game_state.background_surf;
-			if (bg) {
-				redraw_bg = 1;
-				if ((bg->w != width) || (bg->h != height)) {
-					width = bg->w;
-					height = bg->h;
-					switch_mode = 1;
-					redraw_bg = 0;
-				}
-			}
-		}
-
-		if (bg && redraw_bg) {
-
-			if (SDL_MUSTLOCK(screen)) {
-				SDL_LockSurface(screen);
-			}
-			SDL_BlitSurface(game_state.background_surf, NULL, screen, NULL);
-			if (SDL_MUSTLOCK(screen)) {
-				SDL_UnlockSurface(screen);
-			}
-			if (screen->flags & SDL_DOUBLEBUF) {
-				SDL_Flip(screen);
-			} else {
-				SDL_UpdateRect(screen, 0,0,0,0);
-			}
-		}
-
-		if (switch_fs) {
-			videoflags ^= SDL_FULLSCREEN;
-			switch_fs=0;
-			switch_mode=1;
-		}
-
-		if (switch_mode) {
-			screen = SDL_SetVideoMode(width, height, 16, videoflags);
-			videoflags = screen->flags;
-			redraw_bg=1;
-			switch_mode=0;
-		}
-
+		quit = viewer_loop();
 		SDL_Delay(1);
 	}
-	
+
 	state_unloadbackground();
 	state_shutdown();
 	FS_Shutdown();
@@ -340,4 +187,127 @@ void screenshot(SDL_Surface *screen)
 
 	printf("Screenshot %s: %s\n", filename,
 		SDL_SaveBMP(screen, filename)==0 ? "done" : "failed");
+}
+
+int viewer_loop(void)
+{
+	int quit = 0;
+	int switch_fs = 0;
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event)) {
+		switch(event.type) {
+			case SDL_QUIT:
+				quit=1;
+				break;
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.sym) {
+					case SDLK_ESCAPE:
+						quit=1;
+						break;
+					case SDLK_F1:
+						screenshot(screen);
+						break;
+					case SDLK_RETURN:
+						if (event.key.keysym.mod & KMOD_ALT) {
+							switch_fs=1;
+						}
+						break;
+					case KEY_GAMMA_DOWN:
+						gamma -= 0.1;
+						if (gamma<0.1) {
+							gamma = 0.1;
+						}
+						SDL_SetGamma(gamma, gamma, gamma);
+						break;
+					case KEY_GAMMA_UP:
+						gamma += 0.1;
+						if (gamma>2.0) {
+							gamma = 2.0;
+						}
+						SDL_SetGamma(gamma, gamma, gamma);
+						break;
+					case KEY_GAMMA_RESET:
+						gamma = 1.0;
+						SDL_SetGamma(gamma, gamma, gamma);
+						break;						
+					default:
+						switch(viewmode) {
+							case VIEWMODE_BACKGROUND:
+								update_screen |= view_background_input(&event);
+								break;
+							case VIEWMODE_MOVIE:
+								update_screen |= view_movie_input(&event);
+								break;
+						}
+						break;
+				}
+				break;
+			default:
+				switch(viewmode) {
+					case VIEWMODE_BACKGROUND:
+						update_screen |= view_background_input(&event);
+						break;
+					case VIEWMODE_MOVIE:
+						update_screen |= view_movie_input(&event);
+						break;
+				}
+				break;
+		}
+	}
+
+	if (update_screen) {
+		/* Update ? */
+		update_screen = 0;
+
+		switch(viewmode) {
+			case VIEWMODE_BACKGROUND:
+				cur_surf = view_background_update();
+				break;
+			case VIEWMODE_MOVIE:
+				cur_surf = view_movie_update();
+				break;
+		}
+
+		if (cur_surf) {
+			if ((cur_surf->w != width) || (cur_surf->h != height)) {
+				width = cur_surf->w;
+				height = cur_surf->h;
+				switch_mode = 1;
+				update_screen = 1;
+				/* Change rez: update next time */
+			}
+		}
+	}
+
+	if (!switch_mode) {
+		if (SDL_MUSTLOCK(screen)) {
+			SDL_LockSurface(screen);
+		}
+		SDL_BlitSurface(cur_surf, NULL, screen, NULL);
+		if (SDL_MUSTLOCK(screen)) {
+			SDL_UnlockSurface(screen);
+		}
+		if (screen->flags & SDL_DOUBLEBUF) {
+			SDL_Flip(screen);
+		} else {
+			SDL_UpdateRect(screen, 0,0,0,0);
+		}
+	}
+
+	if (switch_fs) {
+		/* Switch fullscreen/window: update next time */
+		update_screen = 1;
+		switch_mode = 1;
+		videoflags ^= SDL_FULLSCREEN;
+	}
+
+	if (switch_mode) {
+		screen = SDL_SetVideoMode(width, height, 16, videoflags);
+		videoflags = screen->flags;
+		update_screen=1;
+		switch_mode=0;
+	}
+
+	return(quit);
 }

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parameters.h"
+
 /*--- Defines ---*/
 
 #define DEFAULT_BASEDIR "."
@@ -40,6 +42,9 @@ int verbose=DEFAULT_VERBOSE;
 
 /* Gamma level */
 float gamma = DEFAULT_GAMMA;
+
+/* Viewer mode */
+int viewmode = VIEWMODE_BACKGROUND;
 
 /*---- Variables ---*/
 
@@ -82,6 +87,12 @@ int CheckParm(int argc,char **argv)
 	p = ParmPresent("-basedir", argc, argv);
 	if (p && p < argc-1) {
 		basedir = argv[p+1];
+	}
+
+	/*--- Check for movie mode ---*/
+	p = ParmPresent("-movie", argc, argv);
+	if (p) {
+		viewmode = VIEWMODE_MOVIE;
 	}
 
 	return 1;

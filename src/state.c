@@ -45,6 +45,9 @@ void state_init(void)
 	game_state.room = 0;
 	game_state.camera = 0;
 
+	game_state.movies_list = NULL;
+	game_state.num_movie = 0;
+
 	state_detect();
 }
 
