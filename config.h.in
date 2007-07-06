@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define if you have FFmpeg */
+#undef ENABLE_FFMPEG
+
 /* Define if you have SDL_image */
 #undef ENABLE_SDLIMAGE
 
