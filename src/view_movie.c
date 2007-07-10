@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
+#include <ffmpeg/avformat.h>
 
 #include "state.h"
 
@@ -35,6 +36,13 @@
 /*--- Variables ---*/
 
 static int restart_movie = 1;
+static int first_time = 1;
+
+static AVInputFormat *input_fmt = NULL;
+
+/*--- Functions prototypes ---*/
+
+static AVInputFormat *probe_movie(const char *filename);
 
 /*--- Functions ---*/
 
@@ -74,10 +82,68 @@ int view_movie_input(SDL_Event *event)
 
 SDL_Surface *view_movie_update(void)
 {
+	/* Init ffmpeg ? */
+	if (first_time) {
+		first_time = 0;
+
+		av_register_all();
+	}
+
 	if (restart_movie) {
 		printf("Playing movie %d: %s\n", game_state.num_movie, game_state.cur_movie);
 		restart_movie = 0;
+
+		input_fmt = probe_movie(game_state.cur_movie);
+
+		/*
+			av_probe_input_format
+			AvProbeData
+			AvInputFormat
+
+			av_open_input_stream
+			av_find_stream_info
+			AvCodecContext
+			
+			AvPacket
+			av_read_frame
+			av_free_packet
+			
+			av_seek_frame
+		*/
+
+		/* Init movie replay */
+		if (input_fmt) {
+			printf("Movie format: %s\n", input_fmt->long_name);
+		}
 	}
 
 	return NULL;
+}
+
+/* Read first 2Ko to probe */
+
+static AVInputFormat *probe_movie(const char *filename)
+{
+	SDL_RWops	*src;
+	AVProbeData	pd;
+	AVInputFormat	*fmt = NULL;
+
+	pd.filename = filename;
+	pd.buf_size = 2048;
+	pd.buf = (unsigned char *) malloc(pd.buf_size);
+	if (!pd.buf) {
+		fprintf(stderr, "Can not allocate %d bytes to probe movie\n", pd.buf_size);
+		return NULL;
+	}
+
+	src = FS_makeRWops(pd.filename);
+	if (src) {
+		if (SDL_RWread( src, pd.buf, pd.buf_size, 1)) {
+			fmt = av_probe_input_format(&pd, 1);
+		}
+		SDL_RWclose(src);
+	}
+
+	free(pd.buf);
+	return fmt;
 }
