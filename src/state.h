@@ -68,7 +68,7 @@ typedef struct {
 	/* Currently playing movie */
 	int num_movie;
 	/* Movie filename */
-	char *cur_movie;
+	char *cur_movie/*[1024]*/;
 
 	/*--- Functions ---*/
 	void (*load_background)(void);

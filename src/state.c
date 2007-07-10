@@ -47,6 +47,7 @@ void state_init(void)
 
 	game_state.movies_list = NULL;
 	game_state.num_movie = 0;
+	/*memset(game_state.cur_movie, 0, sizeof(game_state.cur_movie));*/
 	game_state.cur_movie = NULL;
 
 	state_detect();
@@ -98,6 +99,7 @@ void state_newmovie(void)
 
 	for (i=0; movie[i]; i++) {
 		if (i==game_state.num_movie) {
+			/*sprintf(game_state.cur_movie, "%s/%s", basedir, movie[i]);*/
 			game_state.cur_movie = movie[i];
 			break;
 		}
