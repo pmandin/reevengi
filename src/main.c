@@ -173,7 +173,15 @@ int main(int argc, char **argv)
 		SDL_Delay(1);
 	}
 
-	state_unloadbackground();
+	switch(viewmode) {
+		case VIEWMODE_BACKGROUND:
+			state_unloadbackground();
+			break;
+		case VIEWMODE_MOVIE:
+			movie_shutdown();
+			break;
+	}
+
 	state_shutdown();
 	FS_Shutdown();
 
