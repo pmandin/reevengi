@@ -26,6 +26,7 @@
 #include <ffmpeg/avformat.h>
 
 #include "state.h"
+#include "filesystem.h"
 
 /*--- Defines ---*/
 
@@ -33,16 +34,26 @@
 #define KEY_MOVIE_UP		SDLK_s
 #define KEY_MOVIE_RESET		SDLK_x
 
+#define BUFSIZE 32768
+
 /*--- Variables ---*/
 
 static int restart_movie = 1;
 static int first_time = 1;
 
 static AVInputFormat *input_fmt = NULL;
+static AVFormatContext *fmt_ctx = NULL;
+static ByteIOContext bio_ctx;
+static char *tmpbuf = NULL;
+static SDL_RWops *movie_src = NULL;
 
 /*--- Functions prototypes ---*/
 
+void movie_shutdown(void);
+
 static AVInputFormat *probe_movie(const char *filename);
+static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
+static int movie_ioseek( void *opaque, offset_t offset, int whence );
 
 /*--- Functions ---*/
 
@@ -94,14 +105,42 @@ SDL_Surface *view_movie_update(void)
 		restart_movie = 0;
 
 		input_fmt = probe_movie(game_state.cur_movie);
+		if (input_fmt) {
+			printf("Movie format: %s\n", input_fmt->long_name);
+		}
 
-		/*
-			av_probe_input_format
-			AvProbeData
-			AvInputFormat
+		if (!tmpbuf) {
+			tmpbuf = (char *)malloc(BUFSIZE);
+		}
 
-			av_open_input_stream
-			av_find_stream_info
+		if (movie_src) {
+			SDL_RWclose(movie_src);
+		}
+
+		movie_src = FS_makeRWops(game_state.cur_movie);
+		if (!movie_src) {
+			fprintf(stderr, "Can not open movie %s\n", game_state.cur_movie);
+			movie_shutdown();
+			return NULL;
+		}
+
+		init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
+			movie_ioread, NULL, movie_ioseek);
+		input_fmt->flags |= AVFMT_NOFILE;
+
+		if (av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, input_fmt, NULL)) {
+			fprintf(stderr,"Can not open stream\n");
+			movie_shutdown();
+			return NULL;
+		}
+
+		if (av_find_stream_info(fmt_ctx)<0) {
+			fprintf(stderr,"Can not find stream info\n");
+			movie_shutdown();
+			return NULL;
+		}
+
+/*			 
 			AvCodecContext
 			
 			AvPacket
@@ -111,13 +150,26 @@ SDL_Surface *view_movie_update(void)
 			av_seek_frame
 		*/
 
-		/* Init movie replay */
-		if (input_fmt) {
-			printf("Movie format: %s\n", input_fmt->long_name);
-		}
 	}
 
 	return NULL;
+}
+
+void movie_shutdown(void)
+{
+	input_fmt = NULL;
+	if (fmt_ctx) {
+		av_close_input_file( fmt_ctx );
+		fmt_ctx = NULL;
+	}
+	if (tmpbuf) {
+		free(tmpbuf);
+		tmpbuf=NULL;
+	}
+	if (movie_src) {
+		SDL_RWclose(movie_src);
+		movie_src = NULL;
+	}
 }
 
 /* Read first 2Ko to probe */
@@ -146,4 +198,14 @@ static AVInputFormat *probe_movie(const char *filename)
 
 	free(pd.buf);
 	return fmt;
+}
+
+static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
+{
+	return SDL_RWread((SDL_RWops *)opaque, buf, buf_size, 1);
+}
+
+static int movie_ioseek( void *opaque, offset_t offset, int whence )
+{
+	return SDL_RWseek((SDL_RWops *)opaque, offset, whence);
 }
