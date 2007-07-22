@@ -64,7 +64,7 @@ typedef struct {
 	SDL_Surface *background_surf;
 
 	/* List of movies */
-	char *movies_list;
+	char **movies_list;
 	/* Currently playing movie */
 	int num_movie;
 	/* Movie filename */
