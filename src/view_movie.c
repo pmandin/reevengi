@@ -49,6 +49,7 @@ static SDL_RWops *movie_src = NULL;
 
 /*--- Functions prototypes ---*/
 
+static int movie_init(const char *filename);
 void movie_shutdown(void);
 
 static AVInputFormat *probe_movie(const char *filename);
@@ -104,55 +105,72 @@ SDL_Surface *view_movie_update(void)
 		printf("Playing movie %d: %s\n", game_state.num_movie, game_state.cur_movie);
 		restart_movie = 0;
 
-		input_fmt = probe_movie(game_state.cur_movie);
-		if (input_fmt) {
-			printf("Movie format: %s\n", input_fmt->long_name);
-		}
-
-		if (!tmpbuf) {
-			tmpbuf = (char *)malloc(BUFSIZE);
-		}
-
-		if (movie_src) {
-			SDL_RWclose(movie_src);
-		}
-
-		movie_src = FS_makeRWops(game_state.cur_movie);
-		if (!movie_src) {
-			fprintf(stderr, "Can not open movie %s\n", game_state.cur_movie);
-			movie_shutdown();
+		if (!movie_init(game_state.cur_movie)) {
 			return NULL;
 		}
-
-		init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
-			movie_ioread, NULL, movie_ioseek);
-		input_fmt->flags |= AVFMT_NOFILE;
-
-		if (av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, input_fmt, NULL)) {
-			fprintf(stderr,"Can not open stream\n");
-			movie_shutdown();
-			return NULL;
-		}
-
-		if (av_find_stream_info(fmt_ctx)<0) {
-			fprintf(stderr,"Can not find stream info\n");
-			movie_shutdown();
-			return NULL;
-		}
-
-/*			 
-			AvCodecContext
-			
-			AvPacket
-			av_read_frame
-			av_free_packet
-			
-			av_seek_frame
-		*/
 
 	}
 
 	return NULL;
+}
+
+static int movie_init(const char *filename)
+{
+	int i;
+
+	input_fmt = probe_movie(filename);
+	if (input_fmt) {
+		printf("Movie format: %s\n", input_fmt->long_name);
+	}
+
+	if (!tmpbuf) {
+		tmpbuf = (char *)malloc(BUFSIZE);
+	}
+
+	if (movie_src) {
+		SDL_RWclose(movie_src);
+	}
+
+	movie_src = FS_makeRWops(filename);
+	if (!movie_src) {
+		fprintf(stderr, "Can not open movie %s\n", filename);
+		movie_shutdown();
+		return 1;
+	}
+
+	init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
+		movie_ioread, NULL, movie_ioseek);
+	input_fmt->flags |= AVFMT_NOFILE;
+
+	if (av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, input_fmt, NULL)) {
+		fprintf(stderr,"Can not open stream\n");
+		movie_shutdown();
+		return 1;
+	}
+
+	if (av_find_stream_info(fmt_ctx)<0) {
+		fprintf(stderr,"Can not find stream info\n");
+		movie_shutdown();
+		return 1;
+	}
+
+	printf("movie: %d streams\n", fmt_ctx->nb_streams);
+	for (i=0; i<fmt_ctx->nb_streams; i++) {
+		AVStream *str = fmt_ctx->streams[i];
+		AVCodecContext *cc = &(str->codec);
+	}
+
+/*
+	AvCodecContext
+			
+	AvPacket
+	av_read_frame
+	av_free_packet
+			
+	av_seek_frame
+*/
+
+	return 0;
 }
 
 void movie_shutdown(void)
