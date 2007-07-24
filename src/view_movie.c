@@ -47,6 +47,8 @@ static ByteIOContext bio_ctx;
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
 
+static int audstream = -1, vidstream = -1;
+
 /*--- Functions prototypes ---*/
 
 static int movie_init(const char *filename);
@@ -55,6 +57,8 @@ void movie_shutdown(void);
 static AVInputFormat *probe_movie(const char *filename);
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
+
+static SDL_Surface *movie_decode_video(void);
 
 /*--- Functions ---*/
 
@@ -105,13 +109,14 @@ SDL_Surface *view_movie_update(void)
 		printf("Playing movie %d: %s\n", game_state.num_movie, game_state.cur_movie);
 		restart_movie = 0;
 
-		if (!movie_init(game_state.cur_movie)) {
+		if (movie_init(game_state.cur_movie)!=0) {
+			printf("error init\n");
 			return NULL;
 		}
 
 	}
 
-	return NULL;
+	return movie_decode_video();
 }
 
 static int movie_init(const char *filename)
@@ -123,12 +128,13 @@ static int movie_init(const char *filename)
 		printf("movie: %s\n", input_fmt->long_name);
 	}
 
-	if (!tmpbuf) {
-		tmpbuf = (char *)malloc(BUFSIZE);
+	/* Close current movie playing */
+	if (movie_src) {
+		movie_shutdown();
 	}
 
-	if (movie_src) {
-		SDL_RWclose(movie_src);
+	if (!tmpbuf) {
+		tmpbuf = (char *)malloc(BUFSIZE);
 	}
 
 	movie_src = FS_makeRWops(filename);
@@ -158,37 +164,45 @@ static int movie_init(const char *filename)
 
 	printf("movie: %d streams\n", fmt_ctx->nb_streams);
 	for (i=0; i<fmt_ctx->nb_streams; i++) {
+		AVCodec *codec;
 		AVCodecContext *cc = fmt_ctx->streams[i]->codec;
+
+		codec = avcodec_find_decoder(cc->codec_id);
+		if (!codec) {
+			fprintf(stderr, "Can not find codec for stream %d\n", i);
+			continue;
+		}
+
+		err = avcodec_open(cc, codec);
+		if (err<0) {
+			fprintf(stderr, "Can not open codec for stream %d\n", i);
+			continue;
+		}
+
 		printf("movie: stream %d: ", i);
 		switch(cc->codec_type) {
 			case CODEC_TYPE_VIDEO:
 				printf("video");
+				vidstream = i;
 				break;
 			case CODEC_TYPE_AUDIO:
 				printf("audio");
+				audstream = i;
 				break;
 			default:
 				printf("other type");
 				break;
 		}
-		printf("\n");
+		printf(" %s\n", codec->name);
 	}
-
-/*
-	AvCodecContext
-			
-	AvPacket
-	av_read_frame
-	av_free_packet
-			
-	av_seek_frame
-*/
 
 	return 0;
 }
 
 void movie_shutdown(void)
 {
+	audstream = vidstream = -1;
+
 	input_fmt = NULL;
 	if (fmt_ctx) {
 		av_close_input_file( fmt_ctx );
@@ -244,4 +258,23 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 {
 	return SDL_RWseek((SDL_RWops *)opaque, offset, whence);
+}
+
+static SDL_Surface *movie_decode_video(void)
+{
+	AVPacket pkt1, *pkt = &pkt1;
+	int err;
+
+	err = av_read_frame(fmt_ctx, pkt);
+	if (err<0) {
+		return NULL;
+	}
+
+	if (pkt->stream_index == vidstream) {
+		/* Decode video packet */
+	}
+
+	av_free_packet(pkt);
+
+	return NULL;
 }
