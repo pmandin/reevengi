@@ -275,6 +275,9 @@ int viewer_loop(void)
 				break;
 			case VIEWMODE_MOVIE:
 				cur_surf = view_movie_update();
+				/*if (cur_surf)*/ {
+					update_screen = 1;
+				}
 				break;
 		}
 
