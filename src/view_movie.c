@@ -54,7 +54,7 @@ void movie_shutdown(void);
 
 static AVInputFormat *probe_movie(const char *filename);
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
-static int movie_ioseek( void *opaque, offset_t offset, int whence );
+static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
 
 /*--- Functions ---*/
 
@@ -116,11 +116,11 @@ SDL_Surface *view_movie_update(void)
 
 static int movie_init(const char *filename)
 {
-	int i;
+	int i, err;
 
 	input_fmt = probe_movie(filename);
 	if (input_fmt) {
-		printf("Movie format: %s\n", input_fmt->long_name);
+		printf("movie: %s\n", input_fmt->long_name);
 	}
 
 	if (!tmpbuf) {
@@ -142,22 +142,36 @@ static int movie_init(const char *filename)
 		movie_ioread, NULL, movie_ioseek);
 	input_fmt->flags |= AVFMT_NOFILE;
 
-	if (av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, input_fmt, NULL)) {
-		fprintf(stderr,"Can not open stream\n");
+	err = av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, input_fmt, NULL);
+	if (err<0) {
+		fprintf(stderr,"Can not open stream: %d\n", err);
 		movie_shutdown();
 		return 1;
 	}
 
-	if (av_find_stream_info(fmt_ctx)<0) {
-		fprintf(stderr,"Can not find stream info\n");
+	err = av_find_stream_info(fmt_ctx);
+	if (err<0) {
+		fprintf(stderr,"Can not find stream info: %d\n", err);
 		movie_shutdown();
 		return 1;
 	}
 
 	printf("movie: %d streams\n", fmt_ctx->nb_streams);
 	for (i=0; i<fmt_ctx->nb_streams; i++) {
-		AVStream *str = fmt_ctx->streams[i];
-		AVCodecContext *cc = &(str->codec);
+		AVCodecContext *cc = fmt_ctx->streams[i]->codec;
+		printf("movie: stream %d: ", i);
+		switch(cc->codec_type) {
+			case CODEC_TYPE_VIDEO:
+				printf("video");
+				break;
+			case CODEC_TYPE_AUDIO:
+				printf("audio");
+				break;
+			default:
+				printf("other type");
+				break;
+		}
+		printf("\n");
 	}
 
 /*
@@ -220,10 +234,14 @@ static AVInputFormat *probe_movie(const char *filename)
 
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 {
-	return SDL_RWread((SDL_RWops *)opaque, buf, buf_size, 1);
+	if (SDL_RWread((SDL_RWops *)opaque, buf, buf_size, 1)) {
+		return buf_size;
+	}
+
+	return -1;
 }
 
-static int movie_ioseek( void *opaque, offset_t offset, int whence )
+static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 {
 	return SDL_RWseek((SDL_RWops *)opaque, offset, whence);
 }
