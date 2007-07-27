@@ -48,6 +48,9 @@ static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
 
 static int audstream = -1, vidstream = -1;
+static void *compressed_frame = NULL;
+static int frame_size = 0;
+static AVFrame *decoded_frame = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -179,21 +182,37 @@ static int movie_init(const char *filename)
 			continue;
 		}
 
-		printf("movie: stream %d: ", i);
+		printf("movie: stream %d: %s: ", i, codec->name);
 		switch(cc->codec_type) {
 			case CODEC_TYPE_VIDEO:
-				printf("video");
+				printf("video, %dx%d, %08x", cc->width, cc->height);
 				vidstream = i;
+				int frame_size = ((cc->width+16) * cc->height * 4)
+					+ FF_INPUT_BUFFER_PADDING_SIZE;
+				compressed_frame = calloc(frame_size, 1);
+				if (!compressed_frame) {
+					fprintf(stderr, "Can not alloc compressed buffer\n");
+					movie_shutdown();
+					return 1;
+				}
+				decoded_frame = (AVFrame *) malloc(frame_size);
+				if (!decoded_frame) {
+					fprintf(stderr, "Can not alloc decoded buffer\n");
+					movie_shutdown();
+					return 1;
+				}
 				break;
 			case CODEC_TYPE_AUDIO:
-				printf("audio");
+				printf("audio, %d Hz, %d channels",
+					cc->sample_rate, cc->channels
+				);
 				audstream = i;
 				break;
 			default:
 				printf("other type");
 				break;
 		}
-		printf(" %s\n", codec->name);
+		printf("\n");
 	}
 
 	return 0;
@@ -202,6 +221,15 @@ static int movie_init(const char *filename)
 void movie_shutdown(void)
 {
 	audstream = vidstream = -1;
+
+	if (compressed_frame) {
+		free(compressed_frame);
+		compressed_frame = NULL;
+	}
+	if (decoded_frame) {
+		free(decoded_frame);
+		decoded_frame = NULL;
+	}
 
 	input_fmt = NULL;
 	if (fmt_ctx) {
@@ -263,18 +291,31 @@ static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 static SDL_Surface *movie_decode_video(void)
 {
 	AVPacket pkt1, *pkt = &pkt1;
-	int err;
+	int err, got_pic;
+	SDL_Surface *image = NULL;
 
 	err = av_read_frame(fmt_ctx, pkt);
 	if (err<0) {
-		return NULL;
+		return image;
 	}
 
 	if (pkt->stream_index == vidstream) {
 		/* Decode video packet */
+		err = avcodec_decode_video(
+			fmt_ctx->streams[vidstream]->codec,
+			decoded_frame,
+			&got_pic,
+			pkt->data, pkt->size);
+
+		if (err<0) {
+			fprintf(stderr, "Error decoding frame: %d\n", err);
+		} else if (got_pic) {
+			/* Create surface and return it */
+			/*printf("decoded %d bytes\n", err);*/
+		}
 	}
 
 	av_free_packet(pkt);
 
-	return NULL;
+	return image;
 }
