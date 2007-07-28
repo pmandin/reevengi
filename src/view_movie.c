@@ -41,15 +41,13 @@
 static int restart_movie = 1;
 static int first_time = 1;
 
-static AVInputFormat *input_fmt = NULL;
+static AVInputFormat input_fmt;
 static AVFormatContext *fmt_ctx = NULL;
 static ByteIOContext bio_ctx;
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
 
 static int audstream = -1, vidstream = -1;
-static void *compressed_frame = NULL;
-static int frame_size = 0;
 static AVFrame *decoded_frame = NULL;
 
 static SDL_Overlay *overlay = NULL;
@@ -59,7 +57,7 @@ static SDL_Overlay *overlay = NULL;
 static int movie_init(const char *filename);
 void movie_shutdown(void);
 
-static AVInputFormat *probe_movie(const char *filename);
+static int probe_movie(const char *filename);
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
 
@@ -119,7 +117,6 @@ int view_movie_update(SDL_Surface *screen)
 		if (movie_init(game_state.cur_movie)!=0) {
 			return 0;
 		}
-
 	}
 
 	if (!fmt_ctx) {
@@ -133,14 +130,13 @@ static int movie_init(const char *filename)
 {
 	int i, err;
 
-	input_fmt = probe_movie(filename);
-	if (!input_fmt) {
+	if (probe_movie(filename)!=0) {
 		fprintf(stderr, "Can not probe movie %s\n", filename);
 		movie_shutdown();
 		return 1;
 	}
 
-	printf("movie: %s\n", input_fmt->long_name);
+	printf("movie: %s\n", input_fmt.long_name);
 
 	if (!tmpbuf) {
 		tmpbuf = (char *)malloc(BUFSIZE);
@@ -155,9 +151,10 @@ static int movie_init(const char *filename)
 
 	init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
 		movie_ioread, NULL, movie_ioseek);
-	input_fmt->flags |= AVFMT_NOFILE;
 
-	err = av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, input_fmt, NULL);
+	input_fmt.flags |= AVFMT_NOFILE;
+
+	err = av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, &input_fmt, NULL);
 	if (err<0) {
 		fprintf(stderr,"Can not open stream: %d\n", err);
 		movie_shutdown();
@@ -193,20 +190,6 @@ static int movie_init(const char *filename)
 			case CODEC_TYPE_VIDEO:
 				printf("video, %dx%d, %08x", cc->width, cc->height, cc->pix_fmt);
 				vidstream = i;
-				int frame_size = ((cc->width+16) * cc->height * 4)
-					+ FF_INPUT_BUFFER_PADDING_SIZE;
-				compressed_frame = calloc(frame_size, 1);
-				if (!compressed_frame) {
-					fprintf(stderr, "Can not alloc compressed buffer\n");
-					movie_shutdown();
-					return 1;
-				}
-				decoded_frame = avcodec_alloc_frame();
-				if (!decoded_frame) {
-					fprintf(stderr, "Can not alloc decoded frame\n");
-					movie_shutdown();
-					return 1;
-				}
 				break;
 			case CODEC_TYPE_AUDIO:
 				printf("audio, %d Hz, %d channels",
@@ -233,16 +216,11 @@ void movie_shutdown(void)
 		overlay=NULL;
 	}
 
-	if (compressed_frame) {
-		free(compressed_frame);
-		compressed_frame = NULL;
-	}
 	if (decoded_frame) {
 		av_free(decoded_frame);
 		decoded_frame = NULL;
 	}
 
-	input_fmt = NULL;
 	if (fmt_ctx) {
 		av_close_input_file( fmt_ctx );
 		fmt_ctx = NULL;
@@ -259,24 +237,26 @@ void movie_shutdown(void)
 
 /* Read first 2Ko to probe */
 
-static AVInputFormat *probe_movie(const char *filename)
+static int probe_movie(const char *filename)
 {
 	SDL_RWops	*src;
 	AVProbeData	pd;
-	AVInputFormat	*fmt = NULL;
+	int retval = 0;	
 
 	pd.filename = filename;
 	pd.buf_size = 2048;
 	pd.buf = (unsigned char *) malloc(pd.buf_size);
 	if (!pd.buf) {
 		fprintf(stderr, "Can not allocate %d bytes to probe movie\n", pd.buf_size);
-		return NULL;
+		return retval;
 	}
 
 	src = FS_makeRWops(filename);
 	if (src) {
 		if (SDL_RWread( src, pd.buf, pd.buf_size, 1)) {
-			fmt = av_probe_input_format(&pd, 1);
+			AVInputFormat *fmt = av_probe_input_format(&pd, 1);
+			memcpy(&input_fmt, fmt, sizeof(AVInputFormat));
+			retval = 0;
 		} else {
 			fprintf(stderr, "Error reading file %s for probing\n", filename);
 		}
@@ -286,7 +266,7 @@ static AVInputFormat *probe_movie(const char *filename)
 	}
 
 	free(pd.buf);
-	return fmt;
+	return retval;
 }
 
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
@@ -360,6 +340,14 @@ static int movie_decode_video(SDL_Surface *screen)
 	}
 
 	if (pkt->stream_index == vidstream) {
+		if (!decoded_frame) {
+			decoded_frame = avcodec_alloc_frame();
+			if (!decoded_frame) {
+				fprintf(stderr, "Can not alloc decoded frame\n");
+				return retval;
+			}
+		}
+
 		/* Decode video packet */
 		err = avcodec_decode_video(
 			fmt_ctx->streams[vidstream]->codec,
@@ -396,17 +384,19 @@ static int movie_decode_video(SDL_Surface *screen)
 			if (!overlay) {
 				overlay = SDL_CreateYUVOverlay(vid_w, vid_h,
 					SDL_YV12_OVERLAY, screen);
+				if (!overlay) {
+					fprintf(stderr, "Can not create overlay\n");
+					return retval;
+				}
 			}
 
-			if (overlay) {
-				/* Update overlay surface */
-				SDL_LockYUVOverlay(overlay);
-				update_overlay_yuv420();
-				SDL_UnlockYUVOverlay(overlay);
+			/* Update overlay surface */
+			SDL_LockYUVOverlay(overlay);
+			update_overlay_yuv420();
+			SDL_UnlockYUVOverlay(overlay);
 
-				/* Display overlay */
-				SDL_DisplayYUVOverlay(overlay, &rect);
-			}
+			/* Display overlay */
+			SDL_DisplayYUVOverlay(overlay, &rect);
 
 			retval = 1;
 		}
