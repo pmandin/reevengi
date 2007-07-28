@@ -56,7 +56,7 @@ static SDL_Overlay *overlay = NULL;
 
 /*--- Functions prototypes ---*/
 
-static int movie_init(const char *filename, SDL_Surface *screen);
+static int movie_init(const char *filename);
 void movie_shutdown(void);
 
 static AVInputFormat *probe_movie(const char *filename);
@@ -116,7 +116,7 @@ int view_movie_update(SDL_Surface *screen)
 
 		movie_shutdown();
 
-		if (movie_init(game_state.cur_movie, screen)!=0) {
+		if (movie_init(game_state.cur_movie)!=0) {
 			return 0;
 		}
 
@@ -129,7 +129,7 @@ int view_movie_update(SDL_Surface *screen)
 	return movie_decode_video(screen);
 }
 
-static int movie_init(const char *filename, SDL_Surface *screen)
+static int movie_init(const char *filename)
 {
 	int i, err;
 
@@ -207,13 +207,6 @@ static int movie_init(const char *filename, SDL_Surface *screen)
 					movie_shutdown();
 					return 1;
 				}
-				overlay = SDL_CreateYUVOverlay(cc->width, cc->height,
-					SDL_YV12_OVERLAY, screen);
-				if (!overlay) {
-					fprintf(stderr, "Can not create overlay\n");
-					movie_shutdown();
-					return 1;
-				}
 				break;
 			case CODEC_TYPE_AUDIO:
 				printf("audio, %d Hz, %d channels",
@@ -280,16 +273,16 @@ static AVInputFormat *probe_movie(const char *filename)
 		return NULL;
 	}
 
-	src = FS_makeRWops(pd.filename);
+	src = FS_makeRWops(filename);
 	if (src) {
 		if (SDL_RWread( src, pd.buf, pd.buf_size, 1)) {
 			fmt = av_probe_input_format(&pd, 1);
 		} else {
-			fprintf(stderr, "Error reading file %s for probing\n", pd.filename);
+			fprintf(stderr, "Error reading file %s for probing\n", filename);
 		}
 		SDL_RWclose(src);
 	} else {
-		fprintf(stderr, "Can not open file %s for probing\n", pd.filename);
+		fprintf(stderr, "Can not open file %s for probing\n", filename);
 	}
 
 	free(pd.buf);
@@ -399,15 +392,21 @@ static int movie_decode_video(SDL_Surface *screen)
 			rect.w = w2;
 			rect.h = h2;
 
-			/* Update overlay surface */
-			SDL_LockYUVOverlay(overlay);
-			update_overlay_yuv420();
-			SDL_UnlockYUVOverlay(overlay);
+			/* Create overlay */
+			if (!overlay) {
+				overlay = SDL_CreateYUVOverlay(vid_w, vid_h,
+					SDL_YV12_OVERLAY, screen);
+			}
 
-			/* Rescale to match screen size */
+			if (overlay) {
+				/* Update overlay surface */
+				SDL_LockYUVOverlay(overlay);
+				update_overlay_yuv420();
+				SDL_UnlockYUVOverlay(overlay);
 
-			/* Display overlay */
-			SDL_DisplayYUVOverlay(overlay, &rect);
+				/* Display overlay */
+				SDL_DisplayYUVOverlay(overlay, &rect);
+			}
 
 			retval = 1;
 		}
