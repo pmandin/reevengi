@@ -106,6 +106,10 @@ int main(int argc, char **argv)
 		case GAME_RE2_PC_DEMO:
 			printf("Resident Evil 2, PC, Demo\n");
 			re2pcdemo_init(&game_state);
+			if (viewmode == VIEWMODE_MOVIE) {
+				printf("No movies to play\n");
+				viewmode = VIEWMODE_BACKGROUND;
+			}
 			break;
 		case GAME_RE2_PC_GAME_LEON:
 			printf("Resident Evil 2, PC, Game Leon\n");
@@ -148,7 +152,9 @@ int main(int argc, char **argv)
 			FS_Shutdown();
 			exit(1);
 	}
-	state_newmovie();
+	if (viewmode == VIEWMODE_MOVIE) {	
+		state_newmovie();
+	}
 
 	if (SDL_Init(SDL_INIT_VIDEO)<0) {
 		fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());
