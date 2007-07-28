@@ -52,16 +52,18 @@ static void *compressed_frame = NULL;
 static int frame_size = 0;
 static AVFrame *decoded_frame = NULL;
 
+static SDL_Overlay *overlay = NULL;
+
 /*--- Functions prototypes ---*/
 
-static int movie_init(const char *filename);
+static int movie_init(const char *filename, SDL_Surface *screen);
 void movie_shutdown(void);
 
 static AVInputFormat *probe_movie(const char *filename);
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
 
-static SDL_Surface *movie_decode_video(void);
+static int movie_decode_video(SDL_Surface *screen);
 
 /*--- Functions ---*/
 
@@ -99,7 +101,7 @@ int view_movie_input(SDL_Event *event)
 	return 1;
 }
 
-SDL_Surface *view_movie_update(void)
+int view_movie_update(SDL_Surface *screen)
 {
 	/* Init ffmpeg ? */
 	if (first_time) {
@@ -112,29 +114,33 @@ SDL_Surface *view_movie_update(void)
 		printf("Playing movie %d: %s\n", game_state.num_movie, game_state.cur_movie);
 		restart_movie = 0;
 
-		if (movie_init(game_state.cur_movie)!=0) {
-			printf("error init\n");
-			return NULL;
+		movie_shutdown();
+
+		if (movie_init(game_state.cur_movie, screen)!=0) {
+			return 0;
 		}
 
 	}
 
-	return movie_decode_video();
+	if (!fmt_ctx) {
+		return 0;
+	}
+
+	return movie_decode_video(screen);
 }
 
-static int movie_init(const char *filename)
+static int movie_init(const char *filename, SDL_Surface *screen)
 {
 	int i, err;
 
 	input_fmt = probe_movie(filename);
-	if (input_fmt) {
-		printf("movie: %s\n", input_fmt->long_name);
+	if (!input_fmt) {
+		fprintf(stderr, "Can not probe movie %s\n", filename);
+		movie_shutdown();
+		return 1;
 	}
 
-	/* Close current movie playing */
-	if (movie_src) {
-		movie_shutdown();
-	}
+	printf("movie: %s\n", input_fmt->long_name);
 
 	if (!tmpbuf) {
 		tmpbuf = (char *)malloc(BUFSIZE);
@@ -185,7 +191,7 @@ static int movie_init(const char *filename)
 		printf("movie: stream %d: %s: ", i, codec->name);
 		switch(cc->codec_type) {
 			case CODEC_TYPE_VIDEO:
-				printf("video, %dx%d, %08x", cc->width, cc->height);
+				printf("video, %dx%d, %08x", cc->width, cc->height, cc->pix_fmt);
 				vidstream = i;
 				int frame_size = ((cc->width+16) * cc->height * 4)
 					+ FF_INPUT_BUFFER_PADDING_SIZE;
@@ -195,9 +201,16 @@ static int movie_init(const char *filename)
 					movie_shutdown();
 					return 1;
 				}
-				decoded_frame = (AVFrame *) malloc(frame_size);
+				decoded_frame = avcodec_alloc_frame();
 				if (!decoded_frame) {
-					fprintf(stderr, "Can not alloc decoded buffer\n");
+					fprintf(stderr, "Can not alloc decoded frame\n");
+					movie_shutdown();
+					return 1;
+				}
+				overlay = SDL_CreateYUVOverlay(cc->width, cc->height,
+					SDL_YV12_OVERLAY, screen);
+				if (!overlay) {
+					fprintf(stderr, "Can not create overlay\n");
 					movie_shutdown();
 					return 1;
 				}
@@ -222,12 +235,17 @@ void movie_shutdown(void)
 {
 	audstream = vidstream = -1;
 
+	if (overlay) {
+		SDL_FreeYUVOverlay(overlay);
+		overlay=NULL;
+	}
+
 	if (compressed_frame) {
 		free(compressed_frame);
 		compressed_frame = NULL;
 	}
 	if (decoded_frame) {
-		free(decoded_frame);
+		av_free(decoded_frame);
 		decoded_frame = NULL;
 	}
 
@@ -266,8 +284,12 @@ static AVInputFormat *probe_movie(const char *filename)
 	if (src) {
 		if (SDL_RWread( src, pd.buf, pd.buf_size, 1)) {
 			fmt = av_probe_input_format(&pd, 1);
+		} else {
+			fprintf(stderr, "Error reading file %s for probing\n", pd.filename);
 		}
 		SDL_RWclose(src);
+	} else {
+		fprintf(stderr, "Can not open file %s for probing\n", pd.filename);
 	}
 
 	free(pd.buf);
@@ -288,15 +310,60 @@ static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 	return SDL_RWseek((SDL_RWops *)opaque, offset, whence);
 }
 
-static SDL_Surface *movie_decode_video(void)
+static void update_overlay_yuv420(void)
+{
+	int x,y;
+	Uint8 *dst[3], *dst_line[3];
+	Uint8 *src[3], *src_line[3];
+
+	src[0] = decoded_frame->data[0];
+	src[1] = decoded_frame->data[1];
+	src[2] = decoded_frame->data[2];
+
+	dst[0] = overlay->pixels[0];
+	dst[1] = overlay->pixels[1];
+	dst[2] = overlay->pixels[2];
+
+	for (y=0; y<overlay->h; y++) {
+		src_line[0] = src[0];
+		dst_line[0] = dst[0];
+
+		for (x=0; x<overlay->w; x++) {
+			*(dst_line[0]++) = *(src_line[0]++);
+		}
+
+		src[0] += decoded_frame->linesize[0];
+		dst[0] += overlay->pitches[0];
+	}
+
+	for (y=0; y<overlay->h>>1; y++) {
+		src_line[1] = src[1];
+		src_line[2] = src[2];
+
+		dst_line[1] = dst[1];
+		dst_line[2] = dst[2];
+
+		for (x=0; x<overlay->w>>1; x++) {
+			*(dst_line[1]++) = *(src_line[2]++);
+			*(dst_line[2]++) = *(src_line[1]++);
+		}
+
+		src[1] += decoded_frame->linesize[1];
+		src[2] += decoded_frame->linesize[2];
+
+		dst[1] += overlay->pitches[1];
+		dst[2] += overlay->pitches[2];
+	}
+}
+
+static int movie_decode_video(SDL_Surface *screen)
 {
 	AVPacket pkt1, *pkt = &pkt1;
-	int err, got_pic;
-	SDL_Surface *image = NULL;
+	int err, got_pic, retval = 0;
 
 	err = av_read_frame(fmt_ctx, pkt);
 	if (err<0) {
-		return image;
+		return retval;
 	}
 
 	if (pkt->stream_index == vidstream) {
@@ -310,12 +377,43 @@ static SDL_Surface *movie_decode_video(void)
 		if (err<0) {
 			fprintf(stderr, "Error decoding frame: %d\n", err);
 		} else if (got_pic) {
-			/* Create surface and return it */
-			/*printf("decoded %d bytes\n", err);*/
+			SDL_Rect rect;
+			int vid_w = fmt_ctx->streams[vidstream]->codec->width;
+			int vid_h = fmt_ctx->streams[vidstream]->codec->height;
+			int w2, h2;
+
+			rect.x = rect.y = 0;
+			rect.w = vid_w;
+			rect.h = vid_h;
+
+			/* Rescale to biggest visible screen size */
+			w2 = (vid_w * screen->h) / vid_h;
+			h2 = (vid_h * screen->w) / vid_w;
+			if (w2>screen->w) {
+				w2 = screen->w;
+			} else if (h2>screen->h) {
+				h2 = screen->h;
+			}
+			rect.x = (screen->w - w2)>>1;
+			rect.y = (screen->h - h2)>>1;
+			rect.w = w2;
+			rect.h = h2;
+
+			/* Update overlay surface */
+			SDL_LockYUVOverlay(overlay);
+			update_overlay_yuv420();
+			SDL_UnlockYUVOverlay(overlay);
+
+			/* Rescale to match screen size */
+
+			/* Display overlay */
+			SDL_DisplayYUVOverlay(overlay, &rect);
+
+			retval = 1;
 		}
 	}
 
 	av_free_packet(pkt);
 
-	return image;
+	return retval;
 }

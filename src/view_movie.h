@@ -29,6 +29,6 @@
 /*--- Function prototypes ---*/
 
 int view_movie_input(SDL_Event *event);
-SDL_Surface *view_movie_update(void);
+int view_movie_update(SDL_Surface *screen);
 
 #endif /* VIEW_MOVIE_H */

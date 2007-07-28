@@ -274,10 +274,8 @@ int viewer_loop(void)
 				cur_surf = view_background_update();
 				break;
 			case VIEWMODE_MOVIE:
-				cur_surf = view_movie_update();
-				/*if (cur_surf)*/ {
-					update_screen = 1;
-				}
+				update_screen = view_movie_update(screen);
+				update_screen = 1;
 				break;
 		}
 
