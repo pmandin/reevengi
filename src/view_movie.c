@@ -36,6 +36,9 @@
 
 #define BUFSIZE 32768
 
+#define RAW_CD_SECTOR_SIZE	2352
+#define DATA_CD_SECTOR_SIZE	2048
+
 /*--- Variables ---*/
 
 static int restart_movie = 1;
@@ -48,6 +51,8 @@ static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
 
 static int audstream = -1, vidstream = -1;
+static int emul_cd;
+static int emul_cd_pos;
 static AVFrame *decoded_frame = NULL;
 
 static SDL_Overlay *overlay = NULL;
@@ -56,6 +61,8 @@ static SDL_Overlay *overlay = NULL;
 
 static int movie_init(const char *filename);
 void movie_shutdown(void);
+
+static void check_emul_cd(void);
 
 static int probe_movie(const char *filename);
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
@@ -126,6 +133,25 @@ int view_movie_update(SDL_Surface *screen)
 	return movie_decode_video(screen);
 }
 
+static void check_emul_cd(void)
+{
+	/* Emulate CD read for PS1 games */
+	switch(game_state.version) {
+		case GAME_RE1_PS1_DEMO:
+		case GAME_RE1_PS1_GAME:
+		case GAME_RE2_PS1_DEMO:
+		case GAME_RE2_PS1_GAME_LEON:
+		case GAME_RE2_PS1_GAME_CLAIRE:
+		case GAME_RE3_PS1_DEMO:
+		case GAME_RE3_PS1_GAME:
+			emul_cd = 1;
+			break;
+		default:
+			emul_cd = 0;
+			break;
+	}
+}
+
 static int movie_init(const char *filename)
 {
 	int i, err;
@@ -149,12 +175,14 @@ static int movie_init(const char *filename)
 		return 1;
 	}
 
+	check_emul_cd();
+
 	init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
 		movie_ioread, NULL, movie_ioseek);
 
 	input_fmt.flags |= AVFMT_NOFILE;
 
-	err = av_open_input_stream(&fmt_ctx, &bio_ctx, game_state.cur_movie, &input_fmt, NULL);
+	err = av_open_input_stream(&fmt_ctx, &bio_ctx, filename, &input_fmt, NULL);
 	if (err<0) {
 		fprintf(stderr,"Can not open stream: %d\n", err);
 		movie_shutdown();
@@ -210,6 +238,8 @@ static int movie_init(const char *filename)
 void movie_shutdown(void)
 {
 	audstream = vidstream = -1;
+	emul_cd = 0;
+	emul_cd_pos = 0;
 
 	if (overlay) {
 		SDL_FreeYUVOverlay(overlay);
@@ -271,15 +301,66 @@ static int probe_movie(const char *filename)
 
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 {
-	if (SDL_RWread((SDL_RWops *)opaque, buf, buf_size, 1)) {
-		return buf_size;
+	int size_read = 0;
+	
+	if (emul_cd) {
+		while (buf_size>0) {
+			int sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
+			int max_size;
+
+			while ((sector_pos<12) && (buf_size>0)) {
+				buf[size_read++] = ((sector_pos==0) || (sector_pos==11)) ? 0 : 0xff;
+				buf_size--;
+				sector_pos++;
+			}
+			while ((sector_pos<16) && (buf_size>0)) {
+				buf[size_read++] = 0;
+				buf_size--;
+				sector_pos++;
+			}
+			max_size = (max_size>buf_size) ? buf_size : 2048;
+			while ((sector_pos<2064) && (buf_size>0)) {
+				if (SDL_RWread((SDL_RWops *)opaque, &buf[size_read], max_size, 1)<1) {
+					return -1;
+				}
+				buf_size -= max_size;
+				size_read += max_size;
+				sector_pos += max_size;
+			}
+			while ((sector_pos<2352) && (buf_size>0)) {
+				buf[size_read++] = 0;
+				buf_size--;
+				sector_pos++;
+			}
+		
+			emul_cd_pos += size_read;
+		}
+	} else {
+		if (SDL_RWread((SDL_RWops *)opaque, buf, buf_size, 1)<1) {
+			return -1;
+		}
+		size_read = buf_size;
 	}
 
-	return -1;
+	return size_read;
 }
 
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 {
+	if (emul_cd) {
+		switch(whence) {
+			case RW_SEEK_SET:
+			case RW_SEEK_END:
+				emul_cd_pos = offset;
+				break;
+			case RW_SEEK_CUR:
+				emul_cd_pos += offset;
+				break;
+		}
+
+		offset = (emul_cd_pos * DATA_CD_SECTOR_SIZE) / RAW_CD_SECTOR_SIZE;
+	}
+
 	return SDL_RWseek((SDL_RWops *)opaque, offset, whence);
 }
 
