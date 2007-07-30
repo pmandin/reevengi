@@ -156,6 +156,8 @@ static int movie_init(const char *filename)
 {
 	int i, err;
 
+	check_emul_cd();
+
 	if (probe_movie(filename)!=0) {
 		fprintf(stderr, "Can not probe movie %s\n", filename);
 		movie_shutdown();
@@ -174,8 +176,6 @@ static int movie_init(const char *filename)
 		movie_shutdown();
 		return 1;
 	}
-
-	check_emul_cd();
 
 	init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
 		movie_ioread, NULL, movie_ioseek);
@@ -271,7 +271,7 @@ static int probe_movie(const char *filename)
 {
 	SDL_RWops	*src;
 	AVProbeData	pd;
-	int retval = 0;	
+	int retval = 1;	
 
 	pd.filename = filename;
 	pd.buf_size = 2048;
@@ -283,10 +283,12 @@ static int probe_movie(const char *filename)
 
 	src = FS_makeRWops(filename);
 	if (src) {
-		if (SDL_RWread( src, pd.buf, pd.buf_size, 1)) {
+		if (movie_ioread( src, pd.buf, pd.buf_size) == pd.buf_size) {
 			AVInputFormat *fmt = av_probe_input_format(&pd, 1);
-			memcpy(&input_fmt, fmt, sizeof(AVInputFormat));
-			retval = 0;
+			if (fmt) {
+				memcpy(&input_fmt, fmt, sizeof(AVInputFormat));
+				retval = 0;
+			}
 		} else {
 			fprintf(stderr, "Error reading file %s for probing\n", filename);
 		}
@@ -312,28 +314,31 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 				buf[size_read++] = ((sector_pos==0) || (sector_pos==11)) ? 0 : 0xff;
 				buf_size--;
 				sector_pos++;
+				emul_cd_pos++;
 			}
 			while ((sector_pos<16) && (buf_size>0)) {
 				buf[size_read++] = 0;
 				buf_size--;
 				sector_pos++;
+				emul_cd_pos++;
 			}
-			max_size = (max_size>buf_size) ? buf_size : 2048;
 			while ((sector_pos<2064) && (buf_size>0)) {
+				max_size = 2064-sector_pos;
+				max_size = (max_size>buf_size) ? buf_size : max_size;
 				if (SDL_RWread((SDL_RWops *)opaque, &buf[size_read], max_size, 1)<1) {
 					return -1;
 				}
 				buf_size -= max_size;
 				size_read += max_size;
 				sector_pos += max_size;
+				emul_cd_pos += max_size;
 			}
 			while ((sector_pos<2352) && (buf_size>0)) {
 				buf[size_read++] = 0;
 				buf_size--;
 				sector_pos++;
+				emul_cd_pos++;
 			}
-		
-			emul_cd_pos += size_read;
 		}
 	} else {
 		if (SDL_RWread((SDL_RWops *)opaque, buf, buf_size, 1)<1) {
