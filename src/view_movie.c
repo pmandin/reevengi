@@ -39,6 +39,11 @@
 #define RAW_CD_SECTOR_SIZE	2352
 #define DATA_CD_SECTOR_SIZE	2048
 
+#define CD_SYNC_SIZE 12
+#define CD_SEC_SIZE 4
+#define CD_XA_SIZE 8
+#define CD_DATA_SIZE 2048
+
 /*--- Variables ---*/
 
 static int restart_movie = 1;
@@ -157,6 +162,7 @@ static int movie_init(const char *filename)
 	int i, err;
 
 	check_emul_cd();
+	emul_cd_pos = 0;
 
 	if (probe_movie(filename)!=0) {
 		fprintf(stderr, "Can not probe movie %s\n", filename);
@@ -177,6 +183,7 @@ static int movie_init(const char *filename)
 		return 1;
 	}
 
+	emul_cd_pos = 0;
 	init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
 		movie_ioread, NULL, movie_ioseek);
 
@@ -239,7 +246,6 @@ void movie_shutdown(void)
 {
 	audstream = vidstream = -1;
 	emul_cd = 0;
-	emul_cd_pos = 0;
 
 	if (overlay) {
 		SDL_FreeYUVOverlay(overlay);
@@ -304,26 +310,28 @@ static int probe_movie(const char *filename)
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 {
 	int size_read = 0;
-	
+
 	if (emul_cd) {
+		/* TODO: skip non video sectors */
+		/* TODO: detect audio sectors */
+
 		while (buf_size>0) {
 			int sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
 			int max_size;
-
-			while ((sector_pos<12) && (buf_size>0)) {
+			while ((sector_pos<CD_SYNC_SIZE) && (buf_size>0)) {
 				buf[size_read++] = ((sector_pos==0) || (sector_pos==11)) ? 0 : 0xff;
 				buf_size--;
 				sector_pos++;
 				emul_cd_pos++;
 			}
-			while ((sector_pos<16) && (buf_size>0)) {
-				buf[size_read++] = 0;
+			while ((sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) && (buf_size>0)) {
+				buf[size_read++] = (sector_pos == 0x12) ? 0x08 : 0;
 				buf_size--;
 				sector_pos++;
 				emul_cd_pos++;
 			}
-			while ((sector_pos<2064) && (buf_size>0)) {
-				max_size = 2064-sector_pos;
+			while ((sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) && (buf_size>0)) {
+				max_size = CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE-sector_pos;
 				max_size = (max_size>buf_size) ? buf_size : max_size;
 				if (SDL_RWread((SDL_RWops *)opaque, &buf[size_read], max_size, 1)<1) {
 					return -1;
@@ -333,7 +341,7 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 				sector_pos += max_size;
 				emul_cd_pos += max_size;
 			}
-			while ((sector_pos<2352) && (buf_size>0)) {
+			while ((sector_pos<RAW_CD_SECTOR_SIZE) && (buf_size>0)) {
 				buf[size_read++] = 0;
 				buf_size--;
 				sector_pos++;
@@ -352,6 +360,8 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 {
+	offset_t new_offset;
+
 	if (emul_cd) {
 		switch(whence) {
 			case RW_SEEK_SET:
@@ -366,7 +376,13 @@ static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 		offset = (emul_cd_pos * DATA_CD_SECTOR_SIZE) / RAW_CD_SECTOR_SIZE;
 	}
 
-	return SDL_RWseek((SDL_RWops *)opaque, offset, whence);
+	new_offset = SDL_RWseek((SDL_RWops *)opaque, offset, whence);
+
+	if (emul_cd) {
+		new_offset = (new_offset * RAW_CD_SECTOR_SIZE) / DATA_CD_SECTOR_SIZE;
+	}
+
+	return new_offset;
 }
 
 static void update_overlay_yuv420(void)
