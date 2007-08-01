@@ -98,13 +98,13 @@ void re2ps1_init(state_t *game_state)
 
 	switch(game_state->version) {
 		case GAME_RE2_PS1_DEMO:
-			game_state->movies_list = re2ps1demo_movies;
+			game_state->movies_list = (char **) re2ps1demo_movies;
 			break;
 		case GAME_RE2_PS1_GAME_LEON:
-			game_state->movies_list = re2ps1game_leon_movies;
+			game_state->movies_list = (char **) re2ps1game_leon_movies;
 			break;
 		case GAME_RE2_PS1_GAME_CLAIRE:
-			game_state->movies_list = re2ps1game_claire_movies;
+			game_state->movies_list = (char **) re2ps1game_claire_movies;
 			break;
 	}
 }

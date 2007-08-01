@@ -94,9 +94,9 @@ void re2pcgame_init(state_t *game_state)
 	game_state->shutdown = re2pcgame_shutdown;
 
 	if (game_state->version == GAME_RE2_PC_GAME_LEON) {
-		game_state->movies_list = re2pcgame_leon_movies;
+		game_state->movies_list = (char **) re2pcgame_leon_movies;
 	} else {
-		game_state->movies_list = re2pcgame_claire_movies;
+		game_state->movies_list = (char **) re2pcgame_claire_movies;
 	}
 }
 
