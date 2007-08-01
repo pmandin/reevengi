@@ -83,7 +83,7 @@ void re1pcgame_init(state_t *game_state)
 	game_state->load_background = re1pcgame_loadbackground;
 	game_state->shutdown = re1pcgame_shutdown;
 
-	game_state->movies_list = re1pcgame_movies;
+	game_state->movies_list = (char **) re1pcgame_movies;
 }
 
 void re1pcgame_shutdown(void)
