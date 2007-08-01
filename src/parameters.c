@@ -104,6 +104,7 @@ void DisplayUsage(void)
 	printf("----  by Patrice Mandin  ----\n");
 	printf("Usage:\n");
 	printf( "  [-basedir </path/to/gamedir>] (default=%s)\n"
+		"  [-movie] (switch to movie player mode)\n"
 		"  [-gamma <n>] (default=%.3f)\n"
 		"  [-verbose <n>] (default=%d)\n"
 		"  [-help] (print this message)\n",
