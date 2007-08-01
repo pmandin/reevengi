@@ -22,8 +22,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <SDL.h>
+#ifdef ENABLE_FFMPEG
 #include <ffmpeg/avformat.h>
+#endif
 
 #include "state.h"
 #include "filesystem.h"
@@ -51,16 +58,20 @@
 static int restart_movie = 1;
 static int first_time = 1;
 
+#ifdef ENABLE_FFMPEG
 static AVInputFormat input_fmt;
 static AVFormatContext *fmt_ctx = NULL;
 static ByteIOContext bio_ctx;
+#endif
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
 
 static int audstream = -1, vidstream = -1;
 static int emul_cd;
 static int emul_cd_pos;
+#ifdef ENABLE_FFMPEG
 static AVFrame *decoded_frame = NULL;
+#endif
 
 static SDL_Overlay *overlay = NULL;
 
@@ -72,8 +83,10 @@ void movie_shutdown(void);
 static void check_emul_cd(void);
 
 static int probe_movie(const char *filename);
+#ifdef ENABLE_FFMPEG
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
+#endif
 
 static int movie_decode_video(SDL_Surface *screen);
 
@@ -115,6 +128,7 @@ int view_movie_input(SDL_Event *event)
 
 int view_movie_update(SDL_Surface *screen)
 {
+#ifdef ENABLE_FFMPEG
 	/* Init ffmpeg ? */
 	if (first_time) {
 		first_time = 0;
@@ -138,6 +152,9 @@ int view_movie_update(SDL_Surface *screen)
 	}
 
 	return movie_decode_video(screen);
+#else
+	return 0;
+#endif
 }
 
 static void check_emul_cd(void)
@@ -161,6 +178,7 @@ static void check_emul_cd(void)
 
 static int movie_init(const char *filename)
 {
+#ifdef ENABLE_FFMPEG
 	int i, err;
 
 	check_emul_cd();
@@ -240,6 +258,7 @@ static int movie_init(const char *filename)
 		}
 		printf("\n");
 	}
+#endif
 
 	return 0;
 }
@@ -254,6 +273,7 @@ void movie_shutdown(void)
 		overlay=NULL;
 	}
 
+#ifdef ENABLE_FFMPEG
 	if (decoded_frame) {
 		av_free(decoded_frame);
 		decoded_frame = NULL;
@@ -263,6 +283,8 @@ void movie_shutdown(void)
 		av_close_input_file( fmt_ctx );
 		fmt_ctx = NULL;
 	}
+#endif
+
 	if (tmpbuf) {
 		free(tmpbuf);
 		tmpbuf=NULL;
@@ -277,9 +299,10 @@ void movie_shutdown(void)
 
 static int probe_movie(const char *filename)
 {
+	int retval = 1;	
+#ifdef ENABLE_FFMPEG
 	SDL_RWops	*src;
 	AVProbeData	pd;
-	int retval = 1;	
 
 	pd.filename = filename;
 	pd.buf_size = 2048;
@@ -306,9 +329,11 @@ static int probe_movie(const char *filename)
 	}
 
 	free(pd.buf);
+#endif
 	return retval;
 }
 
+#ifdef ENABLE_FFMPEG
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 {
 	int size_read = 0;
@@ -401,9 +426,11 @@ static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 
 	return new_offset;
 }
+#endif
 
 static void update_overlay_yuv420(void)
 {
+#ifdef ENABLE_FFMPEG
 	int x,y;
 	Uint8 *dst[3], *dst_line[3];
 	Uint8 *src[3], *src_line[3];
@@ -446,12 +473,15 @@ static void update_overlay_yuv420(void)
 		dst[1] += overlay->pitches[1];
 		dst[2] += overlay->pitches[2];
 	}
+#endif
 }
 
 static int movie_decode_video(SDL_Surface *screen)
 {
+	int retval = 0;
+#ifdef ENABLE_FFMPEG
 	AVPacket pkt1, *pkt = &pkt1;
-	int err, got_pic, retval = 0;
+	int err, got_pic;
 
 	err = av_read_frame(fmt_ctx, pkt);
 	if (err<0) {
@@ -522,6 +552,7 @@ static int movie_decode_video(SDL_Surface *screen)
 	}
 
 	av_free_packet(pkt);
+#endif
 
 	return retval;
 }

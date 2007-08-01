@@ -153,7 +153,12 @@ int main(int argc, char **argv)
 			exit(1);
 	}
 	if (viewmode == VIEWMODE_MOVIE) {	
+#ifdef ENABLE_FFMPEG
 		state_newmovie();
+#else
+		printf("Movie player disabled\n");
+		viewmode == VIEWMODE_BACKGROUND;
+#endif
 	}
 
 	if (SDL_Init(SDL_INIT_VIDEO)<0) {
