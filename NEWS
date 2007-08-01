@@ -1,6 +1,8 @@
-v 0.3
+v 0.4
 
-- Don't reload image if switching between fullscreen and windowed.
+- Added Resident Evil 2, PS1, Game.
+- Added Resident Evil 2, PC, Game.
+- Preliminary movie player using ffmpeg library.
 
 
 See ChangeLog for older changes.
