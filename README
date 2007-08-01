@@ -21,6 +21,9 @@ Use at your own risks.
 - SDL_image with libjpeg support.
   http://www.libsdl.org/projects/SDL_image/
 
+- FFmpeg for movie player
+  http://ffmpeg.mplayerhq.hu/
+
 - PhysicsFS for all filesystem access.
   http://www.icculus.org/physfs/
 
@@ -39,6 +42,8 @@ Use at your own risks.
   Default is 1.0 .
   Example: -gamma 1.2
 
+"-movie" to enable movie player mode.
+
 "-help" displays a little help.
 
 
@@ -52,21 +57,21 @@ ESC		quit
 F1		screenshot
 Alt+Enter	toggle between fullscreen and windowed mode.
 
-A		decrement stage number
-Q		increment stage number
-W		reset stage number
+A		decrement gamma
+Q		increment gamma
+W		reset gamma
 
-Z		decrement room number
-S		increment room number
-X		reset room number
+Z		previous stage / previous movie
+S		next stage / next movie
+X		reset stage / reset movie
 
-E		decrement camera number
-D		increment camera number
-C		reset camera number
+E		previous room
+D		next room
+C		reset room
 
-R		decrement gamma
-F		increment gamma
-V		reset gamma
+R		previous camera
+F		previous camera
+V		reset camera
 
 
 4 Supported games
