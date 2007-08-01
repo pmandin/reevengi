@@ -44,6 +44,8 @@
 #define CD_XA_SIZE 8
 #define CD_DATA_SIZE 2048
 
+#define STR_MAGIC 0x60010180
+
 /*--- Variables ---*/
 
 static int restart_movie = 1;
@@ -318,6 +320,8 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		while (buf_size>0) {
 			int sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
 			int max_size;
+			int pos_data_type = -1; /* need to set data type */
+			int is_video = 0;
 			while ((sector_pos<CD_SYNC_SIZE) && (buf_size>0)) {
 				buf[size_read++] = ((sector_pos==0) || (sector_pos==11)) ? 0 : 0xff;
 				buf_size--;
@@ -325,7 +329,10 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 				emul_cd_pos++;
 			}
 			while ((sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) && (buf_size>0)) {
-				buf[size_read++] = (sector_pos == 0x12) ? 0x08 : 0;
+				if (sector_pos == 0x12) {
+					pos_data_type = size_read;
+				}
+				buf[size_read++] = 0;
 				buf_size--;
 				sector_pos++;
 				emul_cd_pos++;
@@ -335,6 +342,11 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 				max_size = (max_size>buf_size) ? buf_size : max_size;
 				if (SDL_RWread((SDL_RWops *)opaque, &buf[size_read], max_size, 1)<1) {
 					return -1;
+				}
+				if ((sector_pos == CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) && (max_size>=4)) {
+					/* Read first bytes */
+					Uint32 magic = *((Uint32 *) &buf[size_read]);
+					is_video = (SDL_SwapBE32(magic) == STR_MAGIC);
 				}
 				buf_size -= max_size;
 				size_read += max_size;
@@ -346,6 +358,11 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 				buf_size--;
 				sector_pos++;
 				emul_cd_pos++;
+			}
+
+			/* set data type */
+			if ((pos_data_type>=0) && is_video) {
+				buf[pos_data_type] = 0x08;
 			}
 		}
 	} else {
