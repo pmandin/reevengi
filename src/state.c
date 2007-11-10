@@ -150,7 +150,9 @@ static void state_detect(void)
 {
 	game_state.version = GAME_UNKNOWN;
 
-	if (game_file_exists("rofs1.dat")) {
+	if (game_file_exists("rofs2.dat")) {
+		game_state.version = GAME_RE3_PC_GAME;
+	} else if (game_file_exists("rofs1.dat")) {
 		game_state.version = GAME_RE3_PC_DEMO;
 	} else if (game_file_exists("REGIST/LEONF.EXE")) {
 		game_state.version = GAME_RE2_PC_GAME_LEON;

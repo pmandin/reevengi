@@ -1,7 +1,6 @@
 /*
 	RE3
 	PC
-	Demo
 
 	Copyright (C) 2007	Patrice Mandin
 
@@ -20,14 +19,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RE3PCDEMO_H
-#define RE3PCDEMO_H
+#ifndef RE3PC_H
+#define RE3PC_H
 
 /*--- Functions ---*/
 
-void re3pcdemo_init(state_t *game_state);
-void re3pcdemo_shutdown(void);
+void re3pc_init(state_t *game_state);
+void re3pc_shutdown(void);
 
-void re3pcdemo_loadbackground(void);
+void re3pc_loadbackground(void);
 
-#endif /* RE3PCDEMO_H */
+#endif /* RE3PC_H */

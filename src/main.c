@@ -32,7 +32,7 @@
 #include "re2_ps1.h"
 #include "re2_pc_demo.h"
 #include "re3_ps1_game.h"
-#include "re3_pc_demo.h"
+#include "re3_pc.h"
 #include "view_background.h"
 #include "view_movie.h"
 
@@ -121,31 +121,11 @@ int main(int argc, char **argv)
 			break;
 		case GAME_RE3_PC_DEMO:
 			printf("Resident Evil 3, PC, Demo\n");
-			re3pcdemo_init(&game_state);
-#if 0
-			{
-				SDL_RWops *src;
-				SDL_Surface *texture;
-				
-				/*src = FS_makeRWops("data_a/pld/pl006.tim");*/
-				/*src = FS_makeRWops("data_a/pld/pl000.tim");*/
-				/*src = FS_makeRWops("data/etc/capcom.tim");*/
-				src = FS_makeRWops("data/etc/eidos.tim");
-				if (src) {
-					texture = background_tim_load(src);
-					if (texture) {
-						printf("Loaded %dx%d image\n", texture->w, texture->h);
-						SDL_SaveBMP(texture, "coincoin.bmp");
-					} else {
-						fprintf(stderr, "Can not load texture from tim\n");
-					}
-				
-					SDL_RWclose(src);
-				} else {
-					fprintf(stderr, "Can not load texture\n");
-				}
-			}
-#endif
+			re3pc_init(&game_state);
+			break;
+		case GAME_RE3_PC_GAME:
+			printf("Resident Evil 3, PC, Game\n");
+			re3pc_init(&game_state);
 			break;
 		default:
 			printf("No known version\n");

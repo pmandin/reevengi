@@ -1,7 +1,6 @@
 /*
 	RE3
 	PC
-	Demo
 
 	Copyright (C) 2007	Patrice Mandin
 
@@ -34,7 +33,7 @@
 
 #include "filesystem.h"
 #include "state.h"
-#include "re3_pc_demo.h"
+#include "re3_pc.h"
 #include "parameters.h"
 
 /*--- Defines ---*/
@@ -43,13 +42,33 @@
 
 /*--- Constant ---*/
 
-static const char *re3pcdemo_bg = "data_a/bss/r%d%02x%02x.jpg";
+static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
 static const char *rofs_dat = "%s/rofs%d.dat";
+static const char *rofs_cap_dat = "%s/Rofs%d.dat";
 
 static const char *re3pcdemo_movies[] = {
-	"zmovie/ins01.dat",
 	"zmovie/opn.dat",
 	"zmovie/roopne.dat",
+	"zmovie/ins01.dat",
+	NULL
+};
+
+static const char *re3pcgame_movies[] = {
+	"zmovie/Eidos.dat",
+	"zmovie/opn.dat",
+	"zmovie/roop.dat",
+	"zmovie/roopne.dat",
+	"zmovie/ins01.dat",
+	"zmovie/ins02.dat",
+	"zmovie/ins03.dat",
+	"zmovie/ins04.dat",
+	"zmovie/ins05.dat",
+	"zmovie/ins06.dat",
+	"zmovie/ins07.dat",
+	"zmovie/ins08.dat",
+	"zmovie/ins09.dat",
+	"zmovie/enda.dat",
+	"zmovie/endb.dat",
 	NULL
 };
 
@@ -57,49 +76,63 @@ static const char *re3pcdemo_movies[] = {
 
 /*--- Functions prototypes ---*/
 
-static int re3pcdemo_load_jpg_bg(const char *filename);
+static int re3pc_load_jpg_bg(const char *filename);
 
 /*--- Functions ---*/
 
-void re3pcdemo_init(state_t *game_state)
+void re3pc_init(state_t *game_state)
 {
 	int i;
 	char rofsfile[1024];
 
 	for (i=1;i<16;i++) {
 		sprintf(rofsfile, rofs_dat, basedir, i);
-		FS_AddArchive(rofsfile);
+		if (FS_AddArchive(rofsfile)==0) {
+			continue;
+		}
+		/* Try with cap letter */
+		if (game_state->version==GAME_RE3_PC_GAME) {
+			sprintf(rofsfile, rofs_cap_dat, basedir, i);
+			FS_AddArchive(rofsfile);
+		}
 	}
 
-	game_state->load_background = re3pcdemo_loadbackground;
-	game_state->shutdown = re3pcdemo_shutdown;
+	game_state->load_background = re3pc_loadbackground;
+	game_state->shutdown = re3pc_shutdown;
 
-	game_state->movies_list = (char **) re3pcdemo_movies;
+	switch(game_state->version) {
+		case GAME_RE3_PC_DEMO:
+			game_state->movies_list = (char **) re3pcdemo_movies;
+			break;
+		case GAME_RE3_PC_GAME:
+			game_state->movies_list = (char **) re3pcgame_movies;
+			break;
+	}
 }
 
-void re3pcdemo_shutdown(void)
+void re3pc_shutdown(void)
 {
 }
 
-void re3pcdemo_loadbackground(void)
+void re3pc_loadbackground(void)
 {
 	char *filepath;
 
-	filepath = malloc(strlen(re3pcdemo_bg)+8);
+	filepath = malloc(strlen(re3pc_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pcdemo_bg, game_state.stage, game_state.room, game_state.camera);
+	sprintf(filepath, re3pc_bg, game_state.stage, game_state.room, game_state.camera);
 
 	printf("jpg: Loading %s ... %s\n", filepath,
-		re3pcdemo_load_jpg_bg(filepath) ? "done" : "failed"
+		re3pc_load_jpg_bg(filepath) ? "done" : "failed"
 	);
 
 	free(filepath);
 }
 
-int re3pcdemo_load_jpg_bg(const char *filename)
+int re3pc_load_jpg_bg(const char *filename)
 {
 #ifdef ENABLE_SDLIMAGE
 	SDL_RWops *src;

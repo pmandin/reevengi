@@ -1,8 +1,6 @@
-v 0.4
+v 0.5
 
-- Added Resident Evil 2, PS1, Game.
-- Added Resident Evil 2, PC, Game.
-- Preliminary movie player using ffmpeg library.
+- Added Resident Evil 3, PC, Game.
 
 
 See ChangeLog for older changes.
