@@ -32,7 +32,7 @@
 /*--- Functions prototypes ---*/
 
 int FS_Init(char *argv0);
-void FS_AddArchive(const char *filename);
+int FS_AddArchive(const char *filename);
 int FS_Shutdown(void);
 
 void *FS_Load(const char *filename, PHYSFS_sint64 *filelength);

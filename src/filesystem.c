@@ -53,13 +53,16 @@ int FS_Init(char *argv0)
 	return 1;
 }
 
-void FS_AddArchive(const char *filename)
+int FS_AddArchive(const char *filename)
 {
+	int result = 1;
 	if (PHYSFS_addToSearchPath(filename, 1)) {
 		printf("fs: Added %s\n", filename);
+		result = 0;
 	} else {
 		fprintf(stderr, "fs: Error adding %s\n", filename);
 	}
+	return result;
 }
 
 int FS_Shutdown(void)
