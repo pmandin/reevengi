@@ -294,6 +294,8 @@ int viewer_loop(void)
 		} else {
 			SDL_UpdateRect(screen, 0,0,0,0);
 		}
+		/* Do not need to redraw image next time */
+		cur_surf = NULL;
 	}
 
 	if (switch_fs) {
