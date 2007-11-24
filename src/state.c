@@ -170,7 +170,7 @@ static void state_detect(void)
 		game_state.version = GAME_RE2_PS1_GAME_LEON;
 	} else if (game_file_exists("sles_109.73")) {
 		game_state.version = GAME_RE2_PS1_GAME_CLAIRE;
-	} else if (game_file_exists("slps_009.99")) {
+	} else if (game_file_exists("slps_009.99") || game_file_exists("sled_009.77")) {
 		game_state.version = GAME_RE2_PS1_DEMO;
 	} else if (game_file_exists("sles_002.27")) {
 		game_state.version = GAME_RE1_PS1_GAME;
