@@ -42,6 +42,7 @@
 /*--- Variables ---*/
 
 static int reload_bg = 1;
+static int reload_room = 1;
 
 /*--- Functions ---*/
 
@@ -54,36 +55,36 @@ int view_background_input(SDL_Event *event)
 				if (game_state.stage < 1) {
 					game_state.stage = 7;
 				}
-				reload_bg = 1;
+				reload_bg = reload_room = 1;
 				break;						
 			case KEY_STAGE_UP:
 				game_state.stage += 1;
 				if (game_state.stage > 7) {
 					game_state.stage = 1;
 				}
-				reload_bg = 1;
+				reload_bg = reload_room = 1;
 				break;						
 			case KEY_STAGE_RESET:
 				game_state.stage = 1;
-				reload_bg = 1;
+				reload_bg = reload_room = 1;
 				break;						
 			case KEY_ROOM_DOWN:
 				game_state.room -= 1;
 				if (game_state.room < 0) {
 					game_state.room = 0x1c;
 				}
-				reload_bg = 1;
+				reload_bg = reload_room = 1;
 				break;						
 			case KEY_ROOM_UP:
 				game_state.room += 1;
 				if (game_state.room > 0x1c) {
 					game_state.room = 0;
 				}
-				reload_bg = 1;
+				reload_bg = reload_room = 1;
 				break;						
 			case KEY_ROOM_RESET:
 				game_state.room = 0;
-				reload_bg = 1;
+				reload_bg = reload_room = 1;
 				break;						
 			case KEY_CAMERA_DOWN:
 				game_state.camera -= 1;
@@ -111,6 +112,10 @@ int view_background_input(SDL_Event *event)
 
 SDL_Surface *view_background_update(void)
 {
+	if (reload_room) {
+		state_loadroom();
+		reload_room = 0;
+	}
 	if (reload_bg) {
 		state_loadbackground();
 		reload_bg = 0;

@@ -63,6 +63,9 @@ typedef struct {
 	/* Background image */
 	SDL_Surface *background_surf;
 
+	/* Room data file */
+	void *room_file;
+
 	/* List of movies */
 	char **movies_list;
 	/* Currently playing movie */
@@ -72,6 +75,8 @@ typedef struct {
 
 	/*--- Functions ---*/
 	void (*load_background)(void);
+
+	void (*load_room)(void);
 
 	void (*shutdown)(void);
 } state_t;
@@ -90,6 +95,7 @@ void state_setroom(int new_room);
 void state_setcamera(int new_camera);
 
 void state_unloadbackground(void);
+void state_unloadroom(void);
 
 void state_newmovie(void);
 int state_getnummovies(void);

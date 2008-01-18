@@ -92,6 +92,23 @@ void state_unloadbackground(void)
 	}
 }
 
+void state_loadroom(void)
+{
+	state_unloadroom();
+
+	if (game_state.load_room) {
+		(*game_state.load_room)();
+	}
+}
+
+void state_unloadroom(void)
+{
+	if (game_state.room_file) {
+		free(game_state.room_file);
+		game_state.room_file = NULL;
+	}
+}
+
 void state_newmovie(void)
 {
 	char **movie = game_state.movies_list;
