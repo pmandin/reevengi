@@ -24,8 +24,5 @@
 /*--- Functions ---*/
 
 void re2pcdemo_init(state_t *game_state);
-void re2pcdemo_shutdown(void);
-
-void re2pcdemo_loadbackground(void);
 
 #endif /* RE2PCDEMO_H */
