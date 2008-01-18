@@ -38,6 +38,7 @@
 /*--- Constant ---*/
 
 static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
+static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x1.rdt";
 
 static const char *re1pcgame_movies[] = {
 	"horr/usa/movie/capcom.avi",
@@ -74,13 +75,20 @@ static const char *re1pcgame_movies[] = {
 
 /*--- Functions prototypes ---*/
 
+static void re1pcgame_shutdown(void);
+
+static void re1pcgame_loadbackground(void);
 static int re1pcgame_load_pak_bg(const char *filename);
+
+static void re1pcgame_loadroom(void);
+static int re1pcgame_loadroom_rdt(const char *filename);
 
 /*--- Functions ---*/
 
 void re1pcgame_init(state_t *game_state)
 {
 	game_state->load_background = re1pcgame_loadbackground;
+	game_state->load_room = re1pcgame_loadroom;
 	game_state->shutdown = re1pcgame_shutdown;
 
 	game_state->movies_list = (char **) re1pcgame_movies;
@@ -122,7 +130,7 @@ int re1pcgame_load_pak_bg(const char *filename)
 
 		if (dstBuffer && dstBufLen) {
 			SDL_RWops *tim_src;
-			game_state.num_cameras = 8;
+			/*game_state.num_cameras = 8;*/
 			
 			tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
 			if (tim_src) {
@@ -136,6 +144,47 @@ int re1pcgame_load_pak_bg(const char *filename)
 
 			free(dstBuffer);
 		}
+
+		SDL_RWclose(src);
+	}
+
+	return retval;
+}
+
+static void re1pcgame_loadroom(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re1pcgame_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re1pcgame_room, game_state.stage, game_state.stage, game_state.room);
+
+	printf("rdt: Loading %s ... %s\n", filepath,
+		re1pcgame_loadroom_rdt(filepath) ? "done" : "failed"
+	);
+
+	free(filepath);
+}
+
+static int re1pcgame_loadroom_rdt(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	game_state.num_cameras = 8;
+
+	src = FS_makeRWops(filename);
+	if (src) {
+		/* Load header */
+		Uint8 rdt_header[6];
+		if (SDL_RWread( src, rdt_header, 6, 1 )==1) {
+			game_state.num_cameras = rdt_header[1];
+		}
+
+		retval = 1;
 
 		SDL_RWclose(src);
 	}

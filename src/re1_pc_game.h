@@ -26,8 +26,5 @@
 /*--- Functions ---*/
 
 void re1pcgame_init(state_t *game_state);
-void re1pcgame_shutdown(void);
-
-void re1pcgame_loadbackground(void);
 
 #endif /* RE1PCGAME_H */
