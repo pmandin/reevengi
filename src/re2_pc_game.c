@@ -184,7 +184,7 @@ static int re2pcgame_load_image(int num_image)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			game_state.num_cameras = 12;
+			game_state.num_cameras = 16;
 
 			game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
 			if (game_state.background_surf) {
