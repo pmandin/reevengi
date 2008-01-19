@@ -43,6 +43,7 @@ typedef struct {
 /*--- Constant ---*/
 
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
+static const char *re2pcgame_room = "PL%d/RDF/ROOM%d%02x0.RDT";
 
 static const char *re2pcgame_leon_movies[] = {
 	"PL0/ZMOVIE/OPN1STL.BIN",
@@ -77,10 +78,19 @@ static const char *re2pcgame_claire_movies[] = {
 static re2_images_t *re2_images = NULL;
 static int num_re2_images = 0;
 
+static int game_player = 0;
+
 /*--- Functions prototypes ---*/
+
+static void re2pcgame_shutdown(void);
+
+static void re2pcgame_loadbackground(void);
 
 static int re2pcgame_init_images(const char *filename);
 static int re2pcgame_load_image(int num_image);
+
+static void re2pcgame_loadroom(void);
+static int re2pcgame_loadroom_rdt(const char *filename);
 
 /*--- Functions ---*/
 
@@ -91,16 +101,18 @@ void re2pcgame_init(state_t *game_state)
 	}
 
 	game_state->load_background = re2pcgame_loadbackground;
+	game_state->load_room = re2pcgame_loadroom;
 	game_state->shutdown = re2pcgame_shutdown;
 
 	if (game_state->version == GAME_RE2_PC_GAME_LEON) {
 		game_state->movies_list = (char **) re2pcgame_leon_movies;
 	} else {
 		game_state->movies_list = (char **) re2pcgame_claire_movies;
+		game_player = 1;
 	}
 }
 
-void re2pcgame_shutdown(void)
+static void re2pcgame_shutdown(void)
 {
 	if (re2_images) {
 		free(re2_images);
@@ -108,7 +120,7 @@ void re2pcgame_shutdown(void)
 	}
 }
 
-void re2pcgame_loadbackground(void)
+static void re2pcgame_loadbackground(void)
 {
 	int num_image = (game_state.stage-1)*512;
 	num_image += game_state.room*16;
@@ -184,7 +196,7 @@ static int re2pcgame_load_image(int num_image)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			game_state.num_cameras = 16;
+			/*game_state.num_cameras = 16;*/
 
 			game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
 			if (game_state.background_surf) {
@@ -193,6 +205,47 @@ static int re2pcgame_load_image(int num_image)
 
 			free(dstBuffer);
 		}
+
+		SDL_RWclose(src);
+	}
+
+	return retval;
+}
+
+static void re2pcgame_loadroom(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re2pcgame_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re2pcgame_room, game_player, game_state.stage, game_state.room);
+
+	printf("rdt: Loading %s ... %s\n", filepath,
+		re2pcgame_loadroom_rdt(filepath) ? "done" : "failed"
+	);
+
+	free(filepath);
+}
+
+static int re2pcgame_loadroom_rdt(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	game_state.num_cameras = 16;
+
+	src = FS_makeRWops(filename);
+	if (src) {
+		/* Load header */
+		Uint8 rdt_header[8];
+		if (SDL_RWread( src, rdt_header, 8, 1 )==1) {
+			game_state.num_cameras = rdt_header[1];
+		}
+
+		retval = 1;
 
 		SDL_RWclose(src);
 	}
