@@ -26,8 +26,5 @@
 /*--- Functions ---*/
 
 void re2ps1_init(state_t *game_state);
-void re2ps1_shutdown(void);
-
-void re2ps1_loadbackground(void);
 
 #endif /* RE2PS1_H */

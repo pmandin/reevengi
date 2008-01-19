@@ -39,6 +39,7 @@
 /*--- Constant ---*/
 
 static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
+static const char *re2ps1_room = "pl%d/rdt/room%d%02x0.rdt";
 
 static const char *re2ps1demo_movies[] = {
 	"zmovie/capcom.str",
@@ -87,13 +88,23 @@ static const char *re2ps1game_claire_movies[] = {
 
 /*--- Variables ---*/
 
+static int game_player = 0;
+
 /*--- Functions prototypes ---*/
+
+static void re2ps1_shutdown(void);
+
+static void re2ps1_loadbackground(void);
+
+static void re2ps1_loadroom(void);
+static int re2ps1_loadroom_rdt(const char *filename);
 
 /*--- Functions ---*/
 
 void re2ps1_init(state_t *game_state)
 {
 	game_state->load_background = re2ps1_loadbackground;
+	game_state->load_room = re2ps1_loadroom;
 	game_state->shutdown = re2ps1_shutdown;
 
 	switch(game_state->version) {
@@ -105,15 +116,16 @@ void re2ps1_init(state_t *game_state)
 			break;
 		case GAME_RE2_PS1_GAME_CLAIRE:
 			game_state->movies_list = (char **) re2ps1game_claire_movies;
+			game_player = 1;
 			break;
 	}
 }
 
-void re2ps1_shutdown(void)
+static void re2ps1_shutdown(void)
 {
 }
 
-void re2ps1_loadbackground(void)
+static void re2ps1_loadbackground(void)
 {
 	char *filepath;
 
@@ -129,4 +141,45 @@ void re2ps1_loadbackground(void)
 	);
 
 	free(filepath);
+}
+
+static void re2ps1_loadroom(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re2ps1_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re2ps1_room, game_player, game_state.stage, game_state.stage, game_state.room);
+
+	printf("rdt: Loading %s ... %s\n", filepath,
+		re2ps1_loadroom_rdt(filepath) ? "done" : "failed"
+	);
+
+	free(filepath);
+}
+
+static int re2ps1_loadroom_rdt(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	game_state.num_cameras = 16;
+
+	src = FS_makeRWops(filename);
+	if (src) {
+		/* Load header */
+		Uint8 rdt_header[8];
+		if (SDL_RWread( src, rdt_header, 8, 1 )==1) {
+			game_state.num_cameras = rdt_header[1];
+		}
+
+		retval = 1;
+
+		SDL_RWclose(src);
+	}
+
+	return retval;
 }
