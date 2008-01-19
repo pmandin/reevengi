@@ -3,9 +3,7 @@ v 0.5
 - Do not refresh screen as fast as possible, and free cpu instead.
 - Added Resident Evil 2, PS1, Demo, Pal.
 - Added Resident Evil 3, PC, Game.
-- Re1PcGame: Load room description to know how many cameras there are.
-- Re2PcDemo: Load room description to know how many cameras there are.
-- Re3Pc: Load room description to know how many cameras there are.
+- All except Re3Ps1: Load room description to know how many cameras there are.
 
 v 0.4
 
