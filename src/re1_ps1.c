@@ -37,6 +37,7 @@
 /*--- Constant ---*/
 
 static const char *re1ps1_bg = "psx/stage%d/room%d%02x.bss";
+static const char *re1ps1_room = "psx/stage%d/room%d%02x1.rdt";
 
 static const char *re1ps1demo_movies[] = {
 	"psx/movie/capcom.str",
@@ -81,11 +82,19 @@ static const char *re1ps1game_movies[] = {
 
 /*--- Functions prototypes ---*/
 
+static void re1ps1_shutdown(void);
+
+static void re1ps1_loadbackground(void);
+
+static void re1ps1_loadroom(void);
+static int re1ps1_loadroom_rdt(const char *filename);
+
 /*--- Functions ---*/
 
 void re1ps1_init(state_t *game_state)
 {
 	game_state->load_background = re1ps1_loadbackground;
+	game_state->load_room = re1ps1_loadroom;
 	game_state->shutdown = re1ps1_shutdown;
 
 	if (game_state->version == GAME_RE1_PS1_DEMO) {
@@ -95,11 +104,11 @@ void re1ps1_init(state_t *game_state)
 	}
 }
 
-void re1ps1_shutdown(void)
+static void re1ps1_shutdown(void)
 {
 }
 
-void re1ps1_loadbackground(void)
+static void re1ps1_loadbackground(void)
 {
 	char *filepath;
 
@@ -115,4 +124,45 @@ void re1ps1_loadbackground(void)
 	);
 
 	free(filepath);
+}
+
+static void re1ps1_loadroom(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re1ps1_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re1ps1_room, game_state.stage, game_state.stage, game_state.room);
+
+	printf("rdt: Loading %s ... %s\n", filepath,
+		re1ps1_loadroom_rdt(filepath) ? "done" : "failed"
+	);
+
+	free(filepath);
+}
+
+static int re1ps1_loadroom_rdt(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	game_state.num_cameras = 8;
+
+	src = FS_makeRWops(filename);
+	if (src) {
+		/* Load header */
+		Uint8 rdt_header[6];
+		if (SDL_RWread( src, rdt_header, 6, 1 )==1) {
+			game_state.num_cameras = rdt_header[1];
+		}
+
+		retval = 1;
+
+		SDL_RWclose(src);
+	}
+
+	return retval;
 }
