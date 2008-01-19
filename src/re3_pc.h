@@ -25,8 +25,5 @@
 /*--- Functions ---*/
 
 void re3pc_init(state_t *game_state);
-void re3pc_shutdown(void);
-
-void re3pc_loadbackground(void);
 
 #endif /* RE3PC_H */

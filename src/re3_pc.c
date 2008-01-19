@@ -43,6 +43,7 @@
 /*--- Constant ---*/
 
 static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
+static const char *re3pc_room = "data_u/rdt/r%d%02x.rdt";
 static const char *rofs_dat = "%s/rofs%d.dat";
 static const char *rofs_cap_dat = "%s/Rofs%d.dat";
 
@@ -76,7 +77,13 @@ static const char *re3pcgame_movies[] = {
 
 /*--- Functions prototypes ---*/
 
+static void re3pc_shutdown(void);
+
+static void re3pc_loadbackground(void);
 static int re3pc_load_jpg_bg(const char *filename);
+
+static void re3pc_loadroom(void);
+static int re3pc_loadroom_rdt(const char *filename);
 
 /*--- Functions ---*/
 
@@ -98,6 +105,7 @@ void re3pc_init(state_t *game_state)
 	}
 
 	game_state->load_background = re3pc_loadbackground;
+	game_state->load_room = re3pc_loadroom;
 	game_state->shutdown = re3pc_shutdown;
 
 	switch(game_state->version) {
@@ -140,7 +148,7 @@ int re3pc_load_jpg_bg(const char *filename)
 	
 	src = FS_makeRWops(filename);
 	if (src) {
-		game_state.num_cameras = 0x1c;
+		/*game_state.num_cameras = 0x1c;*/
 
 		game_state.background_surf = IMG_Load_RW(src, 0);
 		if (game_state.background_surf) {
@@ -154,4 +162,45 @@ int re3pc_load_jpg_bg(const char *filename)
 #else
 	return 0;
 #endif
+}
+
+static void re3pc_loadroom(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re3pc_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re3pc_room, game_state.stage, game_state.room);
+
+	printf("rdt: Loading %s ... %s\n", filepath,
+		re3pc_loadroom_rdt(filepath) ? "done" : "failed"
+	);
+
+	free(filepath);
+}
+
+static int re3pc_loadroom_rdt(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	game_state.num_cameras = 0x1c;
+
+	src = FS_makeRWops(filename);
+	if (src) {
+		/* Load header */
+		Uint8 rdt_header[8];
+		if (SDL_RWread( src, rdt_header, 8, 1 )==1) {
+			game_state.num_cameras = rdt_header[1];
+		}
+
+		retval = 1;
+
+		SDL_RWclose(src);
+	}
+
+	return retval;
 }
