@@ -43,7 +43,7 @@
 /*--- Constant ---*/
 
 static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
-static const char *re3pc_room = "data_u/rdt/r%d%02x.rdt";
+static const char *re3pc_room = "data_%c/rdt/r%d%02x.rdt";
 static const char *rofs_dat = "%s/rofs%d.dat";
 static const char *rofs_cap_dat = "%s/Rofs%d.dat";
 
@@ -74,6 +74,8 @@ static const char *re3pcgame_movies[] = {
 };
 
 /*--- Variables ---*/
+
+static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
@@ -114,6 +116,7 @@ void re3pc_init(state_t *game_state)
 			break;
 		case GAME_RE3_PC_GAME:
 			game_state->movies_list = (char **) re3pcgame_movies;
+			game_lang = 'f';
 			break;
 	}
 }
@@ -173,7 +176,7 @@ static void re3pc_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pc_room, game_state.stage, game_state.room);
+	sprintf(filepath, re3pc_room, game_lang, game_state.stage, game_state.room);
 
 	printf("rdt: Loading %s ... %s\n", filepath,
 		re3pc_loadroom_rdt(filepath) ? "done" : "failed"
