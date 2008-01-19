@@ -59,6 +59,10 @@ static const char *re3ps1game_movies[] = {
 
 /*--- Functions prototypes ---*/
 
+static void re3ps1game_shutdown(void);
+
+static void re3ps1game_loadbackground(void);
+
 /*--- Functions ---*/
 
 void re3ps1game_init(state_t *game_state)
@@ -69,11 +73,11 @@ void re3ps1game_init(state_t *game_state)
 	game_state->movies_list = (char **) re3ps1game_movies;
 }
 
-void re3ps1game_shutdown(void)
+static void re3ps1game_shutdown(void)
 {
 }
 
-void re3ps1game_loadbackground(void)
+static void re3ps1game_loadbackground(void)
 {
 	char *filepath;
 
