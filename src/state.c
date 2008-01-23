@@ -55,6 +55,9 @@ void state_init(void)
 
 void state_shutdown(void)
 {
+	state_unloadbackground();
+	state_unloadroom();
+
 	if (game_state.shutdown) {
 		(*game_state.shutdown)();
 	}
