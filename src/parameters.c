@@ -31,6 +31,7 @@
 #define DEFAULT_BASEDIR "."
 #define DEFAULT_VERBOSE 0
 #define DEFAULT_GAMMA 1.0
+#define DEFAULT_USE_OPENGL 0
 
 /*--- Global variables ---*/
 
@@ -45,6 +46,9 @@ float gamma = DEFAULT_GAMMA;
 
 /* Viewer mode */
 int viewmode = VIEWMODE_BACKGROUND;
+
+/* Enable OpenGL */
+int use_opengl = DEFAULT_USE_OPENGL;
 
 /*---- Variables ---*/
 
@@ -93,6 +97,12 @@ int CheckParm(int argc,char **argv)
 	p = ParmPresent("-movie", argc, argv);
 	if (p) {
 		viewmode = VIEWMODE_MOVIE;
+	}
+
+	/*--- Check for OpenGL ---*/
+	p = ParmPresent("-opengl", argc, argv);
+	if (p) {
+		use_opengl = 1;
 	}
 
 	return 1;

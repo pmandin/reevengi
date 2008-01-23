@@ -40,6 +40,9 @@ extern float gamma;
 /* Viewer mode */
 extern int viewmode;
 
+/* Enable OpenGL */
+extern int use_opengl;
+
 /*--- Functions prototypes ---*/
 
 extern void DisplayUsage(void);
