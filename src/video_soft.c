@@ -38,7 +38,7 @@ void video_soft_init(video_t *this)
 	this->width = 320;
 	this->height = 240;
 	this->bpp = 16;
-	this->flags = SDL_DOUBLEBUF;
+	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
 
 	this->screen = NULL;
 	this->num_screenshot = 0;

@@ -97,4 +97,3 @@ static void screenShot(video_t *this)
 {
 	fprintf(stderr, "Screenshot not available in OpenGL mode\n");
 }
-
