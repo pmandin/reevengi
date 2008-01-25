@@ -25,4 +25,6 @@
 
 void re2pcdemo_init(state_t *game_state);
 
+void re2pcdemo_get_camera(long *camera_pos);
+
 #endif /* RE2PCDEMO_H */
