@@ -415,6 +415,10 @@ void draw_surface_gl(SDL_Surface *surface)
 	gl.Disable(GL_BLEND);
 	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
 
+	if (!game_state.room_file) {
+		return;
+	}
+
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
