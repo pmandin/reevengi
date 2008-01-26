@@ -134,8 +134,6 @@ static void re2pcdemo_loadroom(void)
 
 static int re2pcdemo_loadroom_rdt(const char *filename)
 {
-	SDL_RWops *src;
-	int retval = 0;
 	PHYSFS_sint64 length;
 	Uint8 *rdt_header;
 	
@@ -143,14 +141,13 @@ static int re2pcdemo_loadroom_rdt(const char *filename)
 
 	game_state.room_file = FS_Load(filename, &length);
 	if (!game_state.room_file) {
-		return retval;
+		return 0;
 	}
 
 	rdt_header = (Uint8 *) game_state.room_file;
 	game_state.num_cameras = rdt_header[1];
 
-	retval = 1;
-	return retval;
+	return 1;
 }
 
 typedef struct {

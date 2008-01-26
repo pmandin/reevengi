@@ -416,6 +416,13 @@ void draw_surface_gl(SDL_Surface *surface)
 	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
 
 	switch(game_state.version) {
+		case GAME_RE1_PS1_DEMO:
+		case GAME_RE1_PS1_GAME:
+			re1ps1_get_camera(cam_pos);
+			break;
+		case GAME_RE1_PC_GAME:
+			re1pcgame_get_camera(cam_pos);
+			break;
 		case GAME_RE2_PS1_DEMO:
 		case GAME_RE2_PS1_GAME_LEON:
 		case GAME_RE2_PS1_GAME_CLAIRE:

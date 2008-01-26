@@ -38,7 +38,7 @@
 /*--- Constant ---*/
 
 static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
-static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x1.rdt";
+static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x0.rdt";
 
 static const char *re1pcgame_movies[] = {
 	"horr/usa/movie/capcom.avi",
@@ -171,23 +171,42 @@ static void re1pcgame_loadroom(void)
 
 static int re1pcgame_loadroom_rdt(const char *filename)
 {
-	SDL_RWops *src;
-	int retval = 0;
-	
+	PHYSFS_sint64 length;
+	Uint8 *rdt_header;
+
 	game_state.num_cameras = 8;
 
-	src = FS_makeRWops(filename);
-	if (src) {
-		/* Load header */
-		Uint8 rdt_header[6];
-		if (SDL_RWread( src, rdt_header, 6, 1 )==1) {
-			game_state.num_cameras = rdt_header[1];
-		}
-
-		retval = 1;
-
-		SDL_RWclose(src);
+	game_state.room_file = FS_Load(filename, &length);
+	if (!game_state.room_file) {
+		return 0;
 	}
 
-	return retval;
+	rdt_header = (Uint8 *) game_state.room_file;
+	game_state.num_cameras = rdt_header[1];
+
+	return 1;
+}
+
+typedef struct {
+	long camera_from_x;
+	long camera_from_y;
+	long camera_from_z;
+	long camera_to_x;
+	long camera_to_y;
+	long camera_to_z;
+	long unknown[5];
+} rdt_camera_pos_t;
+
+void re1pcgame_get_camera(long *camera_pos)
+{
+	rdt_camera_pos_t *cam_array;
+	
+	cam_array = (rdt_camera_pos_t *) &((Uint8 *)game_state.room_file)[0x9c];
+
+	camera_pos[0] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_x);
+	camera_pos[1] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_y);
+	camera_pos[2] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_z);
+	camera_pos[3] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_x);
+	camera_pos[4] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_y);
+	camera_pos[5] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_z);
 }
