@@ -151,11 +151,11 @@ static int re3ps1game_loadroom_ard(const char *filename)
 	len = 0;
 	ard_object = (ard_object_t *) (&ard_file[8]);
 	for (i=0; i<count; i++) {
+		len = SDL_SwapLE32(ard_object->length);
 		if (i==8) {
+			/* Stop on embedded RDT file */
 			break;
 		}
-		len = ard_object->length;
-		len = SDL_SwapLE32(len);
 		offset += len;
 		offset |= 0x7ff;
 		offset ++;
