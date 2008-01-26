@@ -424,6 +424,9 @@ void draw_surface_gl(SDL_Surface *surface)
 		case GAME_RE2_PC_DEMO:
 			re2pcdemo_get_camera(cam_pos);
 			break;
+		case GAME_RE3_PS1_GAME:
+			re3ps1game_get_camera(cam_pos);
+			break;
 		case GAME_RE3_PC_DEMO:
 		case GAME_RE3_PC_GAME:
 			re3pc_get_camera(cam_pos);

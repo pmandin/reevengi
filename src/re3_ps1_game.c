@@ -176,3 +176,33 @@ static int re3ps1game_loadroom_ard(const char *filename)
 	free(ard_file);
 	return 1;
 }
+
+typedef struct {
+	unsigned short unk0;
+	unsigned short const0; /* 0x683c, or 0x73b7 */
+	/* const0>>7 used for engine */
+	long camera_from_x;
+	long camera_from_y;
+	long camera_from_z;
+	long camera_to_x;
+	long camera_to_y;
+	long camera_to_z;
+	unsigned long offset;
+} rdt_camera_pos_t;
+
+void re3ps1game_get_camera(long *camera_pos)
+{
+	Uint32 *cams_offset, offset;
+	rdt_camera_pos_t *cam_array;
+	
+	cams_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+7*4]);
+	offset = SDL_SwapLE32(*cams_offset);
+	cam_array = (rdt_camera_pos_t *) &((Uint8 *)game_state.room_file)[offset];
+
+	camera_pos[0] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_x);
+	camera_pos[1] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_y);
+	camera_pos[2] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_z);
+	camera_pos[3] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_x);
+	camera_pos[4] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_y);
+	camera_pos[5] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_z);
+}
