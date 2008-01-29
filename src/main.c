@@ -47,7 +47,6 @@
 /*--- Variables ---*/
 
 int update_screen = 1;
-int switch_fs = 0, switch_mode=0;
 int width = 320, height = 240;
 SDL_Surface *cur_surf = NULL;
 
@@ -287,7 +286,9 @@ int viewer_loop(void)
 	}
 
 	video.initScreen(&video);
-	video.drawBackground(&video, cur_surf);
+	if (cur_surf) {
+		video.drawBackground(&video, cur_surf);
+	}
 	video.swapBuffers(&video);
 
 	if (switch_mode) {
