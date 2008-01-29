@@ -55,14 +55,11 @@ SDL_Surface *cur_surf = NULL;
 
 /*--- Local variables ---*/
 
-static GLenum textureObject = 0;
 static video_t video;
 
 /*--- Functions prototypes ---*/
 
 int viewer_loop(void);
-
-void draw_surface_gl(SDL_Surface *surface);
 
 /*--- Functions ---*/
 
@@ -302,15 +299,8 @@ int viewer_loop(void)
 	}
 
 	if (cur_surf) {
-		if (use_opengl) {
-			gl.ClearColor(0.6,0.4,0.2,0.0);
-			gl.Clear(GL_COLOR_BUFFER_BIT);
-
-			draw_surface_gl(cur_surf);
-		} else {
-			SDL_BlitSurface(cur_surf, NULL, video.screen, NULL);
-		}
-
+		video.initScreen(&video);
+		video.drawBackground(&video, cur_surf);
 		video.swapBuffers(&video);
 
 		/* Do not need to redraw image next time */
@@ -324,192 +314,4 @@ int viewer_loop(void)
 	}
 
 	return(quit);
-}
-
-void draw_surface_gl(SDL_Surface *surface)
-{
-	static int w=0, h=0;
-	long cam_pos[6];
-	int i, j;
-	float end[3], start[3];
-
-	gl.Enable(GL_TEXTURE_RECTANGLE_ARB);
-
-	if (textureObject==0) {
-		gl.GenTextures(1, &textureObject);
-	}
-	gl.BindTexture(GL_TEXTURE_RECTANGLE_ARB, textureObject);
-
-	if (surface) {
-		GLenum pixelType = GL_UNSIGNED_INT;
-		GLenum textureFormat = GL_RGBA;
-		/*printf("pitch: %d, bpp: %d\n",
-			surface->pitch, surface->format->BitsPerPixel);
-		printf("R=0x%08x G=0x%08x B=0x%08x A=0x%08x\n",
-			surface->format->Rmask, surface->format->Gmask,
-			surface->format->Bmask, surface->format->Amask
-			);*/
-		switch (surface->format->BitsPerPixel) {
-			case 15:
-			case 16:
-				if (surface->format->Bmask == 0x7c00) {
-					pixelType = GL_UNSIGNED_SHORT_1_5_5_5_REV;
-				} else {
-					pixelType = GL_UNSIGNED_SHORT_5_6_5;
-				}
-				textureFormat = GL_RGBA;
-				break;
-			case 24:
-				pixelType = GL_UNSIGNED_BYTE;
-				textureFormat = GL_RGB;
-				break;
-		}
-		w = surface->w;
-		h = surface->h;
-		gl.TexImage2D(GL_TEXTURE_RECTANGLE_ARB,0, GL_RGBA,
-			surface->w, surface->h, 0,
-			textureFormat, pixelType, surface->pixels
-		);
-	}
-
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
- 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	gl.Enable(GL_DITHER);
-
-	gl.Enable(GL_BLEND);
-	gl.BlendFunc(GL_ONE, GL_ZERO);
-
-	gl.MatrixMode(GL_PROJECTION);
-	gl.LoadIdentity();
-	gl.Ortho(0.0, width, height, 0.0, -1.0, 1.0);
-
-	gl.MatrixMode(GL_TEXTURE);
-	gl.LoadIdentity();
-	gl.Scalef(w,h,1.0);
-
-	gl.MatrixMode(GL_MODELVIEW);
-	gl.LoadIdentity();
-	//gl.Translatef(0.375, 0.375, 0.0);
-	gl.Scalef(width, height, 1.0);
-
-	gl.Begin(GL_QUADS);
-		gl.TexCoord2f(0.0, 0.0);
-		gl.Vertex2f(0.0, 0.0);
-
-		gl.TexCoord2f(1.0, 0.0);
-		gl.Vertex2f(1.0, 0.0);
-
-		gl.TexCoord2f(1.0, 1.0);
-		gl.Vertex2f(1.0, 1.0);
-
-		gl.TexCoord2f(0.0, 1.0);
-		gl.Vertex2f(0.0, 1.0);
-	gl.End();
-
-	gl.Disable(GL_DITHER);
-	gl.Disable(GL_BLEND);
-	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
-
-	if (!game_state.room_file) {
-		return;
-	}
-
-	switch(game_state.version) {
-		case GAME_RE1_PS1_DEMO:
-		case GAME_RE1_PS1_GAME:
-			re1ps1_get_camera(cam_pos);
-			break;
-		case GAME_RE1_PC_GAME:
-			re1pcgame_get_camera(cam_pos);
-			break;
-		case GAME_RE2_PS1_DEMO:
-		case GAME_RE2_PS1_GAME_LEON:
-		case GAME_RE2_PS1_GAME_CLAIRE:
-			re2ps1_get_camera(cam_pos);
-			break;
-		case GAME_RE2_PC_DEMO:
-			re2pcdemo_get_camera(cam_pos);
-			break;
-		case GAME_RE3_PS1_GAME:
-			re3ps1game_get_camera(cam_pos);
-			break;
-		case GAME_RE3_PC_DEMO:
-		case GAME_RE3_PC_GAME:
-			re3pc_get_camera(cam_pos);
-			break;
-		default:
-			return;
-	}
-
-	/*printf("from %6.3f,%6.3f,%6.3f to %6.3f,%6.3f,%6.3f\n",
-		cam_pos[0]/256.0, cam_pos[1]/256.0, cam_pos[2]/256.0,
-		cam_pos[3]/256.0, cam_pos[4]/256.0, cam_pos[5]/256.0
-	);*/
-
-	gl.MatrixMode(GL_PROJECTION);
-	gl.LoadIdentity();
-	gluPerspective(60.0, 4.0/3.0, 0.1, 1000.0);
-
-	gl.MatrixMode(GL_MODELVIEW);
-	gl.LoadIdentity();
-
-	gluLookAt(
-		cam_pos[0]/256.0, cam_pos[1]/256.0, cam_pos[2]/256.0,
-		cam_pos[3]/256.0, cam_pos[4]/256.0, cam_pos[5]/256.0,
-		0.0, -1.0, 0.0
-	);
-
-	gl.Begin(GL_LINES);
-		/* Origin */
-		gl.Color3f(1.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(10.0,0.0,0.0);
-
-		gl.Color3f(0.0,1.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,10.0,0.0);
-
-		gl.Color3f(0.0,0.0,1.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,10.0);
-	gl.End();
-
-	/*start[0] = (cam_pos[0]+cam_pos[3])/512.0;
-	start[1] = (cam_pos[1]+cam_pos[4])/512.0;
-	start[2] = (cam_pos[2]+cam_pos[5])/512.0;
-	end[0] = cam_pos[0]+(start[0]*2.0);
-	end[1] = cam_pos[1]+(start[1]*2.0);
-	end[2] = cam_pos[2]+(start[2]*2.0);*/
-
-	/*gl.Translatef(start[0], start[1], start[2]);*/
-	gl.Translatef(cam_pos[3]/256.0, cam_pos[4]/256.0, cam_pos[5]/256.0);
-
-	gl.Begin(GL_LINES);
-		/* Camera target */
-		gl.Color3f(1.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(10.0,0.0,0.0);
-
-		gl.Color3f(0.0,1.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,10.0,0.0);
-
-		gl.Color3f(0.0,0.0,1.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,10.0);
-
-		/* Ground */
-		gl.Color3f(1.0,1.0,1.0);
-		for (i=-50; i<=50; i+=10) {
-			gl.Vertex3f(-50.0,20.0,i);
-			gl.Vertex3f(50.0,20.0,i);
-			gl.Vertex3f(i,20.0,-50);
-			gl.Vertex3f(i,20.0,50);
-		}
-	gl.End();
 }

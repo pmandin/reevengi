@@ -30,6 +30,8 @@
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
+static void initScreen(video_t *this);
+static void drawBackground(video_t *this, SDL_Surface *surf);
 
 /*--- Functions ---*/
 
@@ -45,6 +47,10 @@ void video_soft_init(video_t *this)
 
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
+	this->screenShot = screenShot;
+
+	this->initScreen = initScreen;
+	this->drawBackground = drawBackground;
 }
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)
@@ -82,4 +88,41 @@ static void screenShot(video_t *this)
 
 	printf("Screenshot %s: %s\n", filename,
 		SDL_SaveBMP(this->screen, filename)==0 ? "done" : "failed");
+}
+
+static void initScreen(video_t *this)
+{
+}
+
+static void drawBackground(video_t *this, SDL_Surface *surf)
+{
+	SDL_Rect src_rect, dst_rect;
+
+	if (!this->screen || !surf) {
+		return;
+	}
+
+	src_rect.x = src_rect.y = 0;
+	src_rect.w = surf->w;
+	src_rect.h = surf->h;
+
+	dst_rect.x = dst_rect.y = 0;
+	dst_rect.w = this->screen->w;
+	dst_rect.h = this->screen->h;
+
+	if (dst_rect.w > src_rect.w) {
+		dst_rect.x = (dst_rect.w - src_rect.w) >> 1;
+		dst_rect.w = src_rect.w;
+	} else {
+		src_rect.w = this->screen->w;
+	}
+
+	if (dst_rect.h > src_rect.h) {
+		dst_rect.y = (dst_rect.h - src_rect.h) >> 1;
+		dst_rect.h = src_rect.h;
+	} else {
+		src_rect.h = this->screen->h;
+	}
+
+	SDL_BlitSurface(surf, &src_rect, this->screen, &dst_rect);
 }

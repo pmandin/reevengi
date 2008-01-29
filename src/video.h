@@ -31,6 +31,9 @@ struct video_s {
 	void (*setVideoMode)(video_t *this, int width, int height, int bpp);
 	void (*swapBuffers)(video_t *this);
 	void (*screenShot)(video_t *this);
+
+	void (*initScreen)(video_t *this);
+	void (*drawBackground)(video_t *this, SDL_Surface *surf);
 };
 
 void video_soft_init(video_t *this);
