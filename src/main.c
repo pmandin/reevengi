@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include <SDL.h>
-#include <SDL_opengl.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -37,7 +36,6 @@
 #include "view_background.h"
 #include "view_movie.h"
 
-#include "dyngl.h"
 #include "video.h"
 
 /*--- Defines ---*/
@@ -153,15 +151,11 @@ int main(int argc, char **argv)
 	}
 	atexit(SDL_Quit);
 
+	/* Try to load OpenGL library first */
 	if (use_opengl) {
-		if (dyngl_load(NULL)) {
-			use_opengl = 1;
-		} else {
-			fprintf(stderr, "Can not load OpenGL library: using software rendering mode\n");
-			use_opengl = 0;
-		}
+		use_opengl = video_opengl_loadlib();
 	}
-
+	/* Then initialize proper backend */
 	if (use_opengl) {
 		video_opengl_init(&video);
 	} else {
@@ -202,7 +196,7 @@ int main(int argc, char **argv)
 int viewer_loop(void)
 {
 	int quit = 0;
-	int switch_fs = 0;
+	int switch_mode = 0;
 	int new_width, new_height;
 	SDL_Event event;
 
@@ -225,7 +219,7 @@ int viewer_loop(void)
 					case SDLK_RETURN:
 						if (event.key.keysym.mod & KMOD_ALT) {
 							video.flags ^= SDL_FULLSCREEN;
-							switch_fs=1;
+							switch_mode=1;
 						}
 						break;
 					case KEY_GAMMA_DOWN:
@@ -261,6 +255,7 @@ int viewer_loop(void)
 			case SDL_VIDEORESIZE:
 				new_width = event.resize.w;
 				new_height = event.resize.h;
+				switch_mode = 1;
 				break;
 			default:
 				switch(viewmode) {
@@ -278,6 +273,7 @@ int viewer_loop(void)
 	if (update_screen) {
 		/* Update ? */
 		update_screen = 0;
+		video.refreshBackground(&video);
 
 		switch(viewmode) {
 			case VIEWMODE_BACKGROUND:
@@ -288,26 +284,13 @@ int viewer_loop(void)
 				update_screen = 1;
 				break;
 		}
-
-		if (cur_surf) {
-			if ((cur_surf->w > video.width) || (cur_surf->h > video.height)) {
-				new_width = cur_surf->w;
-				new_height = cur_surf->h;
-				update_screen = 1;
-			}
-		}
 	}
 
-	if (cur_surf) {
-		video.initScreen(&video);
-		video.drawBackground(&video, cur_surf);
-		video.swapBuffers(&video);
+	video.initScreen(&video);
+	video.drawBackground(&video, cur_surf);
+	video.swapBuffers(&video);
 
-		/* Do not need to redraw image next time */
-		cur_surf = NULL;
-	}
-
-	if (switch_fs || (new_width!=video.width) || (new_height!=video.height)) {
+	if (switch_mode) {
 		video.setVideoMode(&video, new_width, new_height, video.bpp);
 		update_screen=1;
 		switch_mode=0;

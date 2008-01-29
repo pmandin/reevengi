@@ -33,10 +33,13 @@ struct video_s {
 	void (*screenShot)(video_t *this);
 
 	void (*initScreen)(video_t *this);
+	void (*refreshBackground)(video_t *this);
 	void (*drawBackground)(video_t *this, SDL_Surface *surf);
 };
 
 void video_soft_init(video_t *this);
+
+int video_opengl_loadlib(void);
 void video_opengl_init(video_t *this);
 
 #endif /* VIDEO_H */

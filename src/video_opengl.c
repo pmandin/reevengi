@@ -29,6 +29,7 @@
 /*--- Local variables ---*/
 
 static GLenum textureObject = 0;
+static SDL_Surface *background_surf = NULL;
 
 /*--- Function prototypes ---*/
 
@@ -36,11 +37,22 @@ static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
+static void refreshBackground(video_t *this);
 static void drawBackground(video_t *this, SDL_Surface *surf);
 
 static void drawGrid(void);
 
 /*--- Functions ---*/
+
+int video_opengl_loadlib(void)
+{
+	if (dyngl_load(NULL)) {
+		return 1;
+	}
+
+	fprintf(stderr, "Can not load OpenGL library: using software rendering mode\n");
+	return 0;
+}
 
 void video_opengl_init(video_t *this)
 {
@@ -57,6 +69,7 @@ void video_opengl_init(video_t *this)
 	this->screenShot = screenShot;
 
 	this->initScreen = initScreen;
+	this->refreshBackground = refreshBackground;
 	this->drawBackground = drawBackground;
 }
 
@@ -99,6 +112,8 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->height = this->screen->h;
 	this->bpp = this->screen->format->BitsPerPixel;
 	this->flags = this->screen->flags;
+
+	printf("opengl: %dx%dx%d video mode\n", this->width, this->height, this->bpp);
 }
 
 static void swapBuffers(video_t *this)
@@ -115,12 +130,17 @@ static void initScreen(video_t *this)
 {
 	gl.ClearColor(0.6,0.4,0.2,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);
+
+	gl.Viewport(0, 0, this->width, this->height);
+}
+
+static void refreshBackground(video_t *this)
+{
+	background_surf = NULL;
 }
 
 static void drawBackground(video_t *this, SDL_Surface *surf)
 {
-	int w=0, h=0;
-
 	gl.Enable(GL_TEXTURE_RECTANGLE_ARB);
 
 	if (textureObject==0) {
@@ -128,14 +148,14 @@ static void drawBackground(video_t *this, SDL_Surface *surf)
 	}
 	gl.BindTexture(GL_TEXTURE_RECTANGLE_ARB, textureObject);
 
-	if (surf) {
+	if (background_surf != surf) {
 		GLenum pixelType = GL_UNSIGNED_INT;
 		GLenum textureFormat = GL_RGBA;
 		/*printf("pitch: %d, bpp: %d\n",
-			surface->pitch, surface->format->BitsPerPixel);
+			surf->pitch, surf->format->BitsPerPixel);
 		printf("R=0x%08x G=0x%08x B=0x%08x A=0x%08x\n",
-			surface->format->Rmask, surface->format->Gmask,
-			surface->format->Bmask, surface->format->Amask
+			surf->format->Rmask, surf->format->Gmask,
+			surf->format->Bmask, surf->format->Amask
 			);*/
 		switch (surf->format->BitsPerPixel) {
 			case 15:
@@ -152,12 +172,12 @@ static void drawBackground(video_t *this, SDL_Surface *surf)
 				textureFormat = GL_RGB;
 				break;
 		}
-		w = surf->w;
-		h = surf->h;
 		gl.TexImage2D(GL_TEXTURE_RECTANGLE_ARB,0, GL_RGBA,
 			surf->w, surf->h, 0,
 			textureFormat, pixelType, surf->pixels
 		);
+
+		background_surf = surf;
 	}
 
  	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -178,7 +198,7 @@ static void drawBackground(video_t *this, SDL_Surface *surf)
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
-	gl.Scalef(w,h,1.0);
+	gl.Scalef(background_surf->w,background_surf->h,1.0);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();

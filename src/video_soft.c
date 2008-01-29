@@ -25,12 +25,17 @@
 
 #include "video.h"
 
+/*--- Local variables ---*/
+
+static SDL_Surface *background_surf = NULL;
+
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
+static void refreshBackground(video_t *this);
 static void drawBackground(video_t *this, SDL_Surface *surf);
 
 /*--- Functions ---*/
@@ -50,6 +55,7 @@ void video_soft_init(video_t *this)
 	this->screenShot = screenShot;
 
 	this->initScreen = initScreen;
+	this->refreshBackground = refreshBackground;
 	this->drawBackground = drawBackground;
 }
 
@@ -94,13 +100,23 @@ static void initScreen(video_t *this)
 {
 }
 
+static void refreshBackground(video_t *this)
+{
+	background_surf = NULL;
+}
+
 static void drawBackground(video_t *this, SDL_Surface *surf)
 {
 	SDL_Rect src_rect, dst_rect;
 
-	if (!this->screen || !surf) {
+	if (!this->screen) {
 		return;
 	}
+
+	if (background_surf == surf) {
+		return;
+	}
+	background_surf = surf;
 
 	src_rect.x = src_rect.y = 0;
 	src_rect.w = surf->w;
