@@ -145,7 +145,7 @@ static void screenShot(video_t *this)
 
 static void initScreen(video_t *this)
 {
-	gl.ClearColor(0.6,0.4,0.2,0.0);
+	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);
 
 	gl.Viewport(0, 0, this->width, this->height);
