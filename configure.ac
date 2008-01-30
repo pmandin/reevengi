@@ -85,9 +85,10 @@ LIBS=$TMP_LIBS
 AC_ARG_ENABLE(opengl,
 	[  --enable-opengl         Enable OpenGL (default=yes)],
 	[WANT_OPENGL=$withval], [WANT_OPENGL=yes])
+GLU_LIBS=
 if test "x$WANT_OPENGL" = "xyes"; then
 	AC_DEFINE(ENABLE_OPENGL, 1, [Define if you want OpenGL renderer])
-	LIBS="$LIBS -lGLU"
+	GLU_LIBS="-lGLU"
 fi
 
 # Movies using FFmpeg
@@ -107,6 +108,7 @@ AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDLIMAGE_LIBS)
 AC_SUBST(PHYSFS_LIBS)
+AC_SUBST(GLU_LIBS)
 
 AC_CONFIG_FILES([
 Makefile

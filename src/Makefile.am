@@ -3,7 +3,7 @@ bin_PROGRAMS = reevengi
 AM_CFLAGS = $(SDL_CFLAGS) $(AVCODEC_CFLAGS) $(AVFORMAT_CFLAGS)
 
 LIBS = $(SDL_LIBS) $(SDLIMAGE_LIBS) $(PHYSFS_LIBS) $(ZLIB_LIBS) $(AVCODEC_LIBS) \
-	$(AVFORMAT_LIBS)
+	$(AVFORMAT_LIBS) $(GLU_LIBS)
 
 reevengi_SOURCES = main.c state.c re1_ps1.c re2_pc_demo.c re2_pc_game.c \
 	depack_adt.c parameters.c depack_vlc.c depack_mdec.c idctfst.c \
