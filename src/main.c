@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 			exit(1);
 	}
 	if (viewmode == VIEWMODE_MOVIE) {	
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 		state_newmovie();
 		use_opengl = 0;
 #else

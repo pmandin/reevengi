@@ -4,6 +4,8 @@ v 0.5
 - Added Resident Evil 2, PS1, Demo, Pal.
 - Added Resident Evil 3, PC, Game.
 - Load room description to know how many cameras there are.
+- configure.ac reworked to use pkg-config for FFmpeg libraries.
+- Started writing OpenGL renderer.
 
 v 0.4
 

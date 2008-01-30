@@ -19,12 +19,21 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <SDL.h>
-#include <SDL_opengl.h>
+
+#ifdef ENABLE_OPENGL
+# include <SDL_opengl.h>
+# include "dyngl.h"
+#endif
 
 #include "video.h"
-#include "dyngl.h"
 #include "state.h"
+
+#ifdef ENABLE_OPENGL
 
 /*--- Local variables ---*/
 
@@ -42,20 +51,25 @@ static void drawBackground(video_t *this, SDL_Surface *surf);
 
 static void drawGrid(void);
 
+#endif /* ENABLE_OPENGL */
+
 /*--- Functions ---*/
 
 int video_opengl_loadlib(void)
 {
+#ifdef ENABLE_OPENGL
 	if (dyngl_load(NULL)) {
 		return 1;
 	}
 
 	fprintf(stderr, "Can not load OpenGL library: using software rendering mode\n");
+#endif /* ENABLE_OPENGL */
 	return 0;
 }
 
 void video_opengl_init(video_t *this)
 {
+#ifdef ENABLE_OPENGL
 	this->width = 640;
 	this->height = 480;
 	this->bpp = 0;
@@ -71,7 +85,10 @@ void video_opengl_init(video_t *this)
 	this->initScreen = initScreen;
 	this->refreshBackground = refreshBackground;
 	this->drawBackground = drawBackground;
+#endif /* ENABLE_OPENGL */
 }
+
+#ifdef ENABLE_OPENGL
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)
 {
@@ -316,3 +333,5 @@ static void drawGrid(void)
 		}
 	gl.End();
 }
+
+#endif /* ENABLE_OPENGL */

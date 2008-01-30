@@ -20,7 +20,7 @@ AC_CHECK_HEADERS([fcntl.h])
 # Checks for library functions.
 #AC_FUNC_MALLOC
 AC_HEADER_STDC
-AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([memset pow])
 
 # Checks for target
 
@@ -59,7 +59,7 @@ AC_CHECK_LIB(SDL_image, IMG_isJPG,
 	have_sdlimage_lib=yes, have_sdlimage_lib=no,
 	$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
 if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
-	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS"
+	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
 	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
 else
 	AC_MSG_WARN([*** SDL_image not found!])
@@ -80,36 +80,26 @@ else
 fi
 LIBS=$TMP_LIBS
 
-# FFmpeg libavcodec
+# OpenGL renderer
 
-AC_CHECK_HEADER(ffmpeg/avcodec.h, have_avcodec_h=yes, have_avcodec_h=no)
-AC_CHECK_LIB(avcodec, avcodec_find_encoder_by_name, have_avcodec_lib=yes)
-have_avcodec="no"
-if test "x$have_avcodec_h" = "xyes" -a "x$have_avcodec_lib" = "xyes"; then
-	AVCODEC_LIBS="-lavcodec"
-	have_avcodec="yes"
-else
-	AC_MSG_WARN([*** FFmpeg avcodec not found!])
+AC_ARG_ENABLE(opengl,
+	[  --enable-opengl         Enable OpenGL (default=yes)],
+	[WANT_OPENGL=$withval], [WANT_OPENGL=yes])
+if test "x$WANT_OPENGL" = "xyes"; then
+	AC_DEFINE(ENABLE_OPENGL, 1, [Define if you want OpenGL renderer])
+	LIBS="$LIBS -lGLU"
 fi
 
-# FFmpeg libavformat
+# Movies using FFmpeg
 
-AC_CHECK_HEADER(ffmpeg/avformat.h, have_avformat_h=yes, have_avformat_h=no)
-AC_CHECK_LIB(avformat, av_alloc_format_context, have_avformat_lib=yes)
-have_avformat="no"
-if test "x$have_avformat_h" = "xyes" -a "x$have_avformat_lib" = "xyes"; then
-	AVFORMAT_LIBS="-lavformat"
-	have_avformat="yes"
-else
-	AC_MSG_WARN([*** FFmpeg avformat not found!])
-fi
+AC_ARG_ENABLE(movies,
+	[  --enable-movies         Enable movie player using FFmpeg (default=yes)],
+	[WANT_MOVIES=$withval], [WANT_MOVIES=yes])
+if test "x$WANT_MOVIES" = "xyes"; then
+	PKG_CHECK_MODULES([AVCODEC], [libavcodec])
+	PKG_CHECK_MODULES([AVFORMAT], [libavformat])
 
-# FFmpeg
-
-FFMPEG_LIBS=
-if test "x$have_avformat" = "xyes" -a "x$have_avcodec" = "xyes"; then
-	AC_DEFINE(ENABLE_FFMPEG, 1, [Define if you have FFmpeg])
-	FFMPEG_LIBS="$AVFORMAT_LIBS $AVCODEC_LIBS"
+	AC_DEFINE(ENABLE_MOVIES, 1, [Define if you want movie player])
 fi
 
 # Outputs
@@ -117,7 +107,6 @@ AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDLIMAGE_LIBS)
 AC_SUBST(PHYSFS_LIBS)
-AC_SUBST(FFMPEG_LIBS)
 
 AC_CONFIG_FILES([
 Makefile

@@ -19,6 +19,13 @@
 */
 
 #include <stdio.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef ENABLE_OPENGL
+
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -56,3 +63,6 @@ int dyngl_load(char *filename)
 
 	return 1;
 }
+
+#endif /* ENABLE_OPENGL */
+

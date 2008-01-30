@@ -28,7 +28,7 @@
 #endif
 
 #include <SDL.h>
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 #include <ffmpeg/avformat.h>
 #endif
 
@@ -58,7 +58,7 @@
 static int restart_movie = 1;
 static int first_time = 1;
 
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 static AVInputFormat input_fmt;
 static AVFormatContext *fmt_ctx = NULL;
 static ByteIOContext bio_ctx;
@@ -69,7 +69,7 @@ static SDL_RWops *movie_src = NULL;
 static int audstream = -1, vidstream = -1;
 static int emul_cd;
 static int emul_cd_pos;
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 static AVFrame *decoded_frame = NULL;
 #endif
 
@@ -83,7 +83,7 @@ void movie_shutdown(void);
 static void check_emul_cd(void);
 
 static int probe_movie(const char *filename);
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
 #endif
@@ -128,7 +128,7 @@ int view_movie_input(SDL_Event *event)
 
 int view_movie_update(SDL_Surface *screen)
 {
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 	/* Init ffmpeg ? */
 	if (first_time) {
 		first_time = 0;
@@ -178,7 +178,7 @@ static void check_emul_cd(void)
 
 static int movie_init(const char *filename)
 {
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 	int i, err;
 
 	check_emul_cd();
@@ -273,7 +273,7 @@ void movie_shutdown(void)
 		overlay=NULL;
 	}
 
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 	if (decoded_frame) {
 		av_free(decoded_frame);
 		decoded_frame = NULL;
@@ -300,7 +300,7 @@ void movie_shutdown(void)
 static int probe_movie(const char *filename)
 {
 	int retval = 1;	
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 	SDL_RWops	*src;
 	AVProbeData	pd;
 
@@ -333,7 +333,7 @@ static int probe_movie(const char *filename)
 	return retval;
 }
 
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 {
 	int size_read = 0;
@@ -430,7 +430,7 @@ static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
 
 static void update_overlay_yuv420(void)
 {
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 	int x,y;
 	Uint8 *dst[3], *dst_line[3];
 	Uint8 *src[3], *src_line[3];
@@ -479,7 +479,7 @@ static void update_overlay_yuv420(void)
 static int movie_decode_video(SDL_Surface *screen)
 {
 	int retval = 0;
-#ifdef ENABLE_FFMPEG
+#ifdef ENABLE_MOVIES
 	AVPacket pkt1, *pkt = &pkt1;
 	int err, got_pic;
 
