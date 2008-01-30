@@ -44,6 +44,9 @@ Use at your own risks.
 
 "-movie" to enable movie player mode.
 
+"-opengl" to enable OpenGL renderer. Note: in this mode, a grid is displayed
+  to show camera position.
+
 "-help" displays a little help.
 
 
