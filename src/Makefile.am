@@ -19,4 +19,7 @@ reevengi_headers = state.h re1_ps1.h re2_pc_demo.h depack_adt.h \
 	physfsrwops.h view_background.h view_movie.h \
 	dyngl.h video.h
 
-EXTRA_DIST = $(reevengi_headers)
+reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h
+
+EXTRA_DIST = $(reevengi_headers) $(reevengi_generated)
+
