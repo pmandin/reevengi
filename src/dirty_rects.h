@@ -35,6 +35,6 @@ struct dirty_rects_s {
 };
 
 dirty_rects_t *dirty_rects_create(int w, int h);
-void dirty_rects_delete(dirty_rects_t *this);
+void dirty_rects_destroy(dirty_rects_t *this);
 
 #endif /* DIRTY_RECTS */
