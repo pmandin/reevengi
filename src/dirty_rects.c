@@ -32,13 +32,10 @@ static void clear(dirty_rects_t *this);
 
 dirty_rects_t *dirty_rects_create(int w, int h)
 {
-	dirty_rects_t *this = (dirty_rects_t *) malloc(sizeof(dirty_rects_t));
+	dirty_rects_t *this = (dirty_rects_t *) calloc(1, sizeof(dirty_rects_t));
 	if (!this) {
 		return NULL;
 	}
-
-	this->width = 0;
-	this->height = 0;
 
 	this->resize = resize;
 	this->set_dirty = set_dirty;
