@@ -50,9 +50,7 @@ int update_screen = 1;
 int width = 320, height = 240;
 SDL_Surface *cur_surf = NULL;
 
-/*--- Local variables ---*/
-
-static video_t video;
+video_t video;
 
 /*--- Functions prototypes ---*/
 
