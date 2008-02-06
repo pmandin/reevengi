@@ -77,6 +77,9 @@ static void resize(dirty_rects_t *this, int w, int h)
 	}
 	h>>= 4;
 
+	this->width = w;
+	this->height = h;
+
 	if (this->markers) {
 		free(this->markers);
 	}
