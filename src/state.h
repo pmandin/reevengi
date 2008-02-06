@@ -23,6 +23,8 @@
 
 #include <SDL.h>
 
+#include "video_surface.h"
+
 /*--- Enums ---*/
 
 enum {
@@ -62,6 +64,8 @@ typedef struct {
 	int num_cameras;
 	/* Background image */
 	SDL_Surface *background_surf;
+
+	video_surface_t *back_surf;
 
 	/* Room data file */
 	void *room_file;
