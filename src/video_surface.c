@@ -100,6 +100,60 @@ video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFor
 	return this;
 }
 
+video_surface_t *video_surface_create_su(SDL_Surface *surface)
+{
+	int sw = surface->w, sh = surface->h;
+
+	video_surface_t *this = (video_surface_t *) calloc(1, sizeof(video_surface_t));
+	if (!this) {
+		return NULL;
+	}
+
+	/* Align on 16 pixels boundaries */
+	if (sw & 15) {
+		sw = (sw|15)+1;
+	}
+	if (sh & 15) {
+		sh = (sh|15)+1;
+	}
+
+	this->sdl_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, sw,sh,
+		surface->format->BitsPerPixel,
+		surface->format->Rmask, surface->format->Gmask,
+		surface->format->Bmask, surface->format->Amask
+	);
+	if (!this->sdl_surf) {
+		free(this);
+		return NULL;
+	}
+
+	/* Copy palette */
+	if (surface->format->BitsPerPixel == 8) {
+		int i;
+		SDL_Color palette[256];
+
+		for (i=0; i<surface->format->palette->ncolors; i++) {
+			palette[i].r = surface->format->palette->colors[i].r;
+			palette[i].g = surface->format->palette->colors[i].g;
+			palette[i].b = surface->format->palette->colors[i].b;
+		}
+		SDL_SetPalette(this->sdl_surf, SDL_LOGPAL, palette, 0, 256);
+	}
+
+	/* Copy pixels */
+	SDL_BlitSurface(surface, NULL, this->sdl_surf, NULL);
+
+	/* This is the dimensions we work on */
+	this->width = surface->w;
+	this->height = surface->h;
+	this->bpp = this->sdl_surf->format->BitsPerPixel;
+
+	this->dirty_rects = dirty_rects_create(sw, sh);
+
+	this->resize = resize;
+	return this;
+}
+
 void video_surface_destroy(video_surface_t *this)
 {
 	if (this) {

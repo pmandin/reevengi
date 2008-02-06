@@ -28,9 +28,12 @@
 #ifdef ENABLE_OPENGL
 # include <SDL_opengl.h>
 # include "dyngl.h"
+
+# include "video_surface_opengl.h"
 #endif
 
 #include "video.h"
+
 #include "state.h"
 
 #ifdef ENABLE_OPENGL
@@ -85,6 +88,11 @@ void video_opengl_init(video_t *this)
 	this->initScreen = initScreen;
 	this->refreshBackground = refreshBackground;
 	this->drawBackground = drawBackground;
+
+	this->createSurface = video_surface_gl_create;
+	this->createSurfacePf = video_surface_gl_create_pf;
+	this->createSurfaceSu = video_surface_gl_create_su;
+	this->destroySurface = video_surface_gl_destroy;
 #endif /* ENABLE_OPENGL */
 }
 

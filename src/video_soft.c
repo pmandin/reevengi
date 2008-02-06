@@ -60,6 +60,7 @@ void video_soft_init(video_t *this)
 
 	this->createSurface = video_surface_create;
 	this->createSurfacePf = video_surface_create_pf;
+	this->createSurfaceSu = video_surface_create_su;
 	this->destroySurface = video_surface_destroy;
 }
 
