@@ -10,7 +10,7 @@ reevengi_SOURCES = main.c state.c re1_ps1.c re2_pc_demo.c re2_pc_game.c \
 	re2_ps1.c re3_ps1_game.c depack_pak.c re1_pc_game.c \
 	background_bss.c background_tim.c re3_pc.c \
 	filesystem.c physfsrwops.c view_background.c view_movie.c \
-	dyngl.c video_soft.c video_opengl.c dirty_rects.c video_surface.c \
+	dyngl.c video.c video_opengl.c dirty_rects.c video_surface.c \
 	video_surface_opengl.c
 
 reevengi_headers = state.h re1_ps1.h re2_pc_demo.h depack_adt.h \
