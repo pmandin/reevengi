@@ -57,6 +57,10 @@ void video_soft_init(video_t *this)
 	this->initScreen = initScreen;
 	this->refreshBackground = refreshBackground;
 	this->drawBackground = drawBackground;
+
+	this->createSurface = video_surface_create;
+	this->createSurfacePf = video_surface_create_pf;
+	this->destroySurface = video_surface_destroy;
 }
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)

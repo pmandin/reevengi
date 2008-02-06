@@ -21,6 +21,8 @@
 #ifndef VIDEO_H
 #define VIDEO_H 1
 
+#include "video_surface.h"
+
 typedef struct video_s video_t;
 
 struct video_s {
@@ -35,11 +37,19 @@ struct video_s {
 	void (*initScreen)(video_t *this);
 	void (*refreshBackground)(video_t *this);
 	void (*drawBackground)(video_t *this, SDL_Surface *surf);
+
+	video_surface_t * (*createSurface)(int width, int height, int bpp);
+	video_surface_t * (*createSurfacePf)(int width, int height, SDL_PixelFormat *pixelFormat);
+	void (*destroySurface)(video_surface_t *this);
 };
 
 void video_soft_init(video_t *this);
 
 int video_opengl_loadlib(void);
 void video_opengl_init(video_t *this);
+
+/*--- Variables ---*/
+
+extern video_t video;
 
 #endif /* VIDEO_H */

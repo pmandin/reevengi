@@ -59,6 +59,45 @@ video_surface_t *video_surface_create(int w, int h, int bpp)
 	this->dirty_rects = dirty_rects_create(sw, sh);
 
 	this->resize = resize;
+	return this;
+}
+
+video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFormat)
+{
+	int sw = w, sh = h;
+
+	video_surface_t *this = (video_surface_t *) calloc(1, sizeof(video_surface_t));
+	if (!this) {
+		return NULL;
+	}
+
+	/* Align on 16 pixels boundaries */
+	if (sw & 15) {
+		sw = (sw|15)+1;
+	}
+	if (sh & 15) {
+		sh = (sh|15)+1;
+	}
+
+	this->sdl_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, sw,sh,
+		pixelFormat->BitsPerPixel,
+		pixelFormat->Rmask, pixelFormat->Gmask,
+		pixelFormat->Bmask, pixelFormat->Amask
+	);
+	if (!this->sdl_surf) {
+		free(this);
+		return NULL;
+	}
+
+	/* This is the dimensions we work on */
+	this->width = w;
+	this->height = h;
+	this->bpp = this->sdl_surf->format->BitsPerPixel;
+
+	this->dirty_rects = dirty_rects_create(sw, sh);
+
+	this->resize = resize;
+	return this;
 }
 
 void video_surface_destroy(video_surface_t *this)
