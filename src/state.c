@@ -25,6 +25,7 @@
 
 #include "state.h"
 #include "parameters.h"
+#include "video.h"
 
 /*--- Variables ---*/
 
@@ -92,6 +93,10 @@ void state_unloadbackground(void)
 	if (game_state.background_surf) {
 		SDL_FreeSurface(game_state.background_surf);
 		game_state.background_surf = NULL;
+	}
+	if (game_state.back_surf) {
+		video.destroySurface(game_state.back_surf);
+		game_state.back_surf = NULL;
 	}
 }
 
