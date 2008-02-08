@@ -27,6 +27,7 @@
 #include "background_bss.h"
 #include "depack_vlc.h"
 #include "depack_mdec.h"
+#include "video.h"
 
 /*--- Defines ---*/
 
@@ -100,9 +101,20 @@ static int background_mdec_load(SDL_RWops *src)
 	mdec_depack(src, &dstBuffer, &dstBufLen, WIDTH, HEIGHT);
 
 	if (dstBuffer && dstBufLen) {
-		game_state.background_surf = mdec_surface(dstBuffer, WIDTH, HEIGHT);
+		SDL_Surface *image;
+
+		/*game_state.background_surf = mdec_surface(dstBuffer, WIDTH, HEIGHT);
 		if (game_state.background_surf) {
 			retval = 1;
+		}*/
+
+		image = mdec_surface(dstBuffer, WIDTH, HEIGHT);
+		if (image) {
+			game_state.back_surf = video.createSurfaceSu(image);
+			if (game_state.back_surf) {
+				retval = 1;
+			}
+			SDL_FreeSurface(image);
 		}
 
 		free(dstBuffer);

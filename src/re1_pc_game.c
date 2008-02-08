@@ -30,6 +30,7 @@
 #include "depack_pak.h"
 #include "re1_pc_game.h"
 #include "parameters.h"
+#include "video.h"
 
 /*--- Defines ---*/
 
@@ -134,9 +135,20 @@ int re1pcgame_load_pak_bg(const char *filename)
 			
 			tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
 			if (tim_src) {
-				game_state.background_surf = background_tim_load(tim_src);
+				SDL_Surface *image;
+
+				/*game_state.background_surf = background_tim_load(tim_src);
 				if (game_state.background_surf) {
 					retval = 1;
+				}*/
+
+				image = background_tim_load(tim_src);
+				if (image) {
+					game_state.back_surf = video.createSurfaceSu(image);
+					if (game_state.back_surf) {
+						retval = 1;
+					}
+					SDL_FreeSurface(image);
 				}
 
 				SDL_FreeRW(tim_src);

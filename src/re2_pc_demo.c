@@ -30,6 +30,7 @@
 #include "re2_pc_demo.h"
 #include "depack_adt.h"
 #include "parameters.h"
+#include "video.h"
 
 /*--- Defines ---*/
 
@@ -99,9 +100,20 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 			/*game_state.num_cameras = 16;*/
 
 			if (dstBufLen == 320*256*2) {
-				game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
+				SDL_Surface *image;
+
+				/*game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
 				if (game_state.background_surf) {
 					retval = 1;
+				}*/
+
+				image = adt_surface((Uint16 *) dstBuffer);
+				if (image) {
+					game_state.back_surf = video.createSurfaceSu(image);
+					if (game_state.back_surf) {
+						retval = 1;
+					}
+					SDL_FreeSurface(image);
 				}
 			}
 
