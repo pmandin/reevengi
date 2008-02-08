@@ -30,7 +30,7 @@
 typedef struct video_surface_gl_s video_surface_gl_t;
 
 struct video_surface_gl_s {
-	struct video_surface_s surf_soft;
+	video_surface_t surf_soft;
 
 	GLenum textureTarget;
 	GLenum textureFormat;
