@@ -32,21 +32,65 @@ static void resize(video_surface_t *this, int w, int h);
 
 video_surface_t *video_surface_gl_create(int w, int h, int bpp)
 {
-	return NULL;
+	video_surface_t *parent = video_surface_create(w,h,bpp);
+	if (!parent) {
+		return NULL;
+	}
+
+	video_surface_gl_t *this = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
+	if (!this) {
+		video_surface_destroy(parent);
+		return NULL;
+	}
+
+	memcpy(&this->surf_soft, parent, sizeof(video_surface_t));
+
+	return (video_surface_t *) this;
 }
 
 video_surface_t *video_surface_gl_create_pf(int w, int h, SDL_PixelFormat *pixelFormat)
 {
-	return NULL;
+	video_surface_t *parent = video_surface_create_pf(w,h,pixelFormat);
+	if (!parent) {
+		return NULL;
+	}
+
+	video_surface_gl_t *this = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
+	if (!this) {
+		video_surface_destroy(parent);
+		return NULL;
+	}
+
+	memcpy(&this->surf_soft, parent, sizeof(video_surface_t));
+
+	return (video_surface_t *) this;
 }
 
 video_surface_t *video_surface_gl_create_su(SDL_Surface *surface)
 {
-	return NULL;
+	video_surface_t *parent = video_surface_create_su(surface);
+	if (!parent) {
+		return NULL;
+	}
+
+	video_surface_gl_t *this = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
+	if (!this) {
+		video_surface_destroy(parent);
+		return NULL;
+	}
+
+	memcpy(&this->surf_soft, parent, sizeof(video_surface_t));
+
+	return (video_surface_t *) this;
 }
 
 void video_surface_gl_destroy(video_surface_t *this)
 {
+	if (this) {
+		video_surface_destroy(& ((video_surface_gl_t *) this)->surf_soft);
+
+		free(this);
+	}
 }
 
 /*--- Private functions ---*/

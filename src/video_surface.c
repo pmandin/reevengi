@@ -159,13 +159,10 @@ void video_surface_destroy(video_surface_t *this)
 	if (this) {
 		if (this->sdl_surf) {
 			SDL_FreeSurface(this->sdl_surf);
-			this->sdl_surf = NULL;
 		}
-		this->width = 0;
-		this->height = 0;
-		this->bpp = 0;
-
 		dirty_rects_destroy(this->dirty_rects);
+
+		free(this);
 	}
 }
 
