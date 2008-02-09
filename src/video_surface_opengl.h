@@ -33,12 +33,10 @@ struct video_surface_gl_s {
 	video_surface_t surf_soft;
 
 	GLenum textureTarget;
-	GLenum textureFormat;
 	GLuint textureObject;
 
 	int can_palette;
 	int use_palette;
-	int first_upload;
 };
 
 video_surface_t *video_surface_gl_create(int w, int h, int bpp);

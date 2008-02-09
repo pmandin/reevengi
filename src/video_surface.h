@@ -30,6 +30,7 @@ struct video_surface_s {
 	SDL_Surface *sdl_surf;
 
 	void (*resize)(video_surface_t *this, int w, int h);
+	SDL_Surface *(*getSurface)(video_surface_t *this);
 };
 
 video_surface_t *video_surface_create(int w, int h, int bpp);

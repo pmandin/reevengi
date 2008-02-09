@@ -34,6 +34,7 @@ static void findTextureSize(video_surface_gl_t *this, int *width, int *height);
 static void uploadTexture(video_surface_gl_t *this);
 
 static void resize(video_surface_t *this, int w, int h);
+static SDL_Surface *getSurface(video_surface_t *this);
 
 /*--- Functions ---*/
 
@@ -55,6 +56,7 @@ video_surface_t *video_surface_gl_create(int w, int h, int bpp)
 
 	createTexture(this);
 
+	this->surf_soft.getSurface = getSurface;
 	return (video_surface_t *) this;
 }
 
@@ -76,6 +78,7 @@ video_surface_t *video_surface_gl_create_pf(int w, int h, SDL_PixelFormat *pixel
 
 	createTexture(this);
 
+	this->surf_soft.getSurface = getSurface;
 	return (video_surface_t *) this;
 }
 
@@ -99,6 +102,7 @@ video_surface_t *video_surface_gl_create_su(SDL_Surface *surface)
 
 	SDL_BlitSurface(surface, NULL, this->surf_soft.sdl_surf, NULL);
 
+	this->surf_soft.getSurface = getSurface;
 	return (video_surface_t *) this;
 }
 
@@ -138,9 +142,6 @@ static void createTexture(video_surface_gl_t *this)
 		this->use_palette = 1;
 	}
 #endif
-
-	this->first_upload = 1;
-	uploadTexture(this);
 }
 
 /* Find right size for texture, given extensions */
@@ -274,36 +275,10 @@ static void uploadTexture(video_surface_gl_t *this)
 			break;
 	}
 
-	if (this->first_upload) {
-		/* Complete texture upload the first time, and only parts after */
-		gl.TexImage2D(this->textureTarget,0, internalFormat,
-			surface->w, surface->h, 0,
-			this->textureFormat, pixelType, surface->pixels
-		);
-		this->first_upload = 0;
-	} else {
-		gl.PixelStorei(GL_UNPACK_ROW_LENGTH, surface->w);
-#if 0
-		int x,y;
-		Uint8 *dirtyArray = getDirtyRects();
-		for (y=0; y<getDirtyHeight(); y++) {
-			for (x=0; x<getDirtyWidth(); x++) {
-				if (!dirtyArray[y*getDirtyWidth()+x]) {
-					continue;
-				}
-
-				Uint8 *surfPixels = (Uint8 *) surface->pixels;
-				surfPixels += (y<<4) * surface->pitch;
-				surfPixels += (x<<4) * surface->format->BytesPerPixel;				
-				gl.TexSubImage2D(this->textureTarget,0,
-					x<<4,y<<4,16,16,
-					this->textureFormat, pixelType, surfPixels);
-			}
-		}
-		clearDirtyRects();
-#endif
-		gl.PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-	}
+	gl.TexImage2D(this->textureTarget,0, internalFormat,
+		surface->w, surface->h, 0,
+		GL_RGBA, pixelType, surface->pixels
+	);
 
 	switch (surface->format->BitsPerPixel) {
 		case 8:
@@ -332,7 +307,15 @@ static void resize(video_surface_t *this, int w, int h)
 	findTextureSize(gl_this, &w, &h);
 
 	this->resize(this, w, h);
-	gl_this->first_upload = 1;
 
-	/* TODO: update texture */
+	/* TODO: mark pixels to be uploaded */
+}
+
+static SDL_Surface *getSurface(video_surface_t *this)
+{
+	video_surface_gl_t *gl_this = (video_surface_gl_t *) this;
+
+	/* TODO: Update texture pixels ? */
+
+	return gl_this->surf_soft.sdl_surf;
 }

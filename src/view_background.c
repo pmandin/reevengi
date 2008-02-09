@@ -122,6 +122,6 @@ SDL_Surface *view_background_update(void)
 	}
 
 	/*return game_state.background_surf;*/
-	return game_state.back_surf->sdl_surf;
+	return game_state.back_surf->getSurface(game_state.back_surf);
 }
 

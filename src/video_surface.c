@@ -25,6 +25,7 @@
 /*--- Functions prototypes ---*/
 
 static void resize(video_surface_t *this, int w, int h);
+static SDL_Surface *getSurface(video_surface_t *this);
 
 /*--- Functions ---*/
 
@@ -57,6 +58,7 @@ video_surface_t *video_surface_create(int w, int h, int bpp)
 	this->bpp = this->sdl_surf->format->BitsPerPixel;
 
 	this->resize = resize;
+	this->getSurface = getSurface;
 	return this;
 }
 
@@ -93,6 +95,7 @@ video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFor
 	this->bpp = this->sdl_surf->format->BitsPerPixel;
 
 	this->resize = resize;
+	this->getSurface = getSurface;
 	return this;
 }
 
@@ -145,6 +148,7 @@ video_surface_t *video_surface_create_su(SDL_Surface *surface)
 	this->bpp = this->sdl_surf->format->BitsPerPixel;
 
 	this->resize = resize;
+	this->getSurface = getSurface;
 	return this;
 }
 
@@ -224,4 +228,9 @@ static void resize(video_surface_t *this, int w, int h)
 	if (restore_palette) {
 		SDL_SetPalette(this->sdl_surf, SDL_LOGPAL, palette, 0, 256);
 	}
+}
+
+static SDL_Surface *getSurface(video_surface_t *this)
+{
+	return this->sdl_surf;
 }
