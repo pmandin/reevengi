@@ -40,8 +40,7 @@
 
 /*--- Local variables ---*/
 
-static GLenum textureObject = 0;
-static SDL_Surface *background_surf = NULL;
+static video_surface_t *background_surf = NULL;
 
 /*--- Function prototypes ---*/
 
@@ -50,7 +49,7 @@ static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
 static void refreshBackground(video_t *this);
-static void drawBackground(video_t *this, SDL_Surface *surf);
+static void drawBackground(video_t *this, video_surface_t *surf);
 
 static void drawGrid(void);
 
@@ -153,7 +152,7 @@ static void screenShot(video_t *this)
 
 static void initScreen(video_t *this)
 {
-	gl.ClearColor(0.0,0.0,0.0,0.0);
+	gl.ClearColor(0.6,0.4,0.2,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);
 
 	gl.Viewport(0, 0, this->width, this->height);
@@ -164,51 +163,32 @@ static void refreshBackground(video_t *this)
 	background_surf = NULL;
 }
 
-static void drawBackground(video_t *this, SDL_Surface *surf)
+static void drawBackground(video_t *this, video_surface_t *surf)
 {
-	gl.Enable(GL_TEXTURE_RECTANGLE_ARB);
+	video_surface_gl_t *gl_surf = (video_surface_gl_t *) surf;
+	GLenum textureTarget, textureObject;
+	SDL_Surface *sdl_surf;
 
-	if (textureObject==0) {
-		gl.GenTextures(1, &textureObject);
-	}
-	gl.BindTexture(GL_TEXTURE_RECTANGLE_ARB, textureObject);
-
-	if (background_surf != surf) {
-		GLenum pixelType = GL_UNSIGNED_INT;
-		GLenum textureFormat = GL_RGBA;
-		/*printf("pitch: %d, bpp: %d\n",
-			surf->pitch, surf->format->BitsPerPixel);
-		printf("R=0x%08x G=0x%08x B=0x%08x A=0x%08x\n",
-			surf->format->Rmask, surf->format->Gmask,
-			surf->format->Bmask, surf->format->Amask
-			);*/
-		switch (surf->format->BitsPerPixel) {
-			case 15:
-			case 16:
-				if (surf->format->Bmask == 0x7c00) {
-					pixelType = GL_UNSIGNED_SHORT_1_5_5_5_REV;
-				} else {
-					pixelType = GL_UNSIGNED_SHORT_5_6_5;
-				}
-				textureFormat = GL_RGBA;
-				break;
-			case 24:
-				pixelType = GL_UNSIGNED_BYTE;
-				textureFormat = GL_RGB;
-				break;
-		}
-		gl.TexImage2D(GL_TEXTURE_RECTANGLE_ARB,0, GL_RGBA,
-			surf->w, surf->h, 0,
-			textureFormat, pixelType, surf->pixels
-		);
-
-		background_surf = surf;
+	if (!this->screen) {
+		return;
 	}
 
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	/*if (background_surf == surf) {
+		return;
+	}*/
+	background_surf = surf;
+
+	textureTarget = gl_surf->textureTarget;
+	textureObject = gl_surf->textureObject;
+	sdl_surf = surf->getSurface(surf);
+	
+	gl.Enable(textureTarget);
+	gl.BindTexture(textureTarget, textureObject);
+
+ 	gl.TexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+ 	gl.TexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
  	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
@@ -223,7 +203,7 @@ static void drawBackground(video_t *this, SDL_Surface *surf)
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
-	gl.Scalef(background_surf->w,background_surf->h,1.0);
+	gl.Scalef(background_surf->width,background_surf->height,1.0);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();

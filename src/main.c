@@ -48,7 +48,7 @@
 
 int update_screen = 1;
 int width = 320, height = 240;
-SDL_Surface *cur_surf = NULL;
+video_surface_t *cur_surf = NULL;
 
 video_t video;
 

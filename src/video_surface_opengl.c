@@ -57,6 +57,7 @@ video_surface_t *video_surface_gl_create(int w, int h, int bpp)
 	createTexture(this);
 
 	this->surf_soft.getSurface = getSurface;
+	/*printf("ogl_surf: create from size\n");*/
 	return (video_surface_t *) this;
 }
 
@@ -79,6 +80,7 @@ video_surface_t *video_surface_gl_create_pf(int w, int h, SDL_PixelFormat *pixel
 	createTexture(this);
 
 	this->surf_soft.getSurface = getSurface;
+	/*printf("ogl_surf: create from format\n");*/
 	return (video_surface_t *) this;
 }
 
@@ -103,6 +105,7 @@ video_surface_t *video_surface_gl_create_su(SDL_Surface *surface)
 	SDL_BlitSurface(surface, NULL, this->surf_soft.sdl_surf, NULL);
 
 	this->surf_soft.getSurface = getSurface;
+	/*printf("ogl_surf: create from surface\n");*/
 	return (video_surface_t *) this;
 }
 
@@ -208,6 +211,8 @@ static void findTextureSize(video_surface_gl_t *this, int *width, int *height)
 	}
 
 	/* FIXME: what to do if hw do not support asked size ? */
+	/*printf("ogl_surf: needed %dx%d, got %dx%d\n", *width, *height, w,h);*/
+
 	*width = w;
 	*height = h;
 }
@@ -218,10 +223,16 @@ static void uploadTexture(video_surface_gl_t *this)
 {
 	GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
 	GLenum internalFormat = GL_RGBA;
-	GLenum pixelType = GL_UNSIGNED_BYTE;
+	GLenum pixelType = GL_UNSIGNED_INT;
 	SDL_Surface *surface = this->surf_soft.sdl_surf;
 
+	/*printf("ogl_surf: upload texture, %d %d\n",
+		this->textureTarget, this->textureObject);*/
+
 	gl.BindTexture(this->textureTarget, this->textureObject);
+
+	/*printf("ogl_surf: %dx%d, %d\n", surface->w, surface->h,
+		surface->format->BitsPerPixel);*/
 
 	switch (surface->format->BitsPerPixel) {
 		case 8:
@@ -265,6 +276,9 @@ static void uploadTexture(video_surface_gl_t *this)
 			break;
 		case 16:
 			pixelType = GL_UNSIGNED_SHORT_5_6_5;
+			if (surface->format->Rmask == 31) {
+				pixelType = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+			}
 			/* FIXME: care about endianness ? */
 			break;
 		case 24:
@@ -304,10 +318,9 @@ static void resize(video_surface_t *this, int w, int h)
 {
 	video_surface_gl_t *gl_this = (video_surface_gl_t *) this;
 
+	/*printf("ogl_surf: resize to %dx%d\n", w,h);*/
 	findTextureSize(gl_this, &w, &h);
-
 	this->resize(this, w, h);
-
 	gl_this->need_upload = 1;
 }
 

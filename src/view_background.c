@@ -110,7 +110,7 @@ int view_background_input(SDL_Event *event)
 	return(reload_bg);
 }
 
-SDL_Surface *view_background_update(void)
+video_surface_t *view_background_update(void)
 {
 	if (reload_room) {
 		state_loadroom();
@@ -121,7 +121,6 @@ SDL_Surface *view_background_update(void)
 		reload_bg = 0;
 	}
 
-	/*return game_state.background_surf;*/
-	return game_state.back_surf->getSurface(game_state.back_surf);
+	return game_state.back_surf;
 }
 

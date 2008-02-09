@@ -27,7 +27,7 @@
 
 /*--- Local variables ---*/
 
-static SDL_Surface *background_surf = NULL;
+static video_surface_t *background_surf = NULL;
 
 /*--- Function prototypes ---*/
 
@@ -36,7 +36,7 @@ static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
 static void refreshBackground(video_t *this);
-static void drawBackground(video_t *this, SDL_Surface *surf);
+static void drawBackground(video_t *this, video_surface_t *surf);
 
 /*--- Functions ---*/
 
@@ -110,7 +110,7 @@ static void refreshBackground(video_t *this)
 	background_surf = NULL;
 }
 
-static void drawBackground(video_t *this, SDL_Surface *surf)
+static void drawBackground(video_t *this, video_surface_t *surf)
 {
 	SDL_Rect src_rect, dst_rect;
 
@@ -124,8 +124,8 @@ static void drawBackground(video_t *this, SDL_Surface *surf)
 	background_surf = surf;
 
 	src_rect.x = src_rect.y = 0;
-	src_rect.w = surf->w;
-	src_rect.h = surf->h;
+	src_rect.w = surf->getSurface(surf)->w;
+	src_rect.h = surf->getSurface(surf)->h;
 
 	dst_rect.x = dst_rect.y = 0;
 	dst_rect.w = this->screen->w;
@@ -145,5 +145,5 @@ static void drawBackground(video_t *this, SDL_Surface *surf)
 		src_rect.h = this->screen->h;
 	}
 
-	SDL_BlitSurface(surf, &src_rect, this->screen, &dst_rect);
+	SDL_BlitSurface(surf->getSurface(surf), &src_rect, this->screen, &dst_rect);
 }
