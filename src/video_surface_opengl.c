@@ -308,14 +308,16 @@ static void resize(video_surface_t *this, int w, int h)
 
 	this->resize(this, w, h);
 
-	/* TODO: mark pixels to be uploaded */
+	gl_this->need_upload = 1;
 }
 
 static SDL_Surface *getSurface(video_surface_t *this)
 {
 	video_surface_gl_t *gl_this = (video_surface_gl_t *) this;
 
-	/* TODO: Update texture pixels ? */
-
+	if (gl_this->need_upload) {
+		uploadTexture(gl_this);
+		gl_this->need_upload = 0;
+	}
 	return gl_this->surf_soft.sdl_surf;
 }

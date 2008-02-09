@@ -35,8 +35,8 @@ struct video_surface_gl_s {
 	GLenum textureTarget;
 	GLuint textureObject;
 
-	int can_palette;
-	int use_palette;
+	int can_palette, use_palette;
+	int need_upload;
 };
 
 video_surface_t *video_surface_gl_create(int w, int h, int bpp);
