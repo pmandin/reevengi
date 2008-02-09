@@ -56,8 +56,6 @@ video_surface_t *video_surface_create(int w, int h, int bpp)
 	this->height = h;
 	this->bpp = this->sdl_surf->format->BitsPerPixel;
 
-	this->dirty_rects = dirty_rects_create(sw, sh);
-
 	this->resize = resize;
 	return this;
 }
@@ -93,8 +91,6 @@ video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFor
 	this->width = w;
 	this->height = h;
 	this->bpp = this->sdl_surf->format->BitsPerPixel;
-
-	this->dirty_rects = dirty_rects_create(sw, sh);
 
 	this->resize = resize;
 	return this;
@@ -148,8 +144,6 @@ video_surface_t *video_surface_create_su(SDL_Surface *surface)
 	this->height = surface->h;
 	this->bpp = this->sdl_surf->format->BitsPerPixel;
 
-	this->dirty_rects = dirty_rects_create(sw, sh);
-
 	this->resize = resize;
 	return this;
 }
@@ -160,7 +154,6 @@ void video_surface_destroy(video_surface_t *this)
 		if (this->sdl_surf) {
 			SDL_FreeSurface(this->sdl_surf);
 		}
-		dirty_rects_destroy(this->dirty_rects);
 
 		free(this);
 	}
@@ -231,6 +224,4 @@ static void resize(video_surface_t *this, int w, int h)
 	if (restore_palette) {
 		SDL_SetPalette(this->sdl_surf, SDL_LOGPAL, palette, 0, 256);
 	}
-
-	this->dirty_rects->resize(this->dirty_rects, sw, sh);
 }

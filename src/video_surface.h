@@ -28,7 +28,6 @@ typedef struct video_surface_s video_surface_t;
 struct video_surface_s {
 	int width, height, bpp;
 	SDL_Surface *sdl_surf;
-	struct dirty_rects_s *dirty_rects;
 
 	void (*resize)(video_surface_t *this, int w, int h);
 };
