@@ -156,10 +156,19 @@ static void screenShot(video_t *this)
 
 static void initScreen(video_t *this)
 {
-	gl.ClearColor(0.6,0.4,0.2,0.0);
+	int scr_w = (this->height * aspect_x) / aspect_y;
+	int scr_h = (this->width * aspect_y) / aspect_x;
+	int pos_x = (this->width - scr_w)>>1;
+	int pos_y = (this->height - scr_h)>>1;
+
+	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);
 
-	gl.Viewport(0, 0, this->width, this->height);
+	if (pos_x>0) {
+		gl.Viewport(pos_x, 0, scr_w, this->height);
+	} else {
+		gl.Viewport(0, pos_y, this->width, scr_h);
+	}
 }
 
 static void refreshBackground(video_t *this)
