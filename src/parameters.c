@@ -32,6 +32,8 @@
 #define DEFAULT_VERBOSE 0
 #define DEFAULT_GAMMA 1.0
 #define DEFAULT_USE_OPENGL 0
+#define DEFAULT_ASPECT_X 4
+#define DEFAULT_ASPECT_Y 3
 
 /*--- Global variables ---*/
 
@@ -49,6 +51,11 @@ int viewmode = VIEWMODE_BACKGROUND;
 
 /* Enable OpenGL */
 int use_opengl = DEFAULT_USE_OPENGL;
+
+/* Aspect ratio */
+int aspect_x = DEFAULT_ASPECT_X;
+int aspect_y = DEFAULT_ASPECT_Y;
+int aspect_user = 0;
 
 /*---- Variables ---*/
 
@@ -105,6 +112,18 @@ int CheckParm(int argc,char **argv)
 		use_opengl = 1;
 	}
 
+	/*--- Check for aspect ratio ---*/
+	p = ParmPresent("-aspect", argc, argv);
+	if (p && p < argc-1) {
+		if (sscanf(argv[p+1], "%d:%d", &aspect_x, &aspect_y) != 2) {
+			/* Reput default values if failed */
+			aspect_x = DEFAULT_ASPECT_X;
+			aspect_y = DEFAULT_ASPECT_Y;
+		} else {
+			aspect_user = 1;
+		}
+	}
+
 	return 1;
 }
 
@@ -117,9 +136,13 @@ void DisplayUsage(void)
 		"  [-movie] (switch to movie player mode)\n"
 		"  [-gamma <n>] (default=%.3f)\n"
 		"  [-verbose <n>] (default=%d)\n"
+		"  [-opengl] (enable opengl mode)\n"
+		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
 		"  [-help] (print this message)\n",
 		DEFAULT_BASEDIR,
 		DEFAULT_GAMMA,
-		DEFAULT_VERBOSE
+		DEFAULT_VERBOSE,
+		DEFAULT_ASPECT_X,
+		DEFAULT_ASPECT_Y
 	);
 }

@@ -23,6 +23,7 @@
 
 #include <SDL.h>
 
+#include "parameters.h"
 #include "video.h"
 
 /*--- Local variables ---*/
@@ -62,6 +63,54 @@ void video_soft_init(video_t *this)
 	this->createSurfacePf = video_surface_create_pf;
 	this->createSurfaceSu = video_surface_create_su;
 	this->destroySurface = video_surface_destroy;
+
+	if (!aspect_user) {
+		video_detect_aspect();
+	}
+}
+
+/* Search biggest video mode, calculate its ratio */
+
+void video_detect_aspect(void)
+{
+	SDL_Rect **modes;
+	int i, max_w = 0, max_h = 0, ratio_w[4];
+
+	modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+	if (modes == (SDL_Rect **) 0) {
+		/* No fullscreen mode */
+		return;
+	} else if (modes == (SDL_Rect **) -1) {
+		/* Windowed mode */
+		return;
+	}
+
+	for (i=0; modes[i]; ++i) {
+		if ((modes[i]->w>max_w) && (modes[i]->h>max_h)) {
+			max_w = modes[i]->w;
+			max_h = modes[i]->h;
+		}
+	}
+
+	/*printf("Biggest video mode: %dx%d\n", max_w, max_h);*/
+
+	/* Calculate nearest aspect ratio */
+	ratio_w[0] = (max_h * 5) / 4;
+	ratio_w[1] = (max_h * 4) / 3;
+	ratio_w[2] = (max_h * 16) / 10;
+	ratio_w[3] = (max_h * 16) / 9;
+
+	if (max_w < (ratio_w[0]+ratio_w[1])>>1) {
+		aspect_x = 5; aspect_y = 4;
+	} else if (max_w < (ratio_w[1]+ratio_w[2])>>1) {
+		aspect_x = 4; aspect_y = 3;
+	} else if (max_w < (ratio_w[2]+ratio_w[3])>>1) {
+		aspect_x = 16; aspect_y = 10;
+	} else {
+		aspect_x = 16; aspect_y = 9;
+	}
+
+	printf("Calculated aspect ratio %d:%d\n", aspect_x, aspect_y);
 }
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)

@@ -32,8 +32,8 @@
 # include "video_surface_opengl.h"
 #endif
 
+#include "parameters.h"
 #include "video.h"
-
 #include "state.h"
 
 #ifdef ENABLE_OPENGL
@@ -93,6 +93,10 @@ void video_opengl_init(video_t *this)
 	this->createSurfaceSu = video_surface_gl_create_su;
 	this->destroySurface = video_surface_gl_destroy;
 #endif /* ENABLE_OPENGL */
+
+	if (!aspect_user) {
+		video_detect_aspect();
+	}
 }
 
 #ifdef ENABLE_OPENGL

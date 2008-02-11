@@ -43,6 +43,10 @@ extern int viewmode;
 /* Enable OpenGL */
 extern int use_opengl;
 
+/* Aspect ratio */
+extern int aspect_x, aspect_y;
+extern int aspect_user; /* User gave us an aspect ratio */
+
 /*--- Functions prototypes ---*/
 
 extern void DisplayUsage(void);

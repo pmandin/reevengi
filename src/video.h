@@ -44,6 +44,8 @@ struct video_s {
 	void (*destroySurface)(video_surface_t *this);
 };
 
+void video_detect_aspect(void);
+
 void video_soft_init(video_t *this);
 
 int video_opengl_loadlib(void);
