@@ -1,3 +1,10 @@
+v 0.6
+
+- There are two different demos of Resident Evil 2 for PC.
+- Try to deal with screen aspect ratio if possible.
+- Separated OpenGL and software renderer.
+
+
 v 0.5
 
 - Do not refresh screen as fast as possible, and free cpu instead.

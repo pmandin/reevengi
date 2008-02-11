@@ -47,6 +47,8 @@ Use at your own risks.
 "-opengl" to enable OpenGL renderer. Note: in this mode, a grid is displayed
   to show camera position.
 
+"-aspect <x>:<y>" to force an aspect ratio if misdetected.
+
 "-help" displays a little help.
 
 
