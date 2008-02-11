@@ -102,7 +102,8 @@ int main(int argc, char **argv)
 			printf("Resident Evil, PC, Game\n");
 			re1pcgame_init(&game_state);
 			break;
-		case GAME_RE2_PC_DEMO:
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
 			printf("Resident Evil 2, PC, Demo\n");
 			re2pcdemo_init(&game_state);
 			if (viewmode == VIEWMODE_MOVIE) {

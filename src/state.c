@@ -184,9 +184,9 @@ static void state_detect(void)
 	} else if (game_file_exists("REGIST/CLAIREF.EXE")) {
 		game_state.version = GAME_RE2_PC_GAME_CLAIRE;
 	} else if (game_file_exists("Regist/LeonP.exe")) {
-		game_state.version = GAME_RE2_PC_DEMO;
+		game_state.version = GAME_RE2_PC_DEMO_P;
 	} else if (game_file_exists("regist/leonu.exe")) {
-		game_state.version = GAME_RE2_PC_DEMO;
+		game_state.version = GAME_RE2_PC_DEMO_U;
 	} else if (game_file_exists("horr/usa/data/capcom.ptc")) {
 		game_state.version = GAME_RE1_PC_GAME;
 	} else if (game_file_exists("sles_025.30")) {

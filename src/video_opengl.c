@@ -253,7 +253,8 @@ static void drawGrid(void)
 		case GAME_RE2_PS1_GAME_CLAIRE:
 			re2ps1_get_camera(cam_pos);
 			break;
-		case GAME_RE2_PC_DEMO:
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
 			re2pcdemo_get_camera(cam_pos);
 			break;
 		case GAME_RE3_PS1_GAME:
