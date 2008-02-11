@@ -156,10 +156,21 @@ static void screenShot(video_t *this)
 
 static void initScreen(video_t *this)
 {
-	int scr_w = (this->height * aspect_x) / aspect_y;
-	int scr_h = (this->width * aspect_y) / aspect_x;
-	int pos_x = (this->width - scr_w)>>1;
-	int pos_y = (this->height - scr_h)>>1;
+	int cur_asp_x = aspect_x, cur_asp_y = aspect_y;
+	int pos_x, pos_y, scr_w, scr_h;
+
+	/* Disable 5:4 ratio in fullscreen */
+	if ((this->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
+		if ((aspect_x == 5) && (aspect_y == 4)) {
+			cur_asp_x = 4;
+			cur_asp_y = 3;
+		}
+	}
+
+	scr_w = (this->height * cur_asp_x) / cur_asp_y;
+	scr_h = (this->width * cur_asp_y) / cur_asp_x;
+	pos_x = (this->width - scr_w)>>1;
+	pos_y = (this->height - scr_h)>>1;
 
 	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);

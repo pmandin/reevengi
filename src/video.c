@@ -100,9 +100,9 @@ void video_detect_aspect(void)
 	ratio_w[2] = (max_h * 16) / 10;
 	ratio_w[3] = (max_h * 16) / 9;
 
-	/*if (max_w < (ratio_w[0]+ratio_w[1])>>1) {
+	if (max_w < (ratio_w[0]+ratio_w[1])>>1) {
 		aspect_x = 5; aspect_y = 4;
-	} else*/ if (max_w < (ratio_w[1]+ratio_w[2])>>1) {
+	} else if (max_w < (ratio_w[1]+ratio_w[2])>>1) {
 		aspect_x = 4; aspect_y = 3;
 	} else if (max_w < (ratio_w[2]+ratio_w[3])>>1) {
 		aspect_x = 16; aspect_y = 10;
