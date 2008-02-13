@@ -42,6 +42,7 @@ dirty_rects_t *dirty_rects_create(int w, int h)
 	this->clear = clear;
 
 	this->resize(this, w,h);
+	return this;
 }
 
 void dirty_rects_destroy(dirty_rects_t *this)
