@@ -67,6 +67,16 @@ void video_soft_init(video_t *this)
 	if (!aspect_user) {
 		video_detect_aspect();
 	}
+
+	this->dirty_rects = dirty_rects_create(this->width, this->height);
+}
+
+void video_soft_shutdown(video_t *this)
+{
+	if (this->dirty_rects) {
+		dirty_rects_destroy(this->dirty_rects);
+		this->dirty_rects = NULL;
+	}
 }
 
 /* Search biggest video mode, calculate its ratio */
@@ -125,6 +135,8 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->height = this->screen->h;
 	this->bpp = this->screen->format->BitsPerPixel;
 	this->flags = this->screen->flags;
+
+	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 }
 
 static void swapBuffers(video_t *this)

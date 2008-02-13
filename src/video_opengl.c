@@ -23,20 +23,17 @@
 #include "config.h"
 #endif
 
-#include <SDL.h>
-
 #ifdef ENABLE_OPENGL
-# include <SDL_opengl.h>
-# include "dyngl.h"
 
-# include "video_surface_opengl.h"
-#endif
+#include <SDL.h>
+#include <SDL_opengl.h>
+
+#include "dyngl.h"
+#include "video_surface_opengl.h"
 
 #include "parameters.h"
 #include "video.h"
 #include "state.h"
-
-#ifdef ENABLE_OPENGL
 
 /*--- Local variables ---*/
 
@@ -53,25 +50,20 @@ static void drawBackground(video_t *this, video_surface_t *surf);
 
 static void drawGrid(void);
 
-#endif /* ENABLE_OPENGL */
-
 /*--- Functions ---*/
 
 int video_opengl_loadlib(void)
 {
-#ifdef ENABLE_OPENGL
 	if (dyngl_load(NULL)) {
 		return 1;
 	}
 
 	fprintf(stderr, "Can not load OpenGL library: using software rendering mode\n");
-#endif /* ENABLE_OPENGL */
 	return 0;
 }
 
 void video_opengl_init(video_t *this)
 {
-#ifdef ENABLE_OPENGL
 	this->width = 640;
 	this->height = 480;
 	this->bpp = 0;
@@ -92,14 +84,18 @@ void video_opengl_init(video_t *this)
 	this->createSurfacePf = video_surface_gl_create_pf;
 	this->createSurfaceSu = video_surface_gl_create_su;
 	this->destroySurface = video_surface_gl_destroy;
-#endif /* ENABLE_OPENGL */
 
 	if (!aspect_user) {
 		video_detect_aspect();
 	}
+
+	this->dirty_rects = dirty_rects_create(this->width, this->height);
 }
 
-#ifdef ENABLE_OPENGL
+void video_opengl_shutdown(video_t *this)
+{
+	video_soft_shutdown(this);
+}
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)
 {
@@ -141,7 +137,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->bpp = this->screen->format->BitsPerPixel;
 	this->flags = this->screen->flags;
 
-	printf("opengl: %dx%dx%d video mode\n", this->width, this->height, this->bpp);
+	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 }
 
 static void swapBuffers(video_t *this)
@@ -345,6 +341,19 @@ static void drawGrid(void)
 			gl.Vertex3f(i,20.0,50);
 		}
 	gl.End();
+}
+
+#else /* ENABLE_OPENGL */
+
+#include "video.h"
+
+int video_opengl_loadlib(void)
+{
+	return 0;
+}
+
+void video_opengl_init(video_t *this)
+{
 }
 
 #endif /* ENABLE_OPENGL */

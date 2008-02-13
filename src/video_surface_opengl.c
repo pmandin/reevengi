@@ -19,6 +19,12 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef ENABLE_OPENGL
+
 #include <stdlib.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -334,3 +340,5 @@ static SDL_Surface *getSurface(video_surface_t *this)
 	}
 	return gl_this->surf_soft.sdl_surf;
 }
+
+#endif /* ENABLE_OPENGL */
