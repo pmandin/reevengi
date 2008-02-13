@@ -141,11 +141,49 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 static void swapBuffers(video_t *this)
 {
+	SDL_Rect *list_rects;
+	int i, x, y, maxx, maxy;
+
 	if ((this->flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		SDL_Flip(this->screen);
-	} else {
-		SDL_UpdateRect(this->screen, 0,0,0,0);
+		return;
 	}
+
+	/* Update background from rectangle list */
+	list_rects = (SDL_Rect *) calloc(this->dirty_rects->width * this->dirty_rects->height,
+		sizeof(SDL_Rect));
+	if (!list_rects) {
+		SDL_UpdateRect(this->screen, 0,0,0,0);
+		return;
+	}
+
+	for (y=0; y<this->dirty_rects->height; y++) {
+		for (x=0; x<this->dirty_rects->width; x++) {
+			int maxw = 1<<4, maxh = 1<<4;
+
+			if (this->dirty_rects->markers[y*this->dirty_rects->width + x] == 0) {
+				continue;
+			}
+
+			if (this->width - (x<<4) < (1<<4)) {
+				maxw = this->width - (x<<4);
+			}
+			if (this->height - (y<<4) < (1<<4)) {
+				maxh = this->height - (y<<4);
+			}
+
+			/* Add rectangle */
+			list_rects[i].x = x<<4;
+			list_rects[i].y = y<<4;
+			list_rects[i].w = maxw;
+			list_rects[i].h = maxh;
+			i++;
+		}
+	}
+
+	SDL_UpdateRects(this->screen, i, list_rects);
+	this->dirty_rects->clear(this->dirty_rects);
+	free(list_rects);
 }
 
 static void screenShot(video_t *this)
@@ -207,4 +245,5 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	}
 
 	SDL_BlitSurface(surf->getSurface(surf), &src_rect, this->screen, &dst_rect);
+	this->dirty_rects->setDirty(this->dirty_rects, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
 }
