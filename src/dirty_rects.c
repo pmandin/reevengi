@@ -25,7 +25,7 @@
 /*--- Functions prototypes ---*/
 
 static void resize(dirty_rects_t *this, int w, int h);
-static void set_dirty(dirty_rects_t *this, int x, int y, int w, int h);
+static void setDirty(dirty_rects_t *this, int x, int y, int w, int h);
 static void clear(dirty_rects_t *this);
 
 /*--- Functions ---*/
@@ -38,7 +38,7 @@ dirty_rects_t *dirty_rects_create(int w, int h)
 	}
 
 	this->resize = resize;
-	this->set_dirty = set_dirty;
+	this->setDirty = setDirty;
 	this->clear = clear;
 
 	this->resize(this, w,h);
@@ -83,10 +83,10 @@ static void resize(dirty_rects_t *this, int w, int h)
 	}
 	this->markers = (Uint8 *) malloc(w*h*sizeof(Uint8));
 
-	this->set_dirty(this, 0,0,w<<4,h<<4);
+	setDirty(this, 0,0,w<<4,h<<4);
 }
 
-static void set_dirty(dirty_rects_t *this, int x, int y, int w, int h)
+static void setDirty(dirty_rects_t *this, int x, int y, int w, int h)
 {
 	int x1=x>>4, y1=y>>4, x2=x+w, y2=y+h;
 

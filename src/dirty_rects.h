@@ -30,7 +30,7 @@ struct dirty_rects_s {
 	Uint8 *markers;
 
 	void (*resize)(dirty_rects_t *this, int w, int h);
-	void (*set_dirty)(dirty_rects_t *this, int x, int y, int w, int h);
+	void (*setDirty)(dirty_rects_t *this, int x, int y, int w, int h);
 	void (*clear)(dirty_rects_t *this);
 };
 
