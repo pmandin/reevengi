@@ -175,6 +175,10 @@ int main(int argc, char **argv)
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
 	SDL_SetGamma(gamma, gamma, gamma);
 
+	if (model_emd_load("pl0/emd0/em050.emd")) {
+		printf("Loaded emd model\n");
+	}
+
 	int quit = 0;
 	while (!quit) {
 		quit = viewer_loop();
@@ -190,6 +194,8 @@ int main(int argc, char **argv)
 			movie_shutdown();
 			break;
 	}
+
+	model_emd_close();
 
 	state_shutdown();
 	FS_Shutdown();
@@ -294,6 +300,7 @@ void viewer_draw(void)
 	if (cur_surf) {
 		video.drawBackground(&video, cur_surf);
 	}
+	model_emd_draw(&video);
 	video.swapBuffers(&video);
 
 	if (switch_mode) {
