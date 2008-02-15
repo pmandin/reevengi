@@ -157,6 +157,7 @@ static void swapBuffers(video_t *this)
 		return;
 	}
 
+	i = 0;
 	for (y=0; y<this->dirty_rects->height; y++) {
 		for (x=0; x<this->dirty_rects->width; x++) {
 			int maxw = 1<<4, maxh = 1<<4;
