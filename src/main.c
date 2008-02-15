@@ -44,17 +44,22 @@
 #define KEY_GAMMA_UP		SDLK_q
 #define KEY_GAMMA_RESET		SDLK_w
 
-/*--- Variables ---*/
-
-int update_screen = 1;
-int width = 320, height = 240;
-video_surface_t *cur_surf = NULL;
+/*--- Global variables ---*/
 
 video_t video;
+
+/*--- Variables ---*/
+
+static int update_screen = 1;
+static int width = 320, height = 240;
+static int new_width, new_height;
+static int switch_mode = 0;
+static video_surface_t *cur_surf = NULL;
 
 /*--- Functions prototypes ---*/
 
 int viewer_loop(void);
+void viewer_draw(void);
 
 /*--- Functions ---*/
 
@@ -173,6 +178,7 @@ int main(int argc, char **argv)
 	int quit = 0;
 	while (!quit) {
 		quit = viewer_loop();
+		viewer_draw();
 		SDL_Delay(1);
 	}
 
@@ -194,12 +200,7 @@ int main(int argc, char **argv)
 int viewer_loop(void)
 {
 	int quit = 0;
-	int switch_mode = 0;
-	int new_width, new_height;
 	SDL_Event event;
-
-	new_width = video.width;
-	new_height = video.height;
 
 	while (SDL_PollEvent(&event)) {
 		switch(event.type) {
@@ -284,6 +285,11 @@ int viewer_loop(void)
 		}
 	}
 
+	return(quit);
+}
+
+void viewer_draw(void)
+{
 	video.initScreen(&video);
 	if (cur_surf) {
 		video.drawBackground(&video, cur_surf);
@@ -293,8 +299,8 @@ int viewer_loop(void)
 	if (switch_mode) {
 		video.setVideoMode(&video, new_width, new_height, video.bpp);
 		update_screen=1;
-		switch_mode=0;
+		switch_mode = 0;
+		new_width = video.width;
+		new_height = video.height;
 	}
-
-	return(quit);
 }
