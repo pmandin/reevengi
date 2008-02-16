@@ -31,11 +31,14 @@ struct video_s {
 	int num_screenshot;
 	dirty_rects_t *dirty_rects;
 
+	SDL_Rect viewport;
+
 	void (*setVideoMode)(video_t *this, int width, int height, int bpp);
 	void (*swapBuffers)(video_t *this);
 	void (*screenShot)(video_t *this);
 
 	void (*initScreen)(video_t *this);
+	void (*refreshViewport)(video_t *this);
 	void (*refreshScreen)(video_t *this);
 	void (*drawBackground)(video_t *this, video_surface_t *surf);
 

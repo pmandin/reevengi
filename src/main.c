@@ -164,6 +164,7 @@ int main(int argc, char **argv)
 	} else {
 		video_soft_init(&video);
 	}
+	printf("Calculated aspect ratio %d:%d\n", aspect_x, aspect_y);
 
 	video.setVideoMode(&video, video.width, video.height, video.bpp);
 	if (!video.screen) {

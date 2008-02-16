@@ -60,13 +60,12 @@ int video_opengl_loadlib(void)
 
 void video_opengl_init(video_t *this)
 {
+	video_soft_init(this);
+
 	this->width = 640;
 	this->height = 480;
 	this->bpp = 0;
 	this->flags = SDL_OPENGL|SDL_RESIZABLE;
-
-	this->screen = NULL;
-	this->num_screenshot = 0;
 
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
@@ -148,30 +147,12 @@ static void screenShot(video_t *this)
 
 static void initScreen(video_t *this)
 {
-	int cur_asp_x = aspect_x, cur_asp_y = aspect_y;
-	int pos_x, pos_y, scr_w, scr_h;
-
-	/* Disable 5:4 ratio in fullscreen */
-	if ((this->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
-		if ((aspect_x == 5) && (aspect_y == 4)) {
-			cur_asp_x = 4;
-			cur_asp_y = 3;
-		}
-	}
-
-	scr_w = (this->height * cur_asp_x) / cur_asp_y;
-	scr_h = (this->width * cur_asp_y) / cur_asp_x;
-	pos_x = (this->width - scr_w)>>1;
-	pos_y = (this->height - scr_h)>>1;
+	this->refreshViewport(this);
 
 	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);
 
-	if (pos_x>0) {
-		gl.Viewport(pos_x, 0, scr_w, this->height);
-	} else {
-		gl.Viewport(0, pos_y, this->width, scr_h);
-	}
+	gl.Viewport(this->viewport.x, this->viewport.y, this->viewport.w, this->viewport.h);
 }
 
 static void refreshScreen(video_t *this)

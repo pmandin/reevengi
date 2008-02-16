@@ -32,6 +32,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
+static void refreshViewport(video_t *this);
 static void refreshScreen(video_t *this);
 static void drawBackground(video_t *this, video_surface_t *surf);
 
@@ -52,6 +53,7 @@ void video_soft_init(video_t *this)
 	this->screenShot = screenShot;
 
 	this->initScreen = initScreen;
+	this->refreshViewport = refreshViewport;
 	this->refreshScreen = refreshScreen;
 	this->drawBackground = drawBackground;
 
@@ -115,8 +117,6 @@ void video_detect_aspect(void)
 	} else {
 		aspect_x = 16; aspect_y = 9;
 	}
-
-	printf("Calculated aspect ratio %d:%d\n", aspect_x, aspect_y);
 }
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)
@@ -199,6 +199,38 @@ static void screenShot(video_t *this)
 
 static void initScreen(video_t *this)
 {
+	this->refreshViewport(this);
+}
+
+static void refreshViewport(video_t *this)
+{
+	int cur_asp_x = aspect_x, cur_asp_y = aspect_y;
+	int pos_x, pos_y, scr_w, scr_h;
+
+	/* Disable 5:4 ratio in fullscreen */
+	if ((this->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
+		if ((aspect_x == 5) && (aspect_y == 4)) {
+			cur_asp_x = 4;
+			cur_asp_y = 3;
+		}
+	}
+
+	scr_w = (this->height * cur_asp_x) / cur_asp_y;
+	scr_h = (this->width * cur_asp_y) / cur_asp_x;
+	pos_x = (this->width - scr_w)>>1;
+	pos_y = (this->height - scr_h)>>1;
+
+	if (pos_x>0) {
+		this->viewport.x = pos_x;
+		this->viewport.y = 0;
+		this->viewport.w = scr_w;
+		this->viewport.h = this->height;
+	} else {
+		this->viewport.x = 0;
+		this->viewport.y = pos_y;
+		this->viewport.w = this->width;
+		this->viewport.h = scr_h;
+	}
 }
 
 static void refreshScreen(video_t *this)
@@ -268,4 +300,8 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 			SDL_BlitSurface(surf->getSurface(surf), &src_rect1, this->screen, &dst_rect1);
 		}
 	}
+}
+
+static void drawBackgroundZoomed(video_t *this, video_surface_t *surf)
+{
 }
