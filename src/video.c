@@ -26,6 +26,12 @@
 #include "parameters.h"
 #include "video.h"
 
+/*--- Variables ---*/
+
+static int zoomw = 0, zoomh = 0;
+static int *zoomx = NULL, *zoomy = NULL;
+static SDL_Surface *zoom_surf = NULL;
+
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
@@ -35,6 +41,7 @@ static void initScreen(video_t *this);
 static void refreshViewport(video_t *this);
 static void refreshScreen(video_t *this);
 static void drawBackground(video_t *this, video_surface_t *surf);
+static void drawBackgroundZoomed(video_t *this, video_surface_t *surf);
 
 /*--- Functions ---*/
 
@@ -74,6 +81,21 @@ void video_soft_shutdown(video_t *this)
 	if (this->dirty_rects) {
 		dirty_rects_destroy(this->dirty_rects);
 		this->dirty_rects = NULL;
+	}
+
+	if (zoomx) {
+		free(zoomx);
+		zoomx = NULL;
+		zoomw = 0;
+	}
+	if (zoomy) {
+		free(zoomy);
+		zoomy = NULL;
+		zoomh = 0;
+	}
+	if (zoom_surf) {
+		SDL_FreeSurface(zoom_surf);
+		zoom_surf = NULL;
 	}
 }
 
@@ -243,7 +265,7 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	SDL_Rect src_rect, dst_rect;
 	int x,y;
 
-	if (!this->screen) {
+	if (!this->screen || !surf) {
 		return;
 	}
 
@@ -302,6 +324,41 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	}
 }
 
+/* Zoom background image to viewport */
+
 static void drawBackgroundZoomed(video_t *this, video_surface_t *surf)
 {
+	int recreate_surf = 0, i;
+
+	if (!this->screen || !surf) {
+		return;
+	}
+
+	if (zoomw != this->viewport.w) {
+		zoomw = this->viewport.w;
+		zoomx = realloc(zoomx, sizeof(int) * zoomw);
+		for (i=0; i<zoomw; i++) {
+			zoomx[i] = (i * surf->getSurface(surf)->w) / zoomw;
+		}
+		recreate_surf = 1;
+	}
+	if (zoomh != this->viewport.h) {
+		zoomh = this->viewport.h;
+		zoomy = realloc(zoomy, sizeof(int) * zoomh);
+		for (i=0; i<zoomh; i++) {
+			zoomy[i] = (i * surf->getSurface(surf)->h) / zoomh;
+		}
+		recreate_surf = 1;
+	}
+	if (recreate_surf) {
+		if (zoom_surf) {
+			SDL_FreeSurface(zoom_surf);
+		}
+		/* Create surface with same bpp as source one */
+		zoom_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, zoomw, zoomh,
+			surf->getSurface(surf)->format->BitsPerPixel, 0,0,0,0);
+	}
+	if (!zoom_surf) {
+		return;
+	}
 }
