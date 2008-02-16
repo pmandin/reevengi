@@ -26,17 +26,13 @@
 #include "parameters.h"
 #include "video.h"
 
-/*--- Local variables ---*/
-
-static video_surface_t *background_surf = NULL;
-
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
-static void refreshBackground(video_t *this);
+static void refreshScreen(video_t *this);
 static void drawBackground(video_t *this, video_surface_t *surf);
 
 /*--- Functions ---*/
@@ -56,7 +52,7 @@ void video_soft_init(video_t *this)
 	this->screenShot = screenShot;
 
 	this->initScreen = initScreen;
-	this->refreshBackground = refreshBackground;
+	this->refreshScreen = refreshScreen;
 	this->drawBackground = drawBackground;
 
 	this->createSurface = video_surface_create;
@@ -205,24 +201,21 @@ static void initScreen(video_t *this)
 {
 }
 
-static void refreshBackground(video_t *this)
+static void refreshScreen(video_t *this)
 {
-	background_surf = NULL;
+	this->dirty_rects->setDirty(this->dirty_rects, 0,0, video.width, video.height);
 }
 
 static void drawBackground(video_t *this, video_surface_t *surf)
 {
 	SDL_Rect src_rect, dst_rect;
+	int x,y;
 
 	if (!this->screen) {
 		return;
 	}
 
-	if (background_surf == surf) {
-		return;
-	}
-	background_surf = surf;
-
+	/* Center background image on target screen */
 	src_rect.x = src_rect.y = 0;
 	src_rect.w = surf->getSurface(surf)->w;
 	src_rect.h = surf->getSurface(surf)->h;
@@ -245,6 +238,34 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 		src_rect.h = this->screen->h;
 	}
 
-	SDL_BlitSurface(surf->getSurface(surf), &src_rect, this->screen, &dst_rect);
-	this->dirty_rects->setDirty(this->dirty_rects, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
+	/* Refresh only dirtied parts of background */
+	for (y=0; y<surf->getSurface(surf)->h >> 4; y++) {
+		for (x=0; x<surf->getSurface(surf)->w >> 4; x++) {
+			SDL_Rect src_rect1, dst_rect1;
+
+			memcpy(&src_rect1, &src_rect, sizeof(SDL_Rect));
+			src_rect1.x += (x<<4);
+			src_rect1.y += (y<<4);
+			src_rect1.w = src_rect1.h = 1<<4;
+			memcpy(&dst_rect1, &dst_rect, sizeof(SDL_Rect));
+			dst_rect1.x += (x<<4);
+			dst_rect1.y += (y<<4);
+			dst_rect1.w = dst_rect1.h = 1<<4;
+
+			/* Out of target screen, out of source image ? */
+			if ((dst_rect1.x<-16) || (dst_rect1.x>this->dirty_rects->width<<4)
+			  || (dst_rect1.y<-16) || (dst_rect1.y>this->dirty_rects->height<<4)
+			  || (src_rect1.x<-16) || (src_rect1.x>surf->getSurface(surf)->w)
+			  || (src_rect1.y<-16) || (src_rect1.y>surf->getSurface(surf)->h))
+			{
+				continue;
+			}
+
+			if (this->dirty_rects->markers[(dst_rect1.y>>4)*this->dirty_rects->width + (dst_rect1.x>>4)] == 0) {
+				continue;
+			}
+
+			SDL_BlitSurface(surf->getSurface(surf), &src_rect1, this->screen, &dst_rect1);
+		}
+	}
 }

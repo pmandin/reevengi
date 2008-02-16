@@ -36,7 +36,7 @@ struct video_s {
 	void (*screenShot)(video_t *this);
 
 	void (*initScreen)(video_t *this);
-	void (*refreshBackground)(video_t *this);
+	void (*refreshScreen)(video_t *this);
 	void (*drawBackground)(video_t *this, video_surface_t *surf);
 
 	video_surface_t * (*createSurface)(int width, int height, int bpp);

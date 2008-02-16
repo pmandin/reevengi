@@ -35,17 +35,13 @@
 #include "video.h"
 #include "state.h"
 
-/*--- Local variables ---*/
-
-static video_surface_t *background_surf = NULL;
-
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
-static void refreshBackground(video_t *this);
+static void refreshScreen(video_t *this);
 static void drawBackground(video_t *this, video_surface_t *surf);
 
 static void drawGrid(void);
@@ -77,7 +73,7 @@ void video_opengl_init(video_t *this)
 	this->screenShot = screenShot;
 
 	this->initScreen = initScreen;
-	this->refreshBackground = refreshBackground;
+	this->refreshScreen = refreshScreen;
 	this->drawBackground = drawBackground;
 
 	this->createSurface = video_surface_gl_create;
@@ -178,9 +174,8 @@ static void initScreen(video_t *this)
 	}
 }
 
-static void refreshBackground(video_t *this)
+static void refreshScreen(video_t *this)
 {
-	background_surf = NULL;
 }
 
 static void drawBackground(video_t *this, video_surface_t *surf)
@@ -192,11 +187,6 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	if (!this->screen) {
 		return;
 	}
-
-	/*if (background_surf == surf) {
-		return;
-	}*/
-	background_surf = surf;
 
 	textureTarget = gl_surf->textureTarget;
 	textureObject = gl_surf->textureObject;
@@ -223,11 +213,11 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
-	gl.Scalef(background_surf->width,background_surf->height,1.0);
+	gl.Scalef(surf->width,surf->height,1.0);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
-	//gl.Translatef(0.375, 0.375, 0.0);
+	/*gl.Translatef(0.375, 0.375, 0.0);*/
 	gl.Scalef(this->width, this->height, 1.0);
 
 	gl.Begin(GL_QUADS);

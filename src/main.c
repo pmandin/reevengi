@@ -278,7 +278,7 @@ int viewer_loop(void)
 	if (update_screen) {
 		/* Update ? */
 		update_screen = 0;
-		video.refreshBackground(&video);
+		video.refreshScreen(&video);
 
 		switch(viewmode) {
 			case VIEWMODE_BACKGROUND:
