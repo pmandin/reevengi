@@ -163,10 +163,13 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 {
 	video_surface_gl_t *gl_surf = (video_surface_gl_t *) surf;
 	GLenum textureTarget, textureObject;
+	SDL_Surface *sdl_surf;
 
 	if (!this->screen || !surf) {
 		return;
 	}
+
+	sdl_surf = surf->getSurface(surf);	/* Update texture from sdl surface */
 
 	textureTarget = gl_surf->textureTarget;
 	textureObject = gl_surf->textureObject;
