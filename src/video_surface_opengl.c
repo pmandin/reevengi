@@ -229,6 +229,7 @@ static void uploadTexture(video_surface_gl_t *this)
 {
 	GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
 	GLenum internalFormat = GL_RGBA;
+	GLenum surfaceFormat = GL_RGBA;
 	GLenum pixelType = GL_UNSIGNED_INT;
 	SDL_Surface *surface = this->surf_soft.sdl_surf;
 
@@ -289,6 +290,8 @@ static void uploadTexture(video_surface_gl_t *this)
 			break;
 		case 24:
 			/* FIXME: care about endianness ? */
+			pixelType = GL_UNSIGNED_BYTE;
+			surfaceFormat = GL_RGB;
 			break;
 		case 32:
 			/* FIXME: care about endianness ? */
@@ -297,7 +300,7 @@ static void uploadTexture(video_surface_gl_t *this)
 
 	gl.TexImage2D(this->textureTarget,0, internalFormat,
 		surface->w, surface->h, 0,
-		GL_RGBA, pixelType, surface->pixels
+		surfaceFormat, pixelType, surface->pixels
 	);
 
 	switch (surface->format->BitsPerPixel) {
