@@ -60,12 +60,12 @@ int video_opengl_loadlib(void)
 
 void video_opengl_init(video_t *this)
 {
-	video_soft_init(this);
-
 	this->width = 640;
 	this->height = 480;
 	this->bpp = 0;
 	this->flags = SDL_OPENGL|SDL_RESIZABLE;
+
+	video_soft_init_base(this);
 
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
@@ -163,15 +163,13 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 {
 	video_surface_gl_t *gl_surf = (video_surface_gl_t *) surf;
 	GLenum textureTarget, textureObject;
-	SDL_Surface *sdl_surf;
 
-	if (!this->screen) {
+	if (!this->screen || !surf) {
 		return;
 	}
 
 	textureTarget = gl_surf->textureTarget;
 	textureObject = gl_surf->textureObject;
-	sdl_surf = surf->getSurface(surf);
 	
 	gl.Enable(textureTarget);
 	gl.BindTexture(textureTarget, textureObject);
