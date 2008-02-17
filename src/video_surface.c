@@ -213,8 +213,6 @@ static void resize(video_surface_t *this, int w, int h)
 			}
 			restore_palette = SDL_TRUE;
 		}
-
-		SDL_FreeSurface(surface);
 	} else {
 		pixelFormat.BitsPerPixel = 8;
 	}
@@ -224,6 +222,12 @@ static void resize(video_surface_t *this, int w, int h)
 		pixelFormat.Rmask, pixelFormat.Gmask,
 		pixelFormat.Bmask, pixelFormat.Amask
 	);
+
+	/* Copy old data */
+	if (surface) {
+		SDL_BlitSurface(surface, NULL, this->sdl_surf, NULL);
+		SDL_FreeSurface(surface);
+	}
 
 	if (restore_palette) {
 		SDL_SetPalette(this->sdl_surf, SDL_LOGPAL, palette, 0, 256);
