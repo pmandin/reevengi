@@ -57,17 +57,6 @@ void video_soft_init(video_t *this)
 	this->screen = NULL;
 	this->num_screenshot = 0;
 
-	video_soft_init_base(this);
-
-	if (!aspect_user) {
-		video_detect_aspect();
-	}
-
-	this->dirty_rects = dirty_rects_create(this->width, this->height);
-}
-
-void video_soft_init_base(video_t *this)
-{
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
@@ -81,6 +70,12 @@ void video_soft_init_base(video_t *this)
 	this->createSurfacePf = video_surface_create_pf;
 	this->createSurfaceSu = video_surface_create_su;
 	this->destroySurface = video_surface_destroy;
+
+	if (!aspect_user) {
+		video_detect_aspect();
+	}
+
+	this->dirty_rects = dirty_rects_create(this->width, this->height);
 }
 
 void video_soft_shutdown(video_t *this)

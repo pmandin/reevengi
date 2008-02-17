@@ -60,12 +60,12 @@ int video_opengl_loadlib(void)
 
 void video_opengl_init(video_t *this)
 {
+	video_soft_init(this);
+
 	this->width = 640;
 	this->height = 480;
 	this->bpp = 0;
 	this->flags = SDL_OPENGL|SDL_RESIZABLE;
-
-	video_soft_init_base(this);
 
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
@@ -84,7 +84,7 @@ void video_opengl_init(video_t *this)
 		video_detect_aspect();
 	}
 
-	this->dirty_rects = dirty_rects_create(this->width, this->height);
+	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 }
 
 void video_opengl_shutdown(video_t *this)

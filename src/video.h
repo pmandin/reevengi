@@ -51,7 +51,6 @@ struct video_s {
 void video_detect_aspect(void);
 
 void video_soft_init(video_t *this);
-void video_soft_init_base(video_t *this);
 void video_soft_shutdown(video_t *this);
 
 int video_opengl_loadlib(void);
