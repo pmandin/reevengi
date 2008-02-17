@@ -253,6 +253,11 @@ static void refreshViewport(video_t *this)
 		this->viewport.w = this->width;
 		this->viewport.h = scr_h;
 	}
+
+	/*printf("viewport %d,%d %dx%d\n",
+		this->viewport.x, this->viewport.y,
+		this->viewport.w, this->viewport.h
+	);*/
 }
 
 static void refreshScreen(video_t *this)
@@ -268,6 +273,9 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	if (!this->screen || !surf) {
 		return;
 	}
+
+	drawBackgroundZoomed(this, surf);
+	return;
 
 	/* Center background image on target screen */
 	src_rect.x = src_rect.y = 0;
@@ -328,17 +336,19 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 
 static void drawBackgroundZoomed(video_t *this, video_surface_t *surf)
 {
-	int recreate_surf = 0, i;
+	int recreate_surf = 0, i, x,y;
+	SDL_Surface *src_surf;
 
 	if (!this->screen || !surf) {
 		return;
 	}
 
+	src_surf = surf->getSurface(surf);
 	if (zoomw != this->viewport.w) {
 		zoomw = this->viewport.w;
 		zoomx = realloc(zoomx, sizeof(int) * zoomw);
 		for (i=0; i<zoomw; i++) {
-			zoomx[i] = (i * surf->getSurface(surf)->w) / zoomw;
+			zoomx[i] = (i * src_surf->w) / zoomw;
 		}
 		recreate_surf = 1;
 	}
@@ -346,7 +356,7 @@ static void drawBackgroundZoomed(video_t *this, video_surface_t *surf)
 		zoomh = this->viewport.h;
 		zoomy = realloc(zoomy, sizeof(int) * zoomh);
 		for (i=0; i<zoomh; i++) {
-			zoomy[i] = (i * surf->getSurface(surf)->h) / zoomh;
+			zoomy[i] = (i * src_surf->h) / zoomh;
 		}
 		recreate_surf = 1;
 	}
@@ -357,8 +367,70 @@ static void drawBackgroundZoomed(video_t *this, video_surface_t *surf)
 		/* Create surface with same bpp as source one */
 		zoom_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, zoomw, zoomh,
 			surf->getSurface(surf)->format->BitsPerPixel, 0,0,0,0);
+		/* Set palette */
+		if (zoom_surf->format->BitsPerPixel == 8) {
+			SDL_Color palette[256];
+			for (i=0;i<256;i++) {
+				palette[i].r = src_surf->format->palette->colors[i].r;
+				palette[i].g = src_surf->format->palette->colors[i].g;
+				palette[i].b = src_surf->format->palette->colors[i].b;
+			}
+			SDL_SetPalette(zoom_surf, SDL_LOGPAL, palette, 0, 256);
+		}
 	}
 	if (!zoom_surf) {
 		return;
+	}
+
+	/* For each target dirty rectangle, zoom the corresponding source rectangle */
+	for (y=0; y<this->dirty_rects->height; y++) {
+		int dst_y1, dst_y2;
+
+		/* Target destination of zoomed image */
+		dst_y1 = ((y<<4) * zoomh) / src_surf->h;
+		dst_y2 = (((y+1)<<4) * zoomh) / src_surf->h;
+
+		/* Clip to viewport */
+		if (dst_y1<this->viewport.y) {
+			dst_y1 = this->viewport.y;
+		}
+		if (dst_y2>this->viewport.y+this->viewport.h) {
+			dst_y2 = this->viewport.y+this->viewport.h;
+		}
+
+		if (dst_y1>=dst_y2) {
+			continue;
+		}
+
+		for (x=0; x<this->dirty_rects->width; x++) {
+			/*SDL_Rect src_rect, dst_rect;*/
+			int dst_x1, dst_x2;
+			Uint8 *src_pixels, dst_pixels;
+
+			if (this->dirty_rects->markers[y*this->dirty_rects->width + x] == 0) {
+				continue;
+			}
+
+			/* Zoom 16x16 block */
+			dst_x1 = ((x<<4) * zoomw) / src_surf->w;
+			dst_x2 = (((x+1)<<4) * zoomw) / src_surf->w;
+
+			/* Clip to viewport */
+			if (dst_x1<this->viewport.x) {
+				dst_x1 = this->viewport.x;
+			}
+			if (dst_x2>this->viewport.x+this->viewport.w) {
+				dst_x2 = this->viewport.x+this->viewport.w;
+			}
+
+			if (dst_x1>=dst_x2) {
+				continue;
+			}
+
+			/*printf("refresh %d,%d -> %d,%d\n",
+				dst_x1, dst_y1, dst_x2,dst_y2
+			);*/
+
+		}
 	}
 }
