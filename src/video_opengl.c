@@ -80,9 +80,9 @@ void video_opengl_init(video_t *this)
 	this->createSurfaceSu = video_surface_gl_create_su;
 	this->destroySurface = video_surface_gl_destroy;
 
-	if (!aspect_user) {
+	/*if (!aspect_user) {
 		video_detect_aspect();
-	}
+	}*/
 
 	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 }
