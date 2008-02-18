@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (!FS_Init(argv[0])) {
+	if (!FS_Init(strlen(argv[0])>0 ? argv[0] : "./reevengi")) {
 		exit(1);
 	}
 
