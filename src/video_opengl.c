@@ -133,6 +133,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->flags = this->screen->flags;
 
 	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
+	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
 }
 
 static void swapBuffers(video_t *this)
