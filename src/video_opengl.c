@@ -87,11 +87,6 @@ void video_opengl_init(video_t *this)
 	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 }
 
-void video_opengl_shutdown(video_t *this)
-{
-	video_soft_shutdown(this);
-}
-
 static void setVideoMode(video_t *this, int width, int height, int bpp)
 {
 	const int gl_bpp[4]={0,16,24,32};

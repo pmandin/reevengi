@@ -182,6 +182,7 @@ int main(int argc, char **argv)
 	/*model_emd_close();*/
 
 	state_shutdown();
+	video.shutDown(&video);
 	FS_Shutdown();
 
 	SDL_Quit();

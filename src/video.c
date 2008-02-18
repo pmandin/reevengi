@@ -34,6 +34,7 @@ static SDL_Surface *zoom_surf = NULL;
 
 /*--- Function prototypes ---*/
 
+static void shutDown(video_t *this);
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
@@ -57,6 +58,7 @@ void video_soft_init(video_t *this)
 	this->screen = NULL;
 	this->num_screenshot = 0;
 
+	this->shutDown = shutDown;
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
@@ -78,7 +80,7 @@ void video_soft_init(video_t *this)
 	this->dirty_rects = dirty_rects_create(this->width, this->height);
 }
 
-void video_soft_shutdown(video_t *this)
+static void shutDown(video_t *this)
 {
 	if (this->dirty_rects) {
 		dirty_rects_destroy(this->dirty_rects);
