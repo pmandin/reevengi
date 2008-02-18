@@ -95,6 +95,8 @@ extern state_t game_state;
 void state_init(void);
 void state_shutdown(void);
 
+const char *state_getGameName(void);
+
 void state_setstage(int new_stage);
 void state_setroom(int new_room);
 void state_setcamera(int new_camera);

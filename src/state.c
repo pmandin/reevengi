@@ -64,6 +64,39 @@ void state_shutdown(void)
 	}
 }
 
+const char *state_getGameName(void)
+{
+	switch(game_state.version) {
+		case GAME_RE1_PS1_DEMO:
+			return "Resident Evil, PS1, Demo";
+		case GAME_RE1_PS1_GAME:
+			return "Resident Evil, PS1, Game";
+		case GAME_RE2_PS1_DEMO:
+			return "Resident Evil 2, PS1, Demo";
+		case GAME_RE2_PS1_GAME_LEON:
+			return "Resident Evil 2, PS1, Game Leon";
+		case GAME_RE2_PS1_GAME_CLAIRE:
+			return "Resident Evil 2, PS1, Game Claire";
+		case GAME_RE3_PS1_GAME:
+			return "Resident Evil 3, PS1, Game";
+		case GAME_RE1_PC_GAME:
+			return "Resident Evil, PC, Game";
+		case GAME_RE2_PC_DEMO_U:
+		case GAME_RE2_PC_DEMO_P:
+			return "Resident Evil 2, PC, Demo";
+		case GAME_RE2_PC_GAME_LEON:
+			return "Resident Evil 2, PC, Game Leon";
+		case GAME_RE2_PC_GAME_CLAIRE:
+			return "Resident Evil 2, PC, Game Claire";
+		case GAME_RE3_PC_DEMO:
+			return "Resident Evil 3, PC, Demo";
+		case GAME_RE3_PC_GAME:
+			return "Resident Evil 3, PC, Game";
+	}
+
+	return "Unknown version";
+}
+
 void state_setstage(int new_stage)
 {
 	game_state.stage = new_stage;
