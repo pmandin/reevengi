@@ -20,6 +20,10 @@
 
 /*--- Includes ---*/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +46,9 @@ unsigned char *basedir=DEFAULT_BASEDIR;
 
 /* Verbose mode */
 int verbose=DEFAULT_VERBOSE;
+
+/* Log file */
+const char *log_file = PACKAGE_NAME ".log";
 
 /* Gamma level */
 float gamma = DEFAULT_GAMMA;
@@ -86,6 +93,12 @@ int CheckParm(int argc,char **argv)
 	p = ParmPresent("-verbose", argc, argv);
 	if (p && p < argc-1) {
 		verbose = atoi(argv[p+1]);
+	}
+
+	/*--- Check for log filename ---*/
+	p = ParmPresent("-logfile", argc, argv);
+	if (p && p < argc-1) {
+		log_file = argv[p+1];
 	}
 
 	/*--- Check for gamma ---*/
@@ -135,7 +148,8 @@ void DisplayUsage(void)
 	printf( "  [-basedir </path/to/gamedir>] (default=%s)\n"
 		"  [-movie] (switch to movie player mode)\n"
 		"  [-gamma <n>] (default=%.3f)\n"
-		"  [-verbose <n>] (default=%d)\n"
+		"  [-verbose <n>] (log verbosity, default=%d)\n"
+		"  [-logfile <filename>] (default=" PACKAGE_NAME ".log)\n"
 		"  [-opengl] (enable opengl mode)\n"
 		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
 		"  [-help] (print this message)\n",

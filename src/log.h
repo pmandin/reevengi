@@ -1,7 +1,7 @@
 /*
-	Command line parameters
+	Messages log
 
-	Copyright (C) 2003	Patrice Mandin
+	Copyright (C) 2008	Patrice Mandin
 	
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,41 +18,11 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef PARAMETERS_H
-#define PARAMETERS_H
-
-/*--- Defines ---*/
-
-#define VIEWMODE_BACKGROUND	0
-#define VIEWMODE_MOVIE		1
-
-/*--- Variables ---*/
-
-/* Verbose level */
-extern int verbose;
-
-/* Log file */
-extern const char *log_file;
-
-/* Base directory for files */
-extern unsigned char *basedir;
-
-/* Gamma level */
-extern float gamma;
-
-/* Viewer mode */
-extern int viewmode;
-
-/* Enable OpenGL */
-extern int use_opengl;
-
-/* Aspect ratio */
-extern int aspect_x, aspect_y;
-extern int aspect_user; /* User gave us an aspect ratio */
+#ifndef LOG_H
+#define LOG_H 1
 
 /*--- Functions prototypes ---*/
 
-extern void DisplayUsage(void);
-extern int CheckParm(int argc,char **argv);
+void LogMsg(int level, const char *msg, ...);
 
-#endif /* PARAMETERS_H */
+#endif /* LOG_H */

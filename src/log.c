@@ -1,7 +1,7 @@
 /*
-	Command line parameters
+	Messages log
 
-	Copyright (C) 2003	Patrice Mandin
+	Copyright (C) 2008	Patrice Mandin
 	
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,41 +18,38 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef PARAMETERS_H
-#define PARAMETERS_H
+#include <stdarg.h>
+#include <stdio.h>
 
-/*--- Defines ---*/
-
-#define VIEWMODE_BACKGROUND	0
-#define VIEWMODE_MOVIE		1
+#include "parameters.h"
 
 /*--- Variables ---*/
 
-/* Verbose level */
-extern int verbose;
+static int firsttime=1;
 
-/* Log file */
-extern const char *log_file;
+/*--- Functions ---*/
 
-/* Base directory for files */
-extern unsigned char *basedir;
+void LogMsg(int level, const char *fmt, ...)
+{
+	FILE *output;
+	va_list ap;
 
-/* Gamma level */
-extern float gamma;
+	if (verbose<level) {
+		return;
+	}
 
-/* Viewer mode */
-extern int viewmode;
+	output = fopen(log_file, "a+");
+	if (!output) {
+		if (firsttime) {
+			fprintf(stderr, "Can not open log file %s\n", log_file);
+			firsttime=0;
+		}
+		return;
+	}
 
-/* Enable OpenGL */
-extern int use_opengl;
+	va_start(ap, fmt);
+	vfprintf(output, fmt, ap);
+	va_end(ap);
 
-/* Aspect ratio */
-extern int aspect_x, aspect_y;
-extern int aspect_user; /* User gave us an aspect ratio */
-
-/*--- Functions prototypes ---*/
-
-extern void DisplayUsage(void);
-extern int CheckParm(int argc,char **argv);
-
-#endif /* PARAMETERS_H */
+	fclose(output);
+}
