@@ -124,7 +124,7 @@ void video_detect_aspect(void)
 		}
 	}
 
-	/*printf("Biggest video mode: %dx%d\n", max_w, max_h);*/
+	logMsg(2,"Biggest video mode: %dx%d\n", max_w, max_h);
 
 	/* Calculate nearest aspect ratio */
 	ratio_w[0] = (max_h * 5) / 4;

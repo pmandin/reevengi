@@ -154,18 +154,19 @@ int main(int argc, char **argv)
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
 	SDL_SetGamma(gamma, gamma, gamma);
 
-	if (model_emd_load("pl0/emd0/em050.emd")) {
+	/*if (model_emd_load("pl0/emd0/em050.emd")) {
 		logMsg(2,"Loaded emd model\n");
-	}
+	}*/
 
 	int quit = 0;
 	while (!quit) {
-		logMsg(2, "Read events\n");
+		logMsg(3, "Read events\n");
 		quit = viewer_loop();
-		logMsg(2, "Update source\n");
+		logMsg(3, "Update source\n");
 		viewer_update();
-		logMsg(2, "Update screen\n");
+		logMsg(3, "Update screen\n");
 		viewer_draw();
+		logMsg(3, "Loop\n");
 		SDL_Delay(1);
 	}
 
@@ -178,7 +179,7 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	model_emd_close();
+	/*model_emd_close();*/
 
 	state_shutdown();
 	FS_Shutdown();
@@ -288,7 +289,7 @@ static void viewer_draw(void)
 	if (cur_surf) {
 		video.drawBackground(&video, cur_surf);
 	}
-	model_emd_draw(&video);
+	/*model_emd_draw(&video);*/
 	video.swapBuffers(&video);
 
 	if (switch_mode) {
