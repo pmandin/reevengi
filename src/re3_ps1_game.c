@@ -94,9 +94,8 @@ static void re3ps1game_loadbackground(void)
 	}
 	sprintf(filepath, re3ps1game_bg, game_state.stage, game_state.stage, game_state.room);
 
-	printf("bss: Loading %s ... %s\n", filepath,
-		background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed"
-	);
+	logMsg(1, "bss: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed");
 
 	free(filepath);
 }
@@ -112,9 +111,8 @@ static void re3ps1game_loadroom(void)
 	}
 	sprintf(filepath, re3ps1game_room, game_state.stage, game_state.stage, game_state.room);
 
-	printf("ard: Loading %s ... %s\n", filepath,
-		re3ps1game_loadroom_ard(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "ard: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re3ps1game_loadroom_ard(filepath) ? "done" : "failed");
 
 	free(filepath);
 }

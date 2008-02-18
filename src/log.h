@@ -23,6 +23,6 @@
 
 /*--- Functions prototypes ---*/
 
-void LogMsg(int level, const char *msg, ...);
+void logMsg(int level, const char *msg, ...);
 
 #endif /* LOG_H */

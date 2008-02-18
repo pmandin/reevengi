@@ -26,10 +26,11 @@
 /*--- Variables ---*/
 
 static int firsttime=1;
+static int createfile=1;
 
 /*--- Functions ---*/
 
-void LogMsg(int level, const char *fmt, ...)
+void logMsg(int level, const char *fmt, ...)
 {
 	FILE *output;
 	va_list ap;
@@ -38,7 +39,14 @@ void LogMsg(int level, const char *fmt, ...)
 		return;
 	}
 
-	output = fopen(log_file, "a+");
+	/* Print on stdout */
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+
+	/* Write to log file ? */
+	output = fopen(log_file, createfile ? "w" : "a+");
+	createfile = 0;
 	if (!output) {
 		if (firsttime) {
 			fprintf(stderr, "Can not open log file %s\n", log_file);

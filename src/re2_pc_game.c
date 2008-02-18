@@ -129,10 +129,9 @@ static void re2pcgame_loadbackground(void)
 		num_image = num_re2_images-1;
 	}
 
-	printf("adt: Loading stage %d, room %d, camera %d ... %s\n",
-		game_state.stage, game_state.room, game_state.camera,
-		re2pcgame_load_image(num_image) ? "done" : "failed"
-	);
+	logMsg(1, "adt: Loading stage %d, room %d, camera %d ... ",
+		game_state.stage, game_state.room, game_state.camera);
+	logMsg(1, "%s\n", re2pcgame_load_image(num_image) ? "done" : "failed");
 }
 
 static int re2pcgame_init_images(const char *filename)
@@ -223,9 +222,8 @@ static void re2pcgame_loadroom(void)
 	}
 	sprintf(filepath, re2pcgame_room, game_player, game_state.stage, game_state.room);
 
-	printf("rdt: Loading %s ... %s\n", filepath,
-		re2pcgame_loadroom_rdt(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "rdt: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re2pcgame_loadroom_rdt(filepath) ? "done" : "failed");
 
 	free(filepath);
 }

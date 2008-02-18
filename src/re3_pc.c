@@ -137,9 +137,8 @@ void re3pc_loadbackground(void)
 	}
 	sprintf(filepath, re3pc_bg, game_state.stage, game_state.room, game_state.camera);
 
-	printf("jpg: Loading %s ... %s\n", filepath,
-		re3pc_load_jpg_bg(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "jpg: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re3pc_load_jpg_bg(filepath) ? "done" : "failed");
 
 	free(filepath);
 }
@@ -189,9 +188,8 @@ static void re3pc_loadroom(void)
 	}
 	sprintf(filepath, re3pc_room, game_lang, game_state.stage, game_state.room);
 
-	printf("rdt: Loading %s ... %s\n", filepath,
-		re3pc_loadroom_rdt(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "rdt: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re3pc_loadroom_rdt(filepath) ? "done" : "failed");
 
 	free(filepath);
 }

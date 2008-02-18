@@ -57,7 +57,7 @@ int FS_AddArchive(const char *filename)
 {
 	int result = 1;
 	if (PHYSFS_addToSearchPath(filename, 1)) {
-		printf("fs: Added %s\n", filename);
+		logMsg(1,"fs: Added %s\n", filename);
 		result = 0;
 	} else {
 		fprintf(stderr, "fs: Error adding %s\n", filename);

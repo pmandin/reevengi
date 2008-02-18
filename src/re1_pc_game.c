@@ -110,9 +110,8 @@ void re1pcgame_loadbackground(void)
 	}
 	sprintf(filepath, re1pcgame_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
-	printf("pak: Loading %s ... %s\n", filepath,
-		re1pcgame_load_pak_bg(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "pak: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re1pcgame_load_pak_bg(filepath) ? "done" : "failed");
 
 	free(filepath);
 }
@@ -174,9 +173,8 @@ static void re1pcgame_loadroom(void)
 	}
 	sprintf(filepath, re1pcgame_room, game_state.stage, game_state.stage, game_state.room);
 
-	printf("rdt: Loading %s ... %s\n", filepath,
-		re1pcgame_loadroom_rdt(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "rdt: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re1pcgame_loadroom_rdt(filepath) ? "done" : "failed");
 
 	free(filepath);
 }

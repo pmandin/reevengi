@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 	FS_AddArchive(basedir);
 
 	state_init();
-	printf("Game version: %s\n", state_getGameName());
+	logMsg(0, "Game version: %s\n", state_getGameName());
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 		case GAME_RE2_PC_DEMO_U:
 			re2pcdemo_init(&game_state);
 			if (viewmode == VIEWMODE_MOVIE) {
-				printf("No movies to play\n");
+				logMsg(1, "No movies to play\n");
 				viewmode = VIEWMODE_BACKGROUND;
 			}
 			break;
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 		state_newmovie();
 		use_opengl = 0;
 #else
-		printf("Movie player disabled\n");
+		logMsg(0,"Movie player disabled\n");
 		viewmode == VIEWMODE_BACKGROUND;
 #endif
 	}
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	} else {
 		video_soft_init(&video);
 	}
-	printf("Calculated aspect ratio %d:%d\n", aspect_x, aspect_y);
+	logMsg(1,"Calculated aspect ratio %d:%d\n", aspect_x, aspect_y);
 
 	video.setVideoMode(&video, video.width, video.height, video.bpp);
 	if (!video.screen) {
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 	SDL_SetGamma(gamma, gamma, gamma);
 
 	if (model_emd_load("pl0/emd0/em050.emd")) {
-		printf("Loaded emd model\n");
+		logMsg(2,"Loaded emd model\n");
 	}
 
 	int quit = 0;

@@ -31,6 +31,7 @@
 #include "depack_adt.h"
 #include "parameters.h"
 #include "video.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -83,9 +84,8 @@ static void re2pcdemo_loadbackground(void)
 	}
 	sprintf(filepath, re2pcdemo_bg, game_state.stage, game_state.stage, game_state.room, game_state.camera);
 
-	printf("adt: Loading %s ... %s\n", filepath,
-		re2pcdemo_load_adt_bg(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "adt: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re2pcdemo_load_adt_bg(filepath) ? "done" : "failed");
 
 	free(filepath);
 }
@@ -143,9 +143,8 @@ static void re2pcdemo_loadroom(void)
 	}
 	sprintf(filepath, re2pcdemo_room, game_lang, game_state.stage, game_state.room);
 
-	printf("rdt: Loading %s ... %s\n", filepath,
-		re2pcdemo_loadroom_rdt(filepath) ? "done" : "failed"
-	);
+	logMsg(1, "adt: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re2pcdemo_loadroom_rdt(filepath) ? "done" : "failed");
 
 	free(filepath);
 }
