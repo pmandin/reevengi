@@ -58,8 +58,9 @@ static video_surface_t *cur_surf = NULL;
 
 /*--- Functions prototypes ---*/
 
-int viewer_loop(void);
-void viewer_draw(void);
+static int viewer_loop(void);
+static void viewer_update(void);
+static void viewer_draw(void);
 
 /*--- Functions ---*/
 
@@ -159,7 +160,11 @@ int main(int argc, char **argv)
 
 	int quit = 0;
 	while (!quit) {
+		logMsg(2, "Read events\n");
 		quit = viewer_loop();
+		logMsg(2, "Update source\n");
+		viewer_update();
+		logMsg(2, "Update screen\n");
 		viewer_draw();
 		SDL_Delay(1);
 	}
@@ -178,15 +183,17 @@ int main(int argc, char **argv)
 	state_shutdown();
 	FS_Shutdown();
 
+	SDL_Quit();
 	return 0;
 }
 
-int viewer_loop(void)
+static int viewer_loop(void)
 {
 	int quit = 0;
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event)) {
+		logMsg(2, "Process event %d\n", event.type);
 		switch(event.type) {
 			case SDL_QUIT:
 				quit=1;
@@ -253,6 +260,11 @@ int viewer_loop(void)
 		}
 	}
 
+	return(quit);
+}
+
+static void viewer_update(void)
+{
 	if (update_screen) {
 		/* Update ? */
 		update_screen = 0;
@@ -268,11 +280,9 @@ int viewer_loop(void)
 				break;
 		}
 	}
-
-	return(quit);
 }
 
-void viewer_draw(void)
+static void viewer_draw(void)
 {
 	video.initScreen(&video);
 	if (cur_surf) {
