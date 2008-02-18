@@ -106,25 +106,37 @@ void video_soft_shutdown(video_t *this)
 void video_detect_aspect(void)
 {
 	SDL_Rect **modes;
-	int i, max_w = 0, max_h = 0, ratio_w[4];
+	SDL_PixelFormat pixelFormat;
+	int i, j, max_w = 0, max_h = 0, ratio_w[4];
+	const int bpps[5]={32,24,16,15,8};
 
-	modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
-	if (modes == (SDL_Rect **) 0) {
-		/* No fullscreen mode */
-		return;
-	} else if (modes == (SDL_Rect **) -1) {
-		/* Windowed mode */
-		return;
-	}
+	memset(&pixelFormat, 0, sizeof(SDL_PixelFormat));
+	for (j=0; j<5; j++) {
+		pixelFormat.BitsPerPixel = bpps[j];
 
-	for (i=0; modes[i]; ++i) {
-		if ((modes[i]->w>max_w) && (modes[i]->h>max_h)) {
-			max_w = modes[i]->w;
-			max_h = modes[i]->h;
+		modes = SDL_ListModes(&pixelFormat, SDL_FULLSCREEN);
+		if (modes == (SDL_Rect **) 0) {
+			/* No fullscreen mode */
+			continue;
+		} else if (modes == (SDL_Rect **) -1) {
+			/* Windowed mode */
+			continue;
+		}
+
+		logMsg(3, "video: checking modes for %d bpp\n", bpps[j]);
+		for (i=0; modes[i]; ++i) {
+			logMsg(3, "video: checking mode %dx%d\n", modes[i]->w, modes[i]->h);
+			if ((modes[i]->w>=max_w) && (modes[i]->h>=max_h)) {
+				max_w = modes[i]->w;
+				max_h = modes[i]->h;
+			}
 		}
 	}
 
 	logMsg(2,"Biggest video mode: %dx%d\n", max_w, max_h);
+	if ((max_w == 0) && (max_h == 0)) {
+		return;
+	}
 
 	/* Calculate nearest aspect ratio */
 	ratio_w[0] = (max_h * 5) / 4;
