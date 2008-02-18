@@ -160,13 +160,13 @@ int main(int argc, char **argv)
 
 	int quit = 0;
 	while (!quit) {
-		logMsg(3, "Read events\n");
+		logMsg(4, "Read events\n");
 		quit = viewer_loop();
-		logMsg(3, "Update source\n");
+		logMsg(4, "Update source\n");
 		viewer_update();
-		logMsg(3, "Update screen\n");
+		logMsg(4, "Update screen\n");
 		viewer_draw();
-		logMsg(3, "Loop\n");
+		logMsg(4, "Loop\n");
 		SDL_Delay(1);
 	}
 
