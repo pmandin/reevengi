@@ -77,39 +77,25 @@ int main(int argc, char **argv)
 	FS_AddArchive(basedir);
 
 	state_init();
-	printf("Game version: ");
+	printf("Game version: %s\n", state_getGameName());
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
-			printf("Resident Evil, PS1, Demo\n");
-			re1ps1_init(&game_state);
-			break;
 		case GAME_RE1_PS1_GAME:
-			printf("Resident Evil, PS1, Game\n");
 			re1ps1_init(&game_state);
 			break;
 		case GAME_RE2_PS1_DEMO:
-			printf("Resident Evil 2, PS1, Demo\n");
-			re2ps1_init(&game_state);
-			break;
 		case GAME_RE2_PS1_GAME_LEON:
-			printf("Resident Evil 2, PS1, Game Leon\n");
-			re2ps1_init(&game_state);
-			break;
 		case GAME_RE2_PS1_GAME_CLAIRE:
-			printf("Resident Evil 2, PS1, Game Claire\n");
 			re2ps1_init(&game_state);
 			break;
 		case GAME_RE3_PS1_GAME:
-			printf("Resident Evil 3, PS1, Game\n");
 			re3ps1game_init(&game_state);
 			break;
 		case GAME_RE1_PC_GAME:
-			printf("Resident Evil, PC, Game\n");
 			re1pcgame_init(&game_state);
 			break;
 		case GAME_RE2_PC_DEMO_P:
 		case GAME_RE2_PC_DEMO_U:
-			printf("Resident Evil 2, PC, Demo\n");
 			re2pcdemo_init(&game_state);
 			if (viewmode == VIEWMODE_MOVIE) {
 				printf("No movies to play\n");
@@ -117,23 +103,14 @@ int main(int argc, char **argv)
 			}
 			break;
 		case GAME_RE2_PC_GAME_LEON:
-			printf("Resident Evil 2, PC, Game Leon\n");
-			re2pcgame_init(&game_state);
-			break;
 		case GAME_RE2_PC_GAME_CLAIRE:
-			printf("Resident Evil 2, PC, Game Claire\n");
 			re2pcgame_init(&game_state);
 			break;
 		case GAME_RE3_PC_DEMO:
-			printf("Resident Evil 3, PC, Demo\n");
-			re3pc_init(&game_state);
-			break;
 		case GAME_RE3_PC_GAME:
-			printf("Resident Evil 3, PC, Game\n");
 			re3pc_init(&game_state);
 			break;
 		default:
-			printf("No known version\n");
 			FS_Shutdown();
 			exit(1);
 	}
