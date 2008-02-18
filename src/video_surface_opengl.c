@@ -241,8 +241,8 @@ static void uploadTexture(video_surface_gl_t *this)
 	/*printf("ogl_surf: %dx%d, %d\n", surface->w, surface->h,
 		surface->format->BitsPerPixel);*/
 
-	switch (surface->format->BitsPerPixel) {
-		case 8:
+	switch (surface->format->BytesPerPixel) {
+		case 1:
 			{
 				SDL_Color *palette = surface->format->palette->colors;
 				int i;
@@ -281,19 +281,19 @@ static void uploadTexture(video_surface_gl_t *this)
 				}
 			}
 			break;
-		case 16:
+		case 2:
 			pixelType = GL_UNSIGNED_SHORT_5_6_5;
 			if (surface->format->Rmask == 31) {
 				pixelType = GL_UNSIGNED_SHORT_1_5_5_5_REV;
 			}
 			/* FIXME: care about endianness ? */
 			break;
-		case 24:
+		case 3:
 			/* FIXME: care about endianness ? */
 			pixelType = GL_UNSIGNED_BYTE;
 			surfaceFormat = GL_RGB;
 			break;
-		case 32:
+		case 4:
 			/* FIXME: care about endianness ? */
 			break;
 	}
@@ -303,19 +303,19 @@ static void uploadTexture(video_surface_gl_t *this)
 		surfaceFormat, pixelType, surface->pixels
 	);
 
-	switch (surface->format->BitsPerPixel) {
-		case 8:
+	switch (surface->format->BytesPerPixel) {
+		case 1:
 			if (!this->use_palette) {
 				gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
 			}
 			break;
-		case 16:
+		case 2:
 			/* FIXME: care about endianness ? */
 			break;
-		case 24:
+		case 3:
 			/* FIXME: care about endianness ? */
 			break;
-		case 32:
+		case 4:
 			/* FIXME: care about endianness ? */
 			break;
 	}
