@@ -66,6 +66,8 @@ static void viewer_draw(void);
 
 int main(int argc, char **argv)
 {
+	int quit;
+
 	if (!CheckParm(argc,argv)) {
 		DisplayUsage();
 		exit(1);
@@ -158,7 +160,7 @@ int main(int argc, char **argv)
 		logMsg(2,"Loaded emd model\n");
 	}*/
 
-	int quit = 0;
+	quit = 0;
 	while (!quit) {
 		logMsg(4, "Read events\n");
 		quit = viewer_loop();
