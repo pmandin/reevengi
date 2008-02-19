@@ -70,15 +70,26 @@ CPPFLAGS=$TMP_CPPFLAGS
 # physfs
 
 TMP_LIBS=$LIBS
+TMP_CFLAGS=$CFLAGS
 LIBS="$LIBS $ZLIB_LIBS"
+AC_ARG_WITH([physfs-prefix],
+	[  --with-physfs-prefix=PFX Prefix where Physfs is installed (optional)],
+	[WITH_PHYSFS_PFX="$withval"],
+	[WITH_PHYSFS_PFX=""])
+if test "x$WITH_PHYSFS_PFX"  != "x"; then
+	CFLAGS="$CFLAGS -I${WITH_PHYSFS_PFX}/include"
+	LIBS="$LIBS -L${WITH_PHYSFS_PFX}/lib"
+fi
 AC_CHECK_HEADER(physfs.h, have_physfs_h=yes, have_physfs_h=no)
 AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
 if test "x$have_physfs_h" = "xyes" -a "x$have_physfs_lib" = "xyes"; then
-	PHYSFS_LIBS="-lphysfs"
+	PHYSFS_CFLAGS="-I${WITH_PHYSFS_PFX}/include"
+	PHYSFS_LIBS="-L${WITH_PHYSFS_PFX}/lib -lphysfs"
 else
 	AC_MSG_ERROR([*** PhysicsFS not found!])
 fi
 LIBS=$TMP_LIBS
+CFLAGS=$TMP_CFLAGS
 
 # OpenGL renderer
 
@@ -107,6 +118,7 @@ fi
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDLIMAGE_LIBS)
+AC_SUBST(PHYSFS_CFLAGS)
 AC_SUBST(PHYSFS_LIBS)
 AC_SUBST(GLU_LIBS)
 
