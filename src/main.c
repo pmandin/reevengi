@@ -195,7 +195,7 @@ static int viewer_loop(void)
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event)) {
-		logMsg(2, "Process event %d\n", event.type);
+		logMsg(3, "Process event %d\n", event.type);
 		switch(event.type) {
 			case SDL_QUIT:
 				quit=1;
