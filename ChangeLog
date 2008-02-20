@@ -4,6 +4,8 @@ v 0.6
 - Try to deal with screen aspect ratio if possible.
 - Separated OpenGL and software renderer.
 - Software renderer: rescale background to match window size.
+- More C language compatibility.
+- Configurable prefix for physfs.
 
 v 0.5
 
