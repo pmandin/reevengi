@@ -141,12 +141,14 @@ static int re2pcgame_init_images(const char *filename)
 
 	src = FS_makeRWops(filename);
 	if (src) {
+		Uint32 archive_length, first_offset;
+
 		/* Read archive length */
 		SDL_RWseek(src, 0, RW_SEEK_END);
-		Uint32 archive_length = SDL_RWtell(src);
+		archive_length = SDL_RWtell(src);
 		SDL_RWseek(src, 0, RW_SEEK_SET);
 
-		Uint32 first_offset = SDL_ReadLE32(src);
+		first_offset = SDL_ReadLE32(src);
 		num_re2_images = first_offset >> 2;
 
 		re2_images = (re2_images_t *) malloc(num_re2_images * sizeof(re2_images_t));
