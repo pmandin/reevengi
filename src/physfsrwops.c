@@ -101,7 +101,7 @@ static int physfsrwops_read(SDL_RWops *rw, void *ptr, int size, int maxnum)
 {
     PHYSFS_file *handle = (PHYSFS_file *) rw->hidden.unknown.data1;
     PHYSFS_sint64 rc = PHYSFS_read(handle, ptr, size, maxnum);
-    if (rc != maxnum)
+    if ((int) rc != maxnum)
     {
         if (!PHYSFS_eof(handle)) /* not EOF? Must be an error. */
             SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
@@ -115,7 +115,7 @@ static int physfsrwops_write(SDL_RWops *rw, const void *ptr, int size, int num)
 {
     PHYSFS_file *handle = (PHYSFS_file *) rw->hidden.unknown.data1;
     PHYSFS_sint64 rc = PHYSFS_write(handle, ptr, size, num);
-    if (rc != num)
+    if ((int) rc != num)
         SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
 
     return((int) rc);
