@@ -49,6 +49,12 @@ Use at your own risks.
 
 "-aspect <x>:<y>" to force an aspect ratio if misdetected.
 
+"-verbose <n>"  to change verbosity level.
+  Default is 0.
+
+"-logfile <filename>" to change log file.
+  Default is reevengi.log
+
 "-help" displays a little help.
 
 

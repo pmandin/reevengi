@@ -1,11 +1,11 @@
-v 0.5
+v 0.6
 
-- Do not refresh screen as fast as possible, and free cpu instead.
-- Added Resident Evil 2, PS1, Demo, Pal.
-- Added Resident Evil 3, PC, Game.
-- Load room description to know how many cameras there are.
-- configure.ac reworked to use pkg-config for FFmpeg libraries.
-- Started writing OpenGL renderer.
+- There are two different demos of Resident Evil 2 for PC.
+- Try to deal with screen aspect ratio if possible.
+- Separated OpenGL and software renderer.
+- Software renderer: rescale background to match window size.
+- More C language compatibility.
+- Configurable prefix for physfs.
 
 
 See ChangeLog for older changes.
