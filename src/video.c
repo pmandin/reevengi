@@ -79,7 +79,7 @@ void video_soft_init(video_t *this)
 
 	this->dirty_rects = dirty_rects_create(this->width, this->height);
 }
-1
+
 static void shutDown(video_t *this)
 {
 	if (this->dirty_rects) {
