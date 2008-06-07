@@ -254,8 +254,9 @@ static void refreshViewport(video_t *this)
 		}
 	}
 
-	scr_w = (this->height * cur_asp_x) / cur_asp_y;
-	scr_h = (this->width * cur_asp_y) / cur_asp_x;
+	/* Adapt source images in 4:3 ratio to the screen ratio */
+	scr_w = (this->width * cur_asp_y * 4) / (cur_asp_x * 3);
+	scr_h = (this->height * cur_asp_x * 3) / (cur_asp_y * 4);
 	pos_x = (this->width - scr_w)>>1;
 	pos_y = (this->height - scr_h)>>1;
 
@@ -271,7 +272,7 @@ static void refreshViewport(video_t *this)
 		this->viewport.h = scr_h;
 	}
 
-	/*printf("viewport %d,%d %dx%d\n",
+	/*logMsg(2, "video: viewport %d,%d %dx%d\n",
 		this->viewport.x, this->viewport.y,
 		this->viewport.w, this->viewport.h
 	);*/
