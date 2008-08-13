@@ -35,7 +35,7 @@ void logMsg(int level, const char *fmt, ...)
 	FILE *output;
 	va_list ap;
 
-	if (verbose<level) {
+	if (params.verbose<level) {
 		return;
 	}
 
@@ -45,11 +45,11 @@ void logMsg(int level, const char *fmt, ...)
 	va_end(ap);
 
 	/* Write to log file ? */
-	output = fopen(log_file, createfile ? "w" : "a+");
+	output = fopen(params.log_file, createfile ? "w" : "a+");
 	createfile = 0;
 	if (!output) {
 		if (firsttime) {
-			fprintf(stderr, "Can not open log file %s\n", log_file);
+			fprintf(stderr, "Can not open log file %s\n", params.log_file);
 			firsttime=0;
 		}
 		return;

@@ -41,28 +41,17 @@
 
 /*--- Global variables ---*/
 
-/* Directory of the game */
-unsigned char *basedir=DEFAULT_BASEDIR;
-
-/* Verbose mode */
-int verbose=DEFAULT_VERBOSE;
-
-/* Log file */
-const char *log_file = PACKAGE_NAME ".log";
-
-/* Gamma level */
-float gamma = DEFAULT_GAMMA;
-
-/* Viewer mode */
-int viewmode = VIEWMODE_BACKGROUND;
-
-/* Enable OpenGL */
-int use_opengl = DEFAULT_USE_OPENGL;
-
-/* Aspect ratio */
-int aspect_x = DEFAULT_ASPECT_X;
-int aspect_y = DEFAULT_ASPECT_Y;
-int aspect_user = 0;
+params_t params = {
+	DEFAULT_VERBOSE,
+	PACKAGE_NAME ".log",
+	DEFAULT_BASEDIR,
+	1.0,
+	VIEWMODE_BACKGROUND,
+	DEFAULT_USE_OPENGL,
+	DEFAULT_ASPECT_X,
+	DEFAULT_ASPECT_Y,
+	0
+};
 
 /*---- Variables ---*/
 
@@ -92,48 +81,48 @@ int CheckParm(int argc,char **argv)
 	/*--- Check for verbose mode ---*/
 	p = ParmPresent("-verbose", argc, argv);
 	if (p && p < argc-1) {
-		verbose = atoi(argv[p+1]);
+		params.verbose = atoi(argv[p+1]);
 	}
 
 	/*--- Check for log filename ---*/
 	p = ParmPresent("-logfile", argc, argv);
 	if (p && p < argc-1) {
-		log_file = argv[p+1];
+		params.log_file = argv[p+1];
 	}
 
 	/*--- Check for gamma ---*/
 	p = ParmPresent("-gamma", argc, argv);
 	if (p && p < argc-1) {
-		gamma = atof(argv[p+1]);
+		params.gamma = atof(argv[p+1]);
 	}
 
 	/*--- Check for base directory ---*/
 	p = ParmPresent("-basedir", argc, argv);
 	if (p && p < argc-1) {
-		basedir = argv[p+1];
+		params.basedir = argv[p+1];
 	}
 
 	/*--- Check for movie mode ---*/
 	p = ParmPresent("-movie", argc, argv);
 	if (p) {
-		viewmode = VIEWMODE_MOVIE;
+		params.viewmode = VIEWMODE_MOVIE;
 	}
 
 	/*--- Check for OpenGL ---*/
 	p = ParmPresent("-opengl", argc, argv);
 	if (p) {
-		use_opengl = 1;
+		params.use_opengl = 1;
 	}
 
 	/*--- Check for aspect ratio ---*/
 	p = ParmPresent("-aspect", argc, argv);
 	if (p && p < argc-1) {
-		if (sscanf(argv[p+1], "%d:%d", &aspect_x, &aspect_y) != 2) {
+		if (sscanf(argv[p+1], "%d:%d", &params.aspect_x, &params.aspect_y) != 2) {
 			/* Reput default values if failed */
-			aspect_x = DEFAULT_ASPECT_X;
-			aspect_y = DEFAULT_ASPECT_Y;
+			params.aspect_x = DEFAULT_ASPECT_X;
+			params.aspect_y = DEFAULT_ASPECT_Y;
 		} else {
-			aspect_user = 1;
+			params.aspect_user = 1;
 		}
 	}
 

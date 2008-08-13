@@ -157,7 +157,7 @@ void state_newmovie(void)
 
 	for (i=0; movie[i]; i++) {
 		if (i==game_state.num_movie) {
-			/*sprintf(game_state.cur_movie, "%s/%s", basedir, movie[i]);*/
+			/*sprintf(game_state.cur_movie, "%s/%s", params.basedir, movie[i]);*/
 			game_state.cur_movie = movie[i];
 			break;
 		}
@@ -181,11 +181,11 @@ static int game_file_exists(char *filename)
 	char *filenamedir;
 	int detected = 0;
 	
-	filenamedir = malloc(strlen(basedir)+strlen(filename)+4);
+	filenamedir = malloc(strlen(params.basedir)+strlen(filename)+4);
 	if (filenamedir) {
 		PHYSFS_file	*curfile;
 
-		sprintf(filenamedir, "%s/%s", basedir, filename);
+		sprintf(filenamedir, "%s/%s", params.basedir, filename);
 
 		curfile = PHYSFS_openRead(filename);
 		if (curfile) {

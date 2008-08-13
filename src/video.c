@@ -73,7 +73,7 @@ void video_soft_init(video_t *this)
 	this->createSurfaceSu = video_surface_create_su;
 	this->destroySurface = video_surface_destroy;
 
-	if (!aspect_user) {
+	if (!params.aspect_user) {
 		video_detect_aspect();
 	}
 
@@ -147,13 +147,13 @@ void video_detect_aspect(void)
 	ratio_w[3] = (max_h * 16) / 9;
 
 	if (max_w < (ratio_w[0]+ratio_w[1])>>1) {
-		aspect_x = 5; aspect_y = 4;
+		params.aspect_x = 5; params.aspect_y = 4;
 	} else if (max_w < (ratio_w[1]+ratio_w[2])>>1) {
-		aspect_x = 4; aspect_y = 3;
+		params.aspect_x = 4; params.aspect_y = 3;
 	} else if (max_w < (ratio_w[2]+ratio_w[3])>>1) {
-		aspect_x = 16; aspect_y = 10;
+		params.aspect_x = 16; params.aspect_y = 10;
 	} else {
-		aspect_x = 16; aspect_y = 9;
+		params.aspect_x = 16; params.aspect_y = 9;
 	}
 }
 
@@ -243,12 +243,12 @@ static void initScreen(video_t *this)
 
 static void refreshViewport(video_t *this)
 {
-	int cur_asp_x = aspect_x, cur_asp_y = aspect_y;
+	int cur_asp_x = params.aspect_x, cur_asp_y = params.aspect_y;
 	int pos_x, pos_y, scr_w, scr_h;
 
 	/* Disable 5:4 ratio in fullscreen */
 	if ((this->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
-		if ((aspect_x == 5) && (aspect_y == 4)) {
+		if ((params.aspect_x == 5) && (params.aspect_y == 4)) {
 			cur_asp_x = 4;
 			cur_asp_y = 3;
 		}

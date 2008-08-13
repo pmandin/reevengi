@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	FS_AddArchive(basedir);
+	FS_AddArchive(params.basedir);
 
 	state_init();
 	logMsg(0, "Game version: %s\n", state_getGameName());
@@ -100,9 +100,9 @@ int main(int argc, char **argv)
 		case GAME_RE2_PC_DEMO_P:
 		case GAME_RE2_PC_DEMO_U:
 			re2pcdemo_init(&game_state);
-			if (viewmode == VIEWMODE_MOVIE) {
+			if (params.viewmode == VIEWMODE_MOVIE) {
 				logMsg(1, "No movies to play\n");
-				viewmode = VIEWMODE_BACKGROUND;
+				params.viewmode = VIEWMODE_BACKGROUND;
 			}
 			break;
 		case GAME_RE2_PC_GAME_LEON:
@@ -117,13 +117,13 @@ int main(int argc, char **argv)
 			FS_Shutdown();
 			exit(1);
 	}
-	if (viewmode == VIEWMODE_MOVIE) {	
+	if (params.viewmode == VIEWMODE_MOVIE) {	
 #ifdef ENABLE_MOVIES
 		state_newmovie();
-		use_opengl = 0;
+		params.use_opengl = 0;
 #else
 		logMsg(0,"Movie player disabled\n");
-		viewmode == VIEWMODE_BACKGROUND;
+		params.viewmode == VIEWMODE_BACKGROUND;
 #endif
 	}
 
@@ -135,16 +135,16 @@ int main(int argc, char **argv)
 	atexit(SDL_Quit);
 
 	/* Try to load OpenGL library first */
-	if (use_opengl) {
-		use_opengl = video_opengl_loadlib();
+	if (params.use_opengl) {
+		params.use_opengl = video_opengl_loadlib();
 	}
 	/* Then initialize proper backend */
-	if (use_opengl) {
+	if (params.use_opengl) {
 		video_opengl_init(&video);
 	} else {
 		video_soft_init(&video);
 	}
-	logMsg(1,"Calculated aspect ratio %d:%d\n", aspect_x, aspect_y);
+	logMsg(1,"Calculated aspect ratio %d:%d\n", params.aspect_x, params.aspect_y);
 
 	video.setVideoMode(&video, video.width, video.height, video.bpp);
 	if (!video.screen) {
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 	}
 
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
-	SDL_SetGamma(gamma, gamma, gamma);
+	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 
 	/*if (model_emd_load("pl0/emd0/em050.emd")) {
 		logMsg(2,"Loaded emd model\n");
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 		SDL_Delay(1);
 	}
 
-	switch(viewmode) {
+	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
 			state_unloadbackground();
 			break;
@@ -217,25 +217,25 @@ static int viewer_loop(void)
 						}
 						break;
 					case KEY_GAMMA_DOWN:
-						gamma -= 0.1;
-						if (gamma<0.1) {
-							gamma = 0.1;
+						params.gamma -= 0.1;
+						if (params.gamma<0.1) {
+							params.gamma = 0.1;
 						}
-						SDL_SetGamma(gamma, gamma, gamma);
+						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 						break;
 					case KEY_GAMMA_UP:
-						gamma += 0.1;
-						if (gamma>2.0) {
-							gamma = 2.0;
+						params.gamma += 0.1;
+						if (params.gamma>2.0) {
+							params.gamma = 2.0;
 						}
-						SDL_SetGamma(gamma, gamma, gamma);
+						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 						break;
 					case KEY_GAMMA_RESET:
-						gamma = 1.0;
-						SDL_SetGamma(gamma, gamma, gamma);
+						params.gamma = 1.0;
+						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 						break;						
 					default:
-						switch(viewmode) {
+						switch(params.viewmode) {
 							case VIEWMODE_BACKGROUND:
 								update_screen |= view_background_input(&event);
 								break;
@@ -252,7 +252,7 @@ static int viewer_loop(void)
 				switch_mode = 1;
 				break;
 			default:
-				switch(viewmode) {
+				switch(params.viewmode) {
 					case VIEWMODE_BACKGROUND:
 						update_screen |= view_background_input(&event);
 						break;
@@ -274,7 +274,7 @@ static void viewer_update(void)
 		update_screen = 0;
 		video.refreshScreen(&video);
 
-		switch(viewmode) {
+		switch(params.viewmode) {
 			case VIEWMODE_BACKGROUND:
 				cur_surf = view_background_update();
 				break;

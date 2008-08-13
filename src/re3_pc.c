@@ -96,13 +96,13 @@ void re3pc_init(state_t *game_state)
 	char rofsfile[1024];
 
 	for (i=1;i<16;i++) {
-		sprintf(rofsfile, rofs_dat, basedir, i);
+		sprintf(rofsfile, rofs_dat, params.basedir, i);
 		if (FS_AddArchive(rofsfile)==0) {
 			continue;
 		}
 		/* Try with cap letter */
 		if (game_state->version==GAME_RE3_PC_GAME) {
-			sprintf(rofsfile, rofs_cap_dat, basedir, i);
+			sprintf(rofsfile, rofs_cap_dat, params.basedir, i);
 			FS_AddArchive(rofsfile);
 		}
 	}

@@ -26,29 +26,23 @@
 #define VIEWMODE_BACKGROUND	0
 #define VIEWMODE_MOVIE		1
 
+/*--- Types ---*/
+
+typedef struct {
+	int verbose;		/* Verbose level */
+	const char *log_file;	/* Log file */
+	unsigned char *basedir;	/* Base directory for files */
+	float gamma;		/* Gamma level */
+	int viewmode;		/* Viewer mode */
+	int use_opengl;		/* Enable OpenGL */
+	int aspect_x;		/* Aspect ratio */
+	int aspect_y;
+	int aspect_user;	/* User gave us an aspect ratio */
+} params_t;
+
 /*--- Variables ---*/
 
-/* Verbose level */
-extern int verbose;
-
-/* Log file */
-extern const char *log_file;
-
-/* Base directory for files */
-extern unsigned char *basedir;
-
-/* Gamma level */
-extern float gamma;
-
-/* Viewer mode */
-extern int viewmode;
-
-/* Enable OpenGL */
-extern int use_opengl;
-
-/* Aspect ratio */
-extern int aspect_x, aspect_y;
-extern int aspect_user; /* User gave us an aspect ratio */
+extern params_t params;
 
 /*--- Functions prototypes ---*/
 
