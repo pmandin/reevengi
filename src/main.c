@@ -213,6 +213,10 @@ static int viewer_loop(void)
 					case SDLK_RETURN:
 						if (event.key.keysym.mod & KMOD_ALT) {
 							video.flags ^= SDL_FULLSCREEN;
+							if (cur_surf) {
+								new_width = cur_surf->getSurface(cur_surf)->w;
+								new_height = cur_surf->getSurface(cur_surf)->h;
+							}
 							switch_mode=1;
 						}
 						break;
