@@ -43,11 +43,18 @@ typedef struct {
 } unpackArray8_t;
 
 typedef struct {
+	long nodes[2];
+} node_t;
+
+#define NODE_LEFT 0
+#define NODE_RIGHT 1
+
+typedef struct {
 	unsigned long start;
 	unsigned long length;
 	unsigned long *ptr4;
 	unpackArray8_t *ptr8;
-	unsigned long *ptr16;
+	node_t *tree;
 } unpackArray_t;
 
 static unpackArray_t array1, array2, array3;
@@ -60,14 +67,14 @@ static void initTmpArray(unpackArray_t *array, int start, int length)
 
 	array->length = length;
 
-	array->ptr16 = (unsigned long *) &tmp32k[tmp32kOffset];
-	tmp32kOffset += length<<5;
+	array->tree = (node_t *) &tmp32k[tmp32kOffset];
+	tmp32kOffset += length * 2 * sizeof(node_t);
 
 	array->ptr8 = (unpackArray8_t *) &tmp32k[tmp32kOffset];
-	tmp32kOffset += length<<3;
+	tmp32kOffset += length * sizeof(unpackArray8_t);
 
 	array->ptr4 = (unsigned long *) &tmp32k[tmp32kOffset];
-	tmp32kOffset += length<<2;
+	tmp32kOffset += length * sizeof(unsigned long);
 }
 
 static void initTmpArrayData(unpackArray_t *array)
@@ -78,17 +85,13 @@ static void initTmpArrayData(unpackArray_t *array)
 		array->ptr4[i] =
 		array->ptr8[i].start =
 		array->ptr8[i].length =
-		array->ptr16[(i<<2)] = 0;
-		array->ptr16[(i<<2)+1] =
-		array->ptr16[(i<<2)+2] =
-		array->ptr16[(i<<2)+3] = 0xffffffff;
+		array->tree[i].nodes[NODE_LEFT] =
+		array->tree[i].nodes[NODE_RIGHT] = -1;
 	}
 
 	while (i < array->length<<1) {
-		array->ptr16[(i<<2)] = 0;
-		array->ptr16[(i<<2)+1] =
-		array->ptr16[(i<<2)+2] =
-		array->ptr16[(i<<2)+3] = 0xffffffff;
+		array->tree[i].nodes[NODE_LEFT] =
+		array->tree[i].nodes[NODE_RIGHT] = -1;
 		i++;
 	}
 }
@@ -136,9 +139,9 @@ static int readSrcBitfieldArray(SDL_RWops *src, unpackArray_t *array, int curInd
 {
 	do {
 		if (readSrcOneBit(src)) {
-			curIndex = array->ptr16[(curIndex<<2)+3];
+			curIndex = array->tree[curIndex].nodes[NODE_RIGHT];
 		} else {
-			curIndex = array->ptr16[(curIndex<<2)+2];
+			curIndex = array->tree[curIndex].nodes[NODE_LEFT];
 		}
 	} while (curIndex >= array->length);
 
@@ -188,10 +191,11 @@ static int initUnpackBlockArray2(unpackArray_t *array)
 	int i, j;
 	int curLength = array->length;
 	int curArrayIndex = curLength + 1;
-	array->ptr16[(curLength<<2)+2]=0xffffffff;
-	array->ptr16[(curLength<<2)+3]=0xffffffff;
-	array->ptr16[(curArrayIndex<<2)+2]=0xffffffff;
-	array->ptr16[(curArrayIndex<<2)+3]=0xffffffff;
+
+	array->tree[curLength].nodes[NODE_LEFT] =
+	array->tree[curLength].nodes[NODE_RIGHT] =
+	array->tree[curArrayIndex].nodes[NODE_LEFT] =
+	array->tree[curArrayIndex].nodes[NODE_RIGHT] = -1;
 
 	for (i=0; i<array->length; i++) {
 		int curPtr8Start = array->ptr8[i].start;
@@ -204,23 +208,23 @@ static int initUnpackBlockArray2(unpackArray_t *array)
 			int arrayOffset;
 
 			if ((curMask & curPtr8Start)!=0) {
-				arrayOffset = 3;
+				arrayOffset = NODE_RIGHT;
 			} else {
-				arrayOffset = 2;
+				arrayOffset = NODE_LEFT;
 			}
 
 			if (j+1 == curPtr8Length) {
-				array->ptr16[(curLength<<2)+arrayOffset] = i;
+				array->tree[curLength].nodes[arrayOffset] = i;
 				break;
 			}
 
-			if (array->ptr16[(curLength<<2)+arrayOffset] == -1) {
-				array->ptr16[(curLength<<2)+arrayOffset] = curArrayIndex;
-				array->ptr16[(curArrayIndex<<2)+2] =
-				array->ptr16[(curArrayIndex<<2)+3] = -1;
+			if (array->tree[curLength].nodes[arrayOffset] == -1) {
+				array->tree[curLength].nodes[arrayOffset] = curArrayIndex;
+				array->tree[curArrayIndex].nodes[NODE_LEFT] =
+				array->tree[curArrayIndex].nodes[NODE_RIGHT] = -1;
 				curLength = curArrayIndex++;
 			} else {
-				curLength = array->ptr16[(curLength<<2)+arrayOffset];
+				curLength = array->tree[curLength].nodes[arrayOffset];
 			}
 		}
 	}
@@ -339,7 +343,7 @@ void adt_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 	srcByte = srcNumBit = srcOffset = dstOffset = dstBufLen =
 		*dstLength = tmp32kOffset = tmp16kOffset = 0;
 
-	tmp32k = (Uint8 *) malloc(32768);
+	tmp32k = (Uint8 *) malloc(4096 * sizeof(unsigned long));
 	if (tmp32k == NULL) {
 		return;
 	}
