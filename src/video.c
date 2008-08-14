@@ -243,20 +243,37 @@ static void initScreen(video_t *this)
 
 static void refreshViewport(video_t *this)
 {
-	int cur_asp_x = params.aspect_x, cur_asp_y = params.aspect_y;
+	int cur_asp_w = 1, cur_asp_h = 1;	/* Square pixel as default */
+	int img_w, img_h;
 	int pos_x, pos_y, scr_w, scr_h;
 
-	/* Disable 5:4 ratio in fullscreen */
+	/* Only keep non 5:4 ratio in fullscreen */
 	if ((this->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
-		if ((params.aspect_x == 5) && (params.aspect_y == 4)) {
-			cur_asp_x = 4;
-			cur_asp_y = 3;
+		if ((params.aspect_x != 5) || (params.aspect_y != 4)) {
+			cur_asp_w = params.aspect_x * 3;
+			cur_asp_h = params.aspect_y * 4;
 		}
 	}
 
 	/* Adapt source images in 4:3 ratio to the screen ratio */
-	scr_w = (this->width * cur_asp_y * 4) / (cur_asp_x * 3);
-	scr_h = (this->height * cur_asp_x * 3) / (cur_asp_y * 4);
+	img_w = (320*cur_asp_h)/cur_asp_w;
+	img_h = (240*cur_asp_w)/cur_asp_h;
+	if (img_w>320) {
+		img_w=320;
+	} else if (img_h>240) {
+		img_h=240;
+	}
+
+	/* Resize to fill screen */
+	scr_w = (this->height*img_w)/img_h;
+	scr_h = (this->width*img_h)/img_w;
+	if (scr_w>this->width) {
+		scr_w = img_w;
+	} else if (scr_h>this->height) {
+		scr_h = img_h;
+	}
+
+	/* Center */
 	pos_x = (this->width - scr_w)>>1;
 	pos_y = (this->height - scr_h)>>1;
 
@@ -271,11 +288,6 @@ static void refreshViewport(video_t *this)
 		this->viewport.w = this->width;
 		this->viewport.h = scr_h;
 	}
-
-	/*logMsg(2, "video: viewport %d,%d %dx%d\n",
-		this->viewport.x, this->viewport.y,
-		this->viewport.w, this->viewport.h
-	);*/
 }
 
 static void refreshScreen(video_t *this)
