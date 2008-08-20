@@ -268,9 +268,9 @@ static void refreshViewport(video_t *this)
 	scr_w = (this->height*img_w)/img_h;
 	scr_h = (this->width*img_h)/img_w;
 	if (scr_w>this->width) {
-		scr_w = img_w;
+		scr_w = this->width;
 	} else if (scr_h>this->height) {
-		scr_h = img_h;
+		scr_h = this->height;
 	}
 
 	/* Center */
