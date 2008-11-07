@@ -196,3 +196,58 @@ void re2pcdemo_get_camera(long *camera_pos)
 	camera_pos[4] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_y);
 	camera_pos[5] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_z);
 }
+
+typedef struct {
+	unsigned short const0; /* 0xff01 */
+	unsigned char cam0;
+	unsigned char cam1;
+	short x1,y1; /* Coordinates to use to calc when player crosses switch zone */
+	short x2,y2;
+	short x3,y3;
+	short x4,y4;
+} rdt_camera_switch_t;
+
+int re2pcdemo_get_num_camswitch(void)
+{
+	Uint32 *camswitch_offset, offset;
+	rdt_camera_switch_t *camswitch_array;
+	int num_switches = 0;
+
+	camswitch_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+8*4]);
+	offset = SDL_SwapLE32(*camswitch_offset);
+	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *)game_state.room_file)[offset];
+
+	while ((*(Uint32 *) camswitch_array) != 0xffffffff) {
+		/*printf("cam switch %d at offset 0x%08x\n", num_switches, offset);*/
+		offset += sizeof(rdt_camera_switch_t);
+		camswitch_array = (rdt_camera_switch_t *) &((Uint8 *)game_state.room_file)[offset];
+		num_switches++;
+	}
+
+	return num_switches;
+}
+
+int re2pcdemo_get_camswitch(int num, short *switch_pos)
+{
+	Uint32 *camswitch_offset, offset;
+	rdt_camera_switch_t *camswitch_array;
+	int i;
+
+	camswitch_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+8*4]);
+	offset = SDL_SwapLE32(*camswitch_offset);
+	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *)game_state.room_file)[offset];
+
+	if ((camswitch_array[num].cam1==0) || (camswitch_array[num].cam0!=game_state.camera)) {
+		return 0;
+	}
+
+	switch_pos[0] = SDL_SwapLE16(camswitch_array[num].x1);
+	switch_pos[1] = SDL_SwapLE16(camswitch_array[num].y1);
+	switch_pos[2] = SDL_SwapLE16(camswitch_array[num].x2);
+	switch_pos[3] = SDL_SwapLE16(camswitch_array[num].y2);
+	switch_pos[4] = SDL_SwapLE16(camswitch_array[num].x3);
+	switch_pos[5] = SDL_SwapLE16(camswitch_array[num].y3);
+	switch_pos[6] = SDL_SwapLE16(camswitch_array[num].x4);
+	switch_pos[7] = SDL_SwapLE16(camswitch_array[num].y4);
+	return 1;
+}
