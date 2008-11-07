@@ -35,6 +35,10 @@
 #include "video.h"
 #include "state.h"
 
+/*--- Constants ---*/
+
+#define ORIGIN_SIZE (10.0*256.0)
+
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
@@ -44,6 +48,7 @@ static void initScreen(video_t *this);
 static void refreshScreen(video_t *this);
 static void drawBackground(video_t *this, video_surface_t *surf);
 
+static void drawOrigin(void);
 static void drawGrid(void);
 
 /*--- Functions ---*/
@@ -219,6 +224,24 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	drawGrid();
 }
 
+static void drawOrigin(void)
+{
+	gl.Begin(GL_LINES);
+		/* Origin */
+		gl.Color3f(1.0,0.0,0.0);
+		gl.Vertex3f(0.0,0.0,0.0);
+		gl.Vertex3f(ORIGIN_SIZE,0.0,0.0);
+
+		gl.Color3f(0.0,1.0,0.0);
+		gl.Vertex3f(0.0,0.0,0.0);
+		gl.Vertex3f(0.0,ORIGIN_SIZE,0.0);
+
+		gl.Color3f(0.0,0.0,1.0);
+		gl.Vertex3f(0.0,0.0,0.0);
+		gl.Vertex3f(0.0,0.0,ORIGIN_SIZE);
+	gl.End();
+}
+
 static void drawGrid(void)
 {
 	long cam_pos[6];
@@ -258,50 +281,31 @@ static void drawGrid(void)
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gluPerspective(60.0, 4.0/3.0, 0.1, 1000.0);
+	gluPerspective(60.0, 4.0/3.0, 0.1, 100000.0);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
 
 	gluLookAt(
-		cam_pos[0]/256.0, cam_pos[1]/256.0, cam_pos[2]/256.0,
-		cam_pos[3]/256.0, cam_pos[4]/256.0, cam_pos[5]/256.0,
+		cam_pos[0], cam_pos[1], cam_pos[2],
+		cam_pos[3], cam_pos[4], cam_pos[5],
 		0.0, -1.0, 0.0
 	);
 
+	/* Origin of coordinates */
 	gl.Begin(GL_LINES);
-		/* Origin */
-		gl.Color3f(1.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(10.0,0.0,0.0);
-
-		gl.Color3f(0.0,1.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,10.0,0.0);
-
-		gl.Color3f(0.0,0.0,1.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,10.0);
+		drawOrigin();
 	gl.End();
 
-	gl.Translatef(cam_pos[3]/256.0, cam_pos[4]/256.0, cam_pos[5]/256.0);
+	/* Camera target */
+	gl.Translatef(cam_pos[3], cam_pos[4], cam_pos[5]);
+	drawOrigin();
 
+	gl.Scalef(1000.0, 1000.0, 1000.0);
 	gl.Begin(GL_LINES);
-		/* Camera target */
-		gl.Color3f(1.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(10.0,0.0,0.0);
-
-		gl.Color3f(0.0,1.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,10.0,0.0);
-
-		gl.Color3f(0.0,0.0,1.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,10.0);
-
 		/* Ground */
 		gl.Color3f(1.0,1.0,1.0);
+
 		for (i=-50; i<=50; i+=10) {
 			gl.Vertex3f(-50.0,20.0,i);
 			gl.Vertex3f(50.0,20.0,i);
@@ -309,6 +313,7 @@ static void drawGrid(void)
 			gl.Vertex3f(i,20.0,50);
 		}
 	gl.End();
+	gl.Scalef(1.0, 1.0, 1.0);
 }
 
 #else /* ENABLE_OPENGL */
