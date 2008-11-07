@@ -50,6 +50,7 @@ static void drawBackground(video_t *this, video_surface_t *surf);
 
 static void drawOrigin(void);
 static void drawGrid(void);
+static void drawCameraSwitches(void);
 
 /*--- Functions ---*/
 
@@ -242,6 +243,41 @@ static void drawOrigin(void)
 	gl.End();
 }
 
+static void drawCameraSwitches(void)
+{
+	int i, num_switches = 0;
+	short switchPos[8];
+
+	switch(game_state.version) {
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
+			num_switches = re2pcdemo_get_num_camswitch();
+			break;
+		default:
+			return;
+	}
+
+	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	gl.PushMatrix();
+		gl.Scalef(1.0, 100.0, 1.0);
+		for (i=0; i<num_switches; i++) {
+			if (!re2pcdemo_get_camswitch(i,switchPos)) {
+				continue;
+			}
+
+			gl.Color3f(0.6,0.4,0.2);
+
+			gl.Begin(GL_QUADS);
+				gl.Vertex3s(switchPos[0], 20, switchPos[1]);
+				gl.Vertex3s(switchPos[2], 20, switchPos[3]);
+				gl.Vertex3s(switchPos[4], 20, switchPos[5]);
+				gl.Vertex3s(switchPos[6], 20, switchPos[7]);
+			gl.End();
+		}
+	gl.PopMatrix();
+	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 static void drawGrid(void)
 {
 	long cam_pos[6];
@@ -295,22 +331,25 @@ static void drawGrid(void)
 	/* Origin of coordinates */
 	drawOrigin();
 
+	drawCameraSwitches();
+
 	/* Camera target */
 	gl.Translatef(cam_pos[3], cam_pos[4], cam_pos[5]);
 	drawOrigin();
 
 	/* Now the grid */
-	gl.Color3f(1.0,1.0,1.0);
-	gl.Scalef(1000.0, 1000.0, 1000.0);
-	gl.Begin(GL_LINES);
-		for (i=-40; i<=40; i+=10) {
-			gl.Vertex3f(-40.0,20.0,i);
-			gl.Vertex3f(40.0,20.0,i);
-			gl.Vertex3f(i,20.0,-40);
-			gl.Vertex3f(i,20.0,40);
-		}
-	gl.End();
-	gl.Scalef(1.0, 1.0, 1.0);
+	/*gl.Color3f(1.0,1.0,1.0);
+	gl.PushMatrix();
+		gl.Scalef(1000.0, 1000.0, 1000.0);
+		gl.Begin(GL_LINES);
+			for (i=-40; i<=40; i+=10) {
+				gl.Vertex3f(-40.0,20.0,i);
+				gl.Vertex3f(40.0,20.0,i);
+				gl.Vertex3f(i,20.0,-40);
+				gl.Vertex3f(i,20.0,40);
+			}
+		gl.End();
+	gl.PopMatrix();*/
 }
 
 #else /* ENABLE_OPENGL */
