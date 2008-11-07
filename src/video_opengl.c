@@ -293,24 +293,21 @@ static void drawGrid(void)
 	);
 
 	/* Origin of coordinates */
-	gl.Begin(GL_LINES);
-		drawOrigin();
-	gl.End();
+	drawOrigin();
 
 	/* Camera target */
 	gl.Translatef(cam_pos[3], cam_pos[4], cam_pos[5]);
 	drawOrigin();
 
+	/* Now the grid */
+	gl.Color3f(1.0,1.0,1.0);
 	gl.Scalef(1000.0, 1000.0, 1000.0);
 	gl.Begin(GL_LINES);
-		/* Ground */
-		gl.Color3f(1.0,1.0,1.0);
-
-		for (i=-50; i<=50; i+=10) {
-			gl.Vertex3f(-50.0,20.0,i);
-			gl.Vertex3f(50.0,20.0,i);
-			gl.Vertex3f(i,20.0,-50);
-			gl.Vertex3f(i,20.0,50);
+		for (i=-40; i<=40; i+=10) {
+			gl.Vertex3f(-40.0,20.0,i);
+			gl.Vertex3f(40.0,20.0,i);
+			gl.Vertex3f(i,20.0,-40);
+			gl.Vertex3f(i,20.0,40);
 		}
 	gl.End();
 	gl.Scalef(1.0, 1.0, 1.0);
