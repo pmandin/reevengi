@@ -19,7 +19,6 @@
 */
 
 #include "render.h"
-#include "render_line.h"
 
 /*--- Functions prototypes ---*/
 
@@ -32,6 +31,11 @@ static void scale(float x, float y, float z);
 static void translate(float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
+
+static void render_line_soft(SDL_Surface *surf,
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	Uint32 color);
 
 /*--- Functions ---*/
 
@@ -70,5 +74,17 @@ static void push_matrix(void)
 }
 
 static void pop_matrix(void)
+{
+}
+
+static void render_line_soft(SDL_Surface *surf,
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	Uint32 color)
+{
+}
+
+void render_image(SDL_Surface *surf, SDL_Surface *source,
+	int x, int y)
 {
 }

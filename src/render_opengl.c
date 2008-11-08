@@ -31,7 +31,6 @@
 #include "dyngl.h"
 
 #include "render.h"
-#include "render_line_opengl.h"
 
 /*--- Functions prototypes ---*/
 
@@ -43,6 +42,11 @@ static void scale(float x, float y, float z);
 static void translate(float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
+
+static void render_line_opengl(SDL_Surface *surf,
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	Uint32 color);
 
 /*--- Functions ---*/
 
@@ -94,6 +98,20 @@ static void push_matrix(void)
 static void pop_matrix(void)
 {
 	gl.PopMatrix();
+}
+
+static void render_line_opengl(SDL_Surface *surf,
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	Uint32 color)
+{
+	gl.Color4ub((color>>16) & 0xff, (color>>8) & 0xff,
+		color & 0xff, (color>>24) & 0xff);
+
+	gl.Begin(GL_LINES);
+	gl.Vertex3f(x1,y1,z1);
+	gl.Vertex3f(x2,y2,z2);
+	gl.End();
 }
 
 #else
