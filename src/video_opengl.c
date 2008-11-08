@@ -50,7 +50,7 @@ static void drawBackground(video_t *this, video_surface_t *surf);
 
 static void drawOrigin(video_t *this);
 static void drawGrid(video_t *this);
-static void drawCameraSwitches(void);
+static void drawCameraSwitches(video_t *this);
 
 /*--- Functions ---*/
 
@@ -242,7 +242,7 @@ static void drawOrigin(video_t *this)
 		0x000000ff);
 }
 
-static void drawCameraSwitches(void)
+static void drawCameraSwitches(video_t *this)
 {
 	int i, num_switches = 0;
 	short switchPos[8];
@@ -256,25 +256,31 @@ static void drawCameraSwitches(void)
 			return;
 	}
 
-	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	gl.PushMatrix();
-		gl.Scalef(1.0, 100.0, 1.0);
-		for (i=0; i<num_switches; i++) {
-			if (!re2pcdemo_get_camswitch(i,switchPos)) {
-				continue;
-			}
-
-			gl.Color3f(0.6,0.4,0.2);
-
-			gl.Begin(GL_QUADS);
-				gl.Vertex3s(switchPos[0], 20, switchPos[1]);
-				gl.Vertex3s(switchPos[2], 20, switchPos[3]);
-				gl.Vertex3s(switchPos[4], 20, switchPos[5]);
-				gl.Vertex3s(switchPos[6], 20, switchPos[7]);
-			gl.End();
+	video.render.push_matrix();
+	video.render.scale(1.0, 100.0, 1.0);
+	for (i=0; i<num_switches; i++) {
+		if (!re2pcdemo_get_camswitch(i,switchPos)) {
+			continue;
 		}
-	gl.PopMatrix();
-	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		video.render.render_line(this->screen,
+			switchPos[0], 20, switchPos[1],
+			switchPos[2], 20, switchPos[3],
+			0x00664422);
+		video.render.render_line(this->screen,
+			switchPos[2], 20, switchPos[3],
+			switchPos[4], 20, switchPos[5],
+			0x00664422);
+		video.render.render_line(this->screen,
+			switchPos[4], 20, switchPos[5],
+			switchPos[6], 20, switchPos[7],
+			0x00664422);
+		video.render.render_line(this->screen,
+			switchPos[6], 20, switchPos[7],
+			switchPos[0], 20, switchPos[1],
+			0x00664422);
+	}
+	video.render.pop_matrix();
 }
 
 static void drawGrid(video_t *this)
@@ -324,7 +330,7 @@ static void drawGrid(video_t *this)
 	/* Origin of coordinates */
 	drawOrigin(this);
 
-	drawCameraSwitches();
+	drawCameraSwitches(this);
 
 	/* Camera target */
 	video.render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
