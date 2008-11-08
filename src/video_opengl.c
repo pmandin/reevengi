@@ -48,8 +48,8 @@ static void initScreen(video_t *this);
 static void refreshScreen(video_t *this);
 static void drawBackground(video_t *this, video_surface_t *surf);
 
-static void drawOrigin(void);
-static void drawGrid(void);
+static void drawOrigin(video_t *this);
+static void drawGrid(video_t *this);
 static void drawCameraSwitches(void);
 
 /*--- Functions ---*/
@@ -223,25 +223,23 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 	gl.Disable(GL_BLEND);
 	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
 
-	drawGrid();
+	drawGrid(this);
 }
 
-static void drawOrigin(void)
+static void drawOrigin(video_t *this)
 {
-	gl.Begin(GL_LINES);
-		/* Origin */
-		gl.Color3f(1.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(ORIGIN_SIZE,0.0,0.0);
-
-		gl.Color3f(0.0,1.0,0.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,ORIGIN_SIZE,0.0);
-
-		gl.Color3f(0.0,0.0,1.0);
-		gl.Vertex3f(0.0,0.0,0.0);
-		gl.Vertex3f(0.0,0.0,ORIGIN_SIZE);
-	gl.End();
+	video.render.render_line(this->screen,
+		0.0, 0.0, 0.0,
+		ORIGIN_SIZE, 0.0, 0.0,
+		0x00ff0000);
+	video.render.render_line(this->screen,
+		0.0, 0.0, 0.0,
+		0.0, ORIGIN_SIZE, 0.0,
+		0x0000ff00);
+	video.render.render_line(this->screen,
+		0.0, 0.0, 0.0,
+		0.0, 0.0, ORIGIN_SIZE,
+		0x000000ff);
 }
 
 static void drawCameraSwitches(void)
@@ -279,7 +277,7 @@ static void drawCameraSwitches(void)
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-static void drawGrid(void)
+static void drawGrid(video_t *this)
 {
 	long cam_pos[6];
 	int i;
@@ -316,41 +314,36 @@ static void drawGrid(void)
 			return;
 	}
 
-	gl.MatrixMode(GL_PROJECTION);
-	gl.LoadIdentity();
-	gluPerspective(60.0, 4.0/3.0, 0.1, 100000.0);
-
-	gl.MatrixMode(GL_MODELVIEW);
-	gl.LoadIdentity();
-
-	gluLookAt(
+	video.render.set_projection(60.0, 4.0/3.0, 1.0, 100000.0);
+	video.render.set_modelview(
 		cam_pos[0], cam_pos[1], cam_pos[2],
 		cam_pos[3], cam_pos[4], cam_pos[5],
 		0.0, -1.0, 0.0
 	);
 
 	/* Origin of coordinates */
-	drawOrigin();
+	drawOrigin(this);
 
 	drawCameraSwitches();
 
 	/* Camera target */
-	gl.Translatef(cam_pos[3], cam_pos[4], cam_pos[5]);
-	drawOrigin();
+	video.render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
+	drawOrigin(this);
 
 	/* Now the grid */
-	/*gl.Color3f(1.0,1.0,1.0);
-	gl.PushMatrix();
-		gl.Scalef(1000.0, 1000.0, 1000.0);
-		gl.Begin(GL_LINES);
-			for (i=-40; i<=40; i+=10) {
-				gl.Vertex3f(-40.0,20.0,i);
-				gl.Vertex3f(40.0,20.0,i);
-				gl.Vertex3f(i,20.0,-40);
-				gl.Vertex3f(i,20.0,40);
-			}
-		gl.End();
-	gl.PopMatrix();*/
+	video.render.push_matrix();
+	video.render.scale(1000.0, 1000.0, 1000.0);
+	for (i=-40; i<=40; i+=10) {
+		video.render.render_line(this->screen,
+			-40.0, 20.0, i,
+			40.0, 20.0, i,
+			0x00ffffff);
+		video.render.render_line(this->screen,
+			i, 20.0, -40.0,
+			i, 20.0, 40.0,
+			0x00ffffff);
+	}
+	video.render.pop_matrix();
 }
 
 #else /* ENABLE_OPENGL */
