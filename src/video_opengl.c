@@ -67,6 +67,7 @@ int video_opengl_loadlib(void)
 void video_opengl_init(video_t *this)
 {
 	video_soft_init(this);
+	render_opengl_init(&(this->render));
 
 	this->width = 640;
 	this->height = 480;

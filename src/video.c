@@ -50,6 +50,8 @@ static void zoomZone(SDL_Surface *source, SDL_Surface *dest, SDL_Rect *dst_rect)
 
 void video_soft_init(video_t *this)
 {
+	render_soft_init(&(this->render));
+
 	this->width = 320;
 	this->height = 240;
 	this->bpp = 16;

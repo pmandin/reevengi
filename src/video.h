@@ -21,6 +21,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H 1
 
+#include "render.h"
 #include "video_surface.h"
 
 typedef struct video_s video_t;
@@ -47,6 +48,8 @@ struct video_s {
 	video_surface_t * (*createSurfacePf)(int width, int height, SDL_PixelFormat *pixelFormat);
 	video_surface_t * (*createSurfaceSu)(SDL_Surface *surface);
 	void (*destroySurface)(video_surface_t *this);
+
+	render_t render;
 };
 
 void video_detect_aspect(void);
