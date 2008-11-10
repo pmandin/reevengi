@@ -34,6 +34,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "state.h"
+#include "render_background_opengl.h"
 
 /*--- Constants ---*/
 
@@ -164,64 +165,7 @@ static void refreshScreen(video_t *this)
 
 static void drawBackground(video_t *this, video_surface_t *surf)
 {
-	video_surface_gl_t *gl_surf = (video_surface_gl_t *) surf;
-	GLenum textureTarget, textureObject;
-	SDL_Surface *sdl_surf;
-
-	if (!this->screen || !surf) {
-		return;
-	}
-
-	sdl_surf = surf->getSurface(surf);	/* Update texture from sdl surface */
-
-	textureTarget = gl_surf->textureTarget;
-	textureObject = gl_surf->textureObject;
-	
-	gl.Enable(textureTarget);
-	gl.BindTexture(textureTarget, textureObject);
-
- 	gl.TexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
- 	gl.TexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
- 	gl.TexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
- 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	gl.Enable(GL_DITHER);
-
-	gl.Enable(GL_BLEND);
-	gl.BlendFunc(GL_ONE, GL_ZERO);
-
-	gl.MatrixMode(GL_PROJECTION);
-	gl.LoadIdentity();
-	gl.Ortho(0.0, this->width, this->height, 0.0, -1.0, 1.0);
-
-	gl.MatrixMode(GL_TEXTURE);
-	gl.LoadIdentity();
-	gl.Scalef(surf->width,surf->height,1.0);
-
-	gl.MatrixMode(GL_MODELVIEW);
-	gl.LoadIdentity();
-	/*gl.Translatef(0.375, 0.375, 0.0);*/
-	gl.Scalef(this->width, this->height, 1.0);
-
-	gl.Begin(GL_QUADS);
-		gl.TexCoord2f(0.0, 0.0);
-		gl.Vertex2f(0.0, 0.0);
-
-		gl.TexCoord2f(1.0, 0.0);
-		gl.Vertex2f(1.0, 0.0);
-
-		gl.TexCoord2f(1.0, 1.0);
-		gl.Vertex2f(1.0, 1.0);
-
-		gl.TexCoord2f(0.0, 1.0);
-		gl.Vertex2f(0.0, 1.0);
-	gl.End();
-
-	gl.Disable(GL_DITHER);
-	gl.Disable(GL_BLEND);
-	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
+	render_background_opengl(this, surf);
 
 	drawGrid(this);
 }
