@@ -228,15 +228,15 @@ static void drawBackground(video_t *this, video_surface_t *surf)
 
 static void drawOrigin(video_t *this)
 {
-	video.render.render_line(this->screen,
+	video.render.line(this->screen,
 		0.0, 0.0, 0.0,
 		ORIGIN_SIZE, 0.0, 0.0,
 		0x00ff0000);
-	video.render.render_line(this->screen,
+	video.render.line(this->screen,
 		0.0, 0.0, 0.0,
 		0.0, ORIGIN_SIZE, 0.0,
 		0x0000ff00);
-	video.render.render_line(this->screen,
+	video.render.line(this->screen,
 		0.0, 0.0, 0.0,
 		0.0, 0.0, ORIGIN_SIZE,
 		0x000000ff);
@@ -263,19 +263,19 @@ static void drawCameraSwitches(video_t *this)
 			continue;
 		}
 
-		video.render.render_line(this->screen,
+		video.render.line(this->screen,
 			switchPos[0], 20, switchPos[1],
 			switchPos[2], 20, switchPos[3],
 			0x00664422);
-		video.render.render_line(this->screen,
+		video.render.line(this->screen,
 			switchPos[2], 20, switchPos[3],
 			switchPos[4], 20, switchPos[5],
 			0x00664422);
-		video.render.render_line(this->screen,
+		video.render.line(this->screen,
 			switchPos[4], 20, switchPos[5],
 			switchPos[6], 20, switchPos[7],
 			0x00664422);
-		video.render.render_line(this->screen,
+		video.render.line(this->screen,
 			switchPos[6], 20, switchPos[7],
 			switchPos[0], 20, switchPos[1],
 			0x00664422);
@@ -340,11 +340,11 @@ static void drawGrid(video_t *this)
 	video.render.push_matrix();
 	video.render.scale(1000.0, 1000.0, 1000.0);
 	for (i=-40; i<=40; i+=10) {
-		video.render.render_line(this->screen,
+		video.render.line(this->screen,
 			-40.0, 20.0, i,
 			40.0, 20.0, i,
 			0x00ffffff);
-		video.render.render_line(this->screen,
+		video.render.line(this->screen,
 			i, 20.0, -40.0,
 			i, 20.0, 40.0,
 			0x00ffffff);

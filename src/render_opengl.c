@@ -43,10 +43,12 @@ static void translate(float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
 
-static void render_line_opengl(SDL_Surface *surf,
+static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
 	float x2, float y2, float z2,
 	Uint32 color);
+static void scaled_image(SDL_Surface *surf, SDL_Surface *source,
+	int x, int y, int w, int h);
 
 /*--- Functions ---*/
 
@@ -59,7 +61,8 @@ void render_opengl_init(render_t *render)
 	render->push_matrix = push_matrix;
 	render->pop_matrix = pop_matrix;
 
-	render->render_line = render_line_opengl;
+	render->line = line;
+	render->scaled_image = scaled_image;
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
@@ -100,7 +103,7 @@ static void pop_matrix(void)
 	gl.PopMatrix();
 }
 
-static void render_line_opengl(SDL_Surface *surf,
+static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
 	float x2, float y2, float z2,
 	Uint32 color)
@@ -112,6 +115,11 @@ static void render_line_opengl(SDL_Surface *surf,
 	gl.Vertex3f(x1,y1,z1);
 	gl.Vertex3f(x2,y2,z2);
 	gl.End();
+}
+
+static void scaled_image(SDL_Surface *surf, SDL_Surface *source,
+	int x, int y, int w, int h)
+{
 }
 
 #else

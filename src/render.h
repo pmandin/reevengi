@@ -36,10 +36,12 @@ struct render_s {
 	void (*push_matrix)(void);
 	void (*pop_matrix)(void);
 
-	void (*render_line)(SDL_Surface *surf,
+	void (*line)(SDL_Surface *surf,
 		float x1, float y1, float z1,
 		float x2, float y2, float z2,
 		Uint32 color);	/* color in ARGB format */
+	void (*scaled_image)(SDL_Surface *surf, SDL_Surface *source,
+		int x, int y, int w, int h);
 };
 
 void render_soft_init(render_t *render);
