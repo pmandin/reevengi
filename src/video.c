@@ -25,12 +25,7 @@
 
 #include "parameters.h"
 #include "video.h"
-
-/*--- Variables ---*/
-
-static int zoomw = 0, zoomh = 0;
-static int *zoomx = NULL, *zoomy = NULL;
-static SDL_Surface *zoom_surf = NULL;
+#include "render_background.h"
 
 /*--- Function prototypes ---*/
 
@@ -41,10 +36,6 @@ static void screenShot(video_t *this);
 static void initScreen(video_t *this);
 static void refreshViewport(video_t *this);
 static void refreshScreen(video_t *this);
-static void drawBackground(video_t *this, video_surface_t *surf);
-
-static void drawBackgroundZoomed(video_t *this, video_surface_t *surf);
-static void zoomZone(SDL_Surface *source, SDL_Surface *dest, SDL_Rect *dst_rect);
 
 /*--- Functions ---*/
 
@@ -68,7 +59,7 @@ void video_soft_init(video_t *this)
 	this->initScreen = initScreen;
 	this->refreshViewport = refreshViewport;
 	this->refreshScreen = refreshScreen;
-	this->drawBackground = drawBackground;
+	this->drawBackground = render_background;
 
 	this->createSurface = video_surface_create;
 	this->createSurfacePf = video_surface_create_pf;
@@ -89,20 +80,7 @@ static void shutDown(video_t *this)
 		this->dirty_rects = NULL;
 	}
 
-	if (zoomx) {
-		free(zoomx);
-		zoomx = NULL;
-		zoomw = 0;
-	}
-	if (zoomy) {
-		free(zoomy);
-		zoomy = NULL;
-		zoomh = 0;
-	}
-	if (zoom_surf) {
-		SDL_FreeSurface(zoom_surf);
-		zoom_surf = NULL;
-	}
+	render_background_shutdown(this);
 }
 
 /* Search biggest video mode, calculate its ratio */
@@ -295,266 +273,4 @@ static void refreshViewport(video_t *this)
 static void refreshScreen(video_t *this)
 {
 	this->dirty_rects->setDirty(this->dirty_rects, 0,0, video.width, video.height);
-}
-
-static void drawBackground(video_t *this, video_surface_t *surf)
-{
-	SDL_Rect src_rect, dst_rect;
-	int x,y;
-
-	if (!this->screen || !surf) {
-		return;
-	}
-
-	drawBackgroundZoomed(this, surf);
-	return;
-
-	/* Center background image on target screen */
-	src_rect.x = src_rect.y = 0;
-	src_rect.w = surf->getSurface(surf)->w;
-	src_rect.h = surf->getSurface(surf)->h;
-
-	dst_rect.x = dst_rect.y = 0;
-	dst_rect.w = this->screen->w;
-	dst_rect.h = this->screen->h;
-
-	if (dst_rect.w > src_rect.w) {
-		dst_rect.x = (dst_rect.w - src_rect.w) >> 1;
-		dst_rect.w = src_rect.w;
-	} else {
-		src_rect.w = this->screen->w;
-	}
-
-	if (dst_rect.h > src_rect.h) {
-		dst_rect.y = (dst_rect.h - src_rect.h) >> 1;
-		dst_rect.h = src_rect.h;
-	} else {
-		src_rect.h = this->screen->h;
-	}
-
-	/* Refresh only dirtied parts of background */
-	for (y=0; y<surf->getSurface(surf)->h >> 4; y++) {
-		for (x=0; x<surf->getSurface(surf)->w >> 4; x++) {
-			SDL_Rect src_rect1, dst_rect1;
-
-			memcpy(&src_rect1, &src_rect, sizeof(SDL_Rect));
-			src_rect1.x += (x<<4);
-			src_rect1.y += (y<<4);
-			src_rect1.w = src_rect1.h = 1<<4;
-			memcpy(&dst_rect1, &dst_rect, sizeof(SDL_Rect));
-			dst_rect1.x += (x<<4);
-			dst_rect1.y += (y<<4);
-			dst_rect1.w = dst_rect1.h = 1<<4;
-
-			/* Out of target screen, out of source image ? */
-			if ((dst_rect1.x<-16) || (dst_rect1.x>this->dirty_rects->width<<4)
-			  || (dst_rect1.y<-16) || (dst_rect1.y>this->dirty_rects->height<<4)
-			  || (src_rect1.x<-16) || (src_rect1.x>surf->getSurface(surf)->w)
-			  || (src_rect1.y<-16) || (src_rect1.y>surf->getSurface(surf)->h))
-			{
-				continue;
-			}
-
-			if (this->dirty_rects->markers[(dst_rect1.y>>4)*this->dirty_rects->width + (dst_rect1.x>>4)] == 0) {
-				continue;
-			}
-
-			SDL_BlitSurface(surf->getSurface(surf), &src_rect1, this->screen, &dst_rect1);
-		}
-	}
-}
-
-/* Zoom background image to viewport */
-
-static void drawBackgroundZoomed(video_t *this, video_surface_t *surf)
-{
-	int recreate_surf = 0, i, x,y;
-	SDL_Surface *src_surf;
-
-	if (!this->screen || !surf) {
-		return;
-	}
-
-	src_surf = surf->getSurface(surf);
-	if (zoomw != this->viewport.w) {
-		zoomw = this->viewport.w;
-		zoomx = realloc(zoomx, sizeof(int) * zoomw);
-		for (i=0; i<zoomw; i++) {
-			zoomx[i] = (i * src_surf->w) / zoomw;
-		}
-		recreate_surf = 1;
-	}
-	if (zoomh != this->viewport.h) {
-		zoomh = this->viewport.h;
-		zoomy = realloc(zoomy, sizeof(int) * zoomh);
-		for (i=0; i<zoomh; i++) {
-			zoomy[i] = (i * src_surf->h) / zoomh;
-		}
-		recreate_surf = 1;
-	}
-	if (recreate_surf) {
-		if (zoom_surf) {
-			SDL_FreeSurface(zoom_surf);
-		}
-		/* Create surface with same bpp as source one */
-		zoom_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, zoomw, zoomh,
-			src_surf->format->BitsPerPixel,
-			src_surf->format->Rmask, src_surf->format->Gmask,
-			src_surf->format->Bmask, src_surf->format->Amask);
-		/* Set palette */
-		if (zoom_surf->format->BitsPerPixel == 8) {
-			SDL_Color palette[256];
-			for (i=0;i<256;i++) {
-				palette[i].r = src_surf->format->palette->colors[i].r;
-				palette[i].g = src_surf->format->palette->colors[i].g;
-				palette[i].b = src_surf->format->palette->colors[i].b;
-			}
-			SDL_SetPalette(zoom_surf, SDL_LOGPAL, palette, 0, 256);
-		}
-	}
-	if (!zoom_surf) {
-		return;
-	}
-
-	/* For each target dirty rectangle, zoom the corresponding source rectangle */
-	for (y=0; y<this->dirty_rects->height; y++) {
-		int dst_y1, dst_y2;
-
-		/* Target destination of zoomed image */
-		dst_y1 = y<<4;
-		dst_y2 = (y+1)<<4;
-
-		/* Clip to viewport */
-		if (dst_y1<this->viewport.y) {
-			dst_y1 = this->viewport.y;
-		}
-		if (dst_y2>this->viewport.y+this->viewport.h) {
-			dst_y2 = this->viewport.y+this->viewport.h;
-		}
-
-		if (dst_y1>=dst_y2) {
-			continue;
-		}
-
-		for (x=0; x<this->dirty_rects->width; x++) {
-			int dst_x1, dst_x2;
-			SDL_Rect src_rect, dst_rect;
-
-			if (this->dirty_rects->markers[y*this->dirty_rects->width + x] == 0) {
-				continue;
-			}
-
-			/* Zoom 16x16 block */
-			dst_x1 = x<<4;
-			dst_x2 = (x+1)<<4;
-
-			/* Clip to viewport */
-			if (dst_x1<this->viewport.x) {
-				dst_x1 = this->viewport.x;
-			}
-			if (dst_x2>this->viewport.x+this->viewport.w) {
-				dst_x2 = this->viewport.x+this->viewport.w;
-			}
-
-			if (dst_x1>=dst_x2) {
-				continue;
-			}
-
-			/*printf("refresh %d,%d -> %d,%d\n",
-				dst_x1, dst_y1, dst_x2,dst_y2
-			);*/
-
-			src_rect.x = dst_x1 - this->viewport.x;
-			src_rect.y = dst_y1 - this->viewport.y;
-			src_rect.w = dst_x2-dst_x1;
-			src_rect.h = dst_y2-dst_y1;
-			zoomZone(src_surf, zoom_surf, &src_rect);
-
-			/* Now copy back zoomed surface to screen */
-			dst_rect.x = dst_x1;
-			dst_rect.y = dst_y1;
-			dst_rect.w = dst_x2-dst_x1;
-			dst_rect.h = dst_y2-dst_y1;
-			SDL_BlitSurface(zoom_surf, &src_rect, this->screen, &dst_rect);
-		}
-
-		/*break;*/
-	}
-}
-
-static void zoomZone(SDL_Surface *source, SDL_Surface *dest, SDL_Rect *dst_rect)
-{
-	int x,y;
-
-	Uint8 *dst = (Uint8 *) dest->pixels;
-	dst += dst_rect->y * dest->pitch;
-	dst += dst_rect->x * dest->format->BytesPerPixel;
-
-	/*printf("refresh %d,%d %dx%d to %d,%d %d\n",
-		dst_rect->x, dst_rect->y, dst_rect->w, dst_rect->h,
-		dest->pitch, dest->format->BytesPerPixel,
-		(dst_rect->y * dest->pitch) + (dst_rect->x * dest->format->BytesPerPixel)
-	);*/
-
-	switch(dest->format->BytesPerPixel) {
-		case 1:
-			{
-				Uint8 *dst_line = (Uint8 *) dst;
-				for(y=0; y<dst_rect->h; y++) {
-					Uint8 *dst_col = dst_line;
-					Uint8 *src_col = (Uint8 *) source->pixels;
-					src_col += zoomy[dst_rect->y+y] * source->pitch;
-					for(x=0; x<dst_rect->w; x++) {
-						*dst_col++ = src_col[zoomx[dst_rect->x+x]];
-					}
-					dst_line += dest->pitch;
-				}
-			}
-			break;
-		case 2:
-			{
-				Uint16 *dst_line = (Uint16 *) dst;
-				for(y=0; y<dst_rect->h; y++) {
-					Uint16 *dst_col = dst_line;
-					Uint16 *src_col = (Uint16 *) source->pixels;
-					src_col += zoomy[dst_rect->y+y] * (source->pitch>>1);
-					for(x=0; x<dst_rect->w; x++) {
-						*dst_col++ = src_col[zoomx[dst_rect->x+x]];
-					}
-					dst_line += dest->pitch>>1;
-				}
-			}
-			break;
-		case 3:
-			{
-				Uint8 *dst_line = (Uint8 *) dst;
-				for(y=0; y<dst_rect->h; y++) {
-					Uint8 *dst_col = dst_line;
-					Uint8 *src_col = (Uint8 *) source->pixels;
-					src_col += zoomy[dst_rect->y+y] * source->pitch;
-					for(x=0; x<dst_rect->w; x++) {
-						int src_pos = zoomx[dst_rect->x+x]*3;
-						*dst_col++ = src_col[src_pos];
-						*dst_col++ = src_col[src_pos+1];
-						*dst_col++ = src_col[src_pos+2];
-					}
-					dst_line += dest->pitch;
-				}
-			}
-			break;
-		case 4:
-			{
-				Uint32 *dst_line = (Uint32 *) dst;
-				for(y=0; y<dst_rect->h; y++) {
-					Uint32 *dst_col = dst_line;
-					Uint32 *src_col = (Uint32 *) source->pixels;
-					src_col += zoomy[dst_rect->y+y] * (source->pitch>>2);
-					for(x=0; x<dst_rect->w; x++) {
-						*dst_col++ = src_col[zoomx[dst_rect->x+x]];
-					}
-					dst_line += dest->pitch>>2;
-				}
-			}
-			break;
-	}
 }
