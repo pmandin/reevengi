@@ -135,3 +135,17 @@ void view_background_update(void)
 		refresh_bg = 0;
 	}
 }
+
+void view_background_draw(void)
+{
+	render.drawBackground(&video);
+	/*model_emd_draw(&video);*/
+
+	/* draw grid */
+
+	/* draw camera switches */
+
+	/* draw camera origin */
+
+	/* draw origin */
+}
