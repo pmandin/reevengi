@@ -59,6 +59,7 @@ static int switch_mode = 0;
 
 static int viewer_loop(void);
 static void viewer_update(void);
+static void viewer_update_background(void);
 
 /*--- Functions ---*/
 
@@ -278,12 +279,7 @@ static void viewer_update(void)
 
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
-			if (switch_mode) {
-				view_background_refresh();
-			}
-			view_background_update();
-			render.drawBackground(&video);
-			/*model_emd_draw(&video);*/
+			viewer_update_background();
 			break;
 		case VIEWMODE_MOVIE:
 			view_movie_update(video.screen);
@@ -292,4 +288,15 @@ static void viewer_update(void)
 
 	video.swapBuffers(&video);
 	switch_mode = 0;
+}
+
+static void viewer_update_background(void)
+{
+	if (switch_mode) {
+		view_background_refresh();
+	}
+	view_background_update();
+
+	render.drawBackground(&video);
+	/*model_emd_draw(&video);*/
 }
