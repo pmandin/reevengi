@@ -33,8 +33,8 @@
 
 #include "parameters.h"
 #include "video.h"
+#include "render.h"
 #include "state.h"
-#include "render_background_opengl.h"
 
 /*--- Constants ---*/
 
@@ -47,11 +47,13 @@ static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 static void initScreen(video_t *this);
 static void refreshScreen(video_t *this);
+/*
 static void drawBackground(video_t *this, video_surface_t *surf);
 
 static void drawOrigin(video_t *this);
 static void drawGrid(video_t *this);
 static void drawCameraSwitches(video_t *this);
+*/
 
 /*--- Functions ---*/
 
@@ -68,7 +70,6 @@ int video_opengl_loadlib(void)
 void video_opengl_init(video_t *this)
 {
 	video_soft_init(this);
-	render_opengl_init(&(this->render));
 
 	this->width = 640;
 	this->height = 480;
@@ -78,10 +79,6 @@ void video_opengl_init(video_t *this)
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
-
-	this->initScreen = initScreen;
-	this->refreshScreen = refreshScreen;
-	this->drawBackground = drawBackground;
 
 	this->createSurface = video_surface_gl_create;
 	this->createSurfacePf = video_surface_gl_create_pf;
@@ -137,6 +134,13 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
+
+	video.initViewport(&video);
+
+	gl.ClearColor(0.0,0.0,0.0,0.0);
+	gl.Clear(GL_COLOR_BUFFER_BIT);
+
+	gl.Viewport(this->viewport.x, this->viewport.y, this->viewport.w, this->viewport.h);
 }
 
 static void swapBuffers(video_t *this)
@@ -149,26 +153,7 @@ static void screenShot(video_t *this)
 	fprintf(stderr, "Screenshot not available in OpenGL mode\n");
 }
 
-static void initScreen(video_t *this)
-{
-	this->refreshViewport(this);
-
-	gl.ClearColor(0.0,0.0,0.0,0.0);
-	gl.Clear(GL_COLOR_BUFFER_BIT);
-
-	gl.Viewport(this->viewport.x, this->viewport.y, this->viewport.w, this->viewport.h);
-}
-
-static void refreshScreen(video_t *this)
-{
-}
-
-static void drawBackground(video_t *this, video_surface_t *surf)
-{
-	render_background_opengl(this, surf);
-
-	drawGrid(this);
-}
+#if 0
 
 static void drawOrigin(video_t *this)
 {
@@ -295,6 +280,7 @@ static void drawGrid(video_t *this)
 	}
 	video.render.pop_matrix();
 }
+#endif
 
 #else /* ENABLE_OPENGL */
 

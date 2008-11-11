@@ -18,6 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "log.h"
 #include "video.h"
 #include "render_background.h"
 
@@ -27,6 +28,7 @@ static int zoomw = 0, zoomh = 0;
 static int *zoomx = NULL, *zoomy = NULL;
 static SDL_Surface *zoom_surf = NULL;
 static SDL_Surface *orig_background = NULL;
+static video_surface_t *backgroundSurf = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -36,12 +38,17 @@ static void render_scaled_background(SDL_Surface *source, SDL_Surface *dest);
 
 void render_background_init(video_t *this, video_surface_t *source)
 {
-	int i, recreate_surface=0;
+	int i, recreate_surface= (zoom_surf==NULL);
 	SDL_Surface *src_surf;
 	
 	if (!this || !source) {
 		return;
 	}
+	backgroundSurf = source;
+
+	/* Mark background places as dirty */
+	this->dirty_rects->setDirty(this->dirty_rects, 0,0, this->width, this->height);
+
 	src_surf = source->getSurface(source);
 
 	if (this->viewport.w != zoomw) {
@@ -95,7 +102,7 @@ void render_background_init(video_t *this, video_surface_t *source)
 	}
 }
 
-void render_background_shutdown(video_t *this)
+void render_background_shutdown(void)
 {
 	if (zoomx) {
 		free(zoomx);
@@ -111,11 +118,10 @@ void render_background_shutdown(video_t *this)
 	}
 }
 
-void render_background(video_t *this, video_surface_t *source)
+void render_background(video_t *this)
 {
 	int x,y;
 
-	render_background_init(this, source);
 	if (!zoom_surf) {
 		return;
 	}

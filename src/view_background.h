@@ -31,6 +31,7 @@
 /*--- Function prototypes ---*/
 
 int view_background_input(SDL_Event *event);
-video_surface_t *view_background_update(void);
+void view_background_refresh(void);
+void view_background_update(void);
 
 #endif /* VIEW_BACKGROUND_H */

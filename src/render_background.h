@@ -22,8 +22,8 @@
 #define RENDER_BACKGROUND_H 1
 
 void render_background_init(video_t *this, video_surface_t *source);
-void render_background_shutdown(video_t *this);
+void render_background_shutdown(void);
 
-void render_background(video_t *this, video_surface_t *source);
+void render_background(video_t *this);
 
 #endif /* RENDER_BACKGROUND_H */

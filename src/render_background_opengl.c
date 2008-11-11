@@ -33,19 +33,28 @@
 #include "video.h"
 #include "render_background_opengl.h"
 
+/*--- Variables ---*/
+
+static video_surface_t *backgroundSurf = NULL;
+
 /*--- Functions ---*/
 
-void render_background_opengl(video_t *this, video_surface_t *source)
+void render_background_init_opengl(video_t *this, video_surface_t *source)
 {
-	video_surface_gl_t *gl_surf = (video_surface_gl_t *) source;
+	backgroundSurf = source;
+}
+
+void render_background_opengl(video_t *this)
+{
+	video_surface_gl_t *gl_surf = (video_surface_gl_t *) backgroundSurf;
 	GLenum textureTarget, textureObject;
 	SDL_Surface *sdl_surf;
 
-	if (!this || !source) {
+	if (!this || !backgroundSurf) {
 		return;
 	}
 
-	sdl_surf = source->getSurface(source);	/* Update texture from sdl surface */
+	sdl_surf = backgroundSurf->getSurface(backgroundSurf);	/* Update texture from sdl surface */
 
 	textureTarget = gl_surf->textureTarget;
 	textureObject = gl_surf->textureObject;
@@ -71,7 +80,7 @@ void render_background_opengl(video_t *this, video_surface_t *source)
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
-	gl.Scalef(source->width,source->height,1.0);
+	gl.Scalef(backgroundSurf->width,backgroundSurf->height,1.0);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();

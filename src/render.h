@@ -23,6 +23,8 @@
 
 #include <SDL.h>
 
+#include "video_surface.h"
+
 typedef struct render_s render_t;
 
 struct render_s {
@@ -40,11 +42,19 @@ struct render_s {
 		float x1, float y1, float z1,
 		float x2, float y2, float z2,
 		Uint32 color);	/* color in ARGB format */
-	void (*scaled_image)(SDL_Surface *surf, SDL_Surface *source,
-		int x, int y, int w, int h);
+
+	void (*initBackground)(video_t *this, video_surface_t *source);
+	void (*drawBackground)(video_t *this);
+
+	void (*shutdown)(render_t *this);
 };
 
 void render_soft_init(render_t *render);
+
 void render_opengl_init(render_t *render);
+
+/*--- Variables ---*/
+
+extern render_t render;
 
 #endif /* RENDER_H */

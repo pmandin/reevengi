@@ -21,6 +21,7 @@
 #ifndef RENDER_BACKGROUND_OPENGL_H
 #define RENDER_BACKGROUND_OPENGL_H 1
 
-void render_background_opengl(video_t *this, video_surface_t *source);
+void render_background_init_opengl(video_t *this, video_surface_t *source);
+void render_background_opengl(video_t *this);
 
 #endif /* RENDER_BACKGROUND_OPENGL_H */

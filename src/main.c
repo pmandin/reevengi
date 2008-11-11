@@ -37,6 +37,7 @@
 #include "view_movie.h"
 
 #include "video.h"
+#include "render.h"
 
 /*--- Defines ---*/
 
@@ -47,20 +48,17 @@
 /*--- Global variables ---*/
 
 video_t video;
+render_t render;
 
 /*--- Variables ---*/
 
-static int update_screen = 1;
-static int width = 320, height = 240;
 static int new_width, new_height;
 static int switch_mode = 0;
-static video_surface_t *cur_surf = NULL;
 
 /*--- Functions prototypes ---*/
 
 static int viewer_loop(void);
 static void viewer_update(void);
-static void viewer_draw(void);
 
 /*--- Functions ---*/
 
@@ -141,8 +139,10 @@ int main(int argc, char **argv)
 	/* Then initialize proper backend */
 	if (params.use_opengl) {
 		video_opengl_init(&video);
+		render_opengl_init(&render);
 	} else {
 		video_soft_init(&video);
+		render_soft_init(&render);
 	}
 	logMsg(1,"Calculated aspect ratio %d:%d\n", params.aspect_x, params.aspect_y);
 
@@ -160,15 +160,15 @@ int main(int argc, char **argv)
 		logMsg(2,"Loaded emd model\n");
 	}*/
 
+	/* Force a mode switch */
+	new_width = video.width;
+	new_height = video.height;
+	switch_mode=1;
+
 	quit = 0;
 	while (!quit) {
-		logMsg(4, "Read events\n");
 		quit = viewer_loop();
-		logMsg(4, "Update source\n");
 		viewer_update();
-		logMsg(4, "Update screen\n");
-		viewer_draw();
-		logMsg(4, "Loop\n");
 		SDL_Delay(1);
 	}
 
@@ -185,6 +185,7 @@ int main(int argc, char **argv)
 
 	state_shutdown();
 	video.shutDown(&video);
+	render.shutdown(&render);
 	FS_Shutdown();
 
 	SDL_Quit();
@@ -213,10 +214,8 @@ static int viewer_loop(void)
 					case SDLK_RETURN:
 						if (event.key.keysym.mod & KMOD_ALT) {
 							video.flags ^= SDL_FULLSCREEN;
-							if (cur_surf) {
-								new_width = cur_surf->getSurface(cur_surf)->w;
-								new_height = cur_surf->getSurface(cur_surf)->h;
-							}
+							new_width = video.width;
+							new_height = video.height;
 							switch_mode=1;
 						}
 						break;
@@ -241,10 +240,10 @@ static int viewer_loop(void)
 					default:
 						switch(params.viewmode) {
 							case VIEWMODE_BACKGROUND:
-								update_screen |= view_background_input(&event);
+								view_background_input(&event);
 								break;
 							case VIEWMODE_MOVIE:
-								update_screen |= view_movie_input(&event);
+								view_movie_input(&event);
 								break;
 						}
 						break;
@@ -258,10 +257,10 @@ static int viewer_loop(void)
 			default:
 				switch(params.viewmode) {
 					case VIEWMODE_BACKGROUND:
-						update_screen |= view_background_input(&event);
+						view_background_input(&event);
 						break;
 					case VIEWMODE_MOVIE:
-						update_screen |= view_movie_input(&event);
+						view_movie_input(&event);
 						break;
 				}
 				break;
@@ -273,37 +272,24 @@ static int viewer_loop(void)
 
 static void viewer_update(void)
 {
-	if (update_screen) {
-		/* Update ? */
-		update_screen = 0;
-		video.refreshScreen(&video);
-
-		switch(params.viewmode) {
-			case VIEWMODE_BACKGROUND:
-				cur_surf = view_background_update();
-				break;
-			case VIEWMODE_MOVIE:
-				update_screen = view_movie_update(video.screen);
-				update_screen = 1;
-				break;
-		}
-	}
-}
-
-static void viewer_draw(void)
-{
-	video.initScreen(&video);
-	if (cur_surf) {
-		video.drawBackground(&video, cur_surf);
-	}
-	/*model_emd_draw(&video);*/
-	video.swapBuffers(&video);
-
 	if (switch_mode) {
 		video.setVideoMode(&video, new_width, new_height, video.bpp);
-		update_screen=1;
-		switch_mode = 0;
-		new_width = video.width;
-		new_height = video.height;
 	}
+
+	switch(params.viewmode) {
+		case VIEWMODE_BACKGROUND:
+			if (switch_mode) {
+				view_background_refresh();
+			}
+			view_background_update();
+			render.drawBackground(&video);
+			/*model_emd_draw(&video);*/
+			break;
+		case VIEWMODE_MOVIE:
+			view_movie_update(video.screen);
+			break;
+	}
+
+	video.swapBuffers(&video);
+	switch_mode = 0;
 }

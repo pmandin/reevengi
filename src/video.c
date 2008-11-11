@@ -25,7 +25,7 @@
 
 #include "parameters.h"
 #include "video.h"
-#include "render_background.h"
+#include "render.h"
 
 /*--- Function prototypes ---*/
 
@@ -33,16 +33,14 @@ static void shutDown(video_t *this);
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
-static void initScreen(video_t *this);
-static void refreshViewport(video_t *this);
+static void initViewport(video_t *this);
+static void drawScreen(video_t *this);
 static void refreshScreen(video_t *this);
 
 /*--- Functions ---*/
 
 void video_soft_init(video_t *this)
 {
-	render_soft_init(&(this->render));
-
 	this->width = 320;
 	this->height = 240;
 	this->bpp = 16;
@@ -56,10 +54,7 @@ void video_soft_init(video_t *this)
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
 
-	this->initScreen = initScreen;
-	this->refreshViewport = refreshViewport;
-	this->refreshScreen = refreshScreen;
-	this->drawBackground = render_background;
+	this->initViewport = initViewport;
 
 	this->createSurface = video_surface_create;
 	this->createSurfacePf = video_surface_create_pf;
@@ -79,8 +74,6 @@ static void shutDown(video_t *this)
 		dirty_rects_destroy(this->dirty_rects);
 		this->dirty_rects = NULL;
 	}
-
-	render_background_shutdown(this);
 }
 
 /* Search biggest video mode, calculate its ratio */
@@ -152,6 +145,8 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
+
+	video.initViewport(&video);
 }
 
 static void swapBuffers(video_t *this)
@@ -216,12 +211,7 @@ static void screenShot(video_t *this)
 		SDL_SaveBMP(this->screen, filename)==0 ? "done" : "failed");
 }
 
-static void initScreen(video_t *this)
-{
-	this->refreshViewport(this);
-}
-
-static void refreshViewport(video_t *this)
+static void initViewport(video_t *this)
 {
 	int cur_asp_w = 1, cur_asp_h = 1;	/* Square pixel as default */
 	int img_w, img_h;
@@ -268,9 +258,4 @@ static void refreshViewport(video_t *this)
 		this->viewport.w = this->width;
 		this->viewport.h = scr_h;
 	}
-}
-
-static void refreshScreen(video_t *this)
-{
-	this->dirty_rects->setDirty(this->dirty_rects, 0,0, video.width, video.height);
 }

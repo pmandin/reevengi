@@ -24,6 +24,8 @@
 #include <SDL.h>
 
 #include "state.h"
+#include "video.h"
+#include "render.h"
 
 /*--- Defines ---*/
 
@@ -43,6 +45,7 @@
 
 static int reload_bg = 1;
 static int reload_room = 1;
+static int refresh_bg = 1;
 
 /*--- Functions ---*/
 
@@ -55,36 +58,36 @@ int view_background_input(SDL_Event *event)
 				if (game_state.stage < 1) {
 					game_state.stage = 7;
 				}
-				reload_bg = reload_room = 1;
+				reload_room = 1;
 				break;						
 			case KEY_STAGE_UP:
 				game_state.stage += 1;
 				if (game_state.stage > 7) {
 					game_state.stage = 1;
 				}
-				reload_bg = reload_room = 1;
+				reload_room = 1;
 				break;						
 			case KEY_STAGE_RESET:
 				game_state.stage = 1;
-				reload_bg = reload_room = 1;
+				reload_room = 1;
 				break;						
 			case KEY_ROOM_DOWN:
 				game_state.room -= 1;
 				if (game_state.room < 0) {
 					game_state.room = 0x1c;
 				}
-				reload_bg = reload_room = 1;
+				reload_room = 1;
 				break;						
 			case KEY_ROOM_UP:
 				game_state.room += 1;
 				if (game_state.room > 0x1c) {
 					game_state.room = 0;
 				}
-				reload_bg = reload_room = 1;
+				reload_room = 1;
 				break;						
 			case KEY_ROOM_RESET:
 				game_state.room = 0;
-				reload_bg = reload_room = 1;
+				reload_room = 1;
 				break;						
 			case KEY_CAMERA_DOWN:
 				game_state.camera -= 1;
@@ -110,17 +113,25 @@ int view_background_input(SDL_Event *event)
 	return(reload_bg);
 }
 
-video_surface_t *view_background_update(void)
+void view_background_refresh(void)
+{
+	refresh_bg = 1;
+}
+
+void view_background_update(void)
 {
 	if (reload_room) {
 		state_loadroom();
 		reload_room = 0;
+		reload_bg = 1;
 	}
 	if (reload_bg) {
 		state_loadbackground();
 		reload_bg = 0;
+		refresh_bg = 1;
 	}
-
-	return game_state.back_surf;
+	if (refresh_bg) {
+		render.initBackground(&video, game_state.back_surf);
+		refresh_bg = 0;
+	}
 }
-

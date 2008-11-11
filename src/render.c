@@ -18,7 +18,9 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "video.h"
 #include "render.h"
+#include "render_background.h"
 
 /*--- Functions prototypes ---*/
 
@@ -36,8 +38,8 @@ static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
 	float x2, float y2, float z2,
 	Uint32 color);
-static void scaled_image(SDL_Surface *surf, SDL_Surface *source,
-	int x, int y, int w, int h);
+
+static void render_soft_shutdown(render_t *render);
 
 /*--- Functions ---*/
 
@@ -51,7 +53,16 @@ void render_soft_init(render_t *render)
 	render->pop_matrix = pop_matrix;
 
 	render->line = line;
-	render->scaled_image = scaled_image;
+
+	render->initBackground = render_background_init;
+	render->drawBackground = render_background;
+
+	render->shutdown = render_soft_shutdown;
+}
+
+static void render_soft_shutdown(render_t *render)
+{
+	render_background_shutdown();
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
@@ -84,10 +95,5 @@ static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
 	float x2, float y2, float z2,
 	Uint32 color)
-{
-}
-
-static void scaled_image(SDL_Surface *surf, SDL_Surface *source,
-	int x, int y, int w, int h)
 {
 }
