@@ -197,10 +197,10 @@ void view_background_draw(void)
 
 static void drawOrigin(void)
 {
-	render.set_color(video.screen, 0x00ff0000);
-
 	render.push_matrix();
 	render.scale(3000.0, 3000.0, 3000.0);
+
+	render.set_color(video.screen, 0x00ff0000);
 	render.line(video.screen,
 		0.0, 0.0, 0.0,
 		1.0, 0.0, 0.0);
@@ -212,6 +212,7 @@ static void drawOrigin(void)
 	render.line(video.screen,
 		0.0, 0.0, 0.0,
 		0.0, 0.0, 1.0);
+
 	render.pop_matrix();
 }
 
