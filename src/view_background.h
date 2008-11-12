@@ -30,7 +30,7 @@
 
 /*--- Function prototypes ---*/
 
-int view_background_input(SDL_Event *event);
+void view_background_input(SDL_Event *event);
 void view_background_refresh(void);
 void view_background_update(void);
 

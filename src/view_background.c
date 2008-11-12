@@ -49,7 +49,7 @@ static int refresh_bg = 1;
 
 /*--- Functions ---*/
 
-int view_background_input(SDL_Event *event)
+void view_background_input(SDL_Event *event)
 {
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->key.keysym.sym) {
@@ -109,8 +109,6 @@ int view_background_input(SDL_Event *event)
 				break;						
 		}
 	}
-
-	return(reload_bg);
 }
 
 void view_background_refresh(void)
