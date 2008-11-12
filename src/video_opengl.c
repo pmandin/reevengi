@@ -127,8 +127,6 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.Clear(GL_COLOR_BUFFER_BIT);
-
-	gl.Viewport(this->viewport.x, this->viewport.y, this->viewport.w, this->viewport.h);
 }
 
 static void swapBuffers(video_t *this)

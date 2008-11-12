@@ -258,4 +258,7 @@ static void initViewport(video_t *this)
 		this->viewport.w = this->width;
 		this->viewport.h = scr_h;
 	}
+
+	render.set_viewport(this->viewport.x, this->viewport.y,
+		this->viewport.w, this->viewport.h);
 }

@@ -30,6 +30,7 @@ typedef struct render_s render_t;
 struct render_s {
 	Uint32 color;
 
+	void (*set_viewport)(int x, int y, int w, int h);
 	void (*set_projection)(float angle, float aspect,
 		float z_near, float z_far);
 	void (*set_modelview)(float x_from, float y_from, float z_from,

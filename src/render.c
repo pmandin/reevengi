@@ -24,6 +24,7 @@
 
 /*--- Functions prototypes ---*/
 
+static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect,
 	float z_near, float z_far);
 static void set_modelview(float x_from, float y_from, float z_from,
@@ -45,6 +46,7 @@ static void render_soft_shutdown(render_t *render);
 
 void render_soft_init(render_t *render)
 {
+	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
 	render->set_modelview = set_modelview;
 	render->scale = scale;
@@ -64,6 +66,10 @@ void render_soft_init(render_t *render)
 static void render_soft_shutdown(render_t *render)
 {
 	render_background_shutdown();
+}
+
+static void set_viewport(int x, int y, int w, int h)
+{
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
