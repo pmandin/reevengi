@@ -45,10 +45,10 @@ static void translate(float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
 
+static void set_color(SDL_Surface *surf, Uint32 color);
 static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	Uint32 color);
+	float x2, float y2, float z2);
 
 static void render_opengl_shutdown(render_t *render);
 
@@ -63,6 +63,7 @@ void render_opengl_init(render_t *render)
 	render->push_matrix = push_matrix;
 	render->pop_matrix = pop_matrix;
 
+	render->set_color = set_color;
 	render->line = line;
 
 	render->initBackground = render_background_init_opengl;
@@ -113,14 +114,16 @@ static void pop_matrix(void)
 	gl.PopMatrix();
 }
 
-static void line(SDL_Surface *surf,
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	Uint32 color)
+static void set_color(SDL_Surface *surf, Uint32 color)
 {
 	gl.Color4ub((color>>16) & 0xff, (color>>8) & 0xff,
 		color & 0xff, (color>>24) & 0xff);
+}
 
+static void line(SDL_Surface *surf,
+	float x1, float y1, float z1,
+	float x2, float y2, float z2)
+{
 	gl.Begin(GL_LINES);
 	gl.Vertex3f(x1,y1,z1);
 	gl.Vertex3f(x2,y2,z2);

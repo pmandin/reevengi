@@ -28,6 +28,8 @@
 typedef struct render_s render_t;
 
 struct render_s {
+	Uint32 color;
+
 	void (*set_projection)(float angle, float aspect,
 		float z_near, float z_far);
 	void (*set_modelview)(float x_from, float y_from, float z_from,
@@ -38,10 +40,10 @@ struct render_s {
 	void (*push_matrix)(void);
 	void (*pop_matrix)(void);
 
+	void (*set_color)(SDL_Surface *surf, Uint32 color);	/* color in ARGB format */
 	void (*line)(SDL_Surface *surf,
 		float x1, float y1, float z1,
-		float x2, float y2, float z2,
-		Uint32 color);	/* color in ARGB format */
+		float x2, float y2, float z2);
 
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);

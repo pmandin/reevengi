@@ -41,11 +41,19 @@
 #define KEY_CAMERA_UP		SDLK_f
 #define KEY_CAMERA_RESET	SDLK_v
 
+#define ORIGIN_SIZE (10.0*256.0)
+
 /*--- Variables ---*/
 
 static int reload_bg = 1;
 static int reload_room = 1;
 static int refresh_bg = 1;
+
+/*--- Functions prototypes ---*/
+
+static void drawOrigin(void);
+static void drawGrid(void);
+static void drawCameraSwitches(void);
 
 /*--- Functions ---*/
 
@@ -136,14 +144,127 @@ void view_background_update(void)
 
 void view_background_draw(void)
 {
+	long cam_pos[6];
+
 	render.drawBackground(&video);
 	/*model_emd_draw(&video);*/
 
-	/* draw grid */
+	if (!game_state.room_file) {
+		return;
+	}
 
-	/* draw camera switches */
+	switch(game_state.version) {
+		case GAME_RE1_PS1_DEMO:
+		case GAME_RE1_PS1_GAME:
+			re1ps1_get_camera(cam_pos);
+			break;
+		case GAME_RE1_PC_GAME:
+			re1pcgame_get_camera(cam_pos);
+			break;
+		case GAME_RE2_PS1_DEMO:
+		case GAME_RE2_PS1_GAME_LEON:
+		case GAME_RE2_PS1_GAME_CLAIRE:
+			re2ps1_get_camera(cam_pos);
+			break;
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
+			re2pcdemo_get_camera(cam_pos);
+			break;
+		case GAME_RE3_PS1_GAME:
+			re3ps1game_get_camera(cam_pos);
+			break;
+		case GAME_RE3_PC_DEMO:
+		case GAME_RE3_PC_GAME:
+			re3pc_get_camera(cam_pos);
+			break;
+		default:
+			return;
+	}
 
-	/* draw camera origin */
+	render.set_projection(60.0, 4.0/3.0, 1.0, 100000.0);
+	render.set_modelview(
+		cam_pos[0], cam_pos[1], cam_pos[2],
+		cam_pos[3], cam_pos[4], cam_pos[5],
+		0.0, -1.0, 0.0
+	);
 
-	/* draw origin */
+	/* World origin */
+	drawOrigin();
+	drawCameraSwitches();
+
+	render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
+	drawGrid();
+	drawOrigin();	/* what the camera looks at */
+}
+
+static void drawOrigin(void)
+{
+	render.set_color(video.screen, 0x00ff0000);
+	render.line(video.screen,
+		0.0, 0.0, 0.0,
+		ORIGIN_SIZE, 0.0, 0.0);
+	render.set_color(video.screen, 0x0000ff00);
+	render.line(video.screen,
+		0.0, 0.0, 0.0,
+		0.0, ORIGIN_SIZE, 0.0);
+	render.set_color(video.screen, 0x000000ff);
+	render.line(video.screen,
+		0.0, 0.0, 0.0,
+		0.0, 0.0, ORIGIN_SIZE);
+}
+
+static void drawGrid(void)
+{
+	int i;
+
+	render.set_color(video.screen, 0x00ffffff);
+	render.push_matrix();
+	render.scale(1000.0, 1000.0, 1000.0);
+	for (i=-40; i<=40; i+=10) {
+		render.line(video.screen,
+			-40.0, 20.0, i,
+			40.0, 20.0, i);
+		render.line(video.screen,
+			i, 20.0, -40.0,
+			i, 20.0, 40.0);
+	}
+	render.pop_matrix();
+}
+
+static void drawCameraSwitches(void)
+{
+	int i, num_switches = 0;
+	short switchPos[8];
+
+	switch(game_state.version) {
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
+			num_switches = re2pcdemo_get_num_camswitch();
+			break;
+		default:
+			return;
+	}
+
+	render.set_color(video.screen, 0x00cc8844);
+	render.push_matrix();
+	render.scale(1.0, 100.0, 1.0);
+	for (i=0; i<num_switches; i++) {
+		if (!re2pcdemo_get_camswitch(i,switchPos)) {
+			continue;
+		}
+
+		render.line(video.screen,
+			switchPos[0], 20, switchPos[1],
+			switchPos[2], 20, switchPos[3]);
+		render.line(video.screen,
+			switchPos[2], 20, switchPos[3],
+			switchPos[4], 20, switchPos[5]);
+		render.line(video.screen,
+			switchPos[4], 20, switchPos[5],
+			switchPos[6], 20, switchPos[7]);
+		render.line(video.screen,
+			switchPos[6], 20, switchPos[7],
+			switchPos[0], 20, switchPos[1]);
+	}
+	render.pop_matrix();
 }
