@@ -41,8 +41,6 @@
 #define KEY_CAMERA_UP		SDLK_f
 #define KEY_CAMERA_RESET	SDLK_v
 
-#define ORIGIN_SIZE (10.0*256.0)
-
 /*--- Variables ---*/
 
 static int reload_bg = 1;
@@ -200,17 +198,21 @@ void view_background_draw(void)
 static void drawOrigin(void)
 {
 	render.set_color(video.screen, 0x00ff0000);
+
+	render.push_matrix();
+	render.scale(3000.0, 3000.0, 3000.0);
 	render.line(video.screen,
 		0.0, 0.0, 0.0,
-		ORIGIN_SIZE, 0.0, 0.0);
+		1.0, 0.0, 0.0);
 	render.set_color(video.screen, 0x0000ff00);
 	render.line(video.screen,
 		0.0, 0.0, 0.0,
-		0.0, ORIGIN_SIZE, 0.0);
+		0.0, 1.0, 0.0);
 	render.set_color(video.screen, 0x000000ff);
 	render.line(video.screen,
 		0.0, 0.0, 0.0,
-		0.0, 0.0, ORIGIN_SIZE);
+		0.0, 0.0, 1.0);
+	render.pop_matrix();
 }
 
 static void drawGrid(void)
@@ -218,6 +220,7 @@ static void drawGrid(void)
 	int i;
 
 	render.set_color(video.screen, 0x00ffffff);
+
 	render.push_matrix();
 	render.scale(1000.0, 1000.0, 1000.0);
 	for (i=-40; i<=40; i+=10) {
