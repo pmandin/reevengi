@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(reevengi, 0.6, pmandin@caramail.com)
+AC_INIT(reevengi, 0.7, pmandin@caramail.com)
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([autotools])
@@ -11,6 +11,7 @@ AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h])
@@ -99,7 +100,6 @@ AC_ARG_ENABLE(opengl,
 GLU_LIBS=
 if test "x$WANT_OPENGL" = "xyes"; then
 	AC_DEFINE(ENABLE_OPENGL, 1, [Define if you want OpenGL renderer])
-	GLU_LIBS="-lGLU"
 fi
 
 # Movies using FFmpeg
@@ -120,7 +120,6 @@ AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDLIMAGE_LIBS)
 AC_SUBST(PHYSFS_CFLAGS)
 AC_SUBST(PHYSFS_LIBS)
-AC_SUBST(GLU_LIBS)
 
 AC_CONFIG_FILES([
 Makefile
