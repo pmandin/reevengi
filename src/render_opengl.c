@@ -25,6 +25,8 @@
 
 #ifdef ENABLE_OPENGL
 
+#include <math.h>
+
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -85,9 +87,46 @@ static void set_viewport(int x, int y, int w, int h)
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
 {
+	GLfloat m[4][4];
+	float sine, cotangent, deltaZ;
+	float radians = angle / 2 * M_PI / 180;
+
+	deltaZ = z_far - z_near;
+	sine = sin(radians);
+	if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
+		return;
+	}
+
+	cotangent = cos(radians) / sine;
+
+	memset(m, 0, sizeof(GLfloat)*4*4);
+	m[0][0] = cotangent / aspect;
+	m[1][1] = cotangent;
+	m[2][2] = -(z_far + z_near) / deltaZ;
+	m[2][3] = -1;
+	m[3][2] = -2 * z_near * z_far / deltaZ;
+	m[3][3] = 0;
+
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gluPerspective(angle, aspect, z_near, z_far);
+	gl.MultMatrixf(&m[0][0]);
+	/*gluPerspective(angle, aspect, z_near, z_far);*/
+	gl.MatrixMode(GL_MODELVIEW);
+/*
+	f = cotangent(fovy/2) = 1 / tan(fovy/2)
+
+	   f
+	------	0	0	0
+	aspect
+
+	0	f	0	0
+
+	0	0	zf+zn	2*zf*zn
+			-----   -------
+			zn-zf	zn-zf
+
+	0	0	-1	0
+*/
 }
 
 static void set_modelview(float x_from, float y_from, float z_from,
@@ -99,6 +138,20 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	gluLookAt(x_from, y_from, z_from,
 		x_to, y_to, z_to,
 		x_up, y_up, z_up);
+/*
+    Let E be the 3d column vector (eyeX, eyeY, eyeZ).
+    Let C be the 3d column vector (centerX, centerY, centerZ).
+    Let U be the 3d column vector (upX, upY, upZ).
+    Compute L = C - E.
+    Normalize L.
+    Compute S = L x U.
+    Normalize S.
+    Compute U' = S x L.
+
+M is the matrix whose columns are, in order:
+
+    (S, 0), (U', 0), (-L, 0), (-E, 1)  (all column vectors)
+*/
 }
 
 static void scale(float x, float y, float z)
