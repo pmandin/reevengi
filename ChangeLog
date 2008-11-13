@@ -1,3 +1,8 @@
+v 0.7
+
+- Started separate software and OpenGL renderers.
+- Display camera switches (OpenGL only).
+
 v 0.6
 
 - There are two different demos of Resident Evil 2 for PC.
