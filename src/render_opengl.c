@@ -129,16 +129,73 @@ static void set_projection(float angle, float aspect, float z_near, float z_far)
 */
 }
 
+static void normalize(float v[3])
+{
+    float r;
+
+    r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
+    if (r == 0.0) return;
+
+    v[0] /= r;
+    v[1] /= r;
+    v[2] /= r;
+}
+
+static void cross(float v1[3], float v2[3], float result[3])
+{
+    result[0] = v1[1]*v2[2] - v1[2]*v2[1];
+    result[1] = v1[2]*v2[0] - v1[0]*v2[2];
+    result[2] = v1[0]*v2[1] - v1[1]*v2[0];
+}
+
 static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up)
 {
+	float forward[3], side[3], up[3];
+	GLfloat m[4][4];
+
+	forward[0] = x_to - x_from;
+	forward[1] = y_to - y_from;
+	forward[2] = z_to - z_from;
+
+	up[0] = x_up;
+	up[1] = y_up;
+	up[2] = z_up;
+
+	normalize(forward);
+
+	/* Side = forward x up */
+	cross(forward, up, side);
+	normalize(side);
+
+	/* Recompute up as: up = side x forward */
+	cross(side, forward, up);
+
+	memset(m, 0, sizeof(GLfloat)*4*4);
+	m[0][0] = side[0];
+	m[1][0] = side[1];
+	m[2][0] = side[2];
+
+	m[0][1] = up[0];
+	m[1][1] = up[1];
+	m[2][1] = up[2];
+
+	m[0][2] = -forward[0];
+	m[1][2] = -forward[1];
+	m[2][2] = -forward[2];
+
+	m[3][3] = 1.0;
+
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
-	gluLookAt(x_from, y_from, z_from,
+	gl.MultMatrixf(&m[0][0]);
+	gl.Translatef(-x_from, -y_from, -z_from);
+/*    
+    	gluLookAt(x_from, y_from, z_from,
 		x_to, y_to, z_to,
 		x_up, y_up, z_up);
-/*
+
     Let E be the 3d column vector (eyeX, eyeY, eyeZ).
     Let C be the 3d column vector (centerX, centerY, centerZ).
     Let U be the 3d column vector (upX, upY, upZ).
