@@ -120,22 +120,26 @@ static void set_modelview(float x_from, float y_from, float z_from,
 
 static void scale(float x, float y, float z)
 {
-	float sm[4][4];
+	float sm[4][4], r[4][4];
 
 	mtx_setIdentity(sm);
 	sm[0][0] = x;
 	sm[1][1] = y;
 	sm[2][2] = z;
+	mtx_mult(sm, projmodelmtx[num_projmodelmtx], r);
+	memcpy(projmodelmtx[num_projmodelmtx], r, sizeof(float)*4*4);
 }
 
 static void translate(float x, float y, float z)
 {
-	float tm[4][4];
+	float tm[4][4], r[4][4];
 
 	mtx_setIdentity(tm);
 	tm[0][3] = x;
 	tm[1][3] = y;
 	tm[2][3] = z;
+	mtx_mult(tm, projmodelmtx[num_projmodelmtx], r);
+	memcpy(projmodelmtx[num_projmodelmtx], r, sizeof(float)*4*4);
 }
 
 static void push_matrix(void)
@@ -145,7 +149,7 @@ static void push_matrix(void)
 	}
 
 	/* Copy current matrix in next position */
-	memcpy(&projmodelmtx[num_projmodelmtx], &projmodelmtx[num_projmodelmtx+1], sizeof(projmodelmtx[0]));
+	memcpy(projmodelmtx[num_projmodelmtx], projmodelmtx[num_projmodelmtx+1], sizeof(float)*4*4);
 
 	++num_projmodelmtx;
 }
