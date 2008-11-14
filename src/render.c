@@ -21,6 +21,20 @@
 #include "video.h"
 #include "render.h"
 #include "render_background.h"
+#include "matrix.h"
+
+/*--- Defines ---*/
+
+#define MAX_PROJMODELMTX 16
+
+/*--- Variables ---*/
+
+static float projmodelmtx[MAX_PROJMODELMTX][4][4];	/* 16 4x4 matrices */
+static int num_projmodelmtx;	/* currenct active matrix */
+
+static float cur_projection[4][4];
+static float cur_modelview[4][4];
+static float cur_viewport[4][4];
 
 /*--- Functions prototypes ---*/
 
@@ -61,6 +75,12 @@ void render_soft_init(render_t *render)
 	render->drawBackground = render_background;
 
 	render->shutdown = render_soft_shutdown;
+
+	num_projmodelmtx = 0;
+	mtx_setIdentity(projmodelmtx[0]);
+	mtx_setIdentity(cur_projection);
+	mtx_setIdentity(cur_modelview);
+	mtx_setIdentity(cur_viewport);
 }
 
 static void render_soft_shutdown(render_t *render)
@@ -70,32 +90,73 @@ static void render_soft_shutdown(render_t *render)
 
 static void set_viewport(int x, int y, int w, int h)
 {
+	cur_viewport[0][0] = w;
+	cur_viewport[1][1] = h;
+	/* recalc viewport*modelview*projection */
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
 {
+	float m[4][4];
+
+	mtx_setProjection(m, angle, aspect, z_near, z_far);
+	/* recalc viewport*modelview*projection */
 }
 
 static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up)
 {
+	float m[4][4];
+
+	mtx_setLookAt(m,
+		x_from, y_from, z_from,
+		x_to, y_to, z_to,
+		x_up, y_up, z_up);
+
+	translate(-x_from, -y_from, -z_from);
+	/* recalc viewport*modelview*projection */
 }
 
 static void scale(float x, float y, float z)
 {
+	float sm[4][4];
+
+	mtx_setIdentity(sm);
+	sm[0][0] = x;
+	sm[1][1] = y;
+	sm[2][2] = z;
 }
 
 static void translate(float x, float y, float z)
 {
+	float tm[4][4];
+
+	mtx_setIdentity(tm);
+	sm[0][3] = x;
+	sm[1][3] = y;
+	sm[2][3] = z;
 }
 
 static void push_matrix(void)
 {
+	if (num_projmodelmtx==MAX_PROJMODELMTX-1) {
+		return;
+	}
+
+	/* Copy current matrix in next position */
+	memcpy(&projmodelmtx[num_projmodelmtx], &projmodelmtx[num_projmodelmtx+1], sizeof(projmodelmtx[0]));
+
+	++num_projmodelmtx;
 }
 
 static void pop_matrix(void)
 {
+	if (num_projmodelmtx==0) {
+		return;
+	}
+
+	--num_projmodelmtx;
 }
 
 static void set_color(SDL_Surface *surf, Uint32 color)
