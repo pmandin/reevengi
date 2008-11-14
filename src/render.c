@@ -133,9 +133,9 @@ static void translate(float x, float y, float z)
 	float tm[4][4];
 
 	mtx_setIdentity(tm);
-	sm[0][3] = x;
-	sm[1][3] = y;
-	sm[2][3] = z;
+	tm[0][3] = x;
+	tm[1][3] = y;
+	tm[2][3] = z;
 }
 
 static void push_matrix(void)
