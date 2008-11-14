@@ -31,4 +31,6 @@ void mtx_setLookAt(float m[4][4],
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up);
 
+void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4]);
+
 #endif /* MATRIX_H */

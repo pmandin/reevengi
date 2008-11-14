@@ -148,3 +148,17 @@ void mtx_setLookAt(float m[4][4],
 
 	m[3][3] = 1.0;
 }
+
+void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
+{
+	int i,j,k;
+
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<4; i++) {
+		for (j=0; j<4; j++) {
+			for (k=0; k<4; k++) {
+				result[i][j] += m1[i][k]*m2[k][j];
+			}
+		}
+	}
+}
