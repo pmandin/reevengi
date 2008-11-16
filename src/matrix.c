@@ -30,6 +30,17 @@ void mtx_setIdentity(float m[4][4])
 	m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0;
 }
 
+void mtx_print(float m[4][4])
+{
+	int i;
+
+	printf("-\n");
+	for (i=0; i<4; i++) {
+		printf("(%.3f\t%.3f\t%.3f\t%.3f)\n",
+			m[i][0],m[i][1],m[i][2],m[i][3]);
+	}
+}
+
 /*
 	gluPerspective(angle, aspect, z_near, z_far);
 

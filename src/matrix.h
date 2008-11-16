@@ -22,6 +22,7 @@
 #define MATRIX_H 1
 
 void mtx_setIdentity(float m[4][4]);
+void mtx_print(float m[4][4]);
 
 void mtx_setProjection(float m[4][4],
 	float angle, float aspect, float z_near, float z_far);
