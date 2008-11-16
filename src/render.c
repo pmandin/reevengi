@@ -147,9 +147,9 @@ static void translate(float x, float y, float z)
 	float tm[4][4], r[4][4];
 
 	mtx_setIdentity(tm);
-	tm[0][3] = x;
-	tm[1][3] = y;
-	tm[2][3] = z;
+	tm[3][0] = x;
+	tm[3][1] = y;
+	tm[3][2] = z;
 	mtx_mult(tm, modelview_mtx[num_modelview_mtx], r);
 	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
 	refresh_render_matrix();
