@@ -40,6 +40,8 @@ static SDL_Rect viewport;
 
 /*--- Functions prototypes ---*/
 
+static void render_soft_shutdown(render_t *render);
+
 static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect,
 	float z_near, float z_far);
@@ -56,7 +58,7 @@ static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
 
-static void render_soft_shutdown(render_t *render);
+static void draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2);
 
 /*--- Functions ---*/
 
@@ -208,5 +210,12 @@ static void line(SDL_Surface *surf,
 	memcpy(segment, result, sizeof(float)*4*4);
 	mtx_mult(viewport_mtx, segment, result);
 
-	/* Check segment is partly drawable */
+	draw_line(surf, result[0][0], result[0][1], result[1][0], result[1][1]);
+}
+
+/*--- Draw operations ---*/
+
+static void draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2)
+{
+	/* Clip line to viewport */
 }
