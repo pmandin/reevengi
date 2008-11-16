@@ -109,7 +109,6 @@ static void cross(float v1[3], float v2[3], float result[3])
 	result[2] = v1[0]*v2[1] - v1[1]*v2[0];
 }
 
-
 void mtx_setLookAt(float m[4][4],
 	float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
@@ -207,4 +206,33 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	clip[5][2] = frustum[2][3]-frustum[2][2];
 	clip[5][3] = frustum[3][3]-frustum[3][2];
 	normalize(clip[5]);
+}
+
+/* For each clip plane, check if all points are on same side, or not */
+static int dotProductPlus(float point[4], float plane[4])
+{
+	return (point[0]*plane[0] + point[1]*plane[1] + point[2]*plane[2] + plane[3]);
+}
+
+int mtx_checkClip(float points[4][4], int num_points, float clip[6][4])
+{
+	int i,j;
+	int num_outsides;
+
+	for (i=0; i<6; i++) {
+		num_outsides = 0;
+		for (j=0; j<num_points; j++) {
+			if (dotProductPlus(points[j], clip[i])<0) {
+				++num_outsides;
+				continue;
+			}
+		}
+
+		if (num_outsides==num_points) {
+			/* All points outside of current clip plane */
+			return 0;
+		}
+	}
+
+	return 1;
 }

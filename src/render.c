@@ -179,4 +179,25 @@ static void line(SDL_Surface *surf,
 	float x1, float y1, float z1,
 	float x2, float y2, float z2)
 {
+	float segment[4][4], result[4][4];
+
+	memset(segment, 0, sizeof(float)*4*4);
+	segment[0][0] = x1;
+	segment[0][1] = y1;
+	segment[0][2] = z1;
+	segment[1][0] = x2;
+	segment[1][1] = y2;
+	segment[1][2] = z2;
+
+	/* Project segment in frustum */
+	mtx_mult(frustum_mtx, segment, result);
+
+	/* Check segment is partly in frustum */
+	if (!mtx_checkClip(segment, 2, clip_planes)) {
+		return;
+	}
+
+	/* Project segment to viewport */
+
+	/* Check segment is partly drawable */
 }
