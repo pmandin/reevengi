@@ -34,7 +34,9 @@ static int num_modelview_mtx;	/* current active matrix */
 
 static float projection_mtx[4][4];	/* projection matrix */
 static float frustum_mtx[4][4];	/* modelview * projection matrix */
+static float viewport_mtx[4][4]; /* viewport matrix */
 static float clip_planes[6][4]; /* view frustum clip planes */
+static SDL_Rect viewport;
 
 /*--- Functions prototypes ---*/
 
@@ -80,6 +82,7 @@ void render_soft_init(render_t *render)
 	mtx_setIdentity(modelview_mtx[0]);
 	mtx_setIdentity(projection_mtx);
 	mtx_setIdentity(frustum_mtx);
+	mtx_setIdentity(viewport_mtx);
 }
 
 static void render_soft_shutdown(render_t *render)
@@ -92,13 +95,17 @@ static void refresh_render_matrix(void)
 	/* Recalculate frustum matrix = modelview*projection */
 	mtx_mult(modelview_mtx[num_modelview_mtx], projection_mtx, frustum_mtx);
 	mtx_calcFrustumClip(frustum_mtx, clip_planes);
-
-	/* Render matrix = frustum * viewport */
 }
 
 static void set_viewport(int x, int y, int w, int h)
 {
-	refresh_render_matrix();
+	viewport.x = x;
+	viewport.y = y;
+	viewport.w = w;
+	viewport.h = h;
+
+	viewport_mtx[0][0] = w;
+	viewport_mtx[1][1] = h;
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
@@ -193,11 +200,13 @@ static void line(SDL_Surface *surf,
 	mtx_mult(frustum_mtx, segment, result);
 
 	/* Check segment is partly in frustum */
-	if (!mtx_checkClip(segment, 2, clip_planes)) {
+	if (!mtx_checkClip(result, 2, clip_planes)) {
 		return;
 	}
 
 	/* Project segment to viewport */
+	memcpy(segment, result, sizeof(float)*4*4);
+	mtx_mult(viewport_mtx, segment, result);
 
 	/* Check segment is partly drawable */
 }
