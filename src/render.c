@@ -162,7 +162,7 @@ static void push_matrix(void)
 	}
 
 	/* Copy current matrix in next position */
-	memcpy(modelview_mtx[num_modelview_mtx], modelview_mtx[num_modelview_mtx+1], sizeof(float)*4*4);
+	memcpy(modelview_mtx[num_modelview_mtx+1], modelview_mtx[num_modelview_mtx], sizeof(float)*4*4);
 
 	++num_modelview_mtx;
 }
@@ -218,4 +218,5 @@ static void line(SDL_Surface *surf,
 static void draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2)
 {
 	/* Clip line to viewport */
+	fprintf(stderr, "draw_line(%d,%d, %d,%d)\n", x1,y1, x2,y2);
 }
