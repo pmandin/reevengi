@@ -29,11 +29,11 @@
 
 /*--- Variables ---*/
 
-static float projmodelmtx[MAX_PROJMODELMTX][4][4];	/* 16 4x4 matrices */
-static int num_projmodelmtx;	/* currenct active matrix */
+static float modelview_mtx[MAX_PROJMODELMTX][4][4];	/* 16 4x4 matrices */
+static int num_modelview_mtx;	/* current active matrix */
 
-static float cur_projection[4][4];
-static float cur_render_mtx[4][4];
+static float projection_mtx[4][4];
+static float frustum_mtx[4][4];
 
 /*--- Functions prototypes ---*/
 
@@ -75,10 +75,10 @@ void render_soft_init(render_t *render)
 
 	render->shutdown = render_soft_shutdown;
 
-	num_projmodelmtx = 0;
-	mtx_setIdentity(projmodelmtx[0]);
-	mtx_setIdentity(cur_projection);
-	mtx_setIdentity(cur_render_mtx);
+	num_modelview_mtx = 0;
+	mtx_setIdentity(modelview_mtx[0]);
+	mtx_setIdentity(projection_mtx);
+	mtx_setIdentity(frustum_mtx);
 }
 
 static void render_soft_shutdown(render_t *render)
@@ -88,7 +88,10 @@ static void render_soft_shutdown(render_t *render)
 
 static void refresh_render_matrix(void)
 {
-	/* render matrix = viewport * projection * modelview on stack */
+	/* Recalculate frustum matrix = modelview*projection */
+	mtx_mult(modelview_mtx[num_modelview_mtx], projection_mtx, frustum_mtx);
+
+	/* Render matrix = frustum * viewport */
 }
 
 static void set_viewport(int x, int y, int w, int h)
@@ -98,7 +101,7 @@ static void set_viewport(int x, int y, int w, int h)
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
 {
-	mtx_setProjection(cur_projection, angle, aspect, z_near, z_far);
+	mtx_setProjection(projection_mtx, angle, aspect, z_near, z_far);
 	refresh_render_matrix();
 }
 
@@ -106,7 +109,7 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up)
 {
-	mtx_setLookAt(projmodelmtx[num_projmodelmtx],
+	mtx_setLookAt(modelview_mtx[num_modelview_mtx],
 		x_from, y_from, z_from,
 		x_to, y_to, z_to,
 		x_up, y_up, z_up);
@@ -123,8 +126,8 @@ static void scale(float x, float y, float z)
 	sm[0][0] = x;
 	sm[1][1] = y;
 	sm[2][2] = z;
-	mtx_mult(sm, projmodelmtx[num_projmodelmtx], r);
-	memcpy(projmodelmtx[num_projmodelmtx], r, sizeof(float)*4*4);
+	mtx_mult(sm, modelview_mtx[num_modelview_mtx], r);
+	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
 	refresh_render_matrix();
 }
 
@@ -136,31 +139,30 @@ static void translate(float x, float y, float z)
 	tm[0][3] = x;
 	tm[1][3] = y;
 	tm[2][3] = z;
-	mtx_mult(tm, projmodelmtx[num_projmodelmtx], r);
-	memcpy(projmodelmtx[num_projmodelmtx], r, sizeof(float)*4*4);
+	mtx_mult(tm, modelview_mtx[num_modelview_mtx], r);
+	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
 	refresh_render_matrix();
 }
 
 static void push_matrix(void)
 {
-	if (num_projmodelmtx==MAX_PROJMODELMTX-1) {
+	if (num_modelview_mtx==MAX_PROJMODELMTX-1) {
 		return;
 	}
 
 	/* Copy current matrix in next position */
-	memcpy(projmodelmtx[num_projmodelmtx], projmodelmtx[num_projmodelmtx+1], sizeof(float)*4*4);
+	memcpy(modelview_mtx[num_modelview_mtx], modelview_mtx[num_modelview_mtx+1], sizeof(float)*4*4);
 
-	++num_projmodelmtx;
-	refresh_render_matrix();
+	++num_modelview_mtx;
 }
 
 static void pop_matrix(void)
 {
-	if (num_projmodelmtx==0) {
+	if (num_modelview_mtx==0) {
 		return;
 	}
 
-	--num_projmodelmtx;
+	--num_modelview_mtx;
 	refresh_render_matrix();
 }
 
