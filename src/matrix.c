@@ -212,10 +212,10 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	normalize(clip[4]);
 
 	/* near */
-	clip[5][0] = frustum[0][3]-frustum[0][2];
-	clip[5][1] = frustum[1][3]-frustum[1][2];
-	clip[5][2] = frustum[2][3]-frustum[2][2];
-	clip[5][3] = frustum[3][3]-frustum[3][2];
+	clip[5][0] = frustum[0][3]+frustum[0][2];
+	clip[5][1] = frustum[1][3]+frustum[1][2];
+	clip[5][2] = frustum[2][3]+frustum[2][2];
+	clip[5][3] = frustum[3][3]+frustum[3][2];
 	normalize(clip[5]);
 }
 
