@@ -25,15 +25,16 @@
 
 /*--- Defines ---*/
 
-#define MAX_PROJMODELMTX 16
+#define MAX_MODELVIEW_MTX 16
 
 /*--- Variables ---*/
 
-static float modelview_mtx[MAX_PROJMODELMTX][4][4];	/* 16 4x4 matrices */
+static float modelview_mtx[MAX_MODELVIEW_MTX][4][4];	/* 16 4x4 matrices */
 static int num_modelview_mtx;	/* current active matrix */
 
 static float projection_mtx[4][4];
 static float frustum_mtx[4][4];
+static float clip_planes[6][4]; /* view frustum clip planes */
 
 /*--- Functions prototypes ---*/
 
@@ -90,6 +91,7 @@ static void refresh_render_matrix(void)
 {
 	/* Recalculate frustum matrix = modelview*projection */
 	mtx_mult(modelview_mtx[num_modelview_mtx], projection_mtx, frustum_mtx);
+	mtx_calcFrustumClip(frustum_mtx, clip_planes);
 
 	/* Render matrix = frustum * viewport */
 }
@@ -146,7 +148,7 @@ static void translate(float x, float y, float z)
 
 static void push_matrix(void)
 {
-	if (num_modelview_mtx==MAX_PROJMODELMTX-1) {
+	if (num_modelview_mtx==MAX_MODELVIEW_MTX-1) {
 		return;
 	}
 

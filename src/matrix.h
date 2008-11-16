@@ -33,4 +33,6 @@ void mtx_setLookAt(float m[4][4],
 
 void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4]);
 
+void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4]);
+
 #endif /* MATRIX_H */

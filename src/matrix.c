@@ -89,23 +89,24 @@ M is the matrix whose columns are, in order:
     (S, 0), (U', 0), (-L, 0), (-E, 1)  (all column vectors)
 */
 
-static void normalize(float v[3])
+static void normalize(float v[4])
 {
-    float r;
+	/* v[3] parameter only used to calc frustum clip planes */
+	float r;
 
-    r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
-    if (r == 0.0) return;
+	r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
+	if (r == 0.0) return;
 
-    v[0] /= r;
-    v[1] /= r;
-    v[2] /= r;
+	v[0] /= r;
+	v[1] /= r;
+	v[2] /= r;
 }
 
 static void cross(float v1[3], float v2[3], float result[3])
 {
-    result[0] = v1[1]*v2[2] - v1[2]*v2[1];
-    result[1] = v1[2]*v2[0] - v1[0]*v2[2];
-    result[2] = v1[0]*v2[1] - v1[1]*v2[0];
+	result[0] = v1[1]*v2[2] - v1[2]*v2[1];
+	result[1] = v1[2]*v2[0] - v1[0]*v2[2];
+	result[2] = v1[0]*v2[1] - v1[1]*v2[0];
 }
 
 
@@ -161,4 +162,49 @@ void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 			}
 		}
 	}
+}
+
+void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
+{
+	/* right */
+	clip[0][0] = frustum[0][3]-frustum[0][0];
+	clip[0][1] = frustum[1][3]-frustum[1][0];
+	clip[0][2] = frustum[2][3]-frustum[2][0];
+	clip[0][3] = frustum[3][3]-frustum[3][0];
+	normalize(clip[0]);
+
+	/* left */
+	clip[1][0] = frustum[0][3]+frustum[0][0];
+	clip[1][1] = frustum[1][3]+frustum[1][0];
+	clip[1][2] = frustum[2][3]+frustum[2][0];
+	clip[1][3] = frustum[3][3]+frustum[3][0];
+	normalize(clip[1]);
+
+	/* top */
+	clip[2][0] = frustum[0][3]-frustum[0][1];
+	clip[2][1] = frustum[1][3]-frustum[1][1];
+	clip[2][2] = frustum[2][3]-frustum[2][1];
+	clip[2][3] = frustum[3][3]-frustum[3][1];
+	normalize(clip[2]);
+
+	/* bottom */
+	clip[3][0] = frustum[0][3]+frustum[0][1];
+	clip[3][1] = frustum[1][3]+frustum[1][1];
+	clip[3][2] = frustum[2][3]+frustum[2][1];
+	clip[3][3] = frustum[3][3]+frustum[3][1];
+	normalize(clip[3]);
+
+	/* far */
+	clip[4][0] = frustum[0][3]-frustum[0][2];
+	clip[4][1] = frustum[1][3]-frustum[1][2];
+	clip[4][2] = frustum[2][3]-frustum[2][2];
+	clip[4][3] = frustum[3][3]-frustum[3][2];
+	normalize(clip[4]);
+
+	/* near */
+	clip[5][0] = frustum[0][3]-frustum[0][2];
+	clip[5][1] = frustum[1][3]-frustum[1][2];
+	clip[5][2] = frustum[2][3]-frustum[2][2];
+	clip[5][3] = frustum[3][3]-frustum[3][2];
+	normalize(clip[5]);
 }
