@@ -91,7 +91,6 @@ M is the matrix whose columns are, in order:
 
 static void normalize(float v[4])
 {
-	/* v[3] parameter only used to calc frustum clip planes */
 	float r;
 
 	r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
@@ -100,6 +99,7 @@ static void normalize(float v[4])
 	v[0] /= r;
 	v[1] /= r;
 	v[2] /= r;
+	v[3] /= r;
 }
 
 static void cross(float v1[3], float v2[3], float result[3])
@@ -115,7 +115,7 @@ void mtx_setLookAt(float m[4][4],
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up)
 {
-	float forward[3], side[3], up[3];
+	float forward[4], side[4], up[3];
 
 	forward[0] = x_to - x_from;
 	forward[1] = y_to - y_from;
