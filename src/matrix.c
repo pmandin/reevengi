@@ -251,7 +251,23 @@ int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
 	return result;
 }
 
-void mtx_clipSegment(float points[4][4], float clip[6][4])
+void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 {
+	int i;
+
+	for (i=0; i<6; i++) {
+		int j, num_outsides = 0;
+		for (j=0; j<num_points; j++) {
+			if (dotProductPlus(points[j], clip[i])<0) {
+				++num_outsides;
+			}
+		}
+
+		if ((num_outsides==0) || (num_outsides==num_points)) {
+			continue;
+		}
+
+		/* Ah, clip this segment against clip plane */
+	}
 }
 

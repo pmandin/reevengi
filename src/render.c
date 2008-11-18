@@ -227,7 +227,7 @@ static void line(SDL_Surface *surf,
 		case CLIPPING_OUTSIDE:
 			return;
 		case CLIPPING_NEEDED:
-			mtx_clipSegment(result, clip_planes);
+			mtx_clipSegment(result, 2, clip_planes);
 			break;
 		default:
 			break;
