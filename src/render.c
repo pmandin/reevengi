@@ -97,6 +97,8 @@ static void refresh_render_matrix(void)
 	/* Recalculate frustum matrix = modelview*projection */
 	mtx_mult(modelview_mtx[num_modelview_mtx], projection_mtx, frustum_mtx);
 	mtx_calcFrustumClip(frustum_mtx, clip_planes);
+	/*printf("frustum_mtx\n");
+	mtx_print(frustum_mtx);*/
 }
 
 static void set_viewport(int x, int y, int w, int h)
@@ -107,7 +109,9 @@ static void set_viewport(int x, int y, int w, int h)
 	viewport.h = h;
 
 	viewport_mtx[0][0] = w;
-	viewport_mtx[1][1] = h;
+	viewport_mtx[3][0] = w/2;
+	viewport_mtx[1][1] = -h;
+	viewport_mtx[3][1] = h/2;
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
@@ -127,6 +131,7 @@ static void set_modelview(float x_from, float y_from, float z_from,
 
 	translate(-x_from, -y_from, -z_from);
 	refresh_render_matrix();
+	/*mtx_print(modelview_mtx[num_modelview_mtx]);*/
 }
 
 static void scale(float x, float y, float z)
@@ -190,27 +195,58 @@ static void line(SDL_Surface *surf,
 {
 	float segment[4][4], result[4][4];
 
+	/*printf("[0: %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f]\n",x1,y1,z1,x2,y2,z2);*/
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = x1;
 	segment[0][1] = y1;
 	segment[0][2] = z1;
+	segment[0][3] = 1.0;
 	segment[1][0] = x2;
 	segment[1][1] = y2;
 	segment[1][2] = z2;
+	segment[1][3] = 1.0;
+	/*printf("segment\n");
+	mtx_print(segment);*/
 
 	/* Project segment in frustum */
-	mtx_mult(frustum_mtx, segment, result);
+	mtx_mult(segment, frustum_mtx, result);
+	/*mtx_print(result);*/
+
+	/* Normalize segment */
+	result[0][0] /= result[0][3];
+	result[0][1] /= result[0][3];
+	result[0][2] /= result[0][3];
+	result[1][0] /= result[1][3];
+	result[1][1] /= result[1][3];
+	result[1][2] /= result[1][3];
 
 	/* Check segment is partly in frustum */
 	if (!mtx_checkClip(result, 2, clip_planes)) {
 		return;
 	}
 
-	/* Project segment to viewport */
-	memcpy(segment, result, sizeof(float)*4*4);
-	mtx_mult(viewport_mtx, segment, result);
+	/*mtx_print(result);
+	printf("[1: %.3f,%.3f -> %.3f,%.3f]\n",
+		result[0][0]/result[0][2],
+		result[0][1]/result[0][2],
+		result[1][0]/result[1][2],
+		result[1][1]/result[1][2]
+	);*/
 
-	draw_line(surf, result[0][0], result[0][1], result[1][0], result[1][1]);
+	/* Project segment to viewport */
+	result[0][3] = result[1][3] = 1.0;
+	memcpy(segment, result, sizeof(float)*4*4);
+	mtx_mult(segment, viewport_mtx, result);
+	/*mtx_print(segment);
+	mtx_print(viewport_mtx);
+	mtx_print(result);*/
+
+	draw_line(surf,
+		(int) (result[0][0]/result[0][2]),
+		(int) (result[0][1]/result[0][2]),
+		(int) (result[1][0]/result[1][2]),
+		(int) (result[1][1]/result[1][2])
+	);
 }
 
 /*--- Draw operations ---*/
@@ -218,5 +254,5 @@ static void line(SDL_Surface *surf,
 static void draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2)
 {
 	/* Clip line to viewport */
-	fprintf(stderr, "draw_line(%d,%d, %d,%d)\n", x1,y1, x2,y2);
+	printf("draw_line(%d,%d, %d,%d)\n", x1,y1, x2,y2);
 }

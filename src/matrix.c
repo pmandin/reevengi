@@ -34,9 +34,8 @@ void mtx_print(float m[4][4])
 {
 	int i;
 
-	printf("-\n");
 	for (i=0; i<4; i++) {
-		printf("(%.3f\t%.3f\t%.3f\t%.3f)\n",
+		printf("(%d: %.3f\t%.3f\t%.3f\t%.3f)\n", i,
 			m[i][0],m[i][1],m[i][2],m[i][3]);
 	}
 }

@@ -115,6 +115,10 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	gl.MultMatrixf(&m[0][0]);
 
 	translate(-x_from, -y_from, -z_from);
+
+	/*GLfloat m1[4][4];
+	gl.GetFloatv(GL_MODELVIEW_MATRIX, &m1[0][0]);	
+	mtx_print(m1);*/
 }
 
 static void scale(float x, float y, float z)
