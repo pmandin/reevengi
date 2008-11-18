@@ -291,7 +291,6 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 		points[num_point_outside][0] = x;
 		points[num_point_outside][1] = y;
 		points[num_point_outside][2] = z;
-		break;
 	}
 }
 
