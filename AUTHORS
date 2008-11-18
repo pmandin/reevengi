@@ -20,3 +20,11 @@ Psxdev project
 - Fast IDCT
 Independent JPEG Group's software
   http://www.ijg.org/
+
+- Ray/Plane intersection
+Paul Bourke
+http://local.wasp.uwa.edu.au/~pbourke/geometry/planeline/
+
+- View frustum culling
+Antonio Ramires Fernandes
+http://www.lighthouse3d.com/opengl/viewfrustum/
