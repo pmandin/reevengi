@@ -194,6 +194,7 @@ static void line(SDL_Surface *surf,
 	float x2, float y2, float z2)
 {
 	float segment[4][4], result[4][4];
+	int clip_result;
 
 	/*printf("[0: %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f]\n",x1,y1,z1,x2,y2,z2);*/
 	memset(segment, 0, sizeof(float)*4*4);
@@ -221,8 +222,15 @@ static void line(SDL_Surface *surf,
 	result[1][2] /= result[1][3];
 
 	/* Check segment is partly in frustum */
-	if (!mtx_checkClip(result, 2, clip_planes)) {
-		return;
+	clip_result = mtx_clipCheck(result, 2, clip_planes);
+	switch(clip_result) {
+		case CLIPPING_OUTSIDE:
+			return;
+		case CLIPPING_NEEDED:
+			mtx_clipSegment(result, clip_planes);
+			break;
+		default:
+			break;
 	}
 
 	/*mtx_print(result);

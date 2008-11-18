@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "matrix.h"
+
 /*--- Functions ---*/
 
 void mtx_setIdentity(float m[4][4])
@@ -224,9 +226,10 @@ static int dotProductPlus(float point[4], float plane[4])
 	return (point[0]*plane[0] + point[1]*plane[1] + point[2]*plane[2] + plane[3]);
 }
 
-int mtx_checkClip(float points[4][4], int num_points, float clip[6][4])
+int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
 {
 	int i;
+	int result = CLIPPING_INSIDE;
 
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0;
@@ -238,9 +241,17 @@ int mtx_checkClip(float points[4][4], int num_points, float clip[6][4])
 
 		if (num_outsides==num_points) {
 			/* All points outside of current clip plane */
-			return 0;
+			return CLIPPING_OUTSIDE;
+		} else if (num_outsides>0) {
+			/* At least one point outside, need clipping */
+			result = CLIPPING_NEEDED;
 		}
 	}
 
-	return 1;
+	return result;
 }
+
+void mtx_clipSegment(float points[4][4], float clip[6][4])
+{
+}
+
