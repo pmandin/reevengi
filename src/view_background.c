@@ -188,10 +188,10 @@ void view_background_draw(void)
 
 	/* World origin */
 	drawOrigin();
-	/*drawCameraSwitches();*/
+	drawCameraSwitches();
 
 	render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
-	/*drawGrid();*/
+	drawGrid();
 	drawOrigin();	/* what the camera looks at */
 }
 
