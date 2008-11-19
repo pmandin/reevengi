@@ -188,10 +188,10 @@ void view_background_draw(void)
 
 	/* World origin */
 	drawOrigin();
-	drawCameraSwitches();
+	/*drawCameraSwitches();*/
 
 	render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
-	drawGrid();
+	/*drawGrid();*/
 	drawOrigin();	/* what the camera looks at */
 }
 
@@ -200,16 +200,16 @@ static void drawOrigin(void)
 	render.push_matrix();
 	render.scale(3000.0, 3000.0, 3000.0);
 
-	render.set_color(video.screen, 0x00ff0000);
-	render.line(video.screen,
+	render.set_color(0x00ff0000);
+	render.line(
 		0.0, 0.0, 0.0,
 		1.0, 0.0, 0.0);
-	render.set_color(video.screen, 0x0000ff00);
-	render.line(video.screen,
+	render.set_color(0x0000ff00);
+	render.line(
 		0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0);
-	render.set_color(video.screen, 0x000000ff);
-	render.line(video.screen,
+	render.set_color(0x000000ff);
+	render.line(
 		0.0, 0.0, 0.0,
 		0.0, 0.0, 1.0);
 
@@ -220,15 +220,15 @@ static void drawGrid(void)
 {
 	int i;
 
-	render.set_color(video.screen, 0x00ffffff);
+	render.set_color(0x00ffffff);
 
 	render.push_matrix();
 	render.scale(1000.0, 1000.0, 1000.0);
 	for (i=-40; i<=40; i+=10) {
-		render.line(video.screen,
+		render.line(
 			-40.0, 20.0, i,
 			40.0, 20.0, i);
-		render.line(video.screen,
+		render.line(
 			i, 20.0, -40.0,
 			i, 20.0, 40.0);
 	}
@@ -249,7 +249,7 @@ static void drawCameraSwitches(void)
 			return;
 	}
 
-	render.set_color(video.screen, 0x00cc8844);
+	render.set_color(0x00cc8844);
 	render.push_matrix();
 	render.scale(1.0, 100.0, 1.0);
 	for (i=0; i<num_switches; i++) {
@@ -257,16 +257,16 @@ static void drawCameraSwitches(void)
 			continue;
 		}
 
-		render.line(video.screen,
+		render.line(
 			switchPos[0], 20, switchPos[1],
 			switchPos[2], 20, switchPos[3]);
-		render.line(video.screen,
+		render.line(
 			switchPos[2], 20, switchPos[3],
 			switchPos[4], 20, switchPos[5]);
-		render.line(video.screen,
+		render.line(
 			switchPos[4], 20, switchPos[5],
 			switchPos[6], 20, switchPos[7]);
-		render.line(video.screen,
+		render.line(
 			switchPos[6], 20, switchPos[7],
 			switchPos[0], 20, switchPos[1]);
 	}

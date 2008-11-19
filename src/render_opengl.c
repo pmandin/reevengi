@@ -49,8 +49,8 @@ static void translate(float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
 
-static void set_color(SDL_Surface *surf, Uint32 color);
-static void line(SDL_Surface *surf,
+static void set_color(Uint32 color);
+static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
 
@@ -141,13 +141,13 @@ static void pop_matrix(void)
 	gl.PopMatrix();
 }
 
-static void set_color(SDL_Surface *surf, Uint32 color)
+static void set_color(Uint32 color)
 {
 	gl.Color4ub((color>>16) & 0xff, (color>>8) & 0xff,
 		color & 0xff, (color>>24) & 0xff);
 }
 
-static void line(SDL_Surface *surf,
+static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2)
 {

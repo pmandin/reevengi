@@ -22,6 +22,7 @@
 #include "render.h"
 #include "render_background.h"
 #include "matrix.h"
+#include "draw.h"
 
 /*--- Defines ---*/
 
@@ -36,7 +37,6 @@ static float projection_mtx[4][4];	/* projection matrix */
 static float frustum_mtx[4][4];	/* modelview * projection matrix */
 static float viewport_mtx[4][4]; /* viewport matrix */
 static float clip_planes[6][4]; /* view frustum clip planes */
-static SDL_Rect viewport;
 
 /*--- Functions prototypes ---*/
 
@@ -53,12 +53,10 @@ static void translate(float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
 
-static void set_color(SDL_Surface *surf, Uint32 color);
-static void line(SDL_Surface *surf,
+static void set_color(Uint32 color);
+static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
-
-static void draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2);
 
 /*--- Functions ---*/
 
@@ -103,11 +101,6 @@ static void refresh_render_matrix(void)
 
 static void set_viewport(int x, int y, int w, int h)
 {
-	viewport.x = x;
-	viewport.y = y;
-	viewport.w = w;
-	viewport.h = h;
-
 	viewport_mtx[0][0] = w;
 	viewport_mtx[3][0] = w/2;
 	viewport_mtx[1][1] = -h;
@@ -182,14 +175,12 @@ static void pop_matrix(void)
 	refresh_render_matrix();
 }
 
-static void set_color(SDL_Surface *surf, Uint32 color)
+static void set_color(Uint32 color)
 {
-	render.color = SDL_MapRGBA(surf->format,
-		(color>>16) & 0xff, (color>>8) & 0xff,
-		color & 0xff, (color>>24) & 0xff);
+	draw_setColor(color);
 }
 
-static void line(SDL_Surface *surf,
+static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2)
 {
@@ -249,18 +240,10 @@ static void line(SDL_Surface *surf,
 	mtx_print(viewport_mtx);
 	mtx_print(result);*/
 
-	draw_line(surf,
+	draw_line(
 		(int) (result[0][0]/result[0][2]),
 		(int) (result[0][1]/result[0][2]),
 		(int) (result[1][0]/result[1][2]),
 		(int) (result[1][1]/result[1][2])
 	);
-}
-
-/*--- Draw operations ---*/
-
-static void draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2)
-{
-	/* Clip line to viewport */
-	printf("draw_line(%d,%d, %d,%d)\n", x1,y1, x2,y2);
 }
