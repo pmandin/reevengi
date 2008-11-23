@@ -26,6 +26,10 @@
 
 /*--- Functions ---*/
 
+/*
+	m[col][row]
+*/
+
 void mtx_setIdentity(float m[4][4])
 {
 	memset(m, 0, sizeof(float)*4*4);
@@ -37,8 +41,8 @@ void mtx_print(float m[4][4])
 	int i;
 
 	for (i=0; i<4; i++) {
-		printf("(%d: %.3f\t%.3f\t%.3f\t%.3f)\n", i,
-			m[i][0],m[i][1],m[i][2],m[i][3]);
+		printf("(%8.3f\t%8.3f\t%8.3f\t%8.3f)\n",
+			m[0][i],m[1][i],m[2][i],m[3][i]);
 	}
 }
 
@@ -163,14 +167,15 @@ void mtx_setLookAt(float m[4][4],
 
 void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 {
-	int i,j,k;
+	int row,col;
 
-	memset(result, 0, sizeof(float)*4*4);
-	for (i=0; i<4; i++) {
-		for (j=0; j<4; j++) {
-			for (k=0; k<4; k++) {
-				result[i][j] += m1[i][k]*m2[k][j];
-			}
+	for (row=0; row<4; row++) {
+		for (col=0; col<4; col++) {
+			result[col][row] =
+				m1[0][row]*m2[col][0]
+				+ m1[1][row]*m2[col][1]
+				+ m1[2][row]*m2[col][2]
+				+ m1[3][row]*m2[col][3];
 		}
 	}
 }
@@ -228,8 +233,7 @@ static int dotProductPlus(float point[4], float plane[4])
 
 int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
 {
-	int i;
-	int result = CLIPPING_INSIDE;
+	int i, result = CLIPPING_INSIDE;
 
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0;
@@ -244,6 +248,7 @@ int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
 			return CLIPPING_OUTSIDE;
 		} else if (num_outsides>0) {
 			/* At least one point outside, need clipping */
+			printf("Must clip against plane %d\n", i);
 			result = CLIPPING_NEEDED;
 		}
 	}
@@ -272,6 +277,9 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 			continue;
 		}
 
+		printf("Clipping against plane %d %.3f,%.3f,%.3f,%.3f\n",
+			i, clip[i][0],clip[i][1],clip[i][2],clip[i][3]);
+
 		/* Ah, clip this segment against clip plane */
 		num =	clip[i][0]*points[0][0]+
 			clip[i][1]*points[0][1]+
@@ -286,6 +294,11 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 		x = points[0][0]+u*(points[1][0]-points[0][0]);
 		y = points[0][1]+u*(points[1][1]-points[0][1]);
 		z = points[0][2]+u*(points[1][2]-points[0][2]);
+
+		/*printf("Clip %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f at %.3f,%.3f,%.3f\n",
+			points[0][0], points[0][1], points[0][2], 
+			points[1][0], points[1][1], points[1][2], 
+			x,y,z);*/
 
 		/* Replace point outside, with the one which is on the clip plane */
 		points[num_point_outside][0] = x;
