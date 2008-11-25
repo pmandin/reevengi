@@ -97,34 +97,19 @@ static void recalc_frustum_mtx(void)
 {
 	mtx_mult(projection_mtx, modelview_mtx[num_modelview_mtx], frustum_mtx);
 	mtx_calcFrustumClip(frustum_mtx, clip_planes);
-
-	/*printf("projection_mtx\n");
-	mtx_print(projection_mtx);
-	printf("modelview_mtx[%d]\n", num_modelview_mtx);
-	mtx_print(modelview_mtx[num_modelview_mtx]);
-	printf("frustum_mtx\n");
-	mtx_print(frustum_mtx);*/
 }
 
 static void set_viewport(int x, int y, int w, int h)
 {
-	/*printf("set_viewport\n");*/
-
 	viewport_mtx[0][0] = w/2;
 	viewport_mtx[3][0] = w/2;
 	viewport_mtx[1][1] = -h/2;
 	viewport_mtx[3][1] = h/2;
-
-	/*printf("viewport_mtx\n");
-	mtx_print(viewport_mtx);*/
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
 {
-	/*printf("set_projection\n");*/
-
 	mtx_setProjection(projection_mtx, angle, aspect, z_near, z_far);
-
 	recalc_frustum_mtx();
 }
 
@@ -132,18 +117,11 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up)
 {
-	/*printf("set_camera\n");
-	printf("from %.3f,%.3f,%.3f\n", x_from, y_from, z_from);
-	printf("to %.3f,%.3f,%.3f\n", x_to, y_to, z_to);
-	printf("up %.3f,%.3f,%.3f\n", x_up, y_up, z_up);*/
-
 	mtx_setLookAt(modelview_mtx[num_modelview_mtx],
 		x_from, y_from, z_from,
 		x_to, y_to, z_to,
 		x_up, y_up, z_up);
-
 	translate(-x_from, -y_from, -z_from);
-
 	recalc_frustum_mtx();
 }
 
@@ -151,24 +129,17 @@ static void scale(float x, float y, float z)
 {
 	float sm[4][4], r[4][4];
 
-	/*printf("scale %.3f,%.3f,%.3f\n",x,y,z);*/
-
 	mtx_setIdentity(sm);
 	sm[0][0] = x;
 	sm[1][1] = y;
 	sm[2][2] = z;
 	mtx_mult(modelview_mtx[num_modelview_mtx], sm, r);
 	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
-
-	/*printf("modelview_mtx[%d]\n", num_modelview_mtx);
-	mtx_print(modelview_mtx[num_modelview_mtx]);*/
 }
 
 static void translate(float x, float y, float z)
 {
 	float tm[4][4], r[4][4];
-
-	/*printf("translate %.3f,%.3f,%.3f\n",x,y,z);*/
 
 	mtx_setIdentity(tm);
 	tm[3][0] = x;
@@ -176,9 +147,6 @@ static void translate(float x, float y, float z)
 	tm[3][2] = z;
 	mtx_mult(modelview_mtx[num_modelview_mtx], tm, r);
 	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
-
-	/*printf("modelview_mtx[%d]\n", num_modelview_mtx);
-	mtx_print(modelview_mtx[num_modelview_mtx]);*/
 }
 
 static void push_matrix(void)
@@ -188,9 +156,7 @@ static void push_matrix(void)
 	}
 
 	/* Copy current matrix in next position */
-	/*printf("push_matrix\n");*/
 	memcpy(modelview_mtx[num_modelview_mtx+1], modelview_mtx[num_modelview_mtx], sizeof(float)*4*4);
-
 	++num_modelview_mtx;
 }
 
@@ -200,11 +166,7 @@ static void pop_matrix(void)
 		return;
 	}
 
-	/*printf("pop_matrix\n");*/
 	--num_modelview_mtx;
-
-	/*printf("modelview_mtx[%d]\n", num_modelview_mtx);
-	mtx_print(modelview_mtx[num_modelview_mtx]);*/
 }
 
 static void set_color(Uint32 color)
@@ -235,13 +197,13 @@ static void line(
 	/* Project against current modelview */
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 	memcpy(segment, result, sizeof(float)*4*4);
-	/*printf("segment -> modelview\n");
-	mtx_print(segment);*/
+	printf("segment -> modelview\n");
+	mtx_print(segment);
 
 	/* Project segment in frustum */
 	mtx_mult(projection_mtx, segment, result);
-	/*printf("segment -> frustum\n");
-	mtx_print(result);*/
+	printf("segment -> frustum\n");
+	mtx_print(result);
 
 	/* Homogenous -> Normalize segment */
 	result[0][0] /= result[0][3];
@@ -256,6 +218,7 @@ static void line(
 	printf("projected %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
 		result[0][0],result[0][1],result[0][2],
 		result[1][0],result[1][1],result[1][2]);
+	/*return;*/
 
 	/* Check segment is partly in frustum */
 	clip_result = mtx_clipCheck(result, 2, clip_planes);
@@ -292,66 +255,3 @@ static void line(
 		(int) (result[1][1]/result[1][2])
 	);
 }
-
-/*
-	viewport 320x240
-
-	projection 60 deg, 4/3, 1.0, 100000.0
-
-	from 11268.000,-2664.000,-3600.000
-	to 22356.000,-2466.000,522.000
-	up 0.000,-1.000,0.000
-
-	cam switch
-	push
-		scale	1.0,100.0,1.0
-		segment 10800.000,20.000,-7400.000 -> 12600.000,20.000,7800.000
-		outside
-		segment 12600.000,20.000,7800.000 -> 18100.000,20.000,7600.000
-		clipped
-		segment 18100.000,20.000,7600.000 -> 15999.000,20.000,-7400.000
-		outside
-		segment 15999.000,20.000,-7400.000 -> 10800.000,20.000,-7400.000
-		outside
-	pop
-
-	origin
-	push
-		translate 22356.000,-2466.000,522.000
-		scale 3000.000,3000.000,3000.000
-		segment 0.000,0.000,0.000 -> 1.000,0.000,0.000
-		inside
-		segment 0.000,0.000,0.000 -> 0.000,1.000,0.000
-		inside
-		segment 0.000,0.000,0.000 -> 0.000,0.000,1.000
-		inside
-	pop	
-
-View
-	320	0	0	160	*	vx	= vx*320+160
-	0	-240	0	120		vy	= vy*-240+120
-	0	0	1	0		vz	= vz
-	0	0	0	1		vw	= vw
-Proj
-	1.299	0	0	0
-	0	1.732	0	0
-	0	0	-1	-2
-	0	0	-1	0	
-Cam
-	0.348	0	-0.937	-7300.752
-	0.016	-1	0.006	-2819.391
-	-0.937	-0.017	-0.348	9261.467
-	0	0	0	1
-
-projected -0.000,0.000,1.000 -> -0.000,-4.213,1.000
-Clipping against plane 2 0.052,0.998,0.019,0.225
-clipped -0.000,0.000,1.000 -> -0.000,-0.245,1.000
-
-projected -0.000,0.000,1.000 -> -0.000,-2.847,1.000
-Clipping against plane 2 0.078,0.997,0.029,0.337
-clipped -0.000,0.000,1.000 -> -0.000,-0.367,1.000
-
-projected -0.000,0.000,1.000 -> -0.000,-5.542,1.000
-Clipping against plane 2 0.039,0.999,0.014,0.169
-clipped -0.000,0.000,1.000 -> -0.000,-0.184,1.000
-*/
