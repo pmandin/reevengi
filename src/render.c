@@ -34,7 +34,6 @@ static float modelview_mtx[MAX_MODELVIEW_MTX][4][4];	/* 16 4x4 matrices */
 static int num_modelview_mtx;	/* current active matrix */
 
 static float projection_mtx[4][4];	/* projection matrix */
-static float frustum_mtx[4][4];	/* modelview * projection matrix */
 static float viewport_mtx[4][4]; /* viewport matrix */
 static float clip_planes[6][4]; /* view frustum clip planes */
 
@@ -83,7 +82,6 @@ void render_soft_init(render_t *render)
 	num_modelview_mtx = 0;
 	mtx_setIdentity(modelview_mtx[0]);
 	mtx_setIdentity(projection_mtx);
-	mtx_setIdentity(frustum_mtx);
 	mtx_setIdentity(viewport_mtx);
 }
 
@@ -95,6 +93,8 @@ static void render_soft_shutdown(render_t *render)
 /* Recalculate frustum matrix = modelview*projection */
 static void recalc_frustum_mtx(void)
 {
+	float frustum_mtx[4][4];
+
 	mtx_mult(projection_mtx, modelview_mtx[num_modelview_mtx], frustum_mtx);
 	mtx_calcFrustumClip(frustum_mtx, clip_planes);
 }
@@ -178,7 +178,8 @@ static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2)
 {
-	float segment[4][4], result[4][4];
+	float segment[4][4], result[4][4], frustum_mtx[4][4];
+
 	int clip_result;
 
 	printf("segment %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",x1,y1,z1,x2,y2,z2);
@@ -194,16 +195,13 @@ static void line(
 	segment[1][3] = 1.0;
 	/*mtx_print(segment);*/
 
-	/* Project against current modelview */
-	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
-	memcpy(segment, result, sizeof(float)*4*4);
-	printf("segment -> modelview\n");
-	mtx_print(segment);
+	mtx_mult(projection_mtx, modelview_mtx[num_modelview_mtx], frustum_mtx);
 
-	/* Project segment in frustum */
-	mtx_mult(projection_mtx, segment, result);
+	/* Project against current modelview */
+	mtx_mult(frustum_mtx, segment, result);
+	memcpy(segment, result, sizeof(float)*4*4);
 	printf("segment -> frustum\n");
-	mtx_print(result);
+	mtx_print(segment);
 
 	/* Homogenous -> Normalize segment */
 	result[0][0] /= result[0][3];
@@ -218,7 +216,6 @@ static void line(
 	printf("projected %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
 		result[0][0],result[0][1],result[0][2],
 		result[1][0],result[1][1],result[1][2]);
-	/*return;*/
 
 	/* Check segment is partly in frustum */
 	clip_result = mtx_clipCheck(result, 2, clip_planes);
@@ -227,11 +224,11 @@ static void line(
 			printf("outside\n");
 			break;
 		case CLIPPING_NEEDED:
-			/*printf("must clip\n");*/
+			printf("must clip\n");
 			mtx_clipSegment(result, 2, clip_planes);
 			break;
 		default:
-			/*printf("inside\n");*/
+			printf("inside\n");
 			break;
 	}
 
