@@ -33,6 +33,7 @@
 static float modelview_mtx[MAX_MODELVIEW_MTX][4][4];	/* 16 4x4 matrices */
 static int num_modelview_mtx;	/* current active matrix */
 
+static float camera_mtx[4][4]; /* camera matrix */
 static float projection_mtx[4][4];	/* projection matrix */
 static float viewport_mtx[4][4]; /* viewport matrix */
 static float clip_planes[6][4]; /* view frustum clip planes */
@@ -83,6 +84,7 @@ void render_soft_init(render_t *render)
 	mtx_setIdentity(modelview_mtx[0]);
 	mtx_setIdentity(projection_mtx);
 	mtx_setIdentity(viewport_mtx);
+	mtx_setIdentity(camera_mtx);
 }
 
 static void render_soft_shutdown(render_t *render)
@@ -95,7 +97,7 @@ static void recalc_frustum_mtx(void)
 {
 	float frustum_mtx[4][4];
 
-	mtx_mult(projection_mtx, modelview_mtx[num_modelview_mtx], frustum_mtx);
+	mtx_mult(projection_mtx, camera_mtx, frustum_mtx);
 	mtx_calcFrustumClip(frustum_mtx, clip_planes);
 }
 
@@ -117,11 +119,22 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up)
 {
-	mtx_setLookAt(modelview_mtx[num_modelview_mtx],
+	float tm[4][4], r[4][4];
+
+	mtx_setLookAt(camera_mtx,
 		x_from, y_from, z_from,
 		x_to, y_to, z_to,
 		x_up, y_up, z_up);
-	translate(-x_from, -y_from, -z_from);
+	/*translate(-x_from, -y_from, -z_from);*/
+
+	/* Translate to cam position */
+	mtx_setIdentity(tm);
+	tm[3][0] = -x_from;
+	tm[3][1] = -y_from;
+	tm[3][2] = -z_from;
+	mtx_mult(camera_mtx, tm, r);
+	memcpy(camera_mtx, r, sizeof(float)*4*4);
+
 	recalc_frustum_mtx();
 }
 
@@ -178,11 +191,10 @@ static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2)
 {
-	float segment[4][4], result[4][4], frustum_mtx[4][4];
-
+	float segment[4][4], result[4][4];
 	int clip_result;
 
-	printf("segment %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",x1,y1,z1,x2,y2,z2);
+	/*printf("segment %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",x1,y1,z1,x2,y2,z2);*/
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = x1;
@@ -193,15 +205,9 @@ static void line(
 	segment[1][1] = y2;
 	segment[1][2] = z2;
 	segment[1][3] = 1.0;
-	/*mtx_print(segment);*/
 
-	mtx_mult(projection_mtx, modelview_mtx[num_modelview_mtx], frustum_mtx);
-
-	/* Project against current modelview */
-	mtx_mult(frustum_mtx, segment, result);
-	memcpy(segment, result, sizeof(float)*4*4);
-	printf("segment -> frustum\n");
-	mtx_print(segment);
+	/* Project in current modelview */
+	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 
 	/* Homogenous -> Normalize segment */
 	result[0][0] /= result[0][3];
@@ -213,37 +219,37 @@ static void line(
 	result[1][2] /= result[1][3];
 	result[1][3] = 1.0;
 
-	printf("projected %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
-		result[0][0],result[0][1],result[0][2],
-		result[1][0],result[1][1],result[1][2]);
-
-	/* Check segment is partly in frustum */
+	/* Clip segment to viewport */
 	clip_result = mtx_clipCheck(result, 2, clip_planes);
 	switch(clip_result) {
 		case CLIPPING_OUTSIDE:
-			printf("outside\n");
-			break;
+			/*printf("outside\n");*/
+			return;
 		case CLIPPING_NEEDED:
-			printf("must clip\n");
+			/*printf("must clip\n");*/
 			mtx_clipSegment(result, 2, clip_planes);
 			break;
 		default:
-			printf("inside\n");
+			/*printf("inside\n");*/
 			break;
 	}
 
-	printf("clipped %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
-		result[0][0],result[0][1],result[0][2],
-		result[1][0],result[1][1],result[1][2]);
-	/*mtx_print(result);*/
-
-	/* Project segment to viewport */
-	memcpy(segment, result, sizeof(float)*4*4);
-	mtx_mult(viewport_mtx, segment, result);
-
-	/*printf("viewport %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
+	/*printf("clipped %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
 		result[0][0],result[0][1],result[0][2],
 		result[1][0],result[1][1],result[1][2]);*/
+
+	/* Project against view frustum */
+	mtx_mult(camera_mtx, result, segment);
+	mtx_mult(projection_mtx, segment, result);
+	mtx_mult(viewport_mtx, result, segment);
+	memcpy(result, segment, sizeof(float)*4*4);
+
+	/*printf("projected %.3f,%.3f,%.3f,%.3f -> %.3f,%.3f,%.3f,%.3f\n",
+		result[0][0],result[0][1],result[0][2],result[0][3],
+		result[1][0],result[1][1],result[1][2],result[1][3]);
+	printf("drawable %.3f,%.3f -> %.3f,%.3f\n",
+		result[0][0]/result[0][2],result[0][1]/result[0][2],
+		result[1][0]/result[1][2],result[1][1]/result[1][2]);*/
 
 	draw_line(
 		(int) (result[0][0]/result[0][2]),
