@@ -36,6 +36,7 @@ static int num_modelview_mtx;	/* current active matrix */
 static float camera_mtx[4][4]; /* camera matrix */
 static float projection_mtx[4][4];	/* projection matrix */
 static float viewport_mtx[4][4]; /* viewport matrix */
+static float frustum_mtx[4][4]; /* frustum = viewport*projection*camera */
 static float clip_planes[6][4]; /* view frustum clip planes */
 
 /*--- Functions prototypes ---*/
@@ -85,6 +86,7 @@ void render_soft_init(render_t *render)
 	mtx_setIdentity(projection_mtx);
 	mtx_setIdentity(viewport_mtx);
 	mtx_setIdentity(camera_mtx);
+	mtx_setIdentity(frustum_mtx);
 }
 
 static void render_soft_shutdown(render_t *render)
@@ -95,10 +97,12 @@ static void render_soft_shutdown(render_t *render)
 /* Recalculate frustum matrix = modelview*projection */
 static void recalc_frustum_mtx(void)
 {
-	float frustum_mtx[4][4];
+	float projcam_mtx[4][4];
 
-	mtx_mult(projection_mtx, camera_mtx, frustum_mtx);
-	mtx_calcFrustumClip(frustum_mtx, clip_planes);
+	mtx_mult(projection_mtx, camera_mtx, projcam_mtx);
+	mtx_calcFrustumClip(projcam_mtx, clip_planes);
+
+	mtx_mult(viewport_mtx, projcam_mtx, frustum_mtx);
 }
 
 static void set_viewport(int x, int y, int w, int h)
@@ -137,7 +141,9 @@ static void set_modelview(float x_from, float y_from, float z_from,
 
 	recalc_frustum_mtx();
 
-	mtx_setIdentity(modelview_mtx[num_modelview_mtx]);
+	/* Reset matrix stack for modelview */
+	num_modelview_mtx = 0;
+	mtx_setIdentity(modelview_mtx[0]);
 }
 
 static void scale(float x, float y, float z)
@@ -234,15 +240,12 @@ static void line(
 	}
 
 	/* Project against view frustum */
-	mtx_mult(camera_mtx, result, segment);
-	mtx_mult(projection_mtx, segment, result);
-	mtx_mult(viewport_mtx, result, segment);
-	memcpy(result, segment, sizeof(float)*4*4);
+	mtx_mult(frustum_mtx, result, segment);
 
 	draw_line(
-		(int) (result[0][0]/result[0][2]),
-		(int) (result[0][1]/result[0][2]),
-		(int) (result[1][0]/result[1][2]),
-		(int) (result[1][1]/result[1][2])
+		(int) (segment[0][0]/segment[0][2]),
+		(int) (segment[0][1]/segment[0][2]),
+		(int) (segment[1][0]/segment[1][2]),
+		(int) (segment[1][1]/segment[1][2])
 	);
 }
