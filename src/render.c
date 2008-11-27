@@ -165,6 +165,7 @@ static void translate(float x, float y, float z)
 static void push_matrix(void)
 {
 	if (num_modelview_mtx==MAX_MODELVIEW_MTX-1) {
+		fprintf(stderr, "Matrix stack full\n");
 		return;
 	}
 
@@ -176,6 +177,7 @@ static void push_matrix(void)
 static void pop_matrix(void)
 {
 	if (num_modelview_mtx==0) {
+		fprintf(stderr, "Matrix stack empty\n");
 		return;
 	}
 
