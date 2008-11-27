@@ -136,6 +136,8 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	memcpy(camera_mtx, r, sizeof(float)*4*4);
 
 	recalc_frustum_mtx();
+
+	mtx_setIdentity(modelview_mtx[num_modelview_mtx]);
 }
 
 static void scale(float x, float y, float z)
@@ -196,8 +198,6 @@ static void line(
 	float segment[4][4], result[4][4];
 	int clip_result;
 
-	/*printf("segment %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",x1,y1,z1,x2,y2,z2);*/
-
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = x1;
 	segment[0][1] = y1;
@@ -225,33 +225,19 @@ static void line(
 	clip_result = mtx_clipCheck(result, 2, clip_planes);
 	switch(clip_result) {
 		case CLIPPING_OUTSIDE:
-			/*printf("outside\n");*/
 			return;
 		case CLIPPING_NEEDED:
-			/*printf("must clip\n");*/
 			mtx_clipSegment(result, 2, clip_planes);
 			break;
 		default:
-			/*printf("inside\n");*/
 			break;
 	}
-
-	/*printf("clipped %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f\n",
-		result[0][0],result[0][1],result[0][2],
-		result[1][0],result[1][1],result[1][2]);*/
 
 	/* Project against view frustum */
 	mtx_mult(camera_mtx, result, segment);
 	mtx_mult(projection_mtx, segment, result);
 	mtx_mult(viewport_mtx, result, segment);
 	memcpy(result, segment, sizeof(float)*4*4);
-
-	/*printf("projected %.3f,%.3f,%.3f,%.3f -> %.3f,%.3f,%.3f,%.3f\n",
-		result[0][0],result[0][1],result[0][2],result[0][3],
-		result[1][0],result[1][1],result[1][2],result[1][3]);
-	printf("drawable %.3f,%.3f -> %.3f,%.3f\n",
-		result[0][0]/result[0][2],result[0][1]/result[0][2],
-		result[1][0]/result[1][2],result[1][1]/result[1][2]);*/
 
 	draw_line(
 		(int) (result[0][0]/result[0][2]),

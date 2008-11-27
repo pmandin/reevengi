@@ -182,17 +182,12 @@ void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 
 void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 {
-	/*printf("frustum_mtx\n");
-	mtx_print(frustum);*/
-
 	/* right */
 	clip[0][0] = frustum[0][3]-frustum[0][0];
 	clip[0][1] = frustum[1][3]-frustum[1][0];
 	clip[0][2] = frustum[2][3]-frustum[2][0];
 	clip[0][3] = frustum[3][3]-frustum[3][0];
 	normalize(clip[0]);
-	/*printf("clip[0]: %.3f,%.3f,%.3f,%.3f\n",
-		clip[0][0],clip[0][1],clip[0][2],clip[0][3]);*/
 
 	/* left */
 	clip[1][0] = frustum[0][3]+frustum[0][0];
@@ -200,8 +195,6 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	clip[1][2] = frustum[2][3]+frustum[2][0];
 	clip[1][3] = frustum[3][3]+frustum[3][0];
 	normalize(clip[1]);
-	/*printf("clip[1]: %.3f,%.3f,%.3f,%.3f\n",
-		clip[1][0],clip[1][1],clip[1][2],clip[1][3]);*/
 
 	/* top */
 	clip[2][0] = frustum[0][3]-frustum[0][1];
@@ -209,8 +202,6 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	clip[2][2] = frustum[2][3]-frustum[2][1];
 	clip[2][3] = frustum[3][3]-frustum[3][1];
 	normalize(clip[2]);
-	/*printf("clip[2]: %.3f,%.3f,%.3f,%.3f\n",
-		clip[2][0],clip[2][1],clip[2][2],clip[2][3]);*/
 
 	/* bottom */
 	clip[3][0] = frustum[0][3]+frustum[0][1];
@@ -218,8 +209,6 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	clip[3][2] = frustum[2][3]+frustum[2][1];
 	clip[3][3] = frustum[3][3]+frustum[3][1];
 	normalize(clip[3]);
-	/*printf("clip[3]: %.3f,%.3f,%.3f,%.3f\n",
-		clip[3][0],clip[3][1],clip[3][2],clip[3][3]);*/
 
 	/* far */
 	clip[4][0] = frustum[0][3]-frustum[0][2];
@@ -227,8 +216,6 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	clip[4][2] = frustum[2][3]-frustum[2][2];
 	clip[4][3] = frustum[3][3]-frustum[3][2];
 	normalize(clip[4]);
-	/*printf("clip[4]: %.3f,%.3f,%.3f,%.3f\n",
-		clip[4][0],clip[4][1],clip[4][2],clip[4][3]);*/
 
 	/* near */
 	clip[5][0] = frustum[0][3]+frustum[0][2];
@@ -236,8 +223,6 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 	clip[5][2] = frustum[2][3]+frustum[2][2];
 	clip[5][3] = frustum[3][3]+frustum[3][2];
 	normalize(clip[5]);
-	/*printf("clip[5]: %.3f,%.3f,%.3f,%.3f\n",
-		clip[5][0],clip[5][1],clip[5][2],clip[5][3]);*/
 }
 
 /* For each clip plane, check if all points are on same side, or not */
@@ -253,23 +238,16 @@ int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0;
 		for (j=0; j<num_points; j++) {
-			float r = dotProductPlus(points[j], clip[i]);
-			/*printf("clip: p[%d]=%.3f,%.3f,%.3f,%.3f, c[%d]=%.3f,%.3f,%.3f,%.3f, r=%.3f\n",
-				j, points[j][0],points[j][1],points[j][2],points[j][3],
-				i, clip[i][0],clip[i][1],clip[i][2],clip[i][3],
-				r);*/
-			if (r<0) {
+			if (dotProductPlus(points[j], clip[i])<0) {
 				++num_outsides;
 			}
 		}
 
 		if (num_outsides==num_points) {
 			/* All points outside of current clip plane */
-			/*printf("Outside of clip plane %d\n", i);*/
 			return CLIPPING_OUTSIDE;
 		} else if (num_outsides>0) {
 			/* At least one point outside, need clipping */
-			/*printf("Must clip against plane %d\n", i);*/
 			result = CLIPPING_NEEDED;
 		}
 	}
@@ -298,8 +276,6 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 			continue;
 		}
 
-		/*printf("Clipping against plane %d\n", i);*/
-
 		/* Ah, clip this segment against clip plane */
 		num =	clip[i][0]*points[0][0]+
 			clip[i][1]*points[0][1]+
@@ -314,11 +290,6 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 		x = points[0][0]+u*(points[1][0]-points[0][0]);
 		y = points[0][1]+u*(points[1][1]-points[0][1]);
 		z = points[0][2]+u*(points[1][2]-points[0][2]);
-
-		/*printf("Clip %.3f,%.3f,%.3f -> %.3f,%.3f,%.3f at %.3f,%.3f,%.3f\n",
-			points[0][0], points[0][1], points[0][2], 
-			points[1][0], points[1][1], points[1][2], 
-			x,y,z);*/
 
 		/* Replace point outside, with the one which is on the clip plane */
 		points[num_point_outside][0] = x;
