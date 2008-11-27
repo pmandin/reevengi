@@ -86,6 +86,18 @@ void draw_line(int x1, int y1, int x2, int y2)
 
 	/*printf("draw_line(%d,%d, %d,%d)\n", x1,y1, x2,y2);*/
 
+	/* Mark dirty rectangle */
+	{
+		int w = dx, h = dy;
+		if (w<0) {
+			x1 = x2; w = -w;
+		}
+		if (h<0) {
+			y1 = y2; h = -h;
+		}
+		video.dirty_rects->setDirty(video.dirty_rects, x1,y1, w,h);
+	}
+
 	switch(surf->format->BytesPerPixel) {
 		case 1:
 			for (; x < dx; x++, pixel += pixx) {
