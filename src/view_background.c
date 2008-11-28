@@ -41,11 +41,15 @@
 #define KEY_CAMERA_UP		SDLK_f
 #define KEY_CAMERA_RESET	SDLK_v
 
+#define KEY_TOGGLE_GRID		SDLK_g
+
 /*--- Variables ---*/
 
 static int reload_bg = 1;
 static int reload_room = 1;
 static int refresh_bg = 1;
+
+static int render_grid = 0;
 
 /*--- Functions prototypes ---*/
 
@@ -113,6 +117,10 @@ void view_background_input(SDL_Event *event)
 				game_state.camera = 0;
 				reload_bg = 1;
 				break;						
+			case KEY_TOGGLE_GRID:
+				render_grid ^= 1;
+				refresh_bg = 1;
+				break;
 		}
 	}
 }
@@ -188,10 +196,12 @@ void view_background_draw(void)
 
 	/* World origin */
 	drawOrigin();
-	drawCameraSwitches();
+	/*drawCameraSwitches();*/
 
 	render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
-	drawGrid();
+	if (render_grid) {
+		drawGrid();
+	}
 	drawOrigin();	/* what the camera looks at */
 }
 
