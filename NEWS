@@ -1,11 +1,7 @@
-v 0.6
+v 0.7
 
-- There are two different demos of Resident Evil 2 for PC.
-- Try to deal with screen aspect ratio if possible.
-- Separated OpenGL and software renderer.
-- Software renderer: rescale background to match window size.
-- More C language compatibility.
-- Configurable prefix for physfs.
+- Separate software and OpenGL renderers.
+- Togglable grid display.
 
 
 See ChangeLog for older changes.

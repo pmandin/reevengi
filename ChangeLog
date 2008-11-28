@@ -1,7 +1,7 @@
 v 0.7
 
-- Started separate software and OpenGL renderers.
-- Display camera switches (OpenGL only).
+- Separate software and OpenGL renderers.
+- Togglable grid display.
 
 v 0.6
 
