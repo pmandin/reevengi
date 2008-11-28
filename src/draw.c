@@ -158,8 +158,8 @@ static int clip_line(int *x1, int *y1, int *x2, int *y2)
 {
 	int left = video.viewport.x;
 	int top = video.viewport.y;
-	int right = left+video.viewport.w;
-	int bottom = top+video.viewport.h;
+	int right = left+video.viewport.w-1;
+	int bottom = top+video.viewport.h-1;
 
 	int draw = 0;
 	for(;;) {
