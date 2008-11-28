@@ -155,6 +155,9 @@ static void line(
 
 #else
 
+#include "video.h"
+#include "render.h"
+
 void render_opengl_init(render_t *render)
 {
 }
