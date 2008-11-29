@@ -43,6 +43,11 @@
 
 #define KEY_TOGGLE_GRID		SDLK_g
 
+#define KEY_MOVE_FORWARD	SDLK_UP
+#define KEY_MOVE_BACKWARD	SDLK_DOWN
+#define KEY_TURN_LEFT		SDLK_LEFT
+#define KEY_TURN_RIGHT		SDLK_RIGHT
+
 /*--- Variables ---*/
 
 static int reload_bg = 1;
@@ -51,17 +56,29 @@ static int refresh_bg = 1;
 
 static int render_grid = 0;
 
+static int refresh_player_pos = 0;
+static float player_x = 0, player_y = 0, player_z = 0;
+static float player_a = 0;
+
+static int player_moveforward = 0;
+static int player_movebackward = 0;
+static int player_turnleft = 0;
+static int player_turnright = 0;
+
 /*--- Functions prototypes ---*/
 
 static void drawOrigin(void);
 static void drawGrid(void);
 static void drawCameraSwitches(void);
 
+static void drawPlayer(void);
+
 /*--- Functions ---*/
 
 void view_background_input(SDL_Event *event)
 {
-	if (event->type == SDL_KEYDOWN) {
+	switch(event->type) {
+	case SDL_KEYDOWN:
 		switch (event->key.keysym.sym) {
 			case KEY_STAGE_DOWN:
 				game_state.stage -= 1;
@@ -121,7 +138,36 @@ void view_background_input(SDL_Event *event)
 				render_grid ^= 1;
 				refresh_bg = 1;
 				break;
+			case KEY_MOVE_FORWARD:
+				player_moveforward = 1;
+				break;
+			case KEY_MOVE_BACKWARD:
+				player_movebackward = 1;
+				break;
+			case KEY_TURN_LEFT:
+				player_turnleft = 1;
+				break;
+			case KEY_TURN_RIGHT:
+				player_turnright = 1;
+				break;
 		}
+		break;
+	case SDL_KEYUP:
+		switch (event->key.keysym.sym) {
+			case KEY_MOVE_FORWARD:
+				player_moveforward = 0;
+				break;
+			case KEY_MOVE_BACKWARD:
+				player_movebackward = 0;
+				break;
+			case KEY_TURN_LEFT:
+				player_turnleft = 0;
+				break;
+			case KEY_TURN_RIGHT:
+				player_turnright = 0;
+				break;
+		}
+		break;
 	}
 }
 
@@ -145,6 +191,19 @@ void view_background_update(void)
 	if (refresh_bg) {
 		render.initBackground(&video, game_state.back_surf);
 		refresh_bg = 0;
+		refresh_player_pos = 1;
+	}
+
+	/* Move player ? */
+	if (player_moveforward) {
+	}
+	if (player_movebackward) {
+	}
+	if (player_turnleft) {
+		player_a -= 0.1;
+	}
+	if (player_turnright) {
+		player_a += 0.1;
 	}
 }
 
@@ -187,12 +246,22 @@ void view_background_draw(void)
 			return;
 	}
 
+	if (refresh_player_pos) {
+		player_x = cam_pos[3];
+		player_y = cam_pos[4];
+		player_z = cam_pos[5];
+		refresh_player_pos = 1;
+	}
+
 	render.set_projection(60.0, 4.0/3.0, 1.0, 100000.0);
 	render.set_modelview(
 		cam_pos[0], cam_pos[1], cam_pos[2],
 		cam_pos[3], cam_pos[4], cam_pos[5],
 		0.0, -1.0, 0.0
 	);
+
+	drawPlayer();
+	return;
 
 	/* World origin */
 	drawOrigin();
@@ -282,3 +351,26 @@ static void drawCameraSwitches(void)
 	}
 	render.pop_matrix();
 }
+
+static void drawPlayer(void)
+{
+	render.set_color(0x004488cc);
+
+	render.push_matrix();
+	render.translate(player_x, player_y, player_z);
+	render.rotate(player_a, 0.0,1.0,0.0);
+	render.scale(2500.0, 2500.0, 2500.0);
+
+	render.line(0.2,0.0,0.0, -0.2,0.0,0.0);	/* head */
+	render.line(-0.2,0.0,0.0, -0.2,-0.4,0.0);
+	render.line(-0.2,-0.4,0.0, 0.2,-0.4,0.0);
+	render.line(0.2,-0.4,0.0, 0.2,0.0,0.0);
+	render.line(0.0,0.0,0.0, 0.0,1.0,0.0);	/* body */
+	render.line(0.0,0.0,0.0, 0.5,0.0,0.0);	/* right arm */
+	render.line(0.0,0.0,0.0, 0.0,0.0,0.5);	/* left arm */
+	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
+	render.line(0.0,1.0,0.0, 0.0,1.5,0.5);	/* left left */
+
+	render.pop_matrix();
+}
+
