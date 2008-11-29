@@ -104,11 +104,16 @@ Resident Evil 3, PC, Game
 Missing:
 - other console versions
 
-Note:
+
+5 Notes/bugs
+------------
 
 All PS1 demos and games use same image format, so it should be easy to add
 support for them. I just need a list of all files on each CD (recursive directory
 tree).
+
+For software renderer, still a small redraw/refresh problem when switching
+camera.
 
 -- 
 Patrice Mandin <pmandin -at- caramail -dot -com>
