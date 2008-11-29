@@ -27,6 +27,8 @@
 #include "video.h"
 #include "render.h"
 
+#include "math.h"
+
 /*--- Defines ---*/
 
 #define KEY_STAGE_DOWN		SDLK_z
@@ -196,8 +198,12 @@ void view_background_update(void)
 
 	/* Move player ? */
 	if (player_moveforward) {
+		player_x += cos((player_a*M_PI)/180)*10.0;
+		player_z -= sin((player_a*M_PI)/180)*10.0;
 	}
 	if (player_movebackward) {
+		player_x -= cos((player_a*M_PI)/180)*10.0;
+		player_z += sin((player_a*M_PI)/180)*10.0;
 	}
 	if (player_turnleft) {
 		player_a -= 0.1;
@@ -250,7 +256,7 @@ void view_background_draw(void)
 		player_x = cam_pos[3];
 		player_y = cam_pos[4];
 		player_z = cam_pos[5];
-		refresh_player_pos = 1;
+		refresh_player_pos = 0;
 	}
 
 	render.set_projection(60.0, 4.0/3.0, 1.0, 100000.0);
@@ -366,10 +372,10 @@ static void drawPlayer(void)
 	render.line(-0.2,-0.4,0.0, 0.2,-0.4,0.0);
 	render.line(0.2,-0.4,0.0, 0.2,0.0,0.0);
 	render.line(0.0,0.0,0.0, 0.0,1.0,0.0);	/* body */
-	render.line(0.0,0.0,0.0, 0.5,0.0,0.0);	/* right arm */
-	render.line(0.0,0.0,0.0, 0.0,0.0,0.5);	/* left arm */
+	render.line(0.0,0.0,0.0, 0.5,0.5,0.0);	/* right arm */
+	render.line(0.0,0.0,0.0, -0.5,0.5,0.0);	/* left arm */
 	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
-	render.line(0.0,1.0,0.0, 0.0,1.5,0.5);	/* left left */
+	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
 
 	render.pop_matrix();
 }
