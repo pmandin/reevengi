@@ -49,8 +49,10 @@ static void set_projection(float angle, float aspect,
 static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up);
+static void set_identity(void);
 static void scale(float x, float y, float z);
 static void translate(float x, float y, float z);
+static void rotate(float angle, float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
 
@@ -68,8 +70,10 @@ void render_soft_init(render_t *render)
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
 	render->set_modelview = set_modelview;
+	render->set_identity = set_identity;
 	render->scale = scale;
 	render->translate = translate;
+	render->rotate = rotate;
 	render->push_matrix = push_matrix;
 	render->pop_matrix = pop_matrix;
 
@@ -143,7 +147,12 @@ static void set_modelview(float x_from, float y_from, float z_from,
 
 	/* Reset matrix stack for modelview */
 	num_modelview_mtx = 0;
-	mtx_setIdentity(modelview_mtx[0]);
+	mtx_setIdentity(modelview_mtx[num_modelview_mtx]);
+}
+
+static void set_identity(void)
+{
+	mtx_setIdentity(modelview_mtx[num_modelview_mtx]);
 }
 
 static void scale(float x, float y, float z)
@@ -168,6 +177,10 @@ static void translate(float x, float y, float z)
 	tm[3][2] = z;
 	mtx_mult(modelview_mtx[num_modelview_mtx], tm, r);
 	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
+}
+
+static void rotate(float angle, float x, float y, float z)
+{
 }
 
 static void push_matrix(void)

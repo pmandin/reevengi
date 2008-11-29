@@ -34,8 +34,10 @@ struct render_s {
 	void (*set_modelview)(float x_from, float y_from, float z_from,
 		float x_to, float y_to, float z_to,
 		float x_up, float y_up, float z_up);
+	void (*set_identity)(void);
 	void (*scale)(float x, float y, float z);
 	void (*translate)(float x, float y, float z);
+	void (*rotate)(float angle, float x, float y, float z);
 	void (*push_matrix)(void);
 	void (*pop_matrix)(void);
 
