@@ -66,6 +66,7 @@ void video_soft_init(video_t *this)
 	}
 
 	this->dirty_rects = dirty_rects_create(this->width, this->height);
+	this->upload_rects = dirty_rects_create(this->width, this->height);
 }
 
 static void shutDown(video_t *this)
@@ -73,6 +74,10 @@ static void shutDown(video_t *this)
 	if (this->dirty_rects) {
 		dirty_rects_destroy(this->dirty_rects);
 		this->dirty_rects = NULL;
+	}
+	if (this->upload_rects) {
+		dirty_rects_destroy(this->upload_rects);
+		this->upload_rects = NULL;
 	}
 }
 
@@ -144,6 +149,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->flags = this->screen->flags;
 
 	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
+	this->upload_rects->resize(this->upload_rects, this->width, this->height);
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
 	video.initViewport(&video);
@@ -160,7 +166,7 @@ static void swapBuffers(video_t *this)
 	}
 
 	/* Update background from rectangle list */
-	list_rects = (SDL_Rect *) calloc(this->dirty_rects->width * this->dirty_rects->height,
+	list_rects = (SDL_Rect *) calloc(this->upload_rects->width * this->upload_rects->height,
 		sizeof(SDL_Rect));
 	if (!list_rects) {
 		SDL_UpdateRect(this->screen, 0,0,0,0);
@@ -168,11 +174,11 @@ static void swapBuffers(video_t *this)
 	}
 
 	i = 0;
-	for (y=0; y<this->dirty_rects->height; y++) {
-		for (x=0; x<this->dirty_rects->width; x++) {
+	for (y=0; y<this->upload_rects->height; y++) {
+		for (x=0; x<this->upload_rects->width; x++) {
 			int maxw = 1<<4, maxh = 1<<4;
 
-			if (this->dirty_rects->markers[y*this->dirty_rects->width + x] == 0) {
+			if (this->upload_rects->markers[y*this->upload_rects->width + x] == 0) {
 				continue;
 			}
 
@@ -193,7 +199,7 @@ static void swapBuffers(video_t *this)
 	}
 
 	SDL_UpdateRects(this->screen, i, list_rects);
-	this->dirty_rects->clear(this->dirty_rects);
+	this->upload_rects->clear(this->upload_rects);
 	free(list_rects);
 }
 

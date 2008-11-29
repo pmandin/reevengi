@@ -177,8 +177,14 @@ void render_background(video_t *this)
 			dst_rect.w = src_rect.w = dst_x2-dst_x1;
 			dst_rect.h = src_rect.h = dst_y2-dst_y1;
 			SDL_BlitSurface(zoom_surf, &src_rect, this->screen, &dst_rect);
+
+			this->upload_rects->setDirty(this->upload_rects,
+				dst_rect.x,dst_rect.y,
+				dst_rect.w,dst_rect.h);
 		}
 	}
+
+	this->dirty_rects->clear(this->dirty_rects);
 }
 
 /* Redraw scaled image in a target surface */

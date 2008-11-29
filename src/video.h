@@ -29,7 +29,8 @@ struct video_s {
 	int width, height, bpp, flags;
 	SDL_Surface *screen;
 	int num_screenshot;
-	dirty_rects_t *dirty_rects;
+	dirty_rects_t *dirty_rects;	/* zones dirtied, where everything must be redraw */
+	dirty_rects_t *upload_rects;	/* zones to be reupload to vram */
 
 	SDL_Rect viewport;
 
