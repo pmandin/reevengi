@@ -2,6 +2,7 @@ v 0.7
 
 - Separate software and OpenGL renderers.
 - Togglable grid display.
+- Removed libGLU dependency.
 
 
 See ChangeLog for older changes.
