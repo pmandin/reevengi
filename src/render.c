@@ -230,16 +230,6 @@ static void line(
 	/* Project in current modelview */
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 
-	/* Homogenous -> Normalize segment */
-	result[0][0] /= result[0][3];
-	result[0][1] /= result[0][3];
-	result[0][2] /= result[0][3];
-	result[0][3] = 1.0;
-	result[1][0] /= result[1][3];
-	result[1][1] /= result[1][3];
-	result[1][2] /= result[1][3];
-	result[1][3] = 1.0;
-
 	/* Clip segment to viewport */
 	clip_result = mtx_clipCheck(result, 2, clip_planes);
 	switch(clip_result) {

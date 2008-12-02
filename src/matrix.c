@@ -228,7 +228,7 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 /* For each clip plane, check if all points are on same side, or not */
 static float dotProductPlus(float point[4], float plane[4])
 {
-	return (point[0]*plane[0] + point[1]*plane[1] + point[2]*plane[2] + plane[3]);
+	return (point[0]*plane[0] + point[1]*plane[1] + point[2]*plane[2] + point[3]*plane[3]);
 }
 
 int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
@@ -261,7 +261,7 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0, num_point_outside=-1;
-		float num,den, u, x,y,z;
+		float num,den, u, x,y,z,w;
 
 		for (j=0; j<num_points; j++) {
 			if (dotProductPlus(points[j], clip[i])<0) {
@@ -280,20 +280,23 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 		num =	clip[i][0]*points[0][0]+
 			clip[i][1]*points[0][1]+
 			clip[i][2]*points[0][2]+
-			clip[i][3];
+			clip[i][3]*points[0][3];
 		den =	clip[i][0]*(points[0][0]-points[1][0])+
 			clip[i][1]*(points[0][1]-points[1][1])+
-			clip[i][2]*(points[0][2]-points[1][2]);
+			clip[i][2]*(points[0][2]-points[1][2])+
+			clip[i][3]*(points[0][3]-points[1][3]);
 
 		u = num/den;
 
 		x = points[0][0]+u*(points[1][0]-points[0][0]);
 		y = points[0][1]+u*(points[1][1]-points[0][1]);
 		z = points[0][2]+u*(points[1][2]-points[0][2]);
+		w = points[0][3]+u*(points[1][3]-points[0][3]);
 
 		/* Replace point outside, with the one which is on the clip plane */
 		points[num_point_outside][0] = x;
 		points[num_point_outside][1] = y;
 		points[num_point_outside][2] = z;
+		points[num_point_outside][3] = w;
 	}
 }
