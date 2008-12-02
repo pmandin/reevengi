@@ -96,6 +96,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 			y1 = y2; h = -h;
 		}
 		video.dirty_rects->setDirty(video.dirty_rects, x1,y1, w,h);
+		video.upload_rects->setDirty(video.upload_rects, x1,y1, w,h);
 	}
 
 	switch(surf->format->BytesPerPixel) {
