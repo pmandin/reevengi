@@ -22,19 +22,81 @@
 
 #include "filesystem.h"
 #include "video.h"
+#include "render.h"
+
+/*--- Defines ---*/
+
+#define EMD_MESHES 7
 
 /*--- Variables ---*/
 
 static void *emd_file = NULL;
 static void *tim_file = NULL;
-static int firsttime = 1;
 
 /*--- Types ---*/
 
 typedef struct {
 	Uint32 offset;
 	Uint32 length;
-} emd_t;
+} emd_header_t;
+
+typedef struct {
+	Sint16 x,y,z,w;
+} emd_vertex_t;
+
+typedef struct {
+	Uint16	n0,v0;
+	Uint16	n1,v1;
+	Uint16	n2,v2;
+} emd_triangle_t;
+
+typedef struct {
+	unsigned char u0,v0;
+	unsigned short clutid;
+	unsigned char u1,v1;
+	unsigned short page;
+	unsigned char u2,v2;
+	unsigned short dummy;
+} emd_triangle_tex_t;
+
+typedef struct {
+	Uint16	n0,v0;
+	Uint16	n1,v1;
+	Uint16	n2,v2;
+	Uint16	n3,v3;
+} emd_quad_t;
+
+typedef struct {
+	unsigned char u0,v0;
+	unsigned short clutid;
+	unsigned char u1,v1;
+	unsigned short page;
+	unsigned char u2,v2;
+	unsigned short dummy0;
+	unsigned char u3,v3;
+	unsigned short dummy1;
+} emd_quad_tex_t;
+
+typedef struct {
+	Uint32	vtx_offset;
+	Uint32	vtx_count;
+	Uint32	nor_offset;
+	Uint32	nor_count;
+	Uint32	mesh_offset;
+	Uint32	mesh_count;
+	Uint32	tex_offset;
+} emd_mesh_t;
+
+typedef struct {
+	Uint32 length;
+	Uint32 dummy;
+	Uint32 num_objects;
+} emd_mesh_header_t;
+
+typedef struct {
+	emd_mesh_t triangles;
+	emd_mesh_t quads;
+} emd_mesh_object_t;
 
 /*--- Functions prototypes ---*/
 
@@ -66,8 +128,8 @@ int model_emd_load(const char *filename)
 	} else {
 		retval = 1;
 	}
-
 	free(tim_filename);
+
 	return retval;
 }
 
@@ -84,11 +146,14 @@ void model_emd_close(void)
 	}
 }
 
-void model_emd_draw(video_t *video)
+void model_emd_draw(void)
 {
-	emd_t *emd_hdr = (emd_t *) emd_file;
+	emd_header_t *emd_header;
+	emd_mesh_header_t *emd_mesh_header;
+	emd_mesh_object_t *emd_mesh_object;
 	Uint32 *hdr_offsets;
-	int i;
+	int num_objects, i, j;
+	static int firsttime = 1;
 
 	if (!emd_file) {
 		return;
@@ -97,13 +162,35 @@ void model_emd_draw(video_t *video)
 	if (!firsttime) {
 		return;
 	}
-	firsttime = 0;
+	firsttime=0;
 
-	/*printf("emd: header 0x%08x, length %d\n",
-		SDL_SwapLE32(emd_hdr->offset), SDL_SwapLE32(emd_hdr->length)
-	);*/
-	hdr_offsets = (Uint32 *) (&((char *) emd_file)[SDL_SwapLE32(emd_hdr->offset)]);
-	/*for (i=0; i<SDL_SwapLE32(emd_hdr->length); i++) {
-		printf("emd:  object %d: offset 0x%08x\n", i, hdr_offsets[i]);
-	}*/
+	emd_header = (emd_header_t *) emd_file;
+
+	hdr_offsets = (Uint32 *)
+		(&((char *) emd_file)[SDL_SwapLE32(emd_header->offset)]);
+
+	emd_mesh_header = (emd_mesh_header_t *)
+		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES])]);
+	num_objects = SDL_SwapLE32(emd_mesh_header->num_objects)/2;
+	printf("mesh: %d objects\n", num_objects);
+
+	emd_mesh_object = (emd_mesh_object_t *)
+		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))]);
+
+	for (i=0; i<num_objects; i++) {
+		int num_tri = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
+		int num_quads = SDL_SwapLE32(emd_mesh_object->quads.mesh_count);
+
+		printf("mesh: object %d: %d triangles, %d quads\n", i, num_tri, num_quads);
+
+		/* Draw triangles */
+		for (j=0; j<num_tri; j++) {
+		}
+
+		/* Draw quads */
+		for (j=0; j<num_quads; j++) {
+		}
+
+		emd_mesh_object++;
+	}
 }

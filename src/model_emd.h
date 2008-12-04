@@ -27,6 +27,6 @@
 
 int model_emd_load(const char *filename);
 void model_emd_close(void);
-void model_emd_draw(video_t *video);
+void model_emd_draw(void);
 
 #endif /* MODEL_EMD */
