@@ -26,6 +26,7 @@
 
 /*--- Defines ---*/
 
+#define EMD_SKELETON 2
 #define EMD_MESHES 7
 
 /*--- Variables ---*/
@@ -39,6 +40,60 @@ typedef struct {
 	Uint32 offset;
 	Uint32 length;
 } emd_header_t;
+
+/*
+64 00
+b0 00
+0f 00
+50 00 00 00
+ee f8 00 00 e3 ff
+ed ff 00 00 01 00
+78 00 40 ff 09 00
+e2 02 14 00 c9 ff
+2f 03 f8 ff 03 00
+7d 00 bf 00 0a 00
+e2 02 ef ff ca ff
+2b 03 08 00 9e ff
+40 fd 00 00 c5 ff
+4c fd 8f fe f5 ff
+e5 01 b0 ff 04 00
+c6 01 d3 ff c5 ff
+4c fd 71 01 f5 ff
+e5 01 50 00 04 00
+c6 01 2d 00 00 00
+04 00 3c 00
+02 00 40 00
+01 00 42 00
+01 00 43 00
+00 00 44 00
+01 00 44 00	
+01 00 45 00
+00 00 46 00
+00 00 46 00
+01 00 46 00
+01 00 47 00
+00 00 48 00
+01 00 48 00
+01 00 49 00
+00 00 4a 00
+01 08 09 0c 02 05 03 04 06 07 0a 0b 0d 0e 00 00
+*/
+
+typedef struct {
+	Sint16	x,y,z;
+} emd_skel_relpos_t;
+
+typedef struct {
+	Uint16	num_mesh;
+	Uint16	offset;
+} emd_skel_data_t;
+
+typedef struct {
+	Uint16	relpos_offset;
+	Uint16	unk_offset;
+	Uint16	count;
+	Uint32	size;
+} emd_skel_header_t;
 
 typedef struct {
 	Sint16 x,y,z,w;
@@ -100,6 +155,8 @@ typedef struct {
 
 /*--- Functions prototypes ---*/
 
+static void get_mesh_relpos(int num_mesh, Sint32 *x, Sint32 *y, Sint32 *z);
+
 /*--- Functions ---*/
 
 int model_emd_load(const char *filename)
@@ -153,16 +210,10 @@ void model_emd_draw(void)
 	emd_mesh_object_t *emd_mesh_object;
 	Uint32 *hdr_offsets;
 	int num_objects, i, j;
-	/*static int firsttime = 1;*/
 
 	if (!emd_file) {
 		return;
 	}
-
-	/*if (!firsttime) {
-		return;
-	}
-	firsttime=0;*/
 
 	emd_header = (emd_header_t *) emd_file;
 
@@ -178,6 +229,8 @@ void model_emd_draw(void)
 		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))]);
 
 	for (i=0; i<num_objects; i++) {
+		Sint32 posx,posy,posz;
+
 		int num_tri = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
 		emd_vertex_t *emd_tri_vtx = (emd_vertex_t *)
 			(&((char *) emd_file)
@@ -196,8 +249,10 @@ void model_emd_draw(void)
 
 		/*printf("mesh: object %d: %d triangles, %d quads\n", i, num_tri, num_quads);*/
 
+		get_mesh_relpos(i, &posx, &posy, &posz);
+
 		render.push_matrix();
-		render.translate((i % 5)*1000, ((i/5)*2000) - 2000, 0);
+		render.translate(posx, posy, posz);
 
 		/* Draw triangles */
 		for (j=0; j<num_tri; j++) {
@@ -252,4 +307,11 @@ void model_emd_draw(void)
 
 		emd_mesh_object++;
 	}
+}
+
+static void get_mesh_relpos(int num_mesh, Sint32 *x, Sint32 *y, Sint32 *z)
+{
+	*x = (num_mesh % 5)*1000;
+	*y = ((num_mesh/5)*2000) - 2000;
+	*z = 0;
 }
