@@ -311,6 +311,18 @@ void model_emd_draw(void)
 
 static void get_mesh_relpos(int num_mesh, Sint32 *x, Sint32 *y, Sint32 *z)
 {
+	emd_header_t *emd_header;
+	emd_skel_header_t *emd_skel_header;
+	Uint32 *hdr_offsets;
+
+	emd_header = (emd_header_t *) emd_file;
+
+	hdr_offsets = (Uint32 *)
+		(&((char *) emd_file)[SDL_SwapLE32(emd_header->offset)]);
+
+	emd_skel_header = (emd_skel_header_t *)
+		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_SKELETON])]);
+
 	*x = (num_mesh % 5)*1000;
 	*y = ((num_mesh/5)*2000) - 2000;
 	*z = 0;
