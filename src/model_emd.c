@@ -153,16 +153,16 @@ void model_emd_draw(void)
 	emd_mesh_object_t *emd_mesh_object;
 	Uint32 *hdr_offsets;
 	int num_objects, i, j;
-	static int firsttime = 1;
+	/*static int firsttime = 1;*/
 
 	if (!emd_file) {
 		return;
 	}
 
-	if (!firsttime) {
+	/*if (!firsttime) {
 		return;
 	}
-	firsttime=0;
+	firsttime=0;*/
 
 	emd_header = (emd_header_t *) emd_file;
 
@@ -172,24 +172,83 @@ void model_emd_draw(void)
 	emd_mesh_header = (emd_mesh_header_t *)
 		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES])]);
 	num_objects = SDL_SwapLE32(emd_mesh_header->num_objects)/2;
-	printf("mesh: %d objects\n", num_objects);
+	/*printf("mesh: %d objects\n", num_objects);*/
 
 	emd_mesh_object = (emd_mesh_object_t *)
 		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))]);
 
 	for (i=0; i<num_objects; i++) {
 		int num_tri = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
-		int num_quads = SDL_SwapLE32(emd_mesh_object->quads.mesh_count);
+		emd_vertex_t *emd_tri_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)
+			[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->triangles.vtx_offset]);		
+		emd_triangle_t *emd_tri_idx = (emd_triangle_t *)
+			(&((char *) emd_file)
+			[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->triangles.mesh_offset]);
 
-		printf("mesh: object %d: %d triangles, %d quads\n", i, num_tri, num_quads);
+		int num_quads = SDL_SwapLE32(emd_mesh_object->quads.mesh_count);
+		emd_vertex_t *emd_quad_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)
+			[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->quads.vtx_offset]);
+		emd_quad_t *emd_quad_idx = (emd_quad_t *)
+			(&((char *) emd_file)
+			[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->quads.mesh_offset]);
+
+		/*printf("mesh: object %d: %d triangles, %d quads\n", i, num_tri, num_quads);*/
+
+		render.push_matrix();
+		render.translate((i % 5)*1000, ((i/5)*2000) - 2000, 0);
 
 		/* Draw triangles */
 		for (j=0; j<num_tri; j++) {
+			int v0 = emd_tri_idx[j].v0;
+			int v1 = emd_tri_idx[j].v1;
+			int v2 = emd_tri_idx[j].v2;
+
+			/*printf(" triangle %d: %d,%d,%d\n", j,v0,v1,v2);*/
+
+			render.line(
+				emd_tri_vtx[v0].x, emd_tri_vtx[v0].y, emd_tri_vtx[v0].z,
+				emd_tri_vtx[v1].x, emd_tri_vtx[v1].y, emd_tri_vtx[v1].z
+			);
+			render.line(
+				emd_tri_vtx[v1].x, emd_tri_vtx[v1].y, emd_tri_vtx[v1].z,
+				emd_tri_vtx[v2].x, emd_tri_vtx[v2].y, emd_tri_vtx[v2].z
+			);
+			render.line(
+				emd_tri_vtx[v2].x, emd_tri_vtx[v2].y, emd_tri_vtx[v2].z,
+				emd_tri_vtx[v0].x, emd_tri_vtx[v0].y, emd_tri_vtx[v0].z
+			);
 		}
 
 		/* Draw quads */
 		for (j=0; j<num_quads; j++) {
+			int v0 = emd_quad_idx[j].v0;
+			int v1 = emd_quad_idx[j].v1;
+			int v2 = emd_quad_idx[j].v2;
+			int v3 = emd_quad_idx[j].v3;
+
+			/*printf(" quad %d: %d,%d,%d\n", j,v0,v1,v2,v3);*/
+
+			render.line(
+				emd_tri_vtx[v0].x, emd_tri_vtx[v0].y, emd_tri_vtx[v0].z,
+				emd_tri_vtx[v1].x, emd_tri_vtx[v1].y, emd_tri_vtx[v1].z
+			);
+			render.line(
+				emd_tri_vtx[v1].x, emd_tri_vtx[v1].y, emd_tri_vtx[v1].z,
+				emd_tri_vtx[v3].x, emd_tri_vtx[v3].y, emd_tri_vtx[v3].z
+			);
+			render.line(
+				emd_tri_vtx[v3].x, emd_tri_vtx[v3].y, emd_tri_vtx[v3].z,
+				emd_tri_vtx[v2].x, emd_tri_vtx[v2].y, emd_tri_vtx[v2].z
+			);
+			render.line(
+				emd_tri_vtx[v2].x, emd_tri_vtx[v2].y, emd_tri_vtx[v2].z,
+				emd_tri_vtx[v0].x, emd_tri_vtx[v0].y, emd_tri_vtx[v0].z
+			);
 		}
+
+		render.pop_matrix();
 
 		emd_mesh_object++;
 	}
