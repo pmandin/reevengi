@@ -110,7 +110,7 @@ static void normalize(float v[4])
 	float r;
 
 	r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
-	if (r == 0.0) return;
+	if (r <= 1.0e-5) return;
 
 	v[0] /= r;
 	v[1] /= r;
