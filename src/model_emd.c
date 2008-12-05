@@ -282,7 +282,7 @@ static void emd_draw_mesh(int num_mesh)
 	emd_header_t *emd_header;
 	emd_mesh_header_t *emd_mesh_header;
 	emd_mesh_object_t *emd_mesh_object;
-	Uint32 *hdr_offsets;
+	Uint32 *hdr_offsets, mesh_offset;
 	Sint32 posx,posy,posz;
 	int num_objects, num_tri, num_quads, i;
 	emd_vertex_t *emd_tri_vtx, *emd_quad_vtx;
@@ -303,18 +303,18 @@ static void emd_draw_mesh(int num_mesh)
 		return;
 	}
 
+	mesh_offset = SDL_SwapLE32(hdr_offsets[EMD_MESHES])+sizeof(emd_mesh_header_t);
+
 	emd_mesh_object = (emd_mesh_object_t *)
-		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))]);
+		(&((char *) emd_file)[mesh_offset]);
 	emd_mesh_object = &emd_mesh_object[num_mesh];
 
 	/* Draw triangles */
 	num_tri = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
 	emd_tri_vtx = (emd_vertex_t *)
-		(&((char *) emd_file)
-		[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->triangles.vtx_offset]);		
+		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.vtx_offset)]);
 	emd_tri_idx = (emd_triangle_t *)
-		(&((char *) emd_file)
-		[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->triangles.mesh_offset]);
+		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.mesh_offset)]);
 
 	for (i=0; i<num_tri; i++) {
 		int v0 = SDL_SwapLE16(emd_tri_idx[i].v0);
@@ -331,11 +331,9 @@ static void emd_draw_mesh(int num_mesh)
 	/* Draw quads */
 	num_quads = SDL_SwapLE32(emd_mesh_object->quads.mesh_count);
 	emd_quad_vtx = (emd_vertex_t *)
-		(&((char *) emd_file)
-		[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->quads.vtx_offset]);
+		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quads.vtx_offset)]);
 	emd_quad_idx = (emd_quad_t *)
-		(&((char *) emd_file)
-		[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->quads.mesh_offset]);
+		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quads.mesh_offset)]);
 
 	for (i=0; i<num_quads; i++) {
 		int v0 = SDL_SwapLE16(emd_quad_idx[i].v0);
