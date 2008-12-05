@@ -321,19 +321,10 @@ static void emd_draw_mesh(int num_mesh)
 		int v1 = SDL_SwapLE16(emd_tri_idx[i].v1);
 		int v2 = SDL_SwapLE16(emd_tri_idx[i].v2);
 
-		/*printf(" triangle %d: %d,%d,%d\n", j,v0,v1,v2);*/
-
-		render.line(
+		render.triangle(
 			SDL_SwapLE16(emd_tri_vtx[v0].x), SDL_SwapLE16(emd_tri_vtx[v0].y), SDL_SwapLE16(emd_tri_vtx[v0].z),
-			SDL_SwapLE16(emd_tri_vtx[v1].x), SDL_SwapLE16(emd_tri_vtx[v1].y), SDL_SwapLE16(emd_tri_vtx[v1].z)
-		);
-		render.line(
 			SDL_SwapLE16(emd_tri_vtx[v1].x), SDL_SwapLE16(emd_tri_vtx[v1].y), SDL_SwapLE16(emd_tri_vtx[v1].z),
 			SDL_SwapLE16(emd_tri_vtx[v2].x), SDL_SwapLE16(emd_tri_vtx[v2].y), SDL_SwapLE16(emd_tri_vtx[v2].z)
-		);
-		render.line(
-			SDL_SwapLE16(emd_tri_vtx[v2].x), SDL_SwapLE16(emd_tri_vtx[v2].y), SDL_SwapLE16(emd_tri_vtx[v2].z),
-			SDL_SwapLE16(emd_tri_vtx[v0].x), SDL_SwapLE16(emd_tri_vtx[v0].y), SDL_SwapLE16(emd_tri_vtx[v0].z)
 		);
 	}
 
@@ -347,28 +338,16 @@ static void emd_draw_mesh(int num_mesh)
 		[SDL_SwapLE32(hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t))+emd_mesh_object->quads.mesh_offset]);
 
 	for (i=0; i<num_quads; i++) {
-		int v0 = emd_quad_idx[i].v0;
-		int v1 = emd_quad_idx[i].v1;
-		int v2 = emd_quad_idx[i].v2;
-		int v3 = emd_quad_idx[i].v3;
+		int v0 = SDL_SwapLE16(emd_quad_idx[i].v0);
+		int v1 = SDL_SwapLE16(emd_quad_idx[i].v1);
+		int v2 = SDL_SwapLE16(emd_quad_idx[i].v2);
+		int v3 = SDL_SwapLE16(emd_quad_idx[i].v3);
 
-		/*printf(" quad %d: %d,%d,%d\n", j,v0,v1,v2,v3);*/
-
-		render.line(
+		render.quad(
 			SDL_SwapLE16(emd_tri_vtx[v0].x), SDL_SwapLE16(emd_tri_vtx[v0].y), SDL_SwapLE16(emd_tri_vtx[v0].z),
-			SDL_SwapLE16(emd_tri_vtx[v1].x), SDL_SwapLE16(emd_tri_vtx[v1].y), SDL_SwapLE16(emd_tri_vtx[v1].z)
-		);
-		render.line(
 			SDL_SwapLE16(emd_tri_vtx[v1].x), SDL_SwapLE16(emd_tri_vtx[v1].y), SDL_SwapLE16(emd_tri_vtx[v1].z),
-			SDL_SwapLE16(emd_tri_vtx[v3].x), SDL_SwapLE16(emd_tri_vtx[v3].y), SDL_SwapLE16(emd_tri_vtx[v3].z)
-		);
-		render.line(
 			SDL_SwapLE16(emd_tri_vtx[v3].x), SDL_SwapLE16(emd_tri_vtx[v3].y), SDL_SwapLE16(emd_tri_vtx[v3].z),
 			SDL_SwapLE16(emd_tri_vtx[v2].x), SDL_SwapLE16(emd_tri_vtx[v2].y), SDL_SwapLE16(emd_tri_vtx[v2].z)
-		);
-		render.line(
-			SDL_SwapLE16(emd_tri_vtx[v2].x), SDL_SwapLE16(emd_tri_vtx[v2].y), SDL_SwapLE16(emd_tri_vtx[v2].z),
-			SDL_SwapLE16(emd_tri_vtx[v0].x), SDL_SwapLE16(emd_tri_vtx[v0].y), SDL_SwapLE16(emd_tri_vtx[v0].z)
 		);
 	}
 }
