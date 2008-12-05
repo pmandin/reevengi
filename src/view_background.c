@@ -218,7 +218,6 @@ void view_background_draw(void)
 	long cam_pos[6];
 
 	render.drawBackground(&video);
-	/*model_emd_draw(&video);*/
 
 	if (!game_state.room_file) {
 		return;
@@ -267,11 +266,10 @@ void view_background_draw(void)
 	);
 
 	drawPlayer();
-	return;
 
 	/* World origin */
 	drawOrigin();
-	/*drawCameraSwitches();*/
+	drawCameraSwitches();
 
 	render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
 	if (render_grid) {
@@ -363,8 +361,10 @@ static void drawPlayer(void)
 	render.set_color(0x004488cc);
 
 	render.push_matrix();
-	render.translate(player_x, player_y, player_z);
+	render.translate(player_x, player_y+2000, player_z);
 	render.rotate(player_a, 0.0,1.0,0.0);
+
+#if 0
 	render.scale(2500.0, 2500.0, 2500.0);
 
 	render.line(0.2,0.0,0.0, -0.2,0.0,0.0);	/* head */
@@ -376,7 +376,9 @@ static void drawPlayer(void)
 	render.line(0.0,0.0,0.0, -0.5,0.5,0.0);	/* left arm */
 	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
 	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
-
+#else
+	model_emd_draw(&video);
+#endif
 	render.pop_matrix();
 }
 
