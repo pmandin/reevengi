@@ -231,15 +231,8 @@ static void line(
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 
 	/* Clip segment to viewport */
-	clip_result = mtx_clipCheck(result, 2, clip_planes);
-	switch(clip_result) {
-		case CLIPPING_OUTSIDE:
-			return;
-		case CLIPPING_NEEDED:
-			mtx_clipSegment(result, 2, clip_planes);
-			break;
-		default:
-			break;
+	if (mtx_clipSegment(result, clip_planes) == CLIPPING_OUTSIDE) {
+		return;
 	}
 
 	/* Project against view frustum */

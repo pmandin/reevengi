@@ -231,7 +231,7 @@ static float dotProductPlus(float point[4], float plane[4])
 	return (point[0]*plane[0] + point[1]*plane[1] + point[2]*plane[2] + point[3]*plane[3]);
 }
 
-int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
+int mtx_clipCheck(float points[][4], int num_points, float clip[6][4])
 {
 	int i, result = CLIPPING_INSIDE;
 
@@ -255,15 +255,15 @@ int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4])
 	return result;
 }
 
-void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
+int mtx_clipSegment(float points[4][4], float clip[6][4])
 {
-	int i;
+	int i, result = CLIPPING_INSIDE;
 
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0, num_point_outside=-1;
 		float num,den, u, x,y,z,w;
 
-		for (j=0; j<num_points; j++) {
+		for (j=0; j<2; j++) {
 			if (dotProductPlus(points[j], clip[i])<0) {
 				++num_outsides;
 				if (num_point_outside<0) {
@@ -272,7 +272,11 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 			}
 		}
 
-		if ((num_outsides==0) || (num_outsides==num_points)) {
+		if (num_outsides==2) {
+			/* All points outside of current clip plane */
+			return CLIPPING_OUTSIDE;
+		} else if (num_outsides==0) {
+			/* All points inside, check other planes */
 			continue;
 		}
 
@@ -298,5 +302,9 @@ void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4])
 		points[num_point_outside][1] = y;
 		points[num_point_outside][2] = z;
 		points[num_point_outside][3] = w;
+
+		result = CLIPPING_NEEDED;
 	}
+
+	return result;
 }

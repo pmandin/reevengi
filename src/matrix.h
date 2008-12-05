@@ -42,9 +42,9 @@ void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4]);
 #define CLIPPING_NEEDED 2
 
 /* Check if points array are all in view frustum or not */
-int mtx_clipCheck(float points[4][4], int num_points, float clip[6][4]);
+int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 
 /* Clip segment against one of view frustum planes */
-void mtx_clipSegment(float points[4][4], int num_points, float clip[6][4]);
+int mtx_clipSegment(float points[4][4], float clip[6][4]);
 
 #endif /* MATRIX_H */
