@@ -108,7 +108,7 @@ typedef struct {
 	Uint16	relpos_offset;
 	Uint16	unk_offset;
 	Uint16	count;
-	Uint32	size;
+	Uint16	size;
 } emd_skel_header_t;
 
 typedef struct {
@@ -260,9 +260,9 @@ static void emd_draw_skel(int num_skel,
 
 	render.push_matrix();
 	render.translate(
+		SDL_SwapLE16(emd_skel_relpos[num_skel].x),
 		SDL_SwapLE16(emd_skel_relpos[num_skel].y),
-		SDL_SwapLE16(emd_skel_relpos[num_skel].z),
-		SDL_SwapLE16(emd_skel_relpos[num_skel].x)
+		SDL_SwapLE16(emd_skel_relpos[num_skel].z)
 	);
 
 	/* Draw current mesh */
