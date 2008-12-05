@@ -62,6 +62,15 @@ static void set_color(Uint32 color);
 static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
+static void triangle(
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	float x3, float y3, float z3);
+static void quad(
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	float x3, float y3, float z3,
+	float x4, float y4, float z4);
 
 /*--- Functions ---*/
 
@@ -79,6 +88,8 @@ void render_soft_init(render_t *render)
 
 	render->set_color = set_color;
 	render->line = line;
+	render->triangle = triangle;
+	render->quad = quad;
 
 	render->initBackground = render_background_init;
 	render->drawBackground = render_background;
@@ -244,4 +255,26 @@ static void line(
 		(int) (segment[1][0]/segment[1][2]),
 		(int) (segment[1][1]/segment[1][2])
 	);
+}
+
+static void triangle(
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	float x3, float y3, float z3)
+{
+	line(x1,y1,z1, x2,y2,z2);
+	line(x2,y2,z2, x3,y3,z3);
+	line(x3,y3,z3, x1,y1,z1);
+}
+
+static void quad(
+	float x1, float y1, float z1,
+	float x2, float y2, float z2,
+	float x3, float y3, float z3,
+	float x4, float y4, float z4)
+{
+	line(x1,y1,z1, x2,y2,z2);
+	line(x2,y2,z2, x3,y3,z3);
+	line(x3,y3,z3, x4,y4,z4);
+	line(x4,y4,z4, x1,y1,z1);
 }
