@@ -156,9 +156,9 @@ int main(int argc, char **argv)
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
 	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 
-	/*if (model_emd_load("pl0/emd0/em050.emd")) {
+	if (model_emd_load("pl0/emd0/em050.emd")) {
 		logMsg(2,"Loaded emd model\n");
-	}*/
+	}
 
 	/* Force a mode switch */
 	new_width = video.width;
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	/*model_emd_close();*/
+	model_emd_close();
 
 	state_shutdown();
 	video.shutDown(&video);
