@@ -302,6 +302,43 @@ static void triangle(
 	float x2, float y2, float z2,
 	float x3, float y3, float z3)
 {
+	float segment[4][4], result[4][4];
+	float dx1,dy1,dx2,dy2;
+
+	memset(segment, 0, sizeof(float)*4*4);
+	segment[0][0] = x1;
+	segment[0][1] = y1;
+	segment[0][2] = z1;
+	segment[0][3] = 1.0;
+	segment[1][0] = x2;
+	segment[1][1] = y2;
+	segment[1][2] = z2;
+	segment[1][3] = 1.0;
+	segment[2][0] = x3;
+	segment[2][1] = y3;
+	segment[2][2] = z3;
+	segment[2][3] = 1.0;
+
+	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
+	mtx_mult(frustum_mtx, result, segment);
+
+	/* Calc dot product against vector (0,0,1) to see if face visible */
+/*
+	dx1 = x2/w2 - x1/w1
+	dy1 = y2/w2 - y1/w1
+	dx2 = x3/w3 - x2/w2
+	dy2 = y3/w3 - y2/w2
+
+	dx1*dy2-dx2*dy1
+*/
+	dx1 = (segment[1][0]/segment[1][3]) - (segment[0][0]/segment[0][3]);
+	dy1 = (segment[1][1]/segment[1][3]) - (segment[0][1]/segment[0][3]);
+	dx2 = (segment[2][0]/segment[2][3]) - (segment[1][0]/segment[1][3]);
+	dy2 = (segment[2][1]/segment[2][3]) - (segment[1][1]/segment[1][3]);
+	if (dx1*dy2-dx2*dy1 < 0) {
+		return;
+	}
+
 	line(x1,y1,z1, x2,y2,z2);
 	line(x2,y2,z2, x3,y3,z3);
 	line(x3,y3,z3, x1,y1,z1);
@@ -313,6 +350,43 @@ static void quad(
 	float x3, float y3, float z3,
 	float x4, float y4, float z4)
 {
+	float segment[4][4], result[4][4];
+	float dx1,dy1,dx2,dy2;
+
+	memset(segment, 0, sizeof(float)*4*4);
+	segment[0][0] = x1;
+	segment[0][1] = y1;
+	segment[0][2] = z1;
+	segment[0][3] = 1.0;
+	segment[1][0] = x2;
+	segment[1][1] = y2;
+	segment[1][2] = z2;
+	segment[1][3] = 1.0;
+	segment[2][0] = x3;
+	segment[2][1] = y3;
+	segment[2][2] = z3;
+	segment[2][3] = 1.0;
+
+	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
+	mtx_mult(frustum_mtx, result, segment);
+
+	/* Calc dot product against vector (0,0,1) to see if face visible */
+/*
+	dx1 = x2/w2 - x1/w1
+	dy1 = y2/w2 - y1/w1
+	dx2 = x3/w3 - x2/w2
+	dy2 = y3/w3 - y2/w2
+
+	dx1*dy2-dx2*dy1
+*/
+	dx1 = (segment[1][0]/segment[1][3]) - (segment[0][0]/segment[0][3]);
+	dy1 = (segment[1][1]/segment[1][3]) - (segment[0][1]/segment[0][3]);
+	dx2 = (segment[2][0]/segment[2][3]) - (segment[1][0]/segment[1][3]);
+	dy2 = (segment[2][1]/segment[2][3]) - (segment[1][1]/segment[1][3]);
+	if (dx1*dy2-dx2*dy1 < 0) {
+		return;
+	}
+
 	line(x1,y1,z1, x2,y2,z2);
 	line(x2,y2,z2, x3,y3,z3);
 	line(x3,y3,z3, x4,y4,z4);
