@@ -66,6 +66,11 @@ static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_turnleft = 0;
 static int player_turnright = 0;
+static float playerstart_x = 0, playerstart_z = 0, playerstart_a = 0;
+static Uint32 tick_moveforward = 0;
+static Uint32 tick_movebackward = 0;
+static Uint32 tick_turnleft = 0;
+static Uint32 tick_turnright = 0;
 
 /*--- Functions prototypes ---*/
 
@@ -142,15 +147,25 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_MOVE_FORWARD:
 				player_moveforward = 1;
+				tick_moveforward = SDL_GetTicks();
+				playerstart_x = player_x;
+				playerstart_z = player_z;
 				break;
 			case KEY_MOVE_BACKWARD:
 				player_movebackward = 1;
+				tick_movebackward = SDL_GetTicks();
+				playerstart_x = player_x;
+				playerstart_z = player_z;
 				break;
 			case KEY_TURN_LEFT:
 				player_turnleft = 1;
+				tick_turnleft = SDL_GetTicks();
+				playerstart_a = player_a;
 				break;
 			case KEY_TURN_RIGHT:
 				player_turnright = 1;
+				tick_turnright = SDL_GetTicks();
+				playerstart_a = player_a;
 				break;
 		}
 		break;
@@ -180,6 +195,8 @@ void view_background_refresh(void)
 
 void view_background_update(void)
 {
+	Uint32 tick_current = SDL_GetTicks();
+
 	if (reload_room) {
 		state_loadroom();
 		reload_room = 0;
@@ -198,18 +215,18 @@ void view_background_update(void)
 
 	/* Move player ? */
 	if (player_moveforward) {
-		player_x += cos((player_a*M_PI)/180)*10.0;
-		player_z -= sin((player_a*M_PI)/180)*10.0;
+		player_x = playerstart_x + cos((player_a*M_PI)/180)*5.0*(tick_current-tick_moveforward);
+		player_z = playerstart_z - sin((player_a*M_PI)/180)*5.0*(tick_current-tick_moveforward);
 	}
 	if (player_movebackward) {
-		player_x -= cos((player_a*M_PI)/180)*10.0;
-		player_z += sin((player_a*M_PI)/180)*10.0;
+		player_x = playerstart_x - cos((player_a*M_PI)/180)*5.0*(tick_current-tick_movebackward);
+		player_z = playerstart_z + sin((player_a*M_PI)/180)*5.0*(tick_current-tick_movebackward);
 	}
 	if (player_turnleft) {
-		player_a -= 0.1;
+		player_a = playerstart_a - 0.1*(tick_current-tick_turnleft);
 	}
 	if (player_turnright) {
-		player_a += 0.1;
+		player_a = playerstart_a + 0.1*(tick_current-tick_turnright);
 	}
 }
 
