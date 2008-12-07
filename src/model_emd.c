@@ -171,12 +171,16 @@ typedef struct {
 
 /*--- Functions prototypes ---*/
 
+static void emd_convert_endianness(void);
+static void emd_convert_endianness_skel(
+	int num_skel,
+	emd_skel_relpos_t *emd_skel_relpos,
+	emd_skel_data_t *emd_skel_data);
+
 static void emd_draw_skel(int num_skel,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data);
 static void emd_draw_mesh(int num_mesh);
-
-static void get_mesh_relpos(int num_mesh, Sint32 *x, Sint32 *y, Sint32 *z);
 
 /*--- Functions ---*/
 
@@ -191,6 +195,9 @@ int model_emd_load(const char *filename)
 		fprintf(stderr, "emd: Can not load %s\n", filename);
 		return 0;
 	}
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	emd_convert_endianness();
+#endif
 
 	tim_filename = calloc(1, strlen(filename)+1);
 	if (!tim_filename) {
@@ -239,14 +246,14 @@ void model_emd_draw(void)
 	emd_header = (emd_header_t *) emd_file;
 
 	hdr_offsets = (Uint32 *)
-		(&((char *) emd_file)[SDL_SwapLE32(emd_header->offset)]);
+		(&((char *) emd_file)[emd_header->offset]);
 
 	emd_skel_header = (emd_skel_header_t *)
-		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_SKELETON])]);
+		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]]);
 	emd_skel_relpos = (emd_skel_relpos_t *)
-		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_SKELETON])+sizeof(emd_skel_header_t)]);
+		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+sizeof(emd_skel_header_t)]);
 	emd_skel_data = (emd_skel_data_t *)
-		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_SKELETON])+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
+		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
 	emd_draw_skel(0, emd_skel_relpos, emd_skel_data);
 }
@@ -260,17 +267,17 @@ static void emd_draw_skel(int num_skel,
 
 	render.push_matrix();
 	render.translate(
-		SDL_SwapLE16(emd_skel_relpos[num_skel].x),
-		SDL_SwapLE16(emd_skel_relpos[num_skel].y),
-		SDL_SwapLE16(emd_skel_relpos[num_skel].z)
+		emd_skel_relpos[num_skel].x,
+		emd_skel_relpos[num_skel].y,
+		emd_skel_relpos[num_skel].z
 	);
 
 	/* Draw current mesh */
 	emd_draw_mesh(num_skel);
 
 	/* Draw children meshes */
-	for (i=0; i<SDL_SwapLE16(emd_skel_data[num_skel].num_mesh); i++) {
-		int num_mesh = emd_skel_mesh[SDL_SwapLE16(emd_skel_data[num_skel].offset)+i];
+	for (i=0; i<emd_skel_data[num_skel].num_mesh; i++) {
+		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
 		emd_draw_skel(num_mesh, emd_skel_relpos, emd_skel_data);
 	}
 
@@ -284,7 +291,7 @@ static void emd_draw_mesh(int num_mesh)
 	emd_mesh_object_t *emd_mesh_object;
 	Uint32 *hdr_offsets, mesh_offset;
 	Sint32 posx,posy,posz;
-	int num_objects, num_tri, num_quads, i;
+	int num_objects, i;
 	emd_vertex_t *emd_tri_vtx, *emd_quad_vtx;
 	emd_triangle_t *emd_tri_idx;
 	emd_quad_t *emd_quad_idx;
@@ -292,60 +299,255 @@ static void emd_draw_mesh(int num_mesh)
 	emd_header = (emd_header_t *) emd_file;
 
 	hdr_offsets = (Uint32 *)
-		(&((char *) emd_file)[SDL_SwapLE32(emd_header->offset)]);
+		(&((char *) emd_file)[emd_header->offset]);
 
 	emd_mesh_header = (emd_mesh_header_t *)
-		(&((char *) emd_file)[SDL_SwapLE32(hdr_offsets[EMD_MESHES])]);
-	num_objects = SDL_SwapLE32(emd_mesh_header->num_objects)/2;
+		(&((char *) emd_file)[hdr_offsets[EMD_MESHES]]);
+	num_objects = emd_mesh_header->num_objects/2;
 
 	if ((num_mesh<0) || (num_mesh>=num_objects)) {
 		fprintf(stderr, "Invalid mesh %d\n", num_mesh);
 		return;
 	}
 
-	mesh_offset = SDL_SwapLE32(hdr_offsets[EMD_MESHES])+sizeof(emd_mesh_header_t);
+	mesh_offset = hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t);
 
 	emd_mesh_object = (emd_mesh_object_t *)
 		(&((char *) emd_file)[mesh_offset]);
 	emd_mesh_object = &emd_mesh_object[num_mesh];
 
 	/* Draw triangles */
-	num_tri = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
 	emd_tri_vtx = (emd_vertex_t *)
-		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.vtx_offset)]);
+		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.vtx_offset]);
 	emd_tri_idx = (emd_triangle_t *)
-		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.mesh_offset)]);
+		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
 
-	for (i=0; i<num_tri; i++) {
-		int v0 = SDL_SwapLE16(emd_tri_idx[i].v0);
-		int v1 = SDL_SwapLE16(emd_tri_idx[i].v1);
-		int v2 = SDL_SwapLE16(emd_tri_idx[i].v2);
+	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
+		int v0 = emd_tri_idx[i].v0;
+		int v1 = emd_tri_idx[i].v1;
+		int v2 = emd_tri_idx[i].v2;
 
 		render.triangle(
-			SDL_SwapLE16(emd_tri_vtx[v0].x), SDL_SwapLE16(emd_tri_vtx[v0].y), SDL_SwapLE16(emd_tri_vtx[v0].z),
-			SDL_SwapLE16(emd_tri_vtx[v1].x), SDL_SwapLE16(emd_tri_vtx[v1].y), SDL_SwapLE16(emd_tri_vtx[v1].z),
-			SDL_SwapLE16(emd_tri_vtx[v2].x), SDL_SwapLE16(emd_tri_vtx[v2].y), SDL_SwapLE16(emd_tri_vtx[v2].z)
+			emd_tri_vtx[v0].x, emd_tri_vtx[v0].y, emd_tri_vtx[v0].z,
+			emd_tri_vtx[v1].x, emd_tri_vtx[v1].y, emd_tri_vtx[v1].z,
+			emd_tri_vtx[v2].x, emd_tri_vtx[v2].y, emd_tri_vtx[v2].z
 		);
 	}
 
 	/* Draw quads */
-	num_quads = SDL_SwapLE32(emd_mesh_object->quads.mesh_count);
 	emd_quad_vtx = (emd_vertex_t *)
-		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quads.vtx_offset)]);
+		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.vtx_offset]);
 	emd_quad_idx = (emd_quad_t *)
-		(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quads.mesh_offset)]);
+		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.mesh_offset]);
 
-	for (i=0; i<num_quads; i++) {
-		int v0 = SDL_SwapLE16(emd_quad_idx[i].v0);
-		int v1 = SDL_SwapLE16(emd_quad_idx[i].v1);
-		int v2 = SDL_SwapLE16(emd_quad_idx[i].v2);
-		int v3 = SDL_SwapLE16(emd_quad_idx[i].v3);
+	for (i=0; i<emd_mesh_object->quads.mesh_count; i++) {
+		int v0 = emd_quad_idx[i].v0;
+		int v1 = emd_quad_idx[i].v1;
+		int v2 = emd_quad_idx[i].v2;
+		int v3 = emd_quad_idx[i].v3;
 
 		render.quad(
-			SDL_SwapLE16(emd_tri_vtx[v0].x), SDL_SwapLE16(emd_tri_vtx[v0].y), SDL_SwapLE16(emd_tri_vtx[v0].z),
-			SDL_SwapLE16(emd_tri_vtx[v1].x), SDL_SwapLE16(emd_tri_vtx[v1].y), SDL_SwapLE16(emd_tri_vtx[v1].z),
-			SDL_SwapLE16(emd_tri_vtx[v3].x), SDL_SwapLE16(emd_tri_vtx[v3].y), SDL_SwapLE16(emd_tri_vtx[v3].z),
-			SDL_SwapLE16(emd_tri_vtx[v2].x), SDL_SwapLE16(emd_tri_vtx[v2].y), SDL_SwapLE16(emd_tri_vtx[v2].z)
+			emd_quad_vtx[v0].x, emd_quad_vtx[v0].y, emd_quad_vtx[v0].z,
+			emd_quad_vtx[v1].x, emd_quad_vtx[v1].y, emd_quad_vtx[v1].z,
+			emd_quad_vtx[v3].x, emd_quad_vtx[v3].y, emd_quad_vtx[v3].z,
+			emd_quad_vtx[v2].x, emd_quad_vtx[v2].y, emd_quad_vtx[v2].z
 		);
+	}
+}
+
+/*--- Convert EMD file (little endian) to big endian ---*/
+
+static void emd_convert_endianness(void)
+{
+	emd_header_t *emd_header;
+	Uint32 *hdr_offsets, mesh_offset;
+	int i;
+	emd_skel_header_t *emd_skel_header;
+	emd_skel_relpos_t *emd_skel_relpos;
+	emd_skel_data_t *emd_skel_data;
+	emd_mesh_header_t *emd_mesh_header;
+	emd_mesh_object_t *emd_mesh_object;
+
+	/* Header */
+	emd_header = (emd_header_t *) emd_file;
+	emd_header->offset = SDL_SwapLE32(emd_header->offset);
+	emd_header->length = SDL_SwapLE32(emd_header->length);
+
+	/* Directory offsets */
+	hdr_offsets = (Uint32 *)
+		(&((char *) emd_file)[emd_header->offset]);
+	for (i=0; i<8; i++) {
+		hdr_offsets[i] = SDL_SwapLE32(hdr_offsets[i]);
+	}
+
+	/* Offset 2: Skeleton */
+	emd_skel_header = (emd_skel_header_t *)
+		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]]);
+	emd_skel_header->relpos_offset = SDL_SwapLE16(emd_skel_header->relpos_offset);
+	emd_skel_header->unk_offset = SDL_SwapLE16(emd_skel_header->unk_offset);
+	emd_skel_header->count = SDL_SwapLE16(emd_skel_header->count);
+	emd_skel_header->size = SDL_SwapLE16(emd_skel_header->size);
+
+	emd_skel_relpos = (emd_skel_relpos_t *)
+		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+sizeof(emd_skel_header_t)]);
+	emd_skel_data = (emd_skel_data_t *)
+		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
+
+	emd_convert_endianness_skel(0, emd_skel_relpos, emd_skel_data);
+
+	/* Offset 7: Mesh data */
+	emd_mesh_header = (emd_mesh_header_t *)
+		(&((char *) emd_file)[hdr_offsets[EMD_MESHES]]);
+	emd_mesh_header->length = SDL_SwapLE32(emd_mesh_header->length);
+	emd_mesh_header->dummy = SDL_SwapLE32(emd_mesh_header->dummy);
+	emd_mesh_header->num_objects = SDL_SwapLE32(emd_mesh_header->num_objects);
+
+	mesh_offset = hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t);
+	emd_mesh_object = (emd_mesh_object_t *)
+		(&((char *) emd_file)[mesh_offset]);
+	for (i=0; i<emd_mesh_header->num_objects/2; i++) {
+		int j;
+		emd_vertex_t *emd_vtx;
+		emd_triangle_t *emd_tri_idx;
+		emd_quad_t *emd_quad_idx;
+		emd_vertex_t **list_vtx_done;
+
+		/* Triangles */
+		emd_mesh_object->triangles.vtx_offset = SDL_SwapLE32(emd_mesh_object->triangles.vtx_offset);
+		emd_mesh_object->triangles.vtx_count = SDL_SwapLE32(emd_mesh_object->triangles.vtx_count);
+		emd_mesh_object->triangles.nor_offset = SDL_SwapLE32(emd_mesh_object->triangles.nor_offset);
+		emd_mesh_object->triangles.nor_count = SDL_SwapLE32(emd_mesh_object->triangles.nor_count);
+		emd_mesh_object->triangles.mesh_offset = SDL_SwapLE32(emd_mesh_object->triangles.mesh_offset);
+		emd_mesh_object->triangles.mesh_count = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
+		emd_mesh_object->triangles.tex_offset = SDL_SwapLE32(emd_mesh_object->triangles.tex_offset);
+
+		list_vtx_done = (emd_vertex_t **) malloc(sizeof(emd_vertex_t *)*
+			(emd_mesh_object->triangles.vtx_count+emd_mesh_object->triangles.nor_count));
+		if (!list_vtx_done) {
+			fprintf(stderr, "Can not allocate mem for vtx/nor list conversion\n");
+			break;
+		}
+
+		emd_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.vtx_offset]);
+		for (j=0; j<emd_mesh_object->triangles.vtx_count; j++) {
+			emd_vtx[j].x = SDL_SwapLE16(emd_vtx[j].x);
+			emd_vtx[j].y = SDL_SwapLE16(emd_vtx[j].y);
+			emd_vtx[j].z = SDL_SwapLE16(emd_vtx[j].z);
+			emd_vtx[j].w = SDL_SwapLE16(emd_vtx[j].w);
+			list_vtx_done[j] = &emd_vtx[j];
+		}
+
+		emd_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.nor_offset]);
+		for (j=0; j<emd_mesh_object->triangles.nor_count; j++) {
+			emd_vtx[j].x = SDL_SwapLE16(emd_vtx[j].x);
+			emd_vtx[j].y = SDL_SwapLE16(emd_vtx[j].y);
+			emd_vtx[j].z = SDL_SwapLE16(emd_vtx[j].z);
+			emd_vtx[j].w = SDL_SwapLE16(emd_vtx[j].w);
+			list_vtx_done[emd_mesh_object->triangles.vtx_count+j] = &emd_vtx[j];
+		}
+
+		emd_tri_idx = (emd_triangle_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
+		for (j=0; j<emd_mesh_object->triangles.mesh_count; j++) {
+			emd_tri_idx[j].n0 = SDL_SwapLE16(emd_tri_idx[j].n0);
+			emd_tri_idx[j].v0 = SDL_SwapLE16(emd_tri_idx[j].v0);
+			emd_tri_idx[j].n1 = SDL_SwapLE16(emd_tri_idx[j].n1);
+			emd_tri_idx[j].v1 = SDL_SwapLE16(emd_tri_idx[j].v1);
+			emd_tri_idx[j].n2 = SDL_SwapLE16(emd_tri_idx[j].n2);
+			emd_tri_idx[j].v2 = SDL_SwapLE16(emd_tri_idx[j].v2);
+
+			/* FIXME: convert texture info */
+		}
+
+		/* Quads */
+		emd_mesh_object->quads.vtx_offset = SDL_SwapLE32(emd_mesh_object->quads.vtx_offset);
+		emd_mesh_object->quads.vtx_count = SDL_SwapLE32(emd_mesh_object->quads.vtx_count);
+		emd_mesh_object->quads.nor_offset = SDL_SwapLE32(emd_mesh_object->quads.nor_offset);
+		emd_mesh_object->quads.nor_count = SDL_SwapLE32(emd_mesh_object->quads.nor_count);
+		emd_mesh_object->quads.mesh_offset = SDL_SwapLE32(emd_mesh_object->quads.mesh_offset);
+		emd_mesh_object->quads.mesh_count = SDL_SwapLE32(emd_mesh_object->quads.mesh_count);
+		emd_mesh_object->quads.tex_offset = SDL_SwapLE32(emd_mesh_object->quads.tex_offset);
+
+		emd_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.vtx_offset]);
+		for (j=0; j<emd_mesh_object->quads.vtx_count; j++) {
+			/* Check not already converted */
+			int k, must_skip = 0;
+			for (k=0; k<emd_mesh_object->triangles.vtx_count; k++) {
+				if (list_vtx_done[k] == &emd_vtx[j]) {
+					must_skip = 1;
+					break;
+				}
+			}
+			if (must_skip) {
+				continue;
+			}
+
+			emd_vtx[j].x = SDL_SwapLE16(emd_vtx[j].x);
+			emd_vtx[j].y = SDL_SwapLE16(emd_vtx[j].y);
+			emd_vtx[j].z = SDL_SwapLE16(emd_vtx[j].z);
+			emd_vtx[j].w = SDL_SwapLE16(emd_vtx[j].w);
+		}
+
+		emd_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.nor_offset]);
+		for (j=0; j<emd_mesh_object->quads.nor_count; j++) {
+			int k, must_skip = 0;
+			for (k=0; k<emd_mesh_object->triangles.nor_count; k++) {
+				if (list_vtx_done[emd_mesh_object->triangles.vtx_count+k] == &emd_vtx[j]) {
+					must_skip = 1;
+					break;
+				}
+			}
+			if (must_skip) {
+				continue;
+			}
+
+			emd_vtx[j].x = SDL_SwapLE16(emd_vtx[j].x);
+			emd_vtx[j].y = SDL_SwapLE16(emd_vtx[j].y);
+			emd_vtx[j].z = SDL_SwapLE16(emd_vtx[j].z);
+			emd_vtx[j].w = SDL_SwapLE16(emd_vtx[j].w);
+		}
+
+		emd_quad_idx = (emd_quad_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.mesh_offset]);
+		for (j=0; j<emd_mesh_object->quads.mesh_count; j++) {
+			emd_quad_idx[j].n0 = SDL_SwapLE16(emd_quad_idx[j].n0);
+			emd_quad_idx[j].v0 = SDL_SwapLE16(emd_quad_idx[j].v0);
+			emd_quad_idx[j].n1 = SDL_SwapLE16(emd_quad_idx[j].n1);
+			emd_quad_idx[j].v1 = SDL_SwapLE16(emd_quad_idx[j].v1);
+			emd_quad_idx[j].n2 = SDL_SwapLE16(emd_quad_idx[j].n2);
+			emd_quad_idx[j].v2 = SDL_SwapLE16(emd_quad_idx[j].v2);
+			emd_quad_idx[j].n3 = SDL_SwapLE16(emd_quad_idx[j].n3);
+			emd_quad_idx[j].v3 = SDL_SwapLE16(emd_quad_idx[j].v3);
+
+			/* FIXME: convert texture info */
+		}
+
+		free(list_vtx_done);
+
+		emd_mesh_object++;
+	}
+}
+
+static void emd_convert_endianness_skel(int num_skel,
+	emd_skel_relpos_t *emd_skel_relpos,
+	emd_skel_data_t *emd_skel_data)
+{
+	/* FIXME: mark already converted skel parts, to avoid multiple conversion if needed*/
+	int i;
+	Uint8 *emd_skel_mesh = (Uint8 *) emd_skel_data;
+
+	emd_skel_relpos[num_skel].x = SDL_SwapLE16(emd_skel_relpos[num_skel].x);
+	emd_skel_relpos[num_skel].y = SDL_SwapLE16(emd_skel_relpos[num_skel].y);
+	emd_skel_relpos[num_skel].z = SDL_SwapLE16(emd_skel_relpos[num_skel].z);
+
+	emd_skel_data[num_skel].num_mesh = SDL_SwapLE16(emd_skel_data[num_skel].num_mesh);
+	emd_skel_data[num_skel].offset = SDL_SwapLE16(emd_skel_data[num_skel].offset);
+	for (i=0; i<emd_skel_data[num_skel].num_mesh; i++) {
+		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
+		emd_convert_endianness_skel(num_mesh, emd_skel_relpos, emd_skel_data);
 	}
 }
