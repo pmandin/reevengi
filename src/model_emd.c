@@ -41,60 +41,6 @@ typedef struct {
 	Uint32 length;
 } emd_header_t;
 
-/*
-64 00
-b0 00
-0f 00
-50 00 00 00
-ee f8 00 00 e3 ff
-ed ff 00 00 01 00
-78 00 40 ff 09 00
-e2 02 14 00 c9 ff
-2f 03 f8 ff 03 00
-7d 00 bf 00 0a 00
-e2 02 ef ff ca ff
-2b 03 08 00 9e ff
-40 fd 00 00 c5 ff
-4c fd 8f fe f5 ff
-e5 01 b0 ff 04 00
-c6 01 d3 ff c5 ff
-4c fd 71 01 f5 ff
-e5 01 50 00 04 00
-c6 01 2d 00 00 00
-04 00 3c 00
-02 00 40 00
-01 00 42 00
-01 00 43 00
-00 00 44 00
-01 00 44 00	
-01 00 45 00
-00 00 46 00
-00 00 46 00
-01 00 46 00
-01 00 47 00
-00 00 48 00
-01 00 48 00
-01 00 49 00
-00 00 4a 00
-01 08 09 0c 02 05 03 04 06 07 0a 0b 0d 0e 00 00
-
-0 buste
-1 tronc
-2 cuisse1
-3 jambe1
-4 pied1
-5 cuisse2
-6 jambe2
-7 pied2
-8 tete
-9 bras1
-10 avbras1
-11 main1
-12 bras2
-13 avbras2
-14 main2
-*/
-
 typedef struct {
 	Sint16	x,y,z;
 } emd_skel_relpos_t;
@@ -123,11 +69,11 @@ typedef struct {
 
 typedef struct {
 	unsigned char u0,v0;
-	unsigned short clutid;
+	Uint16 clutid;
 	unsigned char u1,v1;
-	unsigned short page;
+	Uint16 page;
 	unsigned char u2,v2;
-	unsigned short dummy;
+	Uint16 dummy;
 } emd_triangle_tex_t;
 
 typedef struct {
@@ -139,13 +85,13 @@ typedef struct {
 
 typedef struct {
 	unsigned char u0,v0;
-	unsigned short clutid;
+	Uint16 clutid;
 	unsigned char u1,v1;
-	unsigned short page;
+	Uint16 page;
 	unsigned char u2,v2;
-	unsigned short dummy0;
+	Uint16 dummy0;
 	unsigned char u3,v3;
-	unsigned short dummy1;
+	Uint16 dummy1;
 } emd_quad_tex_t;
 
 typedef struct {
@@ -400,7 +346,9 @@ static void emd_convert_endianness(void)
 		int j;
 		emd_vertex_t *emd_vtx;
 		emd_triangle_t *emd_tri_idx;
+		emd_triangle_tex_t *emd_tri_tex;
 		emd_quad_t *emd_quad_idx;
+		emd_quad_tex_t *emd_quad_tex;
 		emd_vertex_t **list_vtx_done;
 
 		/* Triangles */
@@ -441,6 +389,8 @@ static void emd_convert_endianness(void)
 
 		emd_tri_idx = (emd_triangle_t *)
 			(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
+		emd_tri_tex = (emd_triangle_tex_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.tex_offset]);
 		for (j=0; j<emd_mesh_object->triangles.mesh_count; j++) {
 			emd_tri_idx[j].n0 = SDL_SwapLE16(emd_tri_idx[j].n0);
 			emd_tri_idx[j].v0 = SDL_SwapLE16(emd_tri_idx[j].v0);
@@ -449,7 +399,8 @@ static void emd_convert_endianness(void)
 			emd_tri_idx[j].n2 = SDL_SwapLE16(emd_tri_idx[j].n2);
 			emd_tri_idx[j].v2 = SDL_SwapLE16(emd_tri_idx[j].v2);
 
-			/* FIXME: convert texture info */
+			emd_tri_tex[j].clutid = SDL_SwapLE16(emd_tri_tex[j].clutid);
+			emd_tri_tex[j].page = SDL_SwapLE16(emd_tri_tex[j].page);
 		}
 
 		/* Quads */
@@ -504,6 +455,8 @@ static void emd_convert_endianness(void)
 
 		emd_quad_idx = (emd_quad_t *)
 			(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.mesh_offset]);
+		emd_quad_tex = (emd_quad_tex_t *)
+			(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.tex_offset]);
 		for (j=0; j<emd_mesh_object->quads.mesh_count; j++) {
 			emd_quad_idx[j].n0 = SDL_SwapLE16(emd_quad_idx[j].n0);
 			emd_quad_idx[j].v0 = SDL_SwapLE16(emd_quad_idx[j].v0);
@@ -514,7 +467,9 @@ static void emd_convert_endianness(void)
 			emd_quad_idx[j].n3 = SDL_SwapLE16(emd_quad_idx[j].n3);
 			emd_quad_idx[j].v3 = SDL_SwapLE16(emd_quad_idx[j].v3);
 
-			/* FIXME: convert texture info */
+			/* FIXME: check if not already converted */
+			emd_quad_tex[j].clutid = SDL_SwapLE16(emd_quad_tex[j].clutid);
+			emd_quad_tex[j].page = SDL_SwapLE16(emd_quad_tex[j].page);
 		}
 
 		free(list_vtx_done);
