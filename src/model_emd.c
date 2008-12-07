@@ -323,14 +323,10 @@ static void emd_draw_mesh(int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
-		int v0 = emd_tri_idx[i].v0;
-		int v1 = emd_tri_idx[i].v1;
-		int v2 = emd_tri_idx[i].v2;
-
 		render.triangle(
-			emd_tri_vtx[v0].x, emd_tri_vtx[v0].y, emd_tri_vtx[v0].z,
-			emd_tri_vtx[v1].x, emd_tri_vtx[v1].y, emd_tri_vtx[v1].z,
-			emd_tri_vtx[v2].x, emd_tri_vtx[v2].y, emd_tri_vtx[v2].z
+			&emd_tri_vtx[emd_tri_idx[i].v0].x,
+			&emd_tri_vtx[emd_tri_idx[i].v1].x,
+			&emd_tri_vtx[emd_tri_idx[i].v2].x
 		);
 	}
 

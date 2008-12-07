@@ -55,10 +55,7 @@ static void set_color(Uint32 color);
 static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
-static void triangle(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3);
+static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
 static void quad(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2,
@@ -178,19 +175,16 @@ static void line(
 	gl.End();
 }
 
-static void triangle(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3)
+static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 {
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_TRIANGLES);
-	gl.Vertex3f(x1,y1,z1);
-	gl.Vertex3f(x2,y2,z2);
-	gl.Vertex3f(x3,y3,z3);
+	gl.Vertex3sv(v1);
+	gl.Vertex3sv(v2);
+	gl.Vertex3sv(v3);
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);

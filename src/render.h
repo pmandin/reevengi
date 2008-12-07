@@ -45,10 +45,7 @@ struct render_s {
 	void (*line)(
 		float x1, float y1, float z1,
 		float x2, float y2, float z2);
-	void (*triangle)(
-		float x1, float y1, float z1,
-		float x2, float y2, float z2,
-		float x3, float y3, float z3);
+	void (*triangle)(Sint16 *v1, Sint16 *v2, Sint16 *v3);
 	void (*quad)(
 		float x1, float y1, float z1,
 		float x2, float y2, float z2,

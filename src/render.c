@@ -64,10 +64,7 @@ static void set_color(Uint32 color);
 static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
-static void triangle(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3);
+static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
 static void quad(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2,
@@ -297,26 +294,23 @@ static void line(
 	);
 }
 
-static void triangle(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3)
+static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 {
 	float segment[4][4], result[4][4];
 	float dx1,dy1,dx2,dy2;
 
 	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = x1;
-	segment[0][1] = y1;
-	segment[0][2] = z1;
+	segment[0][0] = v1[0];
+	segment[0][1] = v1[1];
+	segment[0][2] = v1[2];
 	segment[0][3] = 1.0;
-	segment[1][0] = x2;
-	segment[1][1] = y2;
-	segment[1][2] = z2;
+	segment[1][0] = v2[0];
+	segment[1][1] = v2[1];
+	segment[1][2] = v2[2];
 	segment[1][3] = 1.0;
-	segment[2][0] = x3;
-	segment[2][1] = y3;
-	segment[2][2] = z3;
+	segment[2][0] = v3[0];
+	segment[2][1] = v3[1];
+	segment[2][2] = v3[2];
 	segment[2][3] = 1.0;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
@@ -342,9 +336,9 @@ static void triangle(
 		return;
 	}
 
-	line(x1,y1,z1, x2,y2,z2);
-	line(x2,y2,z2, x3,y3,z3);
-	line(x3,y3,z3, x1,y1,z1);
+	line(v1[0],v1[1],v1[2], v2[0],v2[1],v2[2]);
+	line(v2[0],v2[1],v2[2], v3[0],v3[1],v3[2]);
+	line(v3[0],v3[1],v3[2], v1[0],v1[1],v1[2]);
 }
 
 static void quad(
