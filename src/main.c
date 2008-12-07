@@ -169,7 +169,9 @@ int main(int argc, char **argv)
 	while (!quit) {
 		quit = viewer_loop();
 		viewer_update();
+#ifndef __MINT__
 		SDL_Delay(1);
+#endif
 	}
 
 	switch(params.viewmode) {
