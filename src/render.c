@@ -61,9 +61,7 @@ static void pop_matrix(void);
 static void recalc_frustum_mtx(void);
 
 static void set_color(Uint32 color);
-static void line(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2);
+static void line(Sint16 *v1, Sint16 *v2);
 static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
 static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
 
@@ -254,21 +252,19 @@ static void set_color(Uint32 color)
 	draw_setColor(color);
 }
 
-static void line(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2)
+static void line(Sint16 *v1, Sint16 *v2)
 {
 	float segment[4][4], result[4][4];
 	int clip_result;
 
 	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = x1;
-	segment[0][1] = y1;
-	segment[0][2] = z1;
+	segment[0][0] = v1[0];
+	segment[0][1] = v1[1];
+	segment[0][2] = v1[2];
 	segment[0][3] = 1.0;
-	segment[1][0] = x2;
-	segment[1][1] = y2;
-	segment[1][2] = z2;
+	segment[1][0] = v2[0];
+	segment[1][1] = v2[1];
+	segment[1][2] = v2[2];
 	segment[1][3] = 1.0;
 
 	/* Project in current modelview */
@@ -332,9 +328,9 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 		return;
 	}
 
-	line(v1[0],v1[1],v1[2], v2[0],v2[1],v2[2]);
-	line(v2[0],v2[1],v2[2], v3[0],v3[1],v3[2]);
-	line(v3[0],v3[1],v3[2], v1[0],v1[1],v1[2]);
+	line(v1,v2);
+	line(v2,v3);
+	line(v3,v1);
 }
 
 static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
@@ -383,8 +379,8 @@ static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 		return;
 	}
 
-	line(v1[0],v1[1],v1[2], v2[0],v2[1],v2[2]);
-	line(v2[0],v2[1],v2[2], v3[0],v3[1],v3[2]);
-	line(v3[0],v3[1],v3[2], v4[0],v4[1],v4[2]);
-	line(v4[0],v4[1],v4[2], v1[0],v1[1],v1[2]);
+	line(v1,v2);
+	line(v2,v3);
+	line(v3,v4);
+	line(v4,v1);
 }

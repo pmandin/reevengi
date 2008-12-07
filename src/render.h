@@ -42,9 +42,7 @@ struct render_s {
 	void (*pop_matrix)(void);
 
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
-	void (*line)(
-		float x1, float y1, float z1,
-		float x2, float y2, float z2);
+	void (*line)(Sint16 *v1, Sint16 *v2);
 	void (*triangle)(Sint16 *v1, Sint16 *v2, Sint16 *v3);
 	void (*quad)(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
 

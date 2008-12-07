@@ -52,9 +52,7 @@ static void push_matrix(void);
 static void pop_matrix(void);
 
 static void set_color(Uint32 color);
-static void line(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2);
+static void line(Sint16 *v1, Sint16 *v2);
 static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
 static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
 
@@ -161,13 +159,11 @@ static void set_color(Uint32 color)
 		color & 0xff, (color>>24) & 0xff);
 }
 
-static void line(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2)
+static void line(Sint16 *v1, Sint16 *v2)
 {
 	gl.Begin(GL_LINES);
-	gl.Vertex3f(x1,y1,z1);
-	gl.Vertex3f(x2,y2,z2);
+	gl.Vertex3sv(v1);
+	gl.Vertex3sv(v2);
 	gl.End();
 }
 
