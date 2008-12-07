@@ -324,8 +324,8 @@ static void drawGrid(void)
 	render.set_color(0x00ffffff);
 
 	render.push_matrix();
-	render.scale(500.0,500.0,500.0);
-	for (i=-40; i<=40; i+=10) {
+	render.scale(50.0,50.0,50.0);
+	for (i=-400; i<=400; i+=100) {
 		v1[0] = -400;
 		v1[1] = 200;
 		v1[2] = i;
@@ -362,7 +362,6 @@ static void drawCameraSwitches(void)
 
 	render.set_color(0x00cc8844);
 	render.push_matrix();
-	render.scale(1.0, 100.0, 1.0);
 	for (i=0; i<num_switches; i++) {
 		if (!re2pcdemo_get_camswitch(i,switchPos)) {
 			continue;
@@ -380,9 +379,9 @@ static void drawCameraSwitches(void)
 		v3[1] = 2000;
 		v3[2] = switchPos[5];
 
-		v3[0] = switchPos[6];
-		v3[1] = 2000;
-		v3[2] = switchPos[7];
+		v4[0] = switchPos[6];
+		v4[1] = 2000;
+		v4[2] = switchPos[7];
 
 		render.quad(v1,v2,v3,v4);
 	}
