@@ -37,6 +37,9 @@ void mtx_setRotation(float m[4][4], float angle,
 
 void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4]);
 
+/* Calculate if face visible using dot product */
+float mtx_faceVisible(float points[4][4]);
+
 /* Calculate clip planes for view frustum */
 void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4]);
 

@@ -255,7 +255,6 @@ static void line(Sint16 *v1, Sint16 *v2)
 static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 {
 	float segment[4][4], result[4][4];
-	float dx1,dy1,dx2,dy2;
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1[0];
@@ -277,20 +276,7 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 	}
 	mtx_mult(frustum_mtx, result, segment);
 
-	/* Calc dot product against vector (0,0,1) to see if face visible */
-/*
-	dx1 = x2/w2 - x1/w1
-	dy1 = y2/w2 - y1/w1
-	dx2 = x3/w3 - x2/w2
-	dy2 = y3/w3 - y2/w2
-
-	dx1*dy2-dx2*dy1
-*/
-	dx1 = (segment[1][0]/segment[1][3]) - (segment[0][0]/segment[0][3]);
-	dy1 = (segment[1][1]/segment[1][3]) - (segment[0][1]/segment[0][3]);
-	dx2 = (segment[2][0]/segment[2][3]) - (segment[1][0]/segment[1][3]);
-	dy2 = (segment[2][1]/segment[2][3]) - (segment[1][1]/segment[1][3]);
-	if (dx1*dy2-dx2*dy1 < 0) {
+	if (mtx_faceVisible(segment)<0) {
 		return;
 	}
 
@@ -302,7 +288,6 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 {
 	float segment[4][4], result[4][4];
-	float dx1,dy1,dx2,dy2;
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1[0];
@@ -328,20 +313,7 @@ static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 	}
 	mtx_mult(frustum_mtx, result, segment);
 
-	/* Calc dot product against vector (0,0,1) to see if face visible */
-/*
-	dx1 = x2/w2 - x1/w1
-	dy1 = y2/w2 - y1/w1
-	dx2 = x3/w3 - x2/w2
-	dy2 = y3/w3 - y2/w2
-
-	dx1*dy2-dx2*dy1
-*/
-	dx1 = (segment[1][0]/segment[1][3]) - (segment[0][0]/segment[0][3]);
-	dy1 = (segment[1][1]/segment[1][3]) - (segment[0][1]/segment[0][3]);
-	dx2 = (segment[2][0]/segment[2][3]) - (segment[1][0]/segment[1][3]);
-	dy2 = (segment[2][1]/segment[2][3]) - (segment[1][1]/segment[1][3]);
-	if (dx1*dy2-dx2*dy1 < 0) {
+	if (mtx_faceVisible(segment)<0) {
 		return;
 	}
 

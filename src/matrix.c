@@ -221,6 +221,26 @@ void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 	}
 }
 
+/* Calc dot product against vector (0,0,1) to see if face visible */
+float mtx_faceVisible(float points[4][4])
+{
+	float dx1,dy1,dx2,dy2;
+/*
+	dx1 = x2/w2 - x1/w1
+	dy1 = y2/w2 - y1/w1
+	dx2 = x3/w3 - x2/w2
+	dy2 = y3/w3 - y2/w2
+
+	dx1*dy2-dx2*dy1
+*/
+	dx1 = (points[1][0]/points[1][3]) - (points[0][0]/points[0][3]);
+	dy1 = (points[1][1]/points[1][3]) - (points[0][1]/points[0][3]);
+	dx2 = (points[2][0]/points[2][3]) - (points[1][0]/points[1][3]);
+	dy2 = (points[2][1]/points[2][3]) - (points[1][1]/points[1][3]);
+
+	return (dx1*dy2-dx2*dy1);
+}
+
 void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 {
 	/* right */
