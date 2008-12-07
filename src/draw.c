@@ -72,6 +72,20 @@ void draw_line(int x1, int y1, int x2, int y2)
 	sx = (dx >= 0) ? 1 : -1;
 	sy = (dy >= 0) ? 1 : -1;
 
+	/* Mark dirty rectangle */
+	{
+		int w = dx+1, h = dy+1, rx=x1, ry=y1;
+		if (dx<0) {
+			rx = x2; w = -w;
+		}
+		if (dy<0) {
+			ry = y2; h = -h;
+		}
+		video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb], rx,ry, w,h);
+		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb], rx,ry, w,h);
+		/*printf("draw_line: dirty %d,%d %d,%d\n", x1,y1,w,h);*/
+	}
+
 	dx = sx * dx + 1;
 	dy = sy * dy + 1;
 	pixx = surf->format->BytesPerPixel;
@@ -85,19 +99,6 @@ void draw_line(int x1, int y1, int x2, int y2)
 	}
 
 	/*printf("draw_line(%d,%d, %d,%d)\n", x1,y1, x2,y2);*/
-
-	/* Mark dirty rectangle */
-	{
-		int w = dx, h = dy;
-		if (w<0) {
-			x1 = x2; w = -w;
-		}
-		if (h<0) {
-			y1 = y2; h = -h;
-		}
-		video.dirty_rects->setDirty(video.dirty_rects, x1,y1, w,h);
-		video.upload_rects->setDirty(video.upload_rects, x1,y1, w,h);
-	}
 
 	switch(surf->format->BytesPerPixel) {
 		case 1:
