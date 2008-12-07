@@ -18,8 +18,6 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <math.h>
-
 #include "video.h"
 #include "render.h"
 #include "render_background.h"
@@ -186,41 +184,9 @@ static void translate(float x, float y, float z)
 static void rotate(float angle, float x, float y, float z)
 {
 	float rm[4][4], r[4][4];
-	float s,c,l;
-	float xx,yy,zz, xy,yz,zx, xs,ys,zs, one_c;
 
-	l = sqrt(x*x+y*y+z*z);
-	if (l <= 1.0e-5) {
-		return;
-	}
-	x /= l;
-	y /= l;
-	z /= l;
+	mtx_setRotation(rm, angle, x,y,z);
 
-	c = cos((angle * M_PI) / 180.0);
-	s = sin((angle * M_PI) / 180.0);
-
-	xx = x * x;
-	yy = y * y;
-	zz = z * z;
-	xy = x * y;
-	yz = y * z;
-	zx = z * x;
-	xs = x * s;
-	ys = y * s;
-	zs = z * s;
-	one_c = 1.0F - c;
-
-	mtx_setIdentity(rm);
-	rm[0][0] = (one_c * xx) + c;
-	rm[1][0] = (one_c * xy) - zs;
-	rm[2][0] = (one_c * zx) + ys;
-	rm[0][1] = (one_c * xy) + zs;
-	rm[1][1] = (one_c * yy) + c;
-	rm[2][1] = (one_c * yz) - xs;
-	rm[0][2] = (one_c * zx) - ys;
-	rm[1][2] = (one_c * yz) + xs;
-	rm[2][2] = (one_c * zz) + c;
 	mtx_mult(modelview_mtx[num_modelview_mtx], rm, r);
 	memcpy(modelview_mtx[num_modelview_mtx], r, sizeof(float)*4*4);
 }

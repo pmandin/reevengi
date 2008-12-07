@@ -165,6 +165,47 @@ void mtx_setLookAt(float m[4][4],
 	m[3][3] = 1.0;
 }
 
+void mtx_setRotation(float m[4][4], float angle,
+	float x, float y, float z)
+{
+	float s,c,l;
+	float xx,yy,zz, xy,yz,zx, xs,ys,zs, one_c;
+
+	mtx_setIdentity(m);
+
+	l = sqrt(x*x+y*y+z*z);
+	if (l <= 1.0e-5) {
+		return;
+	}
+	x /= l;
+	y /= l;
+	z /= l;
+
+	c = cos((angle * M_PI) / 180.0);
+	s = sin((angle * M_PI) / 180.0);
+
+	xx = x * x;
+	yy = y * y;
+	zz = z * z;
+	xy = x * y;
+	yz = y * z;
+	zx = z * x;
+	xs = x * s;
+	ys = y * s;
+	zs = z * s;
+	one_c = 1.0F - c;
+
+	m[0][0] = (one_c * xx) + c;
+	m[1][0] = (one_c * xy) - zs;
+	m[2][0] = (one_c * zx) + ys;
+	m[0][1] = (one_c * xy) + zs;
+	m[1][1] = (one_c * yy) + c;
+	m[2][1] = (one_c * yz) - xs;
+	m[0][2] = (one_c * zx) - ys;
+	m[1][2] = (one_c * yz) + xs;
+	m[2][2] = (one_c * zz) + c;
+}
+
 void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 {
 	int row,col;
