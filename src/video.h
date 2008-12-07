@@ -27,6 +27,7 @@ typedef struct video_s video_t;
 
 struct video_s {
 	int width, height, bpp, flags, numfb;
+	int fps, start_tick;
 	SDL_Surface *screen;
 	int num_screenshot;
 	dirty_rects_t *dirty_rects[2];	/* zones dirtied, where everything must be redraw */
@@ -38,6 +39,7 @@ struct video_s {
 	void (*setVideoMode)(video_t *this, int width, int height, int bpp);
 	void (*swapBuffers)(video_t *this);
 	void (*screenShot)(video_t *this);
+	void (*countFps)(video_t *this);
 
 	void (*initViewport)(video_t *this);
 

@@ -32,6 +32,7 @@
 static void shutDown(video_t *this);
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
+static void countFps(video_t *this);
 static void screenShot(video_t *this);
 static void initViewport(video_t *this);
 static void drawScreen(video_t *this);
@@ -46,6 +47,8 @@ void video_soft_init(video_t *this)
 	this->bpp = 16;
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
 	this->numfb = 0;
+	this->fps = 0;
+	this->start_tick = SDL_GetTicks();
 
 	this->screen = NULL;
 	this->num_screenshot = 0;
@@ -54,6 +57,7 @@ void video_soft_init(video_t *this)
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
+	this->countFps = countFps;
 
 	this->initViewport = initViewport;
 
@@ -171,10 +175,24 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	video.initViewport(&video);
 }
 
+static void countFps(video_t *this)
+{
+	Uint32 cur_tick = SDL_GetTicks();
+
+	++this->fps;
+	if (cur_tick-this->start_tick>1000) {
+		logMsg(1, "video: %d fps\n", this->fps);
+		this->fps = 0;
+		this->start_tick = cur_tick;
+	}
+}
+
 static void swapBuffers(video_t *this)
 {
 	SDL_Rect *list_rects;
 	int i, x, y, maxx, maxy;
+
+	this->countFps(this);
 
 	if ((this->flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		this->numfb ^= 1;

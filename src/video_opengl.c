@@ -131,6 +131,8 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 static void swapBuffers(video_t *this)
 {
+	this->countFps(this);
+
 	SDL_GL_SwapBuffers();
 }
 
