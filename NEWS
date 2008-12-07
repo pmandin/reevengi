@@ -1,8 +1,6 @@
-v 0.7
+v 0.8
 
-- Separate software and OpenGL renderers.
-- Togglable grid display.
-- Removed libGLU dependency.
+- Display an EMD object (RE2 pc demo only).
 
 
 See ChangeLog for older changes.
