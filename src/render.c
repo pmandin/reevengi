@@ -320,6 +320,9 @@ static void triangle(
 	segment[2][3] = 1.0;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
+	if (mtx_clipCheck(result, 3 , clip_planes) == CLIPPING_OUTSIDE) {
+		return;
+	}
 	mtx_mult(frustum_mtx, result, segment);
 
 	/* Calc dot product against vector (0,0,1) to see if face visible */
@@ -366,8 +369,15 @@ static void quad(
 	segment[2][1] = y3;
 	segment[2][2] = z3;
 	segment[2][3] = 1.0;
+	segment[3][0] = x4;
+	segment[3][1] = y4;
+	segment[3][2] = z4;
+	segment[3][3] = 1.0;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
+	if (mtx_clipCheck(result, 4 , clip_planes) == CLIPPING_OUTSIDE) {
+		return;
+	}
 	mtx_mult(frustum_mtx, result, segment);
 
 	/* Calc dot product against vector (0,0,1) to see if face visible */
