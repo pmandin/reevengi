@@ -47,7 +47,8 @@ void render_background_init(video_t *this, video_surface_t *source)
 	backgroundSurf = source;
 
 	/* Mark background places as dirty */
-	this->dirty_rects->setDirty(this->dirty_rects, 0,0, this->width, this->height);
+	this->dirty_rects[0]->setDirty(this->dirty_rects[0], 0,0, this->width, this->height);
+	this->dirty_rects[1]->setDirty(this->dirty_rects[1], 0,0, this->width, this->height);
 
 	src_surf = source->getSurface(source);
 
@@ -127,7 +128,7 @@ void render_background(video_t *this)
 	}
 
 	/* Now copy back each dirty rectangle from zoom_surf */
-	for (y=0; y<this->dirty_rects->height; y++) {
+	for (y=0; y<this->dirty_rects[this->numfb]->height; y++) {
 		int dst_y1, dst_y2;
 
 		/* Target destination of zoomed image */
@@ -146,11 +147,11 @@ void render_background(video_t *this)
 			continue;
 		}
 
-		for (x=0; x<this->dirty_rects->width; x++) {
+		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
 			int dst_x1, dst_x2;
 			SDL_Rect src_rect, dst_rect;
 
-			if (this->dirty_rects->markers[y*this->dirty_rects->width + x] == 0) {
+			if (this->dirty_rects[this->numfb]->markers[y*this->dirty_rects[this->numfb]->width + x] == 0) {
 				continue;
 			}
 
@@ -178,13 +179,13 @@ void render_background(video_t *this)
 			dst_rect.h = src_rect.h = dst_y2-dst_y1;
 			SDL_BlitSurface(zoom_surf, &src_rect, this->screen, &dst_rect);
 
-			this->upload_rects->setDirty(this->upload_rects,
+			this->upload_rects[this->numfb]->setDirty(this->upload_rects[this->numfb],
 				dst_rect.x,dst_rect.y,
 				dst_rect.w,dst_rect.h);
 		}
 	}
 
-	this->dirty_rects->clear(this->dirty_rects);
+	this->dirty_rects[this->numfb]->clear(this->dirty_rects[this->numfb]);
 }
 
 /* Redraw scaled image in a target surface */

@@ -26,11 +26,11 @@
 typedef struct video_s video_t;
 
 struct video_s {
-	int width, height, bpp, flags;
+	int width, height, bpp, flags, numfb;
 	SDL_Surface *screen;
 	int num_screenshot;
-	dirty_rects_t *dirty_rects;	/* zones dirtied, where everything must be redraw */
-	dirty_rects_t *upload_rects;	/* zones to be reupload to vram */
+	dirty_rects_t *dirty_rects[2];	/* zones dirtied, where everything must be redraw */
+	dirty_rects_t *upload_rects[2];	/* zones to be reupload to vram */
 
 	SDL_Rect viewport;
 

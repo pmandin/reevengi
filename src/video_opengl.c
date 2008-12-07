@@ -77,7 +77,7 @@ void video_opengl_init(video_t *this)
 		video_detect_aspect();
 	}*/
 
-	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
+	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
 }
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)
@@ -120,7 +120,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->bpp = this->screen->format->BitsPerPixel;
 	this->flags = this->screen->flags;
 
-	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
+	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
 
 	video.initViewport(&video);

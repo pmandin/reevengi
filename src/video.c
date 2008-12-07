@@ -45,6 +45,7 @@ void video_soft_init(video_t *this)
 	this->height = 240;
 	this->bpp = 16;
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
+	this->numfb = 0;
 
 	this->screen = NULL;
 	this->num_screenshot = 0;
@@ -65,19 +66,31 @@ void video_soft_init(video_t *this)
 		video_detect_aspect();
 	}
 
-	this->dirty_rects = dirty_rects_create(this->width, this->height);
-	this->upload_rects = dirty_rects_create(this->width, this->height);
+	this->dirty_rects[0] = dirty_rects_create(this->width, this->height);
+	this->upload_rects[0] = dirty_rects_create(this->width, this->height);
+
+	this->dirty_rects[1] = dirty_rects_create(this->width, this->height);
+	this->upload_rects[1] = dirty_rects_create(this->width, this->height);
 }
 
 static void shutDown(video_t *this)
 {
-	if (this->dirty_rects) {
-		dirty_rects_destroy(this->dirty_rects);
-		this->dirty_rects = NULL;
+	if (this->dirty_rects[0]) {
+		dirty_rects_destroy(this->dirty_rects[0]);
+		this->dirty_rects[0] = NULL;
 	}
-	if (this->upload_rects) {
-		dirty_rects_destroy(this->upload_rects);
-		this->upload_rects = NULL;
+	if (this->upload_rects[0]) {
+		dirty_rects_destroy(this->upload_rects[0]);
+		this->upload_rects[0] = NULL;
+	}
+
+	if (this->dirty_rects[1]) {
+		dirty_rects_destroy(this->dirty_rects[1]);
+		this->dirty_rects[1] = NULL;
+	}
+	if (this->upload_rects[1]) {
+		dirty_rects_destroy(this->upload_rects[1]);
+		this->upload_rects[1] = NULL;
 	}
 }
 
@@ -148,8 +161,11 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->bpp = this->screen->format->BitsPerPixel;
 	this->flags = this->screen->flags;
 
-	this->dirty_rects->resize(this->dirty_rects, this->width, this->height);
-	this->upload_rects->resize(this->upload_rects, this->width, this->height);
+	this->dirty_rects[0]->resize(this->dirty_rects[0], this->width, this->height);
+	this->upload_rects[0]->resize(this->upload_rects[0], this->width, this->height);
+	this->dirty_rects[1]->resize(this->dirty_rects[1], this->width, this->height);
+	this->upload_rects[1]->resize(this->upload_rects[1], this->width, this->height);
+
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
 	video.initViewport(&video);
@@ -161,12 +177,13 @@ static void swapBuffers(video_t *this)
 	int i, x, y, maxx, maxy;
 
 	if ((this->flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
+		this->numfb ^= 1;
 		SDL_Flip(this->screen);
 		return;
 	}
 
 	/* Update background from rectangle list */
-	list_rects = (SDL_Rect *) calloc(this->upload_rects->width * this->upload_rects->height,
+	list_rects = (SDL_Rect *) calloc(this->upload_rects[this->numfb]->width * this->upload_rects[this->numfb]->height,
 		sizeof(SDL_Rect));
 	if (!list_rects) {
 		SDL_UpdateRect(this->screen, 0,0,0,0);
@@ -174,11 +191,11 @@ static void swapBuffers(video_t *this)
 	}
 
 	i = 0;
-	for (y=0; y<this->upload_rects->height; y++) {
-		for (x=0; x<this->upload_rects->width; x++) {
+	for (y=0; y<this->upload_rects[this->numfb]->height; y++) {
+		for (x=0; x<this->upload_rects[this->numfb]->width; x++) {
 			int maxw = 1<<4, maxh = 1<<4;
 
-			if (this->upload_rects->markers[y*this->upload_rects->width + x] == 0) {
+			if (this->upload_rects[this->numfb]->markers[y*this->upload_rects[this->numfb]->width + x] == 0) {
 				continue;
 			}
 
@@ -199,7 +216,7 @@ static void swapBuffers(video_t *this)
 	}
 
 	SDL_UpdateRects(this->screen, i, list_rects);
-	this->upload_rects->clear(this->upload_rects);
+	this->upload_rects[this->numfb]->clear(this->upload_rects[this->numfb]);
 	free(list_rects);
 }
 
