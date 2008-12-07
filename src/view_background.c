@@ -143,7 +143,6 @@ void view_background_input(SDL_Event *event)
 				break;						
 			case KEY_TOGGLE_GRID:
 				render_grid ^= 1;
-				refresh_bg = 1;
 				break;
 			case KEY_MOVE_FORWARD:
 				player_moveforward = 1;
