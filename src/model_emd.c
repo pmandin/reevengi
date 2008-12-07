@@ -349,7 +349,7 @@ static void emd_convert_endianness(void)
 		emd_triangle_tex_t *emd_tri_tex;
 		emd_quad_t *emd_quad_idx;
 		emd_quad_tex_t *emd_quad_tex;
-		emd_vertex_t **list_vtx_done;
+		void **list_done;
 
 		/* Triangles */
 		emd_mesh_object->triangles.vtx_offset = SDL_SwapLE32(emd_mesh_object->triangles.vtx_offset);
@@ -360,9 +360,11 @@ static void emd_convert_endianness(void)
 		emd_mesh_object->triangles.mesh_count = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
 		emd_mesh_object->triangles.tex_offset = SDL_SwapLE32(emd_mesh_object->triangles.tex_offset);
 
-		list_vtx_done = (emd_vertex_t **) malloc(sizeof(emd_vertex_t *)*
-			(emd_mesh_object->triangles.vtx_count+emd_mesh_object->triangles.nor_count));
-		if (!list_vtx_done) {
+		list_done = malloc(sizeof(void *)*
+			(emd_mesh_object->triangles.vtx_count+
+			emd_mesh_object->triangles.nor_count+
+			emd_mesh_object->triangles.mesh_count));
+		if (!list_done) {
 			fprintf(stderr, "Can not allocate mem for vtx/nor list conversion\n");
 			break;
 		}
@@ -374,7 +376,7 @@ static void emd_convert_endianness(void)
 			emd_vtx[j].y = SDL_SwapLE16(emd_vtx[j].y);
 			emd_vtx[j].z = SDL_SwapLE16(emd_vtx[j].z);
 			emd_vtx[j].w = SDL_SwapLE16(emd_vtx[j].w);
-			list_vtx_done[j] = &emd_vtx[j];
+			list_done[j] = &emd_vtx[j];
 		}
 
 		emd_vtx = (emd_vertex_t *)
@@ -384,7 +386,7 @@ static void emd_convert_endianness(void)
 			emd_vtx[j].y = SDL_SwapLE16(emd_vtx[j].y);
 			emd_vtx[j].z = SDL_SwapLE16(emd_vtx[j].z);
 			emd_vtx[j].w = SDL_SwapLE16(emd_vtx[j].w);
-			list_vtx_done[emd_mesh_object->triangles.vtx_count+j] = &emd_vtx[j];
+			list_done[emd_mesh_object->triangles.vtx_count+j] = &emd_vtx[j];
 		}
 
 		emd_tri_idx = (emd_triangle_t *)
@@ -399,6 +401,8 @@ static void emd_convert_endianness(void)
 			emd_tri_idx[j].n2 = SDL_SwapLE16(emd_tri_idx[j].n2);
 			emd_tri_idx[j].v2 = SDL_SwapLE16(emd_tri_idx[j].v2);
 
+			list_done[emd_mesh_object->triangles.vtx_count+
+				emd_mesh_object->triangles.nor_count+j] = &emd_tri_tex[j];
 			emd_tri_tex[j].clutid = SDL_SwapLE16(emd_tri_tex[j].clutid);
 			emd_tri_tex[j].page = SDL_SwapLE16(emd_tri_tex[j].page);
 		}
@@ -418,7 +422,7 @@ static void emd_convert_endianness(void)
 			/* Check not already converted */
 			int k, must_skip = 0;
 			for (k=0; k<emd_mesh_object->triangles.vtx_count; k++) {
-				if (list_vtx_done[k] == &emd_vtx[j]) {
+				if (list_done[k] == &emd_vtx[j]) {
 					must_skip = 1;
 					break;
 				}
@@ -438,7 +442,7 @@ static void emd_convert_endianness(void)
 		for (j=0; j<emd_mesh_object->quads.nor_count; j++) {
 			int k, must_skip = 0;
 			for (k=0; k<emd_mesh_object->triangles.nor_count; k++) {
-				if (list_vtx_done[emd_mesh_object->triangles.vtx_count+k] == &emd_vtx[j]) {
+				if (list_done[emd_mesh_object->triangles.vtx_count+k] == &emd_vtx[j]) {
 					must_skip = 1;
 					break;
 				}
@@ -458,6 +462,8 @@ static void emd_convert_endianness(void)
 		emd_quad_tex = (emd_quad_tex_t *)
 			(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.tex_offset]);
 		for (j=0; j<emd_mesh_object->quads.mesh_count; j++) {
+			int k, must_skip = 0;
+
 			emd_quad_idx[j].n0 = SDL_SwapLE16(emd_quad_idx[j].n0);
 			emd_quad_idx[j].v0 = SDL_SwapLE16(emd_quad_idx[j].v0);
 			emd_quad_idx[j].n1 = SDL_SwapLE16(emd_quad_idx[j].n1);
@@ -467,12 +473,22 @@ static void emd_convert_endianness(void)
 			emd_quad_idx[j].n3 = SDL_SwapLE16(emd_quad_idx[j].n3);
 			emd_quad_idx[j].v3 = SDL_SwapLE16(emd_quad_idx[j].v3);
 
-			/* FIXME: check if not already converted */
+			for (k=0; k<emd_mesh_object->triangles.mesh_count; k++) {
+				if (list_done[emd_mesh_object->triangles.vtx_count+
+					emd_mesh_object->triangles.nor_count+k] == &emd_quad_tex[j]) {
+					must_skip = 1;
+					break;
+				}
+			}
+			if (must_skip) {
+				continue;
+			}
+
 			emd_quad_tex[j].clutid = SDL_SwapLE16(emd_quad_tex[j].clutid);
 			emd_quad_tex[j].page = SDL_SwapLE16(emd_quad_tex[j].page);
 		}
 
-		free(list_vtx_done);
+		free(list_done);
 
 		emd_mesh_object++;
 	}
