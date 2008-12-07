@@ -56,11 +56,7 @@ static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
 static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
-static void quad(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3,
-	float x4, float y4, float z4);
+static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
 
 static void render_opengl_shutdown(render_t *render);
 
@@ -191,21 +187,17 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 	gl.Disable(GL_CULL_FACE);
 }
 
-static void quad(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3,
-	float x4, float y4, float z4)
+static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 {
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_QUADS);
-	gl.Vertex3f(x1,y1,z1);
-	gl.Vertex3f(x2,y2,z2);
-	gl.Vertex3f(x3,y3,z3);
-	gl.Vertex3f(x4,y4,z4);
+	gl.Vertex3sv(v1);
+	gl.Vertex3sv(v2);
+	gl.Vertex3sv(v3);
+	gl.Vertex3sv(v4);
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);

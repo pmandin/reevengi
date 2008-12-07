@@ -46,11 +46,7 @@ struct render_s {
 		float x1, float y1, float z1,
 		float x2, float y2, float z2);
 	void (*triangle)(Sint16 *v1, Sint16 *v2, Sint16 *v3);
-	void (*quad)(
-		float x1, float y1, float z1,
-		float x2, float y2, float z2,
-		float x3, float y3, float z3,
-		float x4, float y4, float z4);
+	void (*quad)(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
 
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);

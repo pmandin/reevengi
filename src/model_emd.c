@@ -337,16 +337,11 @@ static void emd_draw_mesh(int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->quads.mesh_count; i++) {
-		int v0 = emd_quad_idx[i].v0;
-		int v1 = emd_quad_idx[i].v1;
-		int v2 = emd_quad_idx[i].v2;
-		int v3 = emd_quad_idx[i].v3;
-
 		render.quad(
-			emd_quad_vtx[v0].x, emd_quad_vtx[v0].y, emd_quad_vtx[v0].z,
-			emd_quad_vtx[v1].x, emd_quad_vtx[v1].y, emd_quad_vtx[v1].z,
-			emd_quad_vtx[v3].x, emd_quad_vtx[v3].y, emd_quad_vtx[v3].z,
-			emd_quad_vtx[v2].x, emd_quad_vtx[v2].y, emd_quad_vtx[v2].z
+			&emd_quad_vtx[emd_quad_idx[i].v0].x,
+			&emd_quad_vtx[emd_quad_idx[i].v1].x,
+			&emd_quad_vtx[emd_quad_idx[i].v3].x,
+			&emd_quad_vtx[emd_quad_idx[i].v2].x
 		);
 	}
 }

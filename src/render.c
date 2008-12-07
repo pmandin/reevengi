@@ -65,11 +65,7 @@ static void line(
 	float x1, float y1, float z1,
 	float x2, float y2, float z2);
 static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
-static void quad(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3,
-	float x4, float y4, float z4);
+static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
 
 /*--- Functions ---*/
 
@@ -341,31 +337,27 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 	line(v3[0],v3[1],v3[2], v1[0],v1[1],v1[2]);
 }
 
-static void quad(
-	float x1, float y1, float z1,
-	float x2, float y2, float z2,
-	float x3, float y3, float z3,
-	float x4, float y4, float z4)
+static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 {
 	float segment[4][4], result[4][4];
 	float dx1,dy1,dx2,dy2;
 
 	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = x1;
-	segment[0][1] = y1;
-	segment[0][2] = z1;
+	segment[0][0] = v1[0];
+	segment[0][1] = v1[1];
+	segment[0][2] = v1[2];
 	segment[0][3] = 1.0;
-	segment[1][0] = x2;
-	segment[1][1] = y2;
-	segment[1][2] = z2;
+	segment[1][0] = v2[0];
+	segment[1][1] = v2[1];
+	segment[1][2] = v2[2];
 	segment[1][3] = 1.0;
-	segment[2][0] = x3;
-	segment[2][1] = y3;
-	segment[2][2] = z3;
+	segment[2][0] = v3[0];
+	segment[2][1] = v3[1];
+	segment[2][2] = v3[2];
 	segment[2][3] = 1.0;
-	segment[3][0] = x4;
-	segment[3][1] = y4;
-	segment[3][2] = z4;
+	segment[3][0] = v4[0];
+	segment[3][1] = v4[1];
+	segment[3][2] = v4[2];
 	segment[3][3] = 1.0;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
@@ -391,8 +383,8 @@ static void quad(
 		return;
 	}
 
-	line(x1,y1,z1, x2,y2,z2);
-	line(x2,y2,z2, x3,y3,z3);
-	line(x3,y3,z3, x4,y4,z4);
-	line(x4,y4,z4, x1,y1,z1);
+	line(v1[0],v1[1],v1[2], v2[0],v2[1],v2[2]);
+	line(v2[0],v2[1],v2[2], v3[0],v3[1],v3[2]);
+	line(v3[0],v3[1],v3[2], v4[0],v4[1],v4[2]);
+	line(v4[0],v4[1],v4[2], v1[0],v1[1],v1[2]);
 }
