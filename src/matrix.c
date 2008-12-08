@@ -33,7 +33,7 @@
 void mtx_setIdentity(float m[4][4])
 {
 	memset(m, 0, sizeof(float)*4*4);
-	m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0;
+	m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0f;
 }
 
 void mtx_print(float m[4][4])
@@ -67,11 +67,11 @@ void mtx_print(float m[4][4])
 void mtx_setProjection(float m[4][4], float angle, float aspect, float z_near, float z_far)
 {
 	float sine, cotangent, deltaZ;
-	float radians = angle / 2 * M_PI / 180;
+	float radians = angle / 2.0f * M_PI / 180.0f;
 
 	deltaZ = z_far - z_near;
 	sine = sin(radians);
-	if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
+	if ((deltaZ == 0.0f) || (sine == 0.0f) || (aspect == 0.0f)) {
 		return;
 	}
 
@@ -81,9 +81,9 @@ void mtx_setProjection(float m[4][4], float angle, float aspect, float z_near, f
 	m[0][0] = cotangent / aspect;
 	m[1][1] = cotangent;
 	m[2][2] = -(z_far + z_near) / deltaZ;
-	m[2][3] = -1;
-	m[3][2] = -2 * z_near * z_far / deltaZ;
-	m[3][3] = 0;
+	m[2][3] = -1.0f;
+	m[3][2] = -2.0f * z_near * z_far / deltaZ;
+	m[3][3] = 0.0f;
 }
 
 /*
@@ -110,7 +110,7 @@ static void normalize(float v[4])
 	float r;
 
 	r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
-	if (r <= 1.0e-5) return;
+	if (r <= 1.0e-5f) return;
 
 	v[0] /= r;
 	v[1] /= r;
@@ -162,7 +162,7 @@ void mtx_setLookAt(float m[4][4],
 	m[1][2] = -forward[1];
 	m[2][2] = -forward[2];
 
-	m[3][3] = 1.0;
+	m[3][3] = 1.0f;
 }
 
 void mtx_setRotation(float m[4][4], float angle,
@@ -174,15 +174,15 @@ void mtx_setRotation(float m[4][4], float angle,
 	mtx_setIdentity(m);
 
 	l = sqrt(x*x+y*y+z*z);
-	if (l <= 1.0e-5) {
+	if (l <= 1.0e-5f) {
 		return;
 	}
 	x /= l;
 	y /= l;
 	z /= l;
 
-	c = cos((angle * M_PI) / 180.0);
-	s = sin((angle * M_PI) / 180.0);
+	c = cos((angle * M_PI) / 180.0f);
+	s = sin((angle * M_PI) / 180.0f);
 
 	xx = x * x;
 	yy = y * y;
@@ -193,7 +193,7 @@ void mtx_setRotation(float m[4][4], float angle,
 	xs = x * s;
 	ys = y * s;
 	zs = z * s;
-	one_c = 1.0F - c;
+	one_c = 1.0f - c;
 
 	m[0][0] = (one_c * xx) + c;
 	m[1][0] = (one_c * xy) - zs;
@@ -299,7 +299,7 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4])
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0;
 		for (j=0; j<num_points; j++) {
-			if (dotProductPlus(points[j], clip[i])<0) {
+			if (dotProductPlus(points[j], clip[i])<0.0f) {
 				++num_outsides;
 			}
 		}
@@ -325,7 +325,7 @@ int mtx_clipSegment(float points[4][4], float clip[6][4])
 		float num,den, u, x,y,z,w;
 
 		for (j=0; j<2; j++) {
-			if (dotProductPlus(points[j], clip[i])<0) {
+			if (dotProductPlus(points[j], clip[i])<0.0f) {
 				++num_outsides;
 				if (num_point_outside<0) {
 					num_point_outside=j;
