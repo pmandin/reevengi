@@ -102,6 +102,7 @@ video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFor
 video_surface_t *video_surface_create_su(SDL_Surface *surface)
 {
 	int sw = surface->w, sh = surface->h;
+	SDL_Surface *scr_surf;
 
 	video_surface_t *this = (video_surface_t *) calloc(1, sizeof(video_surface_t));
 	if (!this) {
@@ -141,6 +142,11 @@ video_surface_t *video_surface_create_su(SDL_Surface *surface)
 
 	/* Copy pixels */
 	SDL_BlitSurface(surface, NULL, this->sdl_surf, NULL);
+
+	/* Convert to screen format */
+	scr_surf = SDL_DisplayFormat(this->sdl_surf);
+	SDL_FreeSurface(this->sdl_surf);
+	this->sdl_surf = scr_surf;
 
 	/* This is the dimensions we work on */
 	this->width = surface->w;
