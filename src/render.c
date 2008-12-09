@@ -113,10 +113,10 @@ static void recalc_frustum_mtx(void)
 
 static void set_viewport(int x, int y, int w, int h)
 {
-	viewport_mtx[0][0] = w/2;
-	viewport_mtx[3][0] = w/2;
-	viewport_mtx[1][1] = -h/2;
-	viewport_mtx[3][1] = h/2;
+	viewport_mtx[0][0] = w*0.5f;
+	viewport_mtx[3][0] = w*0.5f;
+	viewport_mtx[1][1] = -h*0.5f;
+	viewport_mtx[3][1] = h*0.5f;
 }
 
 static void set_projection(float angle, float aspect, float z_near, float z_far)
@@ -227,11 +227,11 @@ static void line(Sint16 *v1, Sint16 *v2)
 	segment[0][0] = v1[0];
 	segment[0][1] = v1[1];
 	segment[0][2] = v1[2];
-	segment[0][3] = 1.0;
+	segment[0][3] = 1.0f;
 	segment[1][0] = v2[0];
 	segment[1][1] = v2[1];
 	segment[1][2] = v2[2];
-	segment[1][3] = 1.0;
+	segment[1][3] = 1.0f;
 
 	/* Project in current modelview */
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
@@ -260,15 +260,15 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 	segment[0][0] = v1[0];
 	segment[0][1] = v1[1];
 	segment[0][2] = v1[2];
-	segment[0][3] = 1.0;
+	segment[0][3] = 1.0f;
 	segment[1][0] = v2[0];
 	segment[1][1] = v2[1];
 	segment[1][2] = v2[2];
-	segment[1][3] = 1.0;
+	segment[1][3] = 1.0f;
 	segment[2][0] = v3[0];
 	segment[2][1] = v3[1];
 	segment[2][2] = v3[2];
-	segment[2][3] = 1.0;
+	segment[2][3] = 1.0f;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 	if (mtx_clipCheck(result, 3 , clip_planes) == CLIPPING_OUTSIDE) {
@@ -276,7 +276,7 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 	}
 	mtx_mult(frustum_mtx, result, segment);
 
-	if (mtx_faceVisible(segment)<0) {
+	if (mtx_faceVisible(segment)<0.0f) {
 		return;
 	}
 
@@ -293,19 +293,19 @@ static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 	segment[0][0] = v1[0];
 	segment[0][1] = v1[1];
 	segment[0][2] = v1[2];
-	segment[0][3] = 1.0;
+	segment[0][3] = 1.0f;
 	segment[1][0] = v2[0];
 	segment[1][1] = v2[1];
 	segment[1][2] = v2[2];
-	segment[1][3] = 1.0;
+	segment[1][3] = 1.0f;
 	segment[2][0] = v3[0];
 	segment[2][1] = v3[1];
 	segment[2][2] = v3[2];
-	segment[2][3] = 1.0;
+	segment[2][3] = 1.0f;
 	segment[3][0] = v4[0];
 	segment[3][1] = v4[1];
 	segment[3][2] = v4[2];
-	segment[3][3] = 1.0;
+	segment[3][3] = 1.0f;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 	if (mtx_clipCheck(result, 4 , clip_planes) == CLIPPING_OUTSIDE) {
@@ -313,7 +313,7 @@ static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 	}
 	mtx_mult(frustum_mtx, result, segment);
 
-	if (mtx_faceVisible(segment)<0) {
+	if (mtx_faceVisible(segment)<0.0f) {
 		return;
 	}
 
