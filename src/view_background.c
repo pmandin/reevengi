@@ -61,7 +61,10 @@ static int render_grid = 0;
 static int refresh_player_pos = 0;
 static float player_x = 0, player_y = 0, player_z = 0;
 static float player_a = 0;
-
+/*
+static float player_x = 12108.0f, player_y = -2500.0f, player_z = -3256.0f;
+static float player_a = -17.5f;
+*/
 static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_turnleft = 0;
@@ -214,18 +217,18 @@ void view_background_update(void)
 
 	/* Move player ? */
 	if (player_moveforward) {
-		player_x = playerstart_x + cos((player_a*M_PI)/180)*5.0*(tick_current-tick_moveforward);
-		player_z = playerstart_z - sin((player_a*M_PI)/180)*5.0*(tick_current-tick_moveforward);
+		player_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_moveforward);
+		player_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_moveforward);
 	}
 	if (player_movebackward) {
-		player_x = playerstart_x - cos((player_a*M_PI)/180)*5.0*(tick_current-tick_movebackward);
-		player_z = playerstart_z + sin((player_a*M_PI)/180)*5.0*(tick_current-tick_movebackward);
+		player_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movebackward);
+		player_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movebackward);
 	}
 	if (player_turnleft) {
-		player_a = playerstart_a - 0.1*(tick_current-tick_turnleft);
+		player_a = playerstart_a - 0.1f*(tick_current-tick_turnleft);
 	}
 	if (player_turnright) {
-		player_a = playerstart_a + 0.1*(tick_current-tick_turnright);
+		player_a = playerstart_a + 0.1f*(tick_current-tick_turnright);
 	}
 }
 
@@ -274,11 +277,11 @@ void view_background_draw(void)
 		refresh_player_pos = 0;
 	}
 
-	render.set_projection(60.0, 4.0/3.0, 1.0, 100000.0);
+	render.set_projection(60.0f, 4.0f/3.0f, 1.0f, 100000.0f);
 	render.set_modelview(
 		cam_pos[0], cam_pos[1], cam_pos[2],
 		cam_pos[3], cam_pos[4], cam_pos[5],
-		0.0, -1.0, 0.0
+		0.0f, -1.0f, 0.0f
 	);
 
 	drawPlayer();
@@ -324,7 +327,7 @@ static void drawGrid(void)
 	render.set_color(0x00ffffff);
 
 	render.push_matrix();
-	render.scale(50.0,50.0,50.0);
+	render.scale(50.0f, 50.0f, 50.0f);
 	for (i=-400; i<=400; i+=100) {
 		v1[0] = -400;
 		v1[1] = 200;
@@ -393,8 +396,8 @@ static void drawPlayer(void)
 	render.set_color(0x004488cc);
 
 	render.push_matrix();
-	render.translate(player_x, player_y+2000, player_z);
-	render.rotate(player_a, 0.0,1.0,0.0);
+	render.translate(player_x, player_y+2000.0f, player_z);
+	render.rotate(player_a, 0.0f,1.0f,0.0f);
 
 #if 0
 	render.scale(2500.0, 2500.0, 2500.0);
