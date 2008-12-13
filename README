@@ -85,7 +85,8 @@ V		reset camera
 
 G		toggle grid display
 T		toggle background restoration display
-Arrow keys	Move model (only for RE2 pc demo currently)
+SPACE		refresh background, move player at current camera position
+Arrow keys	Move player (only for RE2 pc demo currently)
 
 
 4 Supported games

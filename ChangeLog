@@ -1,7 +1,7 @@
 v 0.8
 
 - Display an EMD object (RE2 pc demo only).
-- Togglable background restoration
+- Forceable background restoration and reset player position
 
 v 0.7
 
