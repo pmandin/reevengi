@@ -44,6 +44,7 @@
 #define KEY_CAMERA_RESET	SDLK_v
 
 #define KEY_TOGGLE_GRID		SDLK_g
+#define KEY_TOGGLE_RESTORE	SDLK_t
 
 #define KEY_MOVE_FORWARD	SDLK_UP
 #define KEY_MOVE_BACKWARD	SDLK_DOWN
@@ -57,6 +58,7 @@ static int reload_room = 1;
 static int refresh_bg = 1;
 
 static int render_grid = 0;
+static int render_restore = 0;
 
 static int refresh_player_pos = 0;
 static float player_x = 0, player_y = 0, player_z = 0;
@@ -147,6 +149,9 @@ void view_background_input(SDL_Event *event)
 			case KEY_TOGGLE_GRID:
 				render_grid ^= 1;
 				break;
+			case KEY_TOGGLE_RESTORE:
+				render_restore ^= 1;
+				break;
 			case KEY_MOVE_FORWARD:
 				player_moveforward = 1;
 				tick_moveforward = SDL_GetTicks();
@@ -235,6 +240,12 @@ void view_background_update(void)
 void view_background_draw(void)
 {
 	long cam_pos[6];
+
+	if (render_restore) {
+		SDL_FillRect(video.screen, NULL, 0);
+		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+			0,0, video.width, video.height);
+	}
 
 	render.drawBackground(&video);
 
