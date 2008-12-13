@@ -27,7 +27,6 @@
 static int zoomw = 0, zoomh = 0;
 static int *zoomx = NULL, *zoomy = NULL;
 static SDL_Surface *zoom_surf = NULL;
-static SDL_Surface *orig_background = NULL;
 static video_surface_t *backgroundSurf = NULL;
 
 /*--- Functions prototypes ---*/
@@ -97,10 +96,7 @@ void render_background_init(video_t *this, video_surface_t *source)
 		}
 	}
 
-	if (recreate_surface || (orig_background != src_surf)) {
-		render_scaled_background(src_surf, zoom_surf);
-		orig_background = src_surf;
-	}
+	render_scaled_background(src_surf, zoom_surf);
 }
 
 void render_background_shutdown(void)
