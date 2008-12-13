@@ -84,6 +84,7 @@ F		previous camera
 V		reset camera
 
 G		toggle grid display
+T		toggle background restoration display
 Arrow keys	Move model (only for RE2 pc demo currently)
 
 
