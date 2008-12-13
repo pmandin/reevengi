@@ -30,6 +30,7 @@
 #include "re1_ps1.h"
 #include "re1_pc_game.h"
 #include "re2_ps1.h"
+#include "re2_ps1_demo2.h"
 #include "re2_pc_demo.h"
 #include "re3_ps1_game.h"
 #include "re3_pc.h"
@@ -88,6 +89,9 @@ int main(int argc, char **argv)
 		case GAME_RE2_PS1_GAME_LEON:
 		case GAME_RE2_PS1_GAME_CLAIRE:
 			re2ps1_init(&game_state);
+			break;
+		case GAME_RE2_PS1_DEMO2:
+			re2ps1demo2_init(&game_state);
 			break;
 		case GAME_RE3_PS1_GAME:
 			re3ps1game_init(&game_state);

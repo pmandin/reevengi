@@ -73,6 +73,8 @@ const char *state_getGameName(void)
 			return "Resident Evil, PS1, Game";
 		case GAME_RE2_PS1_DEMO:
 			return "Resident Evil 2, PS1, Demo";
+		case GAME_RE2_PS1_DEMO2:
+			return "Resident Evil 2, PS1, Demo2";
 		case GAME_RE2_PS1_GAME_LEON:
 			return "Resident Evil 2, PS1, Game Leon";
 		case GAME_RE2_PS1_GAME_CLAIRE:
@@ -230,6 +232,8 @@ static void state_detect(void)
 		game_state.version = GAME_RE2_PS1_GAME_CLAIRE;
 	} else if (game_file_exists("slps_009.99") || game_file_exists("sled_009.77")) {
 		game_state.version = GAME_RE2_PS1_DEMO;
+	} else if (game_file_exists("sced_011.14")) {
+		game_state.version = GAME_RE2_PS1_DEMO2;
 	} else if (game_file_exists("sles_002.27")) {
 		game_state.version = GAME_RE1_PS1_GAME;
 	} else if (game_file_exists("slpm_800.27")) {
