@@ -45,6 +45,7 @@
 
 #define KEY_TOGGLE_GRID		SDLK_g
 #define KEY_TOGGLE_RESTORE	SDLK_t
+#define KEY_FORCE_REFRESH	SDLK_SPACE
 
 #define KEY_MOVE_FORWARD	SDLK_UP
 #define KEY_MOVE_BACKWARD	SDLK_DOWN
@@ -63,10 +64,7 @@ static int render_restore = 0;
 static int refresh_player_pos = 0;
 static float player_x = 0, player_y = 0, player_z = 0;
 static float player_a = 0;
-/*
-static float player_x = 12108.0f, player_y = -2500.0f, player_z = -3256.0f;
-static float player_a = -17.5f;
-*/
+
 static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_turnleft = 0;
@@ -152,6 +150,10 @@ void view_background_input(SDL_Event *event)
 			case KEY_TOGGLE_RESTORE:
 				render_restore ^= 1;
 				break;
+			case KEY_FORCE_REFRESH:
+				refresh_bg = 1;
+				refresh_player_pos = 1;
+				break;
 			case KEY_MOVE_FORWARD:
 				player_moveforward = 1;
 				tick_moveforward = SDL_GetTicks();
@@ -208,6 +210,7 @@ void view_background_update(void)
 		state_loadroom();
 		reload_room = 0;
 		reload_bg = 1;
+		refresh_player_pos = 1;
 	}
 	if (reload_bg) {
 		state_loadbackground();
@@ -217,7 +220,6 @@ void view_background_update(void)
 	if (refresh_bg) {
 		render.initBackground(&video, game_state.back_surf);
 		refresh_bg = 0;
-		refresh_player_pos = 1;
 	}
 
 	/* Move player ? */
