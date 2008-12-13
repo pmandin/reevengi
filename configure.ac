@@ -28,7 +28,7 @@ AC_CHECK_FUNCS([memset pow])
 SYS_SDLIMAGE_ADDLIBS=""
 case "$target" in
     *-*-mint*)
-	SYS_SDLIMAGE_ADDLIBS="-ljpeg -ltiff -lpng"
+	SYS_SDLIMAGE_ADDLIBS="-ltiff -ljpeg -lpng"
         ;;
 esac	
 
