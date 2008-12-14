@@ -42,8 +42,8 @@ static void refreshScreen(video_t *this);
 
 void video_soft_init(video_t *this)
 {
-	this->width = 640;
-	this->height = 480;
+	this->width = 320;
+	this->height = 240;
 	this->bpp = 16;
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
 	this->numfb = 0;
