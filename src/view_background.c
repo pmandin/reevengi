@@ -51,6 +51,13 @@
 #define KEY_MOVE_BACKWARD	SDLK_DOWN
 #define KEY_TURN_LEFT		SDLK_LEFT
 #define KEY_TURN_RIGHT		SDLK_RIGHT
+#ifdef __MINT__
+#define KEY_MOVE_UP		SDLK_INSERT
+#define KEY_MOVE_DOWN		SDLK_HOME
+#else
+#define KEY_MOVE_UP		SDLK_PAGEUP
+#define KEY_MOVE_DOWN		SDLK_PAGEDOWN
+#endif
 
 /*--- Variables ---*/
 
@@ -67,11 +74,15 @@ static float player_a = 0;
 
 static int player_moveforward = 0;
 static int player_movebackward = 0;
+static int player_moveup = 0;
+static int player_movedown = 0;
 static int player_turnleft = 0;
 static int player_turnright = 0;
-static float playerstart_x = 0, playerstart_z = 0, playerstart_a = 0;
+static float playerstart_x = 0, playerstart_y = 0, playerstart_z = 0, playerstart_a = 0;
 static Uint32 tick_moveforward = 0;
 static Uint32 tick_movebackward = 0;
+static Uint32 tick_moveup = 0;
+static Uint32 tick_movedown = 0;
 static Uint32 tick_turnleft = 0;
 static Uint32 tick_turnright = 0;
 
@@ -166,6 +177,16 @@ void view_background_input(SDL_Event *event)
 				playerstart_x = player_x;
 				playerstart_z = player_z;
 				break;
+			case KEY_MOVE_UP:
+				player_moveup = 1;
+				tick_moveup = SDL_GetTicks();
+				playerstart_y = player_y;
+				break;
+			case KEY_MOVE_DOWN:
+				player_movedown = 1;
+				tick_movedown = SDL_GetTicks();
+				playerstart_y = player_y;
+				break;
 			case KEY_TURN_LEFT:
 				player_turnleft = 1;
 				tick_turnleft = SDL_GetTicks();
@@ -185,6 +206,12 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_MOVE_BACKWARD:
 				player_movebackward = 0;
+				break;
+			case KEY_MOVE_UP:
+				player_moveup = 0;
+				break;
+			case KEY_MOVE_DOWN:
+				player_movedown = 0;
 				break;
 			case KEY_TURN_LEFT:
 				player_turnleft = 0;
@@ -230,6 +257,12 @@ void view_background_update(void)
 	if (player_movebackward) {
 		player_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movebackward);
 		player_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movebackward);
+	}
+	if (player_moveup) {
+		player_y = playerstart_y - 5.0f*(tick_current-tick_moveup);
+	}
+	if (player_movedown) {
+		player_y = playerstart_y + 5.0f*(tick_current-tick_movedown);
 	}
 	if (player_turnleft) {
 		player_a = playerstart_a - 0.1f*(tick_current-tick_turnleft);
