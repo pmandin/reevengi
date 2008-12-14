@@ -161,6 +161,8 @@ void video_surface_gl_convert(video_surface_t *this)
 	}
 
 	this_gl->surf_soft.sdl_surf = SDL_ConvertSurface(sdl_surf, &format, SDL_SWSURFACE);
+
+	SDL_FreeSurface(sdl_surf);
 }
 
 /*--- Private functions ---*/
