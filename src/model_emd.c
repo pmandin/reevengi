@@ -135,6 +135,11 @@ int model_emd_load(const char *filename)
 	PHYSFS_sint64 length;
 	int retval = 0;
 	char *tim_filename;
+
+	if (!filename) {
+		fprintf(stderr, "emd: Empty filename\n");
+		return 0;
+	}
 	
 	emd_file = FS_Load(filename, &length);
 	if (!emd_file) {
