@@ -152,7 +152,7 @@ static void re2ps1_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2ps1_room, game_player, game_state.stage, game_state.stage, game_state.room);
+	sprintf(filepath, re2ps1_room, game_player, game_state.stage, game_state.room);
 
 	logMsg(1, "rdt: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re2ps1_loadroom_rdt(filepath) ? "done" : "failed");
