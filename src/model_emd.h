@@ -1,5 +1,6 @@
 /*
 	Load EMD model
+	Resident Evil
 
 	Copyright (C) 2008	Patrice Mandin
 

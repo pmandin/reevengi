@@ -27,13 +27,8 @@
 
 /*--- Defines ---*/
 
-#define EMD_SKELETON 2
-#define EMD_MESHES 7
-
-/*--- Variables ---*/
-
-static void *emd_file = NULL;
-static void *tim_file = NULL;
+#define EMD_SKELETON 0
+#define EMD_MESHES 2
 
 /*--- Types ---*/
 
@@ -116,6 +111,12 @@ typedef struct {
 	emd_mesh_t quads;
 } emd_mesh_object_t;
 
+/*--- Variables ---*/
+
+static emd_header_t emd_header;
+static void *emd_file = NULL;
+static void *tim_file = NULL;
+
 /*--- Functions prototypes ---*/
 
 static void emd_convert_endianness(void);
@@ -147,6 +148,11 @@ int model_emd_load(const char *filename)
 		fprintf(stderr, "emd: Can not load %s\n", filename);
 		return 0;
 	}
+
+	/* Generate header for directory */
+	emd_header.offset = length - 16;
+	emd_header.length = 16;
+
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_convert_endianness();
 #endif
@@ -185,7 +191,7 @@ void model_emd_close(void)
 
 void model_emd_draw(void)
 {
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_relpos_t *emd_skel_relpos;
 	emd_skel_data_t *emd_skel_data;
@@ -195,10 +201,10 @@ void model_emd_draw(void)
 		return;
 	}
 
-	emd_header = (emd_header_t *) emd_file;
+	/*emd_header = (emd_header_t *) emd_file;*/
 
 	hdr_offsets = (Uint32 *)
-		(&((char *) emd_file)[emd_header->offset]);
+		(&((char *) emd_file)[emd_header.offset]);
 
 	emd_skel_header = (emd_skel_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]]);
@@ -238,7 +244,7 @@ static void emd_draw_skel(int num_skel,
 
 static void emd_draw_mesh(int num_mesh)
 {
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_mesh_header_t *emd_mesh_header;
 	emd_mesh_object_t *emd_mesh_object;
 	Uint32 *hdr_offsets, mesh_offset;
@@ -248,10 +254,10 @@ static void emd_draw_mesh(int num_mesh)
 	emd_triangle_t *emd_tri_idx;
 	emd_quad_t *emd_quad_idx;
 
-	emd_header = (emd_header_t *) emd_file;
+	/*emd_header = (emd_header_t *) emd_file;*/
 
 	hdr_offsets = (Uint32 *)
-		(&((char *) emd_file)[emd_header->offset]);
+		(&((char *) emd_file)[emd_header.offset]);
 
 	emd_mesh_header = (emd_mesh_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_MESHES]]);
@@ -302,7 +308,7 @@ static void emd_draw_mesh(int num_mesh)
 
 static void emd_convert_endianness(void)
 {
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	Uint32 *hdr_offsets, mesh_offset;
 	int i;
 	emd_skel_header_t *emd_skel_header;
@@ -312,18 +318,18 @@ static void emd_convert_endianness(void)
 	emd_mesh_object_t *emd_mesh_object;
 
 	/* Header */
-	emd_header = (emd_header_t *) emd_file;
+	/*emd_header = (emd_header_t *) emd_file;
 	emd_header->offset = SDL_SwapLE32(emd_header->offset);
-	emd_header->length = SDL_SwapLE32(emd_header->length);
+	emd_header->length = SDL_SwapLE32(emd_header->length);*/
 
 	/* Directory offsets */
 	hdr_offsets = (Uint32 *)
-		(&((char *) emd_file)[emd_header->offset]);
+		(&((char *) emd_file)[emd_header.offset]);
 	for (i=0; i<8; i++) {
 		hdr_offsets[i] = SDL_SwapLE32(hdr_offsets[i]);
 	}
 
-	/* Offset 2: Skeleton */
+	/* Offset 0: Skeleton */
 	emd_skel_header = (emd_skel_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]]);
 	emd_skel_header->relpos_offset = SDL_SwapLE16(emd_skel_header->relpos_offset);
@@ -338,7 +344,7 @@ static void emd_convert_endianness(void)
 
 	emd_convert_endianness_skel(0, emd_skel_relpos, emd_skel_data);
 
-	/* Offset 7: Mesh data */
+	/* Offset 2: Mesh data */
 	emd_mesh_header = (emd_mesh_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_MESHES]]);
 	emd_mesh_header->length = SDL_SwapLE32(emd_mesh_header->length);

@@ -28,6 +28,7 @@
 #include "re1_ps1.h"
 #include "background_bss.h"
 #include "parameters.h"
+#include "model_emd.h"
 
 /*--- Defines ---*/
 
@@ -104,6 +105,11 @@ void re1ps1_init(state_t *game_state)
 	} else {
 		game_state->movies_list = (char **) re1ps1game_movies;
 	}
+
+	game_state->load_model = model_emd_load;
+	game_state->close_model = model_emd_close;
+	game_state->draw_model = model_emd_draw;
+	game_state->model = re1ps1_model;
 }
 
 static void re1ps1_shutdown(void)
