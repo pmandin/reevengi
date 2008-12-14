@@ -22,12 +22,12 @@
 
 #include <stdlib.h>
 #include <SDL.h>
+#include <math.h>
 
 #include "state.h"
 #include "video.h"
 #include "render.h"
-
-#include "math.h"
+#include "parameters.h"
 
 /*--- Defines ---*/
 
@@ -243,7 +243,7 @@ void view_background_draw(void)
 {
 	long cam_pos[6];
 
-	if (render_restore) {
+	if (render_restore && !params.use_opengl) {
 		SDL_FillRect(video.screen, NULL, 0);
 		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 			0,0, video.width, video.height);
