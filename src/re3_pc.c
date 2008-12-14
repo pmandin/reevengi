@@ -127,7 +127,7 @@ void re3pc_init(state_t *game_state)
 	game_state->load_model = model_emd3_load;
 	game_state->close_model = model_emd3_close;
 	game_state->draw_model = model_emd3_draw;
-	game_state->model = re3pc_model;
+	/*game_state->model = re3pc_model;*/
 }
 
 void re3pc_shutdown(void)
