@@ -79,7 +79,7 @@ typedef struct {
 	Uint32	nor_count;
 	Uint32	mesh_offset;
 	Uint32	mesh_count;
-	Uint32	tex_offset;
+	Uint32	dummy;
 } emd_mesh_t;
 
 typedef struct {
@@ -132,7 +132,7 @@ int model_emd_load(const char *filename)
 
 	/* Generate header for directory */
 	emd_header.offset = length - 16;
-	emd_header.length = 16;
+	emd_header.length = 4;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_convert_endianness();
@@ -278,7 +278,7 @@ static void emd_convert_endianness(void)
 	/* Directory offsets */
 	hdr_offsets = (Uint32 *)
 		(&((char *) emd_file)[emd_header.offset]);
-	for (i=0; i<8; i++) {
+	for (i=0; i<emd_header.length; i++) {
 		hdr_offsets[i] = SDL_SwapLE32(hdr_offsets[i]);
 	}
 
@@ -307,7 +307,7 @@ static void emd_convert_endianness(void)
 	mesh_offset = hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t);
 	emd_mesh_object = (emd_mesh_object_t *)
 		(&((char *) emd_file)[mesh_offset]);
-	for (i=0; i<emd_mesh_header->num_objects/2; i++) {
+	for (i=0; i<emd_mesh_header->num_objects; i++) {
 		int j;
 		emd_vertex_t *emd_vtx;
 		emd_triangle_t *emd_tri_idx;
@@ -320,7 +320,6 @@ static void emd_convert_endianness(void)
 		emd_mesh_object->triangles.nor_count = SDL_SwapLE32(emd_mesh_object->triangles.nor_count);
 		emd_mesh_object->triangles.mesh_offset = SDL_SwapLE32(emd_mesh_object->triangles.mesh_offset);
 		emd_mesh_object->triangles.mesh_count = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count);
-		emd_mesh_object->triangles.tex_offset = SDL_SwapLE32(emd_mesh_object->triangles.tex_offset);
 
 		list_done = malloc(sizeof(void *)*
 			(emd_mesh_object->triangles.vtx_count+

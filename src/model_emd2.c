@@ -319,7 +319,7 @@ static void emd_convert_endianness(void)
 	/* Directory offsets */
 	hdr_offsets = (Uint32 *)
 		(&((char *) emd_file)[emd_header->offset]);
-	for (i=0; i<8; i++) {
+	for (i=0; i<emd_header->length; i++) {
 		hdr_offsets[i] = SDL_SwapLE32(hdr_offsets[i]);
 	}
 
