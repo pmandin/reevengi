@@ -112,6 +112,7 @@ static int background_mdec_load(SDL_RWops *src)
 		if (image) {
 			game_state.back_surf = video.createSurfaceSu(image);
 			if (game_state.back_surf) {
+				video.convertSurface(game_state.back_surf);
 				retval = 1;
 			}
 			SDL_FreeSurface(image);
