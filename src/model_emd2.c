@@ -1,6 +1,6 @@
 /*
 	Load EMD model
-	Resident Evil
+	Resident Evil 2
 
 	Copyright (C) 2008	Patrice Mandin
 
@@ -131,7 +131,7 @@ static void emd_draw_mesh(int num_mesh);
 
 /*--- Functions ---*/
 
-int model_emd_load(const char *filename)
+int model_emd2_load(const char *filename)
 {
 	PHYSFS_sint64 length;
 	int retval = 0;
@@ -170,7 +170,7 @@ int model_emd_load(const char *filename)
 	return retval;
 }
 
-void model_emd_close(void)
+void model_emd2_close(void)
 {
 	if (emd_file) {
 		free(emd_file);
@@ -183,7 +183,7 @@ void model_emd_close(void)
 	}
 }
 
-void model_emd_draw(void)
+void model_emd2_draw(void)
 {
 	emd_header_t *emd_header;
 	emd_skel_header_t *emd_skel_header;

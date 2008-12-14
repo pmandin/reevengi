@@ -79,6 +79,13 @@ typedef struct {
 	/* Movie filename */
 	char *cur_movie/*[1024]*/;
 
+	/*--- EMD model manager ---*/
+	const char *model;
+
+	int (*load_model)(const char *filename);
+	void (*close_model)(void);
+	void (*draw_model)(void);
+
 	/*--- Functions ---*/
 	void (*load_background)(void);
 

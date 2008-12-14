@@ -32,6 +32,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "log.h"
+#include "model_emd2.h"
 
 /*--- Defines ---*/
 
@@ -41,6 +42,7 @@
 
 static const char *re2pcdemo_bg = "common/stage%d/rc%d%02x%1x.adt";
 static const char *re2pcdemo_room = "pl0/rd%c/room%d%02x0.rdt";
+static const char *re2pcdemo_model = "pl0/emd0/em050.emd";
 
 /*--- Variables ---*/
 
@@ -67,6 +69,11 @@ void re2pcdemo_init(state_t *game_state)
 	if (game_state->version == GAME_RE2_PC_DEMO_P) {
 		game_lang = 'p';
 	}
+
+	game_state->load_model = model_emd2_load;
+	game_state->close_model = model_emd2_close;
+	game_state->draw_model = model_emd2_draw;
+	game_state->model = re2pcdemo_model;
 }
 
 static void re2pcdemo_shutdown(void)

@@ -425,7 +425,9 @@ static void drawPlayer(void)
 	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
 	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
 #else
-	model_emd_draw(&video);
+	if (game_state.draw_model) {
+		game_state.draw_model();
+	}
 #endif
 	render.pop_matrix();
 }

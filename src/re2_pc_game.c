@@ -30,6 +30,7 @@
 #include "re2_pc_game.h"
 #include "depack_adt.h"
 #include "parameters.h"
+#include "model_emd2.h"
 
 /*--- Defines ---*/
 
@@ -44,6 +45,8 @@ typedef struct {
 
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
 static const char *re2pcgame_room = "PL%d/RDF/ROOM%d%02x0.RDT";
+static const char *re2pcgame_modelx = "PL%d/EMD%d/EM%d50.EMD";
+static char re2pcgame_model[64];
 
 static const char *re2pcgame_leon_movies[] = {
 	"PL0/ZMOVIE/OPN1STL.BIN",
@@ -110,6 +113,13 @@ void re2pcgame_init(state_t *game_state)
 		game_state->movies_list = (char **) re2pcgame_claire_movies;
 		game_player = 1;
 	}
+
+	game_state->load_model = model_emd2_load;
+	game_state->close_model = model_emd2_close;
+	game_state->draw_model = model_emd2_draw;
+	sprintf(re2pcgame_model, re2pcgame_modelx,
+		game_player, game_player, game_player); 
+	game_state->model = re2pcgame_model;
 }
 
 static void re2pcgame_shutdown(void)

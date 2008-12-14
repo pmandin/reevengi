@@ -1,6 +1,6 @@
 /*
 	Load EMD model
-	Resident Evil
+	Resident Evil 3
 
 	Copyright (C) 2008	Patrice Mandin
 
@@ -27,8 +27,8 @@
 
 /*--- Defines ---*/
 
-#define EMD_SKELETON 2
-#define EMD_MESHES 7
+#define EMD_SKELETON 3
+#define EMD_MESHES 13
 
 /*--- Variables ---*/
 
@@ -97,6 +97,7 @@ typedef struct {
 
 typedef struct {
 	Uint32	vtx_offset;
+	Uint32	unk_offset0;
 	Uint32	vtx_count;
 	Uint32	nor_offset;
 	Uint32	nor_count;
@@ -107,7 +108,6 @@ typedef struct {
 
 typedef struct {
 	Uint32 length;
-	Uint32 dummy;
 	Uint32 num_objects;
 } emd_mesh_header_t;
 
@@ -131,7 +131,7 @@ static void emd_draw_mesh(int num_mesh);
 
 /*--- Functions ---*/
 
-int model_emd_load(const char *filename)
+int model_emd3_load(const char *filename)
 {
 	PHYSFS_sint64 length;
 	int retval = 0;
@@ -170,7 +170,7 @@ int model_emd_load(const char *filename)
 	return retval;
 }
 
-void model_emd_close(void)
+void model_emd3_close(void)
 {
 	if (emd_file) {
 		free(emd_file);
@@ -183,7 +183,7 @@ void model_emd_close(void)
 	}
 }
 
-void model_emd_draw(void)
+void model_emd3_draw(void)
 {
 	emd_header_t *emd_header;
 	emd_skel_header_t *emd_skel_header;
@@ -228,11 +228,12 @@ static void emd_draw_skel(int num_skel,
 	emd_draw_mesh(num_skel);
 
 	/* Draw children meshes */
+#if 0
 	for (i=0; i<emd_skel_data[num_skel].num_mesh; i++) {
 		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
 		emd_draw_skel(num_mesh, emd_skel_relpos, emd_skel_data);
 	}
-
+#endif
 	render.pop_matrix();
 }
 
@@ -255,18 +256,24 @@ static void emd_draw_mesh(int num_mesh)
 
 	emd_mesh_header = (emd_mesh_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_MESHES]]);
-	num_objects = emd_mesh_header->num_objects/2;
+	num_objects = emd_mesh_header->num_objects;
 
 	if ((num_mesh<0) || (num_mesh>=num_objects)) {
 		fprintf(stderr, "Invalid mesh %d\n", num_mesh);
 		return;
 	}
 
+	printf("emd3: draw mesh %d\n", num_mesh);
+
 	mesh_offset = hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t);
 
 	emd_mesh_object = (emd_mesh_object_t *)
 		(&((char *) emd_file)[mesh_offset]);
 	emd_mesh_object = &emd_mesh_object[num_mesh];
+
+	printf("emd3:  %d triangles, %d quads\n",
+		emd_mesh_object->triangles.mesh_count,
+		emd_mesh_object->quads.mesh_count);
 
 	/* Draw triangles */
 	emd_tri_vtx = (emd_vertex_t *)
@@ -323,7 +330,7 @@ static void emd_convert_endianness(void)
 		hdr_offsets[i] = SDL_SwapLE32(hdr_offsets[i]);
 	}
 
-	/* Offset 2: Skeleton */
+	/* Offset 3: Skeleton */
 	emd_skel_header = (emd_skel_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]]);
 	emd_skel_header->relpos_offset = SDL_SwapLE16(emd_skel_header->relpos_offset);
@@ -338,17 +345,16 @@ static void emd_convert_endianness(void)
 
 	emd_convert_endianness_skel(0, emd_skel_relpos, emd_skel_data);
 
-	/* Offset 7: Mesh data */
+	/* Offset 13: Mesh data */
 	emd_mesh_header = (emd_mesh_header_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_MESHES]]);
 	emd_mesh_header->length = SDL_SwapLE32(emd_mesh_header->length);
-	emd_mesh_header->dummy = SDL_SwapLE32(emd_mesh_header->dummy);
 	emd_mesh_header->num_objects = SDL_SwapLE32(emd_mesh_header->num_objects);
 
 	mesh_offset = hdr_offsets[EMD_MESHES]+sizeof(emd_mesh_header_t);
 	emd_mesh_object = (emd_mesh_object_t *)
 		(&((char *) emd_file)[mesh_offset]);
-	for (i=0; i<emd_mesh_header->num_objects/2; i++) {
+	for (i=0; i<emd_mesh_header->num_objects; i++) {
 		int j;
 		emd_vertex_t *emd_vtx;
 		emd_triangle_t *emd_tri_idx;
@@ -519,3 +525,46 @@ static void emd_convert_endianness_skel(int num_skel,
 		emd_convert_endianness_skel(num_mesh, emd_skel_relpos, emd_skel_data);
 	}
 }
+
+/*
+a4 26 00 00
+0f 00 00 00
+
+vtx_offset,nor_offset,count,tri_offset,tx_offset,?*4,tx_offset,tx_offset
+
+9c 13 00 00 1c 1d 00 00 2b 00 00 00 68 01 00 00 48 03 00 00
+28 00 13 00 f4 14 50 0e 74 1e 00 50 58 00 00 00
+
+78 04 00 00 24 07 00 00 39 00 2f 00 b4 17 00 00 34 21 00 00
+0d 0e 50 00 14 0a 00 00 44 0a 00 00 04 00 08 00
+
+1c 18 00 00 9c 21 00 00 0e 00 00 00 c4 0a 00 00 0c 0b 00 00
+06 00 09 00 8c 18 00 00 0c 22 00 00 12 00 00 00
+
+9c 0b 00 00 b4 0b 00 00 02 00 0e 00 1c 19 00 00 9c 22 00 00
+0d 0e 50 00 94 0c 0e 50 c4 0c 0e 50 04 00 08 00
+
+84 19 00 00 04 23 00 00 0e 00 00 00
+44 0d 0e 50 8c 0d 0e 50 06 00 09 00
+
+f4 19 00 00 74 23 00 00 12 00 00 00 1c 0e 00 00 34 0e 00 00
+02 00 0e 00
+
+84 1a 00 00 04 24 00 00 0f 00 00 00 14 0f 00 00 44 0f 00 00
+04 00 0b 00
+
+fc 1a 00 00 7c 24 00 00 12 00 00 00 f4 0f 00 00 a8 10 00 00
+0f 00 08 00
+
+8c 1b 00 00 0c 25 00 00 08 00 00 00 28 11 00 00 28 11 00 00
+00 00 04 00
+
+cc 1b 00 00 4c 25 00 00 08 00 00 00 68 11 00 00 68 11 00 00
+00 00 06 00 0c 1c 0e 50
+
+8c 25 00 00 12 00 00 00 c8 11 00 00 7c 12 00 00 0f 00 08 00
+9c 1c 0e 50
+
+1c 26 00 00 08 00 00 00 fc 12 00 00 fc 12 00 00 00 00 04 00
+dc 1c 0e 50 5c 26 00 00 08 00 00 00
+*/

@@ -72,9 +72,8 @@ const char *state_getGameName(void)
 		case GAME_RE1_PS1_GAME:
 			return "Resident Evil, PS1, Game";
 		case GAME_RE2_PS1_DEMO:
-			return "Resident Evil 2, PS1, Demo";
 		case GAME_RE2_PS1_DEMO2:
-			return "Resident Evil 2, PS1, Demo2";
+			return "Resident Evil 2, PS1, Demo";
 		case GAME_RE2_PS1_GAME_LEON:
 			return "Resident Evil 2, PS1, Game Leon";
 		case GAME_RE2_PS1_GAME_CLAIRE:
