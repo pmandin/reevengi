@@ -1,3 +1,9 @@
+v 0.9
+
+- Display EMD model also for RE1 (pc/ps1)
+- Move model up/down
+- Fixed crash in OpenGL renderer, due to bad conversion of background image.
+
 v 0.8
 
 - Display an EMD object (RE2 pc demo only).

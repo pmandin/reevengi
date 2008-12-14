@@ -1,7 +1,8 @@
-v 0.8
+v 0.9
 
-- Display an EMD object (RE2 pc demo only).
-- Forceable background restoration and reset player position
+- Display EMD model also for RE1 (pc/ps1)
+- Move model up/down
+- Fixed crash in OpenGL renderer, due to bad conversion of background image.
 
 
 See ChangeLog for older changes.

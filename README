@@ -87,7 +87,7 @@ G		toggle grid display
 T		toggle background restoration display
 SPACE		refresh background, move player at current camera position
 Arrow keys	Move player (only for RE2 pc demo currently)
-
+Pageup/down	Move player up/down (Atari: use ClrHome/Insert)
 
 4 Supported games
 -----------------
