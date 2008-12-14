@@ -29,6 +29,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+#include "log.h"
 #include "dyngl.h"
 #include "video_surface.h"
 #include "video_surface_opengl.h"
@@ -217,7 +218,7 @@ static void findTextureSize(video_surface_gl_t *this, int *width, int *height)
 	}
 
 	/* FIXME: what to do if hw do not support asked size ? */
-	/*printf("ogl_surf: needed %dx%d, got %dx%d\n", *width, *height, w,h);*/
+	/*logMsg(3,"ogl_surf: needed %dx%d, got %dx%d\n", *width, *height, w,h);*/
 
 	*width = w;
 	*height = h;
@@ -230,16 +231,13 @@ static void uploadTexture(video_surface_gl_t *this)
 	GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
 	GLenum internalFormat = GL_RGBA;
 	GLenum surfaceFormat = GL_RGBA;
-	GLenum pixelType = GL_UNSIGNED_INT;
+	GLenum pixelType = GL_UNSIGNED_BYTE;
 	SDL_Surface *surface = this->surf_soft.sdl_surf;
-
-	/*printf("ogl_surf: upload texture, %d %d\n",
-		this->textureTarget, this->textureObject);*/
 
 	gl.BindTexture(this->textureTarget, this->textureObject);
 
-	/*printf("ogl_surf: %dx%d, %d\n", surface->w, surface->h,
-		surface->format->BitsPerPixel);*/
+	logMsg(3,"ogl_surf: %dx%d, %d, 0x%08x\n", surface->w, surface->h,
+		surface->format->BitsPerPixel, surface->pixels);
 
 	switch (surface->format->BytesPerPixel) {
 		case 1:
@@ -338,6 +336,7 @@ static SDL_Surface *getSurface(video_surface_t *this)
 	video_surface_gl_t *gl_this = (video_surface_gl_t *) this;
 
 	if (gl_this->need_upload) {
+		logMsg(3, "reupload texture\n");
 		uploadTexture(gl_this);
 		gl_this->need_upload = 0;
 	}
