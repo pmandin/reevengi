@@ -42,8 +42,8 @@ static void refreshScreen(video_t *this);
 
 void video_soft_init(video_t *this)
 {
-	this->width = 320;
-	this->height = 240;
+	this->width = 640;
+	this->height = 480;
 	this->bpp = 16;
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
 	this->numfb = 0;
@@ -65,6 +65,7 @@ void video_soft_init(video_t *this)
 	this->createSurfacePf = video_surface_create_pf;
 	this->createSurfaceSu = video_surface_create_su;
 	this->destroySurface = video_surface_destroy;
+	this->convertSurface = video_surface_convert;
 
 	if (!params.aspect_user) {
 		video_detect_aspect();

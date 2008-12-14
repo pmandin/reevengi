@@ -171,6 +171,7 @@ int re3pc_load_jpg_bg(const char *filename)
 		if (image) {
 			game_state.back_surf = video.createSurfaceSu(image);
 			if (game_state.back_surf) {
+				video.convertSurface(game_state.back_surf);
 				retval = 1;
 			}
 			SDL_FreeSurface(image);

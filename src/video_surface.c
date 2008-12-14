@@ -102,7 +102,6 @@ video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFor
 video_surface_t *video_surface_create_su(SDL_Surface *surface)
 {
 	int sw = surface->w, sh = surface->h;
-	SDL_Surface *scr_surf;
 
 	video_surface_t *this = (video_surface_t *) calloc(1, sizeof(video_surface_t));
 	if (!this) {
@@ -143,11 +142,6 @@ video_surface_t *video_surface_create_su(SDL_Surface *surface)
 	/* Copy pixels */
 	SDL_BlitSurface(surface, NULL, this->sdl_surf, NULL);
 
-	/* Convert to screen format */
-	scr_surf = SDL_DisplayFormat(this->sdl_surf);
-	SDL_FreeSurface(this->sdl_surf);
-	this->sdl_surf = scr_surf;
-
 	/* This is the dimensions we work on */
 	this->width = surface->w;
 	this->height = surface->h;
@@ -160,13 +154,27 @@ video_surface_t *video_surface_create_su(SDL_Surface *surface)
 
 void video_surface_destroy(video_surface_t *this)
 {
-	if (this) {
-		if (this->sdl_surf) {
-			SDL_FreeSurface(this->sdl_surf);
-		}
-
-		free(this);
+	if (!this) {
+		return;
 	}
+
+	if (this->sdl_surf) {
+		SDL_FreeSurface(this->sdl_surf);
+	}
+
+	free(this);
+}
+
+void video_surface_convert(video_surface_t *this)
+{
+	SDL_Surface *scr_surf = SDL_DisplayFormat(this->sdl_surf);
+
+	SDL_FreeSurface(this->sdl_surf);
+	this->sdl_surf = scr_surf;
+
+	this->width = this->sdl_surf->w;
+	this->height = this->sdl_surf->h;
+	this->bpp = this->sdl_surf->format->BitsPerPixel;
 }
 
 /*--- Private functions ---*/

@@ -37,5 +37,6 @@ video_surface_t *video_surface_create(int w, int h, int bpp);
 video_surface_t *video_surface_create_pf(int w, int h, SDL_PixelFormat *pixelFormat);
 video_surface_t *video_surface_create_su(SDL_Surface *surface);
 void video_surface_destroy(video_surface_t *this);
+void video_surface_convert(video_surface_t *this);
 
 #endif /* VIDEO_SURFACE_H */

@@ -43,5 +43,6 @@ video_surface_t *video_surface_gl_create(int w, int h, int bpp);
 video_surface_t *video_surface_gl_create_pf(int w, int h, SDL_PixelFormat *pixelFormat);
 video_surface_t *video_surface_gl_create_su(SDL_Surface *surface);
 void video_surface_gl_destroy(video_surface_t *this);
+void video_surface_gl_convert(video_surface_t *this);
 
 #endif /* VIDEO_SURFACE_OPENGL_H */

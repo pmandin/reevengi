@@ -64,7 +64,6 @@ video_surface_t *video_surface_gl_create(int w, int h, int bpp)
 	createTexture(this);
 
 	this->surf_soft.getSurface = getSurface;
-	/*printf("ogl_surf: create from size\n");*/
 	return (video_surface_t *) this;
 }
 
@@ -87,7 +86,6 @@ video_surface_t *video_surface_gl_create_pf(int w, int h, SDL_PixelFormat *pixel
 	createTexture(this);
 
 	this->surf_soft.getSurface = getSurface;
-	/*printf("ogl_surf: create from format\n");*/
 	return (video_surface_t *) this;
 }
 
@@ -112,7 +110,6 @@ video_surface_t *video_surface_gl_create_su(SDL_Surface *surface)
 	SDL_BlitSurface(surface, NULL, this->surf_soft.sdl_surf, NULL);
 
 	this->surf_soft.getSurface = getSurface;
-	/*printf("ogl_surf: create from surface\n");*/
 	return (video_surface_t *) this;
 }
 
@@ -126,6 +123,44 @@ void video_surface_gl_destroy(video_surface_t *this)
 		/* parent will do free() */
 		video_surface_destroy(this);
 	}
+}
+
+void video_surface_gl_convert(video_surface_t *this)
+{
+	video_surface_gl_t *this_gl = (video_surface_gl_t *) this;
+	SDL_Surface *sdl_surf;
+	SDL_PixelFormat format;
+
+	if (!this_gl) {
+		return;
+	}
+
+	sdl_surf = this_gl->surf_soft.sdl_surf;
+	if (!sdl_surf) {
+		return;
+	}
+
+	memcpy(&format, sdl_surf->format, sizeof(SDL_PixelFormat));
+	switch(sdl_surf->format->BytesPerPixel) {
+		case 1:
+			/* USELESS ? */
+			break;
+		case 2:
+			/* TODO */
+			break;
+		case 3:
+			/* TODO */
+			break;
+		case 4:
+			/* Convert to GL_RGBA */
+			format.Rmask = 255<<24;
+			format.Gmask = 255<<16;
+			format.Bmask = 255<<8;
+			format.Amask = 255;
+			break;
+	}
+
+	this_gl->surf_soft.sdl_surf = SDL_ConvertSurface(sdl_surf, &format, SDL_SWSURFACE);
 }
 
 /*--- Private functions ---*/

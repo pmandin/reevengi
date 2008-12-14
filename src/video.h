@@ -47,6 +47,7 @@ struct video_s {
 	video_surface_t * (*createSurfacePf)(int width, int height, SDL_PixelFormat *pixelFormat);
 	video_surface_t * (*createSurfaceSu)(SDL_Surface *surface);
 	void (*destroySurface)(video_surface_t *this);
+	void (*convertSurface)(video_surface_t *this);
 };
 
 void video_detect_aspect(void);
