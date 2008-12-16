@@ -35,6 +35,8 @@
 
 #define CHUNK_SIZE 65536
 
+#define MAX_RE2PS1DEMO_EMS 14
+
 /*--- Types ---*/
 
 typedef struct {
@@ -54,7 +56,7 @@ static const char *re2ps1demo_movies[] = {
 	NULL
 };
 
-static const re2ps1demo_ems_t re2ps1demo_ems[]={
+static const re2ps1demo_ems_t re2ps1demo_ems[MAX_RE2PS1DEMO_EMS*2]={
 	/*{0x00000000, 0x0000b0000},
 	{0x0000b000, 0x00000b000},*/
 	{0x00016000, 0x000010800},	/* tim */
@@ -93,8 +95,7 @@ static const re2ps1demo_ems_t re2ps1demo_ems[]={
 	{0x00242000, 0x000018800},	/* tim */
 	{0x0025a800, 0x000027000},	/* emd */
 	{0x00281800, 0x000010800},	/* tim */
-	{0x00292000, 0x000013800},	/* emd */
-	NULL
+	{0x00292000, 0x000013800}	/* emd */
 };
 
 static const char *re2ps1game_leon_movies[] = {
