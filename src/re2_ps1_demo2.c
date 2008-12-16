@@ -35,7 +35,8 @@
 
 #define CHUNK_SIZE 65536
 
-#define MAX_RE2PS1DEMO2_EMS 55
+#define MAX_RE2PS1DEMO21_EMS 55
+#define MAX_RE2PS1DEMO22_EMS 15
 
 /*--- Types ---*/
 
@@ -56,7 +57,7 @@ static const char *re2ps1demo_movies[] = {
 	NULL
 };
 
-static const re2ps1demo2_ems_t re2ps1demo2_ems[MAX_RE2PS1DEMO2_EMS*2]={
+static const re2ps1demo2_ems_t re2ps1demo2_ems[MAX_RE2PS1DEMO21_EMS*2]={
 	/*{0x00000000, 0x0000d000},
 	{0x0000d000, 0x0000d000},*/
 	{0x0001a000, 0x00010800},	/* tim */
@@ -219,6 +220,39 @@ static const re2ps1demo2_ems_t re2ps1demo2_ems[MAX_RE2PS1DEMO2_EMS*2]={
 	{0x00a58000, 0x00013000},	/* emd */
 	{0x00a6b000, 0x00018800},	/* tim */
 	{0x00a83800, 0x00013800},	/* emd */
+};
+
+static const re2ps1demo2_ems_t re2ps1demo22_ems[MAX_RE2PS1DEMO22_EMS*2]={
+	{0x00000000, 0x00010800},	/* tim */
+	{0x00010800, 0x00024000},	/* emd */
+	{0x00034800, 0x00021000},	/* tim */
+	{0x00055800, 0x00024000},	/* emd */
+	{0x00079800, 0x00010800},	/* tim */
+	{0x0008a000, 0x00024000},	/* emd */
+	{0x000ae000, 0x00021000},	/* tim */
+	{0x000cf000, 0x00022800},	/* emd */
+	{0x000f1800, 0x00010800},	/* tim */
+	{0x00102000, 0x0001e000},	/* emd */
+	{0x00120000, 0x00010800},	/* tim */
+	{0x00130800, 0x0000d800},	/* emd */
+	{0x0013e000, 0x00008000},	/* tim */
+	{0x00146800, 0x00020000},	/* emd */
+	{0x00148800, 0x00008800},	/* tim */
+	{0x00151000, 0x00003000},	/* emd */
+	{0x00154000, 0x00020000},	/* tim */
+	{0x00164800, 0x00012800},	/* emd */
+	{0x00177000, 0x00018800},	/* tim */
+	{0x0018f800, 0x0000d000},	/* emd */
+	{0x0019c800, 0x00018800},	/* tim */
+	{0x001b5000, 0x0000d000},	/* emd */
+	{0x001c2000, 0x00018800},	/* tim */
+	{0x001da800, 0x00012800},	/* emd */
+	{0x001ed000, 0x00010800},	/* tim */
+	{0x001fd800, 0x00012800},	/* emd */
+	{0x00210000, 0x00018800},	/* tim */
+	{0x00228800, 0x00013000},	/* emd */
+	{0x0023b800, 0x00018800},	/* tim */
+	{0x00254000, 0x00013800}	/* emd */
 };
 
 /*--- Variables ---*/
