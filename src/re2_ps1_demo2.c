@@ -220,7 +220,7 @@ static const re2ps1_ems_t re2ps1demo2_ems[]={
 	{0x00a97000, 0}		/* file length */
 };
 
-static const re2ps1demo2_ems_t re2ps1demo22_ems[]={
+static const re2ps1_ems_t re2ps1demo22_ems[]={
 	{0x00000000, 1},	/* tim */
 	{0x00010800, 1},	/* emd */
 	{0x00034800, 1},	/* tim */
