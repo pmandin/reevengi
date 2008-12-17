@@ -44,7 +44,7 @@
 typedef struct {
 	Uint32	offset;
 	Uint32	length;
-} re2ps1demo_ems_t;
+} re2ps1_ems_t;
 
 /*--- Constant ---*/
 
@@ -58,7 +58,7 @@ static const char *re2ps1demo_movies[] = {
 	NULL
 };
 
-static const re2ps1demo_ems_t re2ps1demo_ems[MAX_RE2PS1DEMO_EMS*2]={
+static const re2ps1_ems_t re2ps1demo_ems[MAX_RE2PS1DEMO_EMS*2]={
 	/*{0x00000000, 0x0000b0000},
 	{0x0000b000, 0x00000b000},*/
 	{0x00016000, 0x000010800},	/* tim */
@@ -100,7 +100,7 @@ static const re2ps1demo_ems_t re2ps1demo_ems[MAX_RE2PS1DEMO_EMS*2]={
 	{0x00292000, 0x000013800}	/* emd */
 };
 
-static const re2ps1demo2_ems_t re2ps1gamel1_ems[MAX_RE2PS1GAMEL1_EMS*2]={
+static const re2ps1_ems_t re2ps1gamel1_ems[MAX_RE2PS1GAMEL1_EMS*2]={
 	/*{0x00000000, 0x0000d000},
 	{0x0000d000, 0x0000d000},*/
 	{0x0001a000, 0x00010800},	/* tim */
@@ -265,7 +265,7 @@ static const re2ps1demo2_ems_t re2ps1gamel1_ems[MAX_RE2PS1GAMEL1_EMS*2]={
 	{0x00a83800, 0x00013800},	/* emd */
 };
 
-static const re2ps1demo2_ems_t re2ps1demo22_ems[MAX_RE2PS1GAMEL2_EMS*2]={
+static const re2ps1_ems_t re2ps1gamel2_ems[MAX_RE2PS1GAMEL2_EMS*2]={
 	{0x00000000, 0x00010800},	/* tim */
 	{0x00010800, 0x00024000},	/* emd */
 	{0x00034800, 0x00021000},	/* tim */
