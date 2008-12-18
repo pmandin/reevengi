@@ -31,6 +31,7 @@
 #include "re1_pc_game.h"
 #include "re1_ps1.h"
 #include "re2_pc_demo.h"
+#include "re2_pc_game.h"
 #include "re2_ps1.h"
 #include "re3_pc.h"
 #include "re3_ps1_game.h"
@@ -310,6 +311,10 @@ void view_background_draw(void)
 		case GAME_RE2_PS1_GAME_LEON:
 		case GAME_RE2_PS1_GAME_CLAIRE:
 			re2ps1_get_camera(cam_pos);
+			break;
+		case GAME_RE2_PC_GAME_LEON:
+		case GAME_RE2_PC_GAME_CLAIRE:
+			re2pcgame_get_camera(cam_pos);
 			break;
 		case GAME_RE2_PC_DEMO_P:
 		case GAME_RE2_PC_DEMO_U:
