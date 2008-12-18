@@ -34,6 +34,7 @@
 
 #include "state.h"
 #include "filesystem.h"
+#include "view_movie.h"
 
 /*--- Defines ---*/
 
@@ -78,7 +79,6 @@ static SDL_Overlay *overlay = NULL;
 /*--- Functions prototypes ---*/
 
 static int movie_init(const char *filename);
-void movie_shutdown(void);
 
 static void check_emul_cd(void);
 
@@ -120,6 +120,8 @@ int view_movie_input(SDL_Event *event)
 				state_newmovie();
 				restart_movie = 1;
 				break;						
+			default:
+				break;
 		}
 	}
 

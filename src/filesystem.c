@@ -32,6 +32,7 @@
 
 #include "parameters.h"
 #include "physfsrwops.h"
+#include "log.h"
 
 /*--- Defines ---*/
 

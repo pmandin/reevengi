@@ -28,6 +28,12 @@
 #include "video.h"
 #include "render.h"
 #include "parameters.h"
+#include "re1_pc_game.h"
+#include "re1_ps1.h"
+#include "re2_pc_demo.h"
+#include "re2_ps1.h"
+#include "re3_pc.h"
+#include "re3_ps1_game.h"
 
 /*--- Defines ---*/
 
@@ -197,6 +203,8 @@ void view_background_input(SDL_Event *event)
 				tick_turnright = SDL_GetTicks();
 				playerstart_a = player_a;
 				break;
+			default:
+				break;
 		}
 		break;
 	case SDL_KEYUP:
@@ -218,6 +226,8 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_TURN_RIGHT:
 				player_turnright = 0;
+				break;
+			default:
 				break;
 		}
 		break;

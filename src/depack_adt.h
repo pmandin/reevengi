@@ -23,7 +23,7 @@
 
 #include <SDL.h>
 
-void depack_adt(SDL_RWops *src, Uint8 **dstPointer, int *dstLength);
-SDL_Surface *surface_adt(Uint16 *source);
+void adt_depack(SDL_RWops *src, Uint8 **dstPointer, int *dstLength);
+SDL_Surface *adt_surface(Uint16 *source);
 
 #endif /* DEPACK_ADT_H */

@@ -31,7 +31,7 @@
 typedef struct {
 	int verbose;		/* Verbose level */
 	const char *log_file;	/* Log file */
-	unsigned char *basedir;	/* Base directory for files */
+	const char *basedir;	/* Base directory for files */
 	float gamma;		/* Gamma level */
 	int viewmode;		/* Viewer mode */
 	int use_opengl;		/* Enable OpenGL */

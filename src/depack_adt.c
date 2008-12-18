@@ -177,7 +177,7 @@ static void initUnpackBlockArray(unpackArray_t *array)
 	}
 
 	for (i=0;i<18;i++) {
-		int startTmp = tmp[i];
+		/*int startTmp = tmp[i];*/
 		for (j=0; j<array->length; j++) {
 			if (array->ptr8[j].length == i) {
 				array->ptr8[j].start = tmp[i]++ & 0xffff;

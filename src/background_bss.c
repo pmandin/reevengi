@@ -46,8 +46,8 @@ static int background_mdec_load(SDL_RWops *src);
 int background_bss_load(const char *filename, int chunk_size)
 {
 	SDL_RWops *src;
-	Uint8 *dstBuffer;
-	int dstBufLen;
+	/*Uint8 *dstBuffer;
+	int dstBufLen;*/
 	int retval = 0;
 	
 	src = FS_makeRWops(filename);

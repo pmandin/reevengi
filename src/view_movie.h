@@ -30,5 +30,6 @@
 
 int view_movie_input(SDL_Event *event);
 int view_movie_update(SDL_Surface *screen);
+void movie_shutdown(void);
 
 #endif /* VIEW_MOVIE_H */

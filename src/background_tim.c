@@ -56,11 +56,12 @@ typedef struct {
 
 SDL_Surface *background_tim_load(SDL_RWops *src)
 {
-	int start, scale_width, palette_size, i, j, w, h, dblpitch, bpp;
+	int start = 0;
+	int scale_width, palette_size, i, j, w, h, dblpitch, bpp;
 	const char *error = NULL;
 	SDL_Surface *surface = NULL;
 	SDL_Color palette[256*4];
-	int num_palettes;
+	/*int num_palettes;*/
 	tim_header_t tim_header;
 	tim_size_t tim_size;
 	int rmask, gmask, bmask;

@@ -32,6 +32,8 @@
 #include "parameters.h"
 #include "video.h"
 #include "model_emd.h"
+#include "log.h"
+#include "background_tim.h"
 
 /*--- Defines ---*/
 

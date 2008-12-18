@@ -23,7 +23,8 @@
 
 #include <SDL.h>
 
-void depack_mdec(SDL_RWops *src, Uint8 **dstPointer, int *dstLength,
+void mdec_depack(SDL_RWops *src, Uint8 **dstPointer, int *dstLength,
 	int width, int height);
+SDL_Surface *mdec_surface(Uint8 *source, int width, int height);
 
 #endif /* DEPACK_MDEC_H */

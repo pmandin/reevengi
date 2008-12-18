@@ -29,6 +29,7 @@
 #include "parameters.h"
 #include "re1_ps1.h"
 #include "re1_pc_game.h"
+#include "re2_pc_game.h"
 #include "re2_ps1.h"
 #include "re2_ps1_demo2.h"
 #include "re2_pc_demo.h"
@@ -36,6 +37,8 @@
 #include "re3_pc.h"
 #include "view_background.h"
 #include "view_movie.h"
+#include "filesystem.h"
+#include "log.h"
 
 #include "video.h"
 #include "render.h"

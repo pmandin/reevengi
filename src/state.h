@@ -109,7 +109,10 @@ void state_setstage(int new_stage);
 void state_setroom(int new_room);
 void state_setcamera(int new_camera);
 
+void state_loadbackground(void);
 void state_unloadbackground(void);
+
+void state_loadroom(void);
 void state_unloadroom(void);
 
 void state_newmovie(void);

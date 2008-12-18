@@ -37,6 +37,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "model_emd3.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -205,7 +206,6 @@ static void re3pc_loadroom(void)
 
 static int re3pc_loadroom_rdt(const char *filename)
 {
-	SDL_RWops *src;
 	int retval = 0;
 	PHYSFS_sint64 length;
 	Uint8 *rdt_header;

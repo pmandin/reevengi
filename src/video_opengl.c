@@ -34,14 +34,13 @@
 #include "parameters.h"
 #include "video.h"
 #include "state.h"
+#include "log.h"
 
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
-static void initScreen(video_t *this);
-static void refreshScreen(video_t *this);
 
 /*--- Functions ---*/
 

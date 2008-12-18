@@ -29,6 +29,7 @@
 #include "background_bss.h"
 #include "parameters.h"
 #include "model_emd.h"
+#include "log.h"
 
 /*--- Defines ---*/
 

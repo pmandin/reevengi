@@ -30,6 +30,7 @@
 #include "re2_ps1.h"
 #include "background_bss.h"
 #include "parameters.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -625,7 +626,6 @@ static void re2ps1_loadroom(void)
 
 static int re2ps1_loadroom_rdt(const char *filename)
 {
-	SDL_RWops *src;
 	int retval = 0;
 	PHYSFS_sint64 length;
 	Uint8 *rdt_header;

@@ -28,6 +28,7 @@
 #include "re3_ps1_game.h"
 #include "background_bss.h"
 #include "parameters.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -129,7 +130,6 @@ typedef struct {
 
 static int re3ps1game_loadroom_ard(const char *filename)
 {
-	SDL_RWops *src;
 	PHYSFS_sint64 length;
 	Uint8 *rdt_header, *ard_file;
 	ard_object_t *ard_object;

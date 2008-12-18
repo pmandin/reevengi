@@ -221,7 +221,7 @@ static void set_color(Uint32 color)
 static void line(Sint16 *v1, Sint16 *v2)
 {
 	float segment[4][4], result[4][4];
-	int clip_result;
+	/*int clip_result;*/
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1[0];

@@ -115,11 +115,6 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 			if (dstBufLen == 320*256*2) {
 				SDL_Surface *image;
 
-				/*game_state.background_surf = adt_surface((Uint16 *) dstBuffer);
-				if (game_state.background_surf) {
-					retval = 1;
-				}*/
-
 				image = adt_surface((Uint16 *) dstBuffer);
 				if (image) {
 					game_state.back_surf = video.createSurfaceSu(image);
@@ -239,7 +234,6 @@ int re2pcdemo_get_camswitch(int num, short *switch_pos)
 {
 	Uint32 *camswitch_offset, offset;
 	rdt_camera_switch_t *camswitch_array;
-	int i;
 
 	camswitch_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+8*4]);
 	offset = SDL_SwapLE32(*camswitch_offset);

@@ -31,6 +31,7 @@
 #include "depack_adt.h"
 #include "parameters.h"
 #include "model_emd2.h"
+#include "log.h"
 
 /*--- Defines ---*/
 

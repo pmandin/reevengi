@@ -26,6 +26,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "render.h"
+#include "log.h"
 
 /*--- Function prototypes ---*/
 
@@ -35,8 +36,6 @@ static void swapBuffers(video_t *this);
 static void countFps(video_t *this);
 static void screenShot(video_t *this);
 static void initViewport(video_t *this);
-static void drawScreen(video_t *this);
-static void refreshScreen(video_t *this);
 
 /*--- Functions ---*/
 
@@ -191,7 +190,7 @@ static void countFps(video_t *this)
 static void swapBuffers(video_t *this)
 {
 	SDL_Rect *list_rects;
-	int i, x, y, maxx, maxy;
+	int i, x, y;
 
 	this->countFps(this);
 
