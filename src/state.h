@@ -81,6 +81,8 @@ typedef struct {
 	char *cur_movie/*[1024]*/;
 
 	/*--- EMD model manager ---*/
+	int num_model;
+	model_t *model;
 	model_t *(*load_model)(int num_model);
 
 	/*--- Functions ---*/
@@ -111,6 +113,8 @@ void state_unloadbackground(void);
 
 void state_loadroom(void);
 void state_unloadroom(void);
+
+void state_loadmodel(void);
 
 void state_newmovie(void);
 int state_getnummovies(void);

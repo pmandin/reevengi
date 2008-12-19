@@ -51,8 +51,12 @@
 #define KEY_CAMERA_UP		SDLK_f
 #define KEY_CAMERA_RESET	SDLK_v
 
-#define KEY_TOGGLE_GRID		SDLK_g
-#define KEY_TOGGLE_RESTORE	SDLK_t
+#define KEY_MODEL_DOWN		SDLK_t
+#define KEY_MODEL_UP		SDLK_g
+#define KEY_MODEL_RESET		SDLK_b
+
+#define KEY_TOGGLE_GRID		SDLK_y
+#define KEY_TOGGLE_RESTORE	SDLK_h
 #define KEY_FORCE_REFRESH	SDLK_SPACE
 
 #define KEY_MOVE_FORWARD	SDLK_UP
@@ -72,6 +76,7 @@
 static int reload_bg = 1;
 static int reload_room = 1;
 static int refresh_bg = 1;
+static int reload_model = 1;
 
 static int render_grid = 0;
 static int render_restore = 0;
@@ -163,6 +168,26 @@ void view_background_input(SDL_Event *event)
 				game_state.camera = 0;
 				reload_bg = 1;
 				break;						
+			case KEY_MODEL_DOWN:
+				game_state.num_model--;
+				if (game_state.num_model<0) {
+					game_state.num_model=0;
+				} else {
+					reload_model = 1;
+				}
+				break;
+			case KEY_MODEL_UP:
+				game_state.num_model++;
+				if (game_state.num_model>57) {
+					game_state.num_model=57;
+				} else {
+					reload_model = 1;
+				}
+				break;
+			case KEY_MODEL_RESET:
+				game_state.num_model = 0;
+				reload_model = 1;
+				break;
 			case KEY_TOGGLE_GRID:
 				render_grid ^= 1;
 				break;
@@ -259,6 +284,10 @@ void view_background_update(void)
 	if (refresh_bg) {
 		render.initBackground(&video, game_state.back_surf);
 		refresh_bg = 0;
+	}
+	if (reload_model) {
+		state_loadmodel();
+		reload_model = 0;
 	}
 
 	/* Move player ? */
@@ -474,8 +503,8 @@ static void drawPlayer(void)
 	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
 	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
 #else
-	if (model) {
-		model->draw(model);
+	if (game_state.model) {
+		game_state.model->draw(game_state.model);
 	}
 #endif
 	render.pop_matrix();

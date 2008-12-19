@@ -56,6 +56,10 @@ void state_init(void)
 
 void state_shutdown(void)
 {
+	if (game_state.model) {
+		game_state.model->shutdown(game_state.model);
+	}
+
 	state_unloadbackground();
 	state_unloadroom();
 
@@ -148,6 +152,17 @@ void state_unloadroom(void)
 	if (game_state.room_file) {
 		free(game_state.room_file);
 		game_state.room_file = NULL;
+	}
+}
+
+void state_loadmodel(void)
+{
+	if (game_state.model) {
+		game_state.model->shutdown(game_state.model);
+		game_state.model = NULL;
+	}
+	if (game_state.load_model) {
+		game_state.model = game_state.load_model(game_state.num_model);
 	}
 }
 

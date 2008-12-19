@@ -54,7 +54,6 @@
 
 video_t video;
 render_t render;
-model_t *model = NULL;
 
 /*--- Variables ---*/
 
@@ -165,9 +164,7 @@ int main(int argc, char **argv)
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
 	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 
-	if (game_state.load_model) {
-		model = game_state.load_model(0);
-	}
+	state_loadmodel();
 
 	/* Force a mode switch */
 	new_width = video.width;
@@ -190,10 +187,6 @@ int main(int argc, char **argv)
 		case VIEWMODE_MOVIE:
 			movie_shutdown();
 			break;
-	}
-
-	if (model) {
-		model->shutdown(model);
 	}
 
 	state_shutdown();
