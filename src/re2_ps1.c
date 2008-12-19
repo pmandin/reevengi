@@ -46,7 +46,7 @@ typedef struct {
 /*--- Constant ---*/
 
 static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
-static const char *re2ps1_room = "pl%d/rdt/room%d%02x0.rdt";
+static const char *re2ps1_room = "pl%d/rdt/room%d%02x%d.rdt";
 static const char *re2ps1_model = "pl%d/pld/cdemd%d.ems";
 
 static const char *re2ps1demo_movies[] = {
@@ -625,7 +625,7 @@ static void re2ps1_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2ps1_room, game_player, game_state.stage, game_state.room);
+	sprintf(filepath, re2ps1_room, game_player, game_state.stage, game_state.room, game_player);
 
 	logMsg(1, "rdt: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re2ps1_loadroom_rdt(filepath) ? "done" : "failed");
@@ -670,6 +670,8 @@ static int re2ps1_parse_ems(int num_model,
 		} else {
 			new_emd = i;
 			if (num_parsed == num_model) {
+				*num_tim = new_tim;
+				*num_emd = new_emd;
 				break;
 			}
 			num_parsed++;
@@ -677,8 +679,6 @@ static int re2ps1_parse_ems(int num_model,
 		is_tim ^= 1;
 	}
 
-	*num_tim = new_tim;
-	*num_emd = new_emd;
 	return num_parsed;
 }
 
@@ -708,10 +708,10 @@ model_t *re2ps1_load_model(int num_model)
 				re2ps1gamel1_ems, sizeof(re2ps1gamel1_ems)/sizeof(re2ps1_ems_t),
 				&num_tim, &num_emd);
 			if ((num_tim==-1) || (num_emd==-1)) {
-				num_model -= parsed;
+				int num_model2 = num_model-parsed;
 				num_file += 2;
 				ems_array = re2ps1gamel2_ems;
-				parsed = re2ps1_parse_ems(num_model,
+				parsed = re2ps1_parse_ems(num_model2,
 					re2ps1gamel2_ems, sizeof(re2ps1gamel2_ems)/sizeof(re2ps1_ems_t),
 					&num_tim, &num_emd);
 			}
@@ -722,12 +722,13 @@ model_t *re2ps1_load_model(int num_model)
 				re2ps1gamec1_ems, sizeof(re2ps1gamec1_ems)/sizeof(re2ps1_ems_t),
 				&num_tim, &num_emd);
 			if ((num_tim==-1) || (num_emd==-1)) {
-				num_model -= parsed;
+				int num_model2 = num_model-parsed;
 				num_file += 2;
 				ems_array = re2ps1gamec2_ems;
-				parsed = re2ps1_parse_ems(num_model,
+				parsed = re2ps1_parse_ems(num_model2,
 					re2ps1gamec2_ems, sizeof(re2ps1gamec2_ems)/sizeof(re2ps1_ems_t),
 					&num_tim, &num_emd);
+				printf("tim %d, emd %d, parsed %d\n", num_tim, num_emd, parsed);
 			}
 			break;
 		default:
