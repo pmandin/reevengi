@@ -709,6 +709,7 @@ model_t *re2ps1_load_model(int num_model)
 				&num_tim, &num_emd);
 			if ((num_tim==-1) || (num_emd==-1)) {
 				num_model -= parsed;
+				num_file += 2;
 				ems_array = re2ps1gamel2_ems;
 				parsed = re2ps1_parse_ems(num_model,
 					re2ps1gamel2_ems, sizeof(re2ps1gamel2_ems)/sizeof(re2ps1_ems_t),
@@ -722,6 +723,7 @@ model_t *re2ps1_load_model(int num_model)
 				&num_tim, &num_emd);
 			if ((num_tim==-1) || (num_emd==-1)) {
 				num_model -= parsed;
+				num_file += 2;
 				ems_array = re2ps1gamec2_ems;
 				parsed = re2ps1_parse_ems(num_model,
 					re2ps1gamec2_ems, sizeof(re2ps1gamec2_ems)/sizeof(re2ps1_ems_t),
