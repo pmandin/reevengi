@@ -47,6 +47,7 @@ typedef struct {
 
 static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
 static const char *re2ps1_room = "pl%d/rdt/room%d%02x0.rdt";
+static const char *re2ps1_model = "pl%d/rdt/cdemd%d.ems";
 
 static const char *re2ps1demo_movies[] = {
 	"zmovie/capcom.str",
@@ -564,6 +565,12 @@ static void re2ps1_loadbackground(void);
 static void re2ps1_loadroom(void);
 static int re2ps1_loadroom_rdt(const char *filename);
 
+static int re2ps1_parse_ems(int num_model,
+	const re2ps1_ems_t *ems, int ems_size,
+	int *num_tim, int *num_emd);
+
+static model_t *re2ps1_load_model(int num_model);
+
 /*--- Functions ---*/
 
 void re2ps1_init(state_t *game_state)
@@ -584,6 +591,8 @@ void re2ps1_init(state_t *game_state)
 			game_player = 1;
 			break;
 	}
+
+	game_state->load_model = re2ps1_load_model;
 }
 
 static void re2ps1_shutdown(void)
@@ -643,6 +652,125 @@ static int re2ps1_loadroom_rdt(const char *filename)
 	retval = 1;
 	return retval;
 }
+
+static int re2ps1_parse_ems(int num_model,
+	const re2ps1_ems_t *ems, int ems_size,
+	int *num_tim, int *num_emd)
+{
+	int i, num_parsed = 0;
+	int is_tim = 1;
+	int new_tim, new_emd;
+
+	for (i=0; i<ems_size; i++) {
+		if (!ems[i].flag) {
+			continue;
+		}
+		if (is_tim) {
+			new_tim = i;
+		} else {
+			new_emd = i;
+			if (num_parsed == num_model) {
+				break;
+			}
+			num_parsed++;
+		}
+		is_tim ^= 1;
+	}
+
+	*num_tim = new_tim;
+	*num_emd = new_emd;
+	return num_parsed;
+}
+
+model_t *re2ps1_load_model(int num_model)
+{
+	char *filepath;
+	model_t *model = NULL;
+	SDL_RWops *emd, *tim;
+	int i = 0, num_file = game_player;
+	int num_tim = -1, num_emd = -1;
+	int parsed = 0;
+	const re2ps1_ems_t *ems_array;
+	Uint32 emd_offset, tim_offset;
+	Uint32 emd_length, tim_length;
+
+	switch(game_state.version) {
+		case GAME_RE2_PS1_DEMO:
+			ems_array = re2ps1demo_ems;
+			parsed = re2ps1_parse_ems(num_model,
+				re2ps1demo_ems, sizeof(re2ps1demo_ems)/sizeof(re2ps1_ems_t),
+				&num_tim, &num_emd);
+			break;
+		case GAME_RE2_PS1_GAME_LEON:
+			ems_array = re2ps1gamel1_ems;
+			parsed = re2ps1_parse_ems(num_model,
+				re2ps1gamel1_ems, sizeof(re2ps1gamel1_ems)/sizeof(re2ps1_ems_t),
+				&num_tim, &num_emd);
+			if ((num_tim==-1) || (num_emd==-1)) {
+				num_model -= parsed;
+				ems_array = re2ps1gamel2_ems;
+				parsed = re2ps1_parse_ems(num_model,
+					re2ps1gamel2_ems, sizeof(re2ps1gamel2_ems)/sizeof(re2ps1_ems_t),
+					&num_tim, &num_emd);
+			}
+			break;
+		case GAME_RE2_PS1_GAME_CLAIRE:
+			ems_array = re2ps1gamec1_ems;
+			parsed = re2ps1_parse_ems(num_model,
+				re2ps1gamec1_ems, sizeof(re2ps1gamec1_ems)/sizeof(re2ps1_ems_t),
+				&num_tim, &num_emd);
+			if ((num_tim==-1) || (num_emd==-1)) {
+				num_model -= parsed;
+				ems_array = re2ps1gamec2_ems;
+				parsed = re2ps1_parse_ems(num_model,
+					re2ps1gamec2_ems, sizeof(re2ps1gamec2_ems)/sizeof(re2ps1_ems_t),
+					&num_tim, &num_emd);
+			}
+			break;
+		default:
+			return NULL;
+	}
+
+	if ((num_emd==-1) || (num_tim==-1)) {
+		return NULL;
+	}
+	emd_offset = ems_array[num_emd].offset;
+	emd_length = ems_array[num_emd+1].offset - emd_offset;
+	tim_offset = ems_array[num_tim].offset;
+	tim_length = ems_array[num_tim+1].offset - tim_offset;
+
+	filepath = malloc(strlen(re2ps1_model)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return NULL;
+	}
+	sprintf(filepath, re2ps1_model,
+		game_player, num_file);
+
+	logMsg(1, "Loading model 0x%02x offset 0x%08x...", num_model, emd_offset);
+#if 0
+	emd = FS_makeRWops(filepath);
+	if (emd) {
+		sprintf(filepath, re2pcgame_model,
+			game_player, game_player, game_player,
+			num_model, "TIM");
+		for (i=0; i<strlen(filepath); i++) {
+			filepath[i] = toupper(filepath[i]);
+		}
+		tim = FS_makeRWops(filepath);
+		if (tim) {
+			model = model_emd2_load(emd, tim);
+			SDL_RWclose(tim);
+		}
+		SDL_RWclose(emd);
+	}	
+#endif
+	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	free(filepath);
+	return model;
+}
+
 
 typedef struct {
 	unsigned short unk0;
