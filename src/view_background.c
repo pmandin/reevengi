@@ -178,8 +178,8 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_MODEL_UP:
 				game_state.num_model++;
-				if (game_state.num_model>57) {
-					game_state.num_model=57;
+				if (game_state.num_model>100) {
+					game_state.num_model=100;
 				} else {
 					reload_model = 1;
 				}
