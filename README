@@ -80,11 +80,15 @@ D		next room
 C		reset room
 
 R		previous camera
-F		previous camera
+F		next camera
 V		reset camera
 
-G		toggle grid display
-T		toggle background restoration display
+T		previous model
+G		next model
+B		reset model
+
+Y		toggle grid display
+H		toggle background restoration display
 SPACE		refresh background, move player at current camera position
 Arrow keys	Move player (only for RE2 pc demo currently)
 Pageup/down	Move player up/down (Atari: use ClrHome/Insert)
