@@ -181,7 +181,7 @@ static void countFps(video_t *this)
 
 	++this->fps;
 	if (cur_tick-this->start_tick>1000) {
-		logMsg(1, "video: %d fps\n", this->fps);
+		logMsg(2, "video: %d fps\n", this->fps);
 		this->fps = 0;
 		this->start_tick = cur_tick;
 	}
