@@ -134,7 +134,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh);
 model_t *model_emd2_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
 {
 	model_t	*model;
-	
+
 	model = (model_t *) calloc(1, sizeof(model_t));
 	if (!model) {
 		fprintf(stderr, "Can not allocate memory for model\n");
@@ -157,7 +157,7 @@ model_t *model_emd2_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
 	}
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	emd_convert_endianness(model->emd_file);
+	emd_convert_endianness(model);
 #endif
 
 	model->shutdown = model_emd2_shutdown;

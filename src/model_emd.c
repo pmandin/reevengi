@@ -132,7 +132,7 @@ model_t *model_emd_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
 	}
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	emd_convert_endianness(model->emd_file);
+	emd_convert_endianness(model);
 #endif
 
 	/* TIM file embedded */
