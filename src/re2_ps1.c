@@ -47,7 +47,7 @@ typedef struct {
 
 static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
 static const char *re2ps1_room = "pl%d/rdt/room%d%02x0.rdt";
-static const char *re2ps1_model = "pl%d/rdt/cdemd%d.ems";
+static const char *re2ps1_model = "pl%d/pld/cdemd%d.ems";
 
 static const char *re2ps1demo_movies[] = {
 	"zmovie/capcom.str",
@@ -686,13 +686,14 @@ model_t *re2ps1_load_model(int num_model)
 {
 	char *filepath;
 	model_t *model = NULL;
-	SDL_RWops *emd, *tim;
+	SDL_RWops *src, *src_emd, *src_tim;
 	int i = 0, num_file = game_player;
 	int num_tim = -1, num_emd = -1;
 	int parsed = 0;
 	const re2ps1_ems_t *ems_array;
 	Uint32 emd_offset, tim_offset;
 	Uint32 emd_length, tim_length;
+	void *emdBuf, *timBuf;
 
 	switch(game_state.version) {
 		case GAME_RE2_PS1_DEMO:
@@ -747,24 +748,43 @@ model_t *re2ps1_load_model(int num_model)
 	sprintf(filepath, re2ps1_model,
 		game_player, num_file);
 
-	logMsg(1, "Loading model 0x%02x offset 0x%08x...", num_model, emd_offset);
-#if 0
-	emd = FS_makeRWops(filepath);
-	if (emd) {
-		sprintf(filepath, re2pcgame_model,
-			game_player, game_player, game_player,
-			num_model, "TIM");
-		for (i=0; i<strlen(filepath); i++) {
-			filepath[i] = toupper(filepath[i]);
+	logMsg(1, "Loading model 0x%02x...", num_model);
+	src = FS_makeRWops(filepath);	
+	if (src) {
+		src_tim = src_emd = NULL;
+
+		SDL_RWseek(src, tim_offset, RW_SEEK_SET);
+		timBuf = malloc(tim_length);
+		if (timBuf) {
+			SDL_RWread(src, timBuf, tim_length, 1);
+			src_tim = SDL_RWFromMem(timBuf, tim_length);
 		}
-		tim = FS_makeRWops(filepath);
-		if (tim) {
-			model = model_emd2_load(emd, tim);
-			SDL_RWclose(tim);
+
+		SDL_RWseek(src, emd_offset, RW_SEEK_SET);
+		emdBuf = malloc(emd_length);
+		if (emdBuf) {
+			SDL_RWread(src, emdBuf, emd_length, 1);
+			src_emd = SDL_RWFromMem(emdBuf, emd_length);
 		}
-		SDL_RWclose(emd);
-	}	
-#endif
+
+		if (src_tim && src_emd) {
+			model = model_emd2_load(src_emd, src_tim);
+		}
+
+		if (src_emd) {
+			SDL_RWclose(src_emd);
+		}
+		if (emdBuf) {
+			free(emdBuf);
+		}
+		if (src_tim) {
+			SDL_RWclose(src_tim);
+		}
+		if (timBuf) {
+			free(timBuf);
+		}
+		SDL_RWclose(src);
+	}
 	logMsg(1, "%s\n", model ? "done" : "failed");
 
 	free(filepath);
