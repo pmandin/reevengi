@@ -28,7 +28,7 @@ reevengi_headers = state.h re1_ps1.h re2_pc_demo.h depack_adt.h \
 	model_emd.h model_emd3.h model_emd2.h log.h \
 	render.h \
 	render_background.h render_background_opengl.h \
-	matrix.h draw.h
+	matrix.h draw.h model.h
 
 reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h
 
