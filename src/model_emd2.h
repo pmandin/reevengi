@@ -22,12 +22,13 @@
 #ifndef MODEL_EMD2
 #define MODEL_EMD2 1
 
+#include <SDL.h>
+
 #include "video.h"
+#include "model.h"
 
 /*--- Functions ---*/
 
-int model_emd2_load(const char *filename);
-void model_emd2_close(void);
-void model_emd2_draw(void);
+model_t *model_emd2_load(SDL_RWops *emd, SDL_RWops *tim);
 
 #endif /* MODEL_EMD2 */

@@ -24,6 +24,7 @@
 #include <SDL.h>
 
 #include "video_surface.h"
+#include "model.h"
 
 /*--- Enums ---*/
 
@@ -80,11 +81,7 @@ typedef struct {
 	char *cur_movie/*[1024]*/;
 
 	/*--- EMD model manager ---*/
-	const char *model;
-
-	int (*load_model)(const char *filename);
-	void (*close_model)(void);
-	void (*draw_model)(void);
+	model_t *(*load_model)(int num_model);
 
 	/*--- Functions ---*/
 	void (*load_background)(void);

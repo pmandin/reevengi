@@ -24,6 +24,7 @@
 #include <stdlib.h>
 
 #include "filesystem.h"
+#include "model.h"
 #include "state.h"
 #include "re1_ps1.h"
 #include "background_bss.h"
@@ -41,7 +42,9 @@
 
 static const char *re1ps1_bg = "psx/stage%d/room%d%02x.bss";
 static const char *re1ps1_room = "psx/stage%d/room%d%02x0.rdt";
-static const char *re1ps1_model = "psx/enemy/char10.emd";
+static const char *re1ps1_model1 = "psx/enemy/char1%d.emd";
+static const char *re1ps1_model2 = "psx/enemy/em10%02x.emd";
+static const char *re1ps1_model3 = "psx/enemy/em11%02x.emd";
 
 static const char *re1ps1demo_movies[] = {
 	"psx/movie/capcom.str",
@@ -93,6 +96,8 @@ static void re1ps1_loadbackground(void);
 static void re1ps1_loadroom(void);
 static int re1ps1_loadroom_rdt(const char *filename);
 
+model_t *re1ps1_load_model(int num_model);
+
 /*--- Functions ---*/
 
 void re1ps1_init(state_t *game_state)
@@ -107,10 +112,7 @@ void re1ps1_init(state_t *game_state)
 		game_state->movies_list = (char **) re1ps1game_movies;
 	}
 
-	game_state->load_model = model_emd_load;
-	game_state->close_model = model_emd_close;
-	game_state->draw_model = model_emd_draw;
-	game_state->model = re1ps1_model;
+	game_state->load_model = re1ps1_load_model;
 }
 
 static void re1ps1_shutdown(void)
@@ -167,6 +169,50 @@ static int re1ps1_loadroom_rdt(const char *filename)
 	game_state.num_cameras = rdt_header[1];
 
 	return 1;
+}
+
+model_t *re1ps1_load_model(int num_model)
+{
+	char *filepath;
+	const char *filename = re1ps1_model1;
+	model_t *model = NULL;
+	SDL_RWops *src;
+
+	if (num_model>0x03) {
+		filename = re1ps1_model2;
+		num_model -= 4;
+		if (num_model>0x15) {
+			num_model += 0x20-0x16;
+		}
+		if (num_model>0x2e) {
+			num_model += 1;
+		}
+	}
+	if (num_model>0x31) {
+		filename = re1ps1_model3;
+		num_model -= 0x32;
+	}
+	if (num_model>0x15) {
+		num_model = 0x15;
+	}
+
+	filepath = malloc(strlen(filename)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return NULL;
+	}
+	sprintf(filepath, filename, num_model);
+
+	logMsg(1, "Loading model %s...", filepath);
+	src = FS_makeRWops(filepath);
+	if (src) {
+		model = model_emd_load(src, NULL);
+		SDL_RWclose(src);
+	}	
+	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	free(filepath);
+	return model;
 }
 
 typedef struct {

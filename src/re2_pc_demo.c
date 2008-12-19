@@ -36,13 +36,21 @@
 
 /*--- Defines ---*/
 
+#define MAX_MODELS	0x17
+
 /*--- Types ---*/
 
 /*--- Constant ---*/
 
 static const char *re2pcdemo_bg = "common/stage%d/rc%d%02x%1x.adt";
 static const char *re2pcdemo_room = "pl0/rd%c/room%d%02x0.rdt";
-static const char *re2pcdemo_model = "pl0/emd0/em050.emd";
+static const char *re2pcdemo_model = "pl0/emd0/em0%02x.%s";
+
+static const int map_models[MAX_MODELS]={
+	0x10,	0x11,	0x12,	0x13,	0x15,	0x16,	0x17,	0x18,
+	0x1e,	0x1f,	0x20,	0x21,	0x22,	0x2d,	0x48,	0x4a,
+	0x50,	0x51,	0x54,	0x55,	0x58,	0x59,	0x5a
+};
 
 /*--- Variables ---*/
 
@@ -58,6 +66,8 @@ static int re2pcdemo_load_adt_bg(const char *filename);
 static void re2pcdemo_loadroom(void);
 static int re2pcdemo_loadroom_rdt(const char *filename);
 
+static model_t *re2pcdemo_load_model(int num_model);
+
 /*--- Functions ---*/
 
 void re2pcdemo_init(state_t *game_state)
@@ -70,10 +80,7 @@ void re2pcdemo_init(state_t *game_state)
 		game_lang = 'p';
 	}
 
-	game_state->load_model = model_emd2_load;
-	game_state->close_model = model_emd2_close;
-	game_state->draw_model = model_emd2_draw;
-	game_state->model = re2pcdemo_model;
+	game_state->load_model = re2pcdemo_load_model;
 }
 
 static void re2pcdemo_shutdown(void)
@@ -170,6 +177,41 @@ static int re2pcdemo_loadroom_rdt(const char *filename)
 	return 1;
 }
 
+model_t *re2pcdemo_load_model(int num_model)
+{
+	char *filepath;
+	model_t *model = NULL;
+	SDL_RWops *emd, *tim;
+
+	if (num_model>=MAX_MODELS) {
+		num_model = MAX_MODELS-1;
+	}
+	num_model = map_models[num_model];
+
+	filepath = malloc(strlen(re2pcdemo_model)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return NULL;
+	}
+	sprintf(filepath, re2pcdemo_model, num_model, "emd");
+
+	logMsg(1, "Loading model %s...", filepath);
+	emd = FS_makeRWops(filepath);
+	if (emd) {
+		sprintf(filepath, re2pcdemo_model, num_model, "tim");
+		tim = FS_makeRWops(filepath);
+		if (tim) {
+			model = model_emd2_load(emd, tim);
+			SDL_RWclose(tim);
+		}
+		SDL_RWclose(emd);
+	}	
+	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	free(filepath);
+	return model;
+}
+
 typedef struct {
 	unsigned short unk0;
 	unsigned short const0; /* 0x683c, or 0x73b7 */
@@ -253,3 +295,50 @@ int re2pcdemo_get_camswitch(int num, short *switch_pos)
 	switch_pos[7] = SDL_SwapLE16(camswitch_array[num].y4);
 	return 1;
 }
+
+#if 0
+static void *re2pcdemo_loadmodel(int num_model)
+{
+	char *filepath;
+	SDL_RWops *src_emd, *src_tim;
+	int retval = 0;
+
+	/* Create rwops for loading EMD */
+	filepath = malloc(strlen(re2pcdemo_model_emd)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return NULL;
+	}
+	sprintf(filepath, re2pcdemo_model_emd, num_model);
+
+	src_emd = FS_makeRWops(filename);
+	free(filepath);
+	if (!src_emd) {
+		return NULL;
+	}
+
+	/* Create rwops for loading TIM */
+	filepath = malloc(strlen(re2pcdemo_model_tim)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		SDL_RWclose(src_emd);
+		return NULL;
+	}
+	sprintf(filepath, re2pcdemo_model_tim, num_model);
+
+	src_tim = FS_makeRWops(filename);
+	free(filepath);
+	if (!src_tim) {
+		SDL_RWclose(src_emd);
+		return NULL;
+	}
+
+	/* Load model */
+	logMsg(1, "emd: Loading %s ... ", filepath);
+	logMsg(1, "%s\n", re2pcdemo_load_adt_bg(filepath) ? "done" : "failed");
+
+	SDL_RWclose(src_tim);
+	SDL_RWclose(src_emd);	
+	return NULL;
+}
+#endif

@@ -25,6 +25,7 @@
 #include "config.h"
 #endif
 
+#include "model.h"
 #include "state.h"
 #include "parameters.h"
 #include "re1_ps1.h"
@@ -53,6 +54,7 @@
 
 video_t video;
 render_t render;
+model_t *model = NULL;
 
 /*--- Variables ---*/
 
@@ -164,9 +166,7 @@ int main(int argc, char **argv)
 	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 
 	if (game_state.load_model) {
-		if (game_state.load_model(game_state.model)) {
-			logMsg(2,"Loaded emd model %s\n", game_state.model);
-		}
+		model = game_state.load_model(0);
 	}
 
 	/* Force a mode switch */
@@ -192,8 +192,8 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	if (game_state.close_model) {
-		game_state.close_model();
+	if (model) {
+		model->shutdown(model);
 	}
 
 	state_shutdown();

@@ -28,6 +28,7 @@
 #include "video.h"
 #include "render.h"
 #include "parameters.h"
+#include "model.h"
 #include "re1_pc_game.h"
 #include "re1_ps1.h"
 #include "re2_pc_demo.h"
@@ -473,8 +474,8 @@ static void drawPlayer(void)
 	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
 	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
 #else
-	if (game_state.draw_model) {
-		game_state.draw_model();
+	if (model) {
+		model->draw(model);
 	}
 #endif
 	render.pop_matrix();

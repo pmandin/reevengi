@@ -35,6 +35,8 @@
 
 /*--- Defines ---*/
 
+#define MAX_MODELS	58
+
 /*--- Types ---*/
 
 typedef struct {
@@ -46,8 +48,18 @@ typedef struct {
 
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
 static const char *re2pcgame_room = "PL%d/RDF/ROOM%d%02x0.RDT";
-static const char *re2pcgame_modelx = "PL%d/EMD%d/EM%d50.EMD";
-static char re2pcgame_model[64];
+static const char *re2pcgame_model = "PL%d/EMD%d/EM%d%02x.%s";
+
+static const int map_models[MAX_MODELS]={
+	0x10,	0x11,	0x12,	0x13,	0x15,	0x16,	0x17,	0x18,
+	0x1e,	0x1f,	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,
+	0x26,	0x27,	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,
+	0x2e,	0x2f,	0x30,	0x31,	0x33,	0x34,	0x36,	0x37,
+	0x38,	0x39,	0x3a,	0x3b,	0x3e,	0x3f,	0x40,	0x41,
+	0x42,	0x43,	0x44,	0x45,	0x46,	0x47,	0x48,	0x49,
+	0x4a,	0x4b,	0x4f,	0x50,	0x51,	0x54,	0x55,	0x58,
+	0x59,	0x5a
+};
 
 static const char *re2pcgame_leon_movies[] = {
 	"PL0/ZMOVIE/OPN1STL.BIN",
@@ -96,6 +108,8 @@ static int re2pcgame_load_image(int num_image);
 static void re2pcgame_loadroom(void);
 static int re2pcgame_loadroom_rdt(const char *filename);
 
+model_t *re2pcgame_load_model(int num_model);
+
 /*--- Functions ---*/
 
 void re2pcgame_init(state_t *game_state)
@@ -115,12 +129,7 @@ void re2pcgame_init(state_t *game_state)
 		game_player = 1;
 	}
 
-	game_state->load_model = model_emd2_load;
-	game_state->close_model = model_emd2_close;
-	game_state->draw_model = model_emd2_draw;
-	sprintf(re2pcgame_model, re2pcgame_modelx,
-		game_player, game_player, game_player); 
-	game_state->model = re2pcgame_model;
+	game_state->load_model = re2pcgame_load_model;
 }
 
 static void re2pcgame_shutdown(void)
@@ -264,6 +273,52 @@ static int re2pcgame_loadroom_rdt(const char *filename)
 	game_state.num_cameras = rdt_header[1];
 
 	return 1;
+}
+
+model_t *re2pcgame_load_model(int num_model)
+{
+	char *filepath;
+	model_t *model = NULL;
+	SDL_RWops *emd, *tim;
+	int i;
+
+	if (num_model>=MAX_MODELS) {
+		num_model = MAX_MODELS-1;
+	}
+	num_model = map_models[num_model];
+
+	filepath = malloc(strlen(re2pcgame_model)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return NULL;
+	}
+	sprintf(filepath, re2pcgame_model,
+		game_player, game_player, game_player,
+		num_model, "EMD");
+	for (i=0; i<strlen(filepath); i++) {
+		filepath[i] = toupper(filepath[i]);
+	}
+
+	logMsg(1, "Loading model %s...", filepath);
+	emd = FS_makeRWops(filepath);
+	if (emd) {
+		sprintf(filepath, re2pcgame_model,
+			game_player, game_player, game_player,
+			num_model, "TIM");
+		for (i=0; i<strlen(filepath); i++) {
+			filepath[i] = toupper(filepath[i]);
+		}
+		tim = FS_makeRWops(filepath);
+		if (tim) {
+			model = model_emd2_load(emd, tim);
+			SDL_RWclose(tim);
+		}
+		SDL_RWclose(emd);
+	}	
+	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	free(filepath);
+	return model;
 }
 
 typedef struct {

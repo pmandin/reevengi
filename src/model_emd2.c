@@ -24,16 +24,13 @@
 #include "filesystem.h"
 #include "video.h"
 #include "render.h"
+#include "model.h"
+#include "model_emd2.h"
 
 /*--- Defines ---*/
 
 #define EMD_SKELETON 2
 #define EMD_MESHES 7
-
-/*--- Variables ---*/
-
-static void *emd_file = NULL;
-static void *tim_file = NULL;
 
 /*--- Types ---*/
 
@@ -118,82 +115,86 @@ typedef struct {
 
 /*--- Functions prototypes ---*/
 
-static void emd_convert_endianness(void);
+static void model_emd2_shutdown(model_t *this);
+static void model_emd2_draw(model_t *this);
+
+static void emd_convert_endianness(model_t *this);
 static void emd_convert_endianness_skel(
-	int num_skel,
+	model_t *this, int num_skel,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data);
 
-static void emd_draw_skel(int num_skel,
+static void emd_draw_skel(model_t *this, int num_skel,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data);
-static void emd_draw_mesh(int num_mesh);
+static void emd_draw_mesh(model_t *this, int num_mesh);
 
 /*--- Functions ---*/
 
-int model_emd2_load(const char *filename)
+model_t *model_emd2_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
 {
-	PHYSFS_sint64 length;
-	int retval = 0;
-	char *tim_filename;
-
-	if (!filename) {
-		fprintf(stderr, "emd: Empty filename\n");
-		return 0;
-	}
+	model_t	*model;
 	
-	emd_file = FS_Load(filename, &length);
-	if (!emd_file) {
-		fprintf(stderr, "emd: Can not load %s\n", filename);
-		return 0;
+	model = (model_t *) calloc(1, sizeof(model_t));
+	if (!model) {
+		fprintf(stderr, "Can not allocate memory for model\n");
+		return NULL;
 	}
+
+	model->emd_file = FS_LoadRW(src_emd, &(model->emd_length));
+	if (!model->emd_file) {
+		fprintf(stderr, "Can not allocate memory for EMD file\n");
+		free(model);
+		return NULL;
+	}
+
+	model->tim_file = FS_LoadRW(src_tim, &(model->tim_length));
+	if (!model->tim_file) {
+		fprintf(stderr, "Can not allocate memory for TIM file\n");
+		free(model->emd_file);
+		free(model);
+		return NULL;
+	}
+
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	emd_convert_endianness();
+	emd_convert_endianness(model->emd_file);
 #endif
 
-	tim_filename = calloc(1, strlen(filename)+1);
-	if (!tim_filename) {
-		fprintf(stderr, "emd: Can not allocate memory for filename\n");
-		return 0;
-	}
-	strncpy(tim_filename, filename, strlen(filename)-4);
-	strcat(tim_filename, ".tim");
+	model->shutdown = model_emd2_shutdown;
+	model->draw = model_emd2_draw;
 
-	tim_file = FS_Load(tim_filename, &length);
-	if (!tim_file) {
-		fprintf(stderr, "emd: Can not load %s\n", tim_filename);
-	} else {
-		retval = 1;
-	}
-	free(tim_filename);
-
-	return retval;
+	return model;
 }
 
-void model_emd2_close(void)
+static void model_emd2_shutdown(model_t *this)
 {
-	if (emd_file) {
-		free(emd_file);
-		emd_file = NULL;
-	}
-
-	if (tim_file) {
-		free(tim_file);
-		tim_file = NULL;
+	if (this) {
+		if (this->emd_file) {
+			free(this->emd_file);
+		}
+		if (this->tim_file) {
+			free(this->tim_file);
+		}
+		free(this);
 	}
 }
 
-void model_emd2_draw(void)
+static void model_emd2_draw(model_t *this)
 {
 	emd_header_t *emd_header;
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_relpos_t *emd_skel_relpos;
 	emd_skel_data_t *emd_skel_data;
 	Uint32 *hdr_offsets;
+	void *emd_file;
 
-	if (!emd_file) {
+	if (!this) {
 		return;
 	}
+	if (!this->emd_file) {
+		return;
+	}
+	emd_file = this->emd_file;
 
 	emd_header = (emd_header_t *) emd_file;
 
@@ -207,10 +208,10 @@ void model_emd2_draw(void)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
-	emd_draw_skel(0, emd_skel_relpos, emd_skel_data);
+	emd_draw_skel(this, 0, emd_skel_relpos, emd_skel_data);
 }
 
-static void emd_draw_skel(int num_skel,
+static void emd_draw_skel(model_t *this, int num_skel,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data)
 {
@@ -225,18 +226,18 @@ static void emd_draw_skel(int num_skel,
 	);
 
 	/* Draw current mesh */
-	emd_draw_mesh(num_skel);
+	emd_draw_mesh(this, num_skel);
 
 	/* Draw children meshes */
 	for (i=0; i<emd_skel_data[num_skel].num_mesh; i++) {
 		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
-		emd_draw_skel(num_mesh, emd_skel_relpos, emd_skel_data);
+		emd_draw_skel(this, num_mesh, emd_skel_relpos, emd_skel_data);
 	}
 
 	render.pop_matrix();
 }
 
-static void emd_draw_mesh(int num_mesh)
+static void emd_draw_mesh(model_t *this, int num_mesh)
 {
 	emd_header_t *emd_header;
 	emd_mesh_header_t *emd_mesh_header;
@@ -247,6 +248,7 @@ static void emd_draw_mesh(int num_mesh)
 	emd_vertex_t *emd_tri_vtx, *emd_quad_vtx;
 	emd_triangle_t *emd_tri_idx;
 	emd_quad_t *emd_quad_idx;
+	void *emd_file = this->emd_file;
 
 	emd_header = (emd_header_t *) emd_file;
 
@@ -300,7 +302,7 @@ static void emd_draw_mesh(int num_mesh)
 
 /*--- Convert EMD file (little endian) to big endian ---*/
 
-static void emd_convert_endianness(void)
+static void emd_convert_endianness(model_t *this)
 {
 	emd_header_t *emd_header;
 	Uint32 *hdr_offsets, mesh_offset;
@@ -310,6 +312,7 @@ static void emd_convert_endianness(void)
 	emd_skel_data_t *emd_skel_data;
 	emd_mesh_header_t *emd_mesh_header;
 	emd_mesh_object_t *emd_mesh_object;
+	void *emd_file = this->emd_file;
 
 	/* Header */
 	emd_header = (emd_header_t *) emd_file;
@@ -336,7 +339,7 @@ static void emd_convert_endianness(void)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
-	emd_convert_endianness_skel(0, emd_skel_relpos, emd_skel_data);
+	emd_convert_endianness_skel(this, 0, emd_skel_relpos, emd_skel_data);
 
 	/* Offset 7: Mesh data */
 	emd_mesh_header = (emd_mesh_header_t *)
@@ -500,7 +503,7 @@ static void emd_convert_endianness(void)
 	}
 }
 
-static void emd_convert_endianness_skel(int num_skel,
+static void emd_convert_endianness_skel(model_t *this, int num_skel,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data)
 {
@@ -516,6 +519,6 @@ static void emd_convert_endianness_skel(int num_skel,
 	emd_skel_data[num_skel].offset = SDL_SwapLE16(emd_skel_data[num_skel].offset);
 	for (i=0; i<emd_skel_data[num_skel].num_mesh; i++) {
 		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
-		emd_convert_endianness_skel(num_mesh, emd_skel_relpos, emd_skel_data);
+		emd_convert_endianness_skel(this, num_mesh, emd_skel_relpos, emd_skel_data);
 	}
 }

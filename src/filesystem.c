@@ -106,6 +106,23 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 	return(buffer);
 }
 
+void *FS_LoadRW(SDL_RWops *src, int *filelength)
+{
+	void *buffer;
+
+	*filelength = SDL_RWseek(src, 0, RW_SEEK_END);
+	SDL_RWseek(src, 0, RW_SEEK_SET);
+	
+	buffer = malloc(*filelength);
+	if (!buffer) {
+		fprintf(stderr, "fs: not enough memory to load %d bytes file\n", *filelength);
+		return NULL;
+	}
+
+	SDL_RWread(src, buffer, *filelength, 1);
+	return buffer;
+}
+
 int FS_Save(const char *filename, void *buffer, PHYSFS_sint64 length)
 {
 	PHYSFS_file	*curfile;

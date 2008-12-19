@@ -24,7 +24,6 @@
 /*--- Includes ---*/
 
 #include <SDL.h>
-
 #include <physfs.h>
 
 /*--- Variables ---*/
@@ -36,6 +35,8 @@ int FS_AddArchive(const char *filename);
 int FS_Shutdown(void);
 
 void *FS_Load(const char *filename, PHYSFS_sint64 *filelength);
+void *FS_LoadRW(SDL_RWops *src, int *filelength);
+
 int FS_Save(const char *filename, void *buffer, PHYSFS_sint64 length);
 
 SDL_RWops *FS_makeRWops(const char *filename);
