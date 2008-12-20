@@ -993,36 +993,26 @@ model_t *re2ps1_load_model(int num_model)
 	if (src) {
 		src_tim = src_emd = NULL;
 
+		/* Read TIM file */
 		SDL_RWseek(src, tim_offset, RW_SEEK_SET);
 		timBuf = malloc(tim_length);
 		if (timBuf) {
 			SDL_RWread(src, timBuf, tim_length, 1);
-			src_tim = SDL_RWFromMem(timBuf, tim_length);
 		}
 
+		/* Read EMD file */
 		SDL_RWseek(src, emd_offset, RW_SEEK_SET);
 		emdBuf = malloc(emd_length);
 		if (emdBuf) {
 			SDL_RWread(src, emdBuf, emd_length, 1);
-			src_emd = SDL_RWFromMem(emdBuf, emd_length);
-		}
-
-		if (src_tim && src_emd) {
-			model = model_emd2_load(src_emd, src_tim);
-		}
-
-		if (src_emd) {
-			SDL_RWclose(src_emd);
-		}
-		if (emdBuf) {
-			free(emdBuf);
-		}
-		if (src_tim) {
-			SDL_RWclose(src_tim);
-		}
-		if (timBuf) {
+		} else {
 			free(timBuf);
 		}
+
+		if (emdBuf && timBuf) {
+			model = model_emd2_load(emdBuf, timBuf, emd_length, tim_length);
+		}
+
 		SDL_RWclose(src);
 	}
 	logMsg(1, "%s\n", model ? "done" : "failed");

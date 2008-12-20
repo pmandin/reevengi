@@ -181,7 +181,8 @@ model_t *re2pcdemo_load_model(int num_model)
 {
 	char *filepath;
 	model_t *model = NULL;
-	SDL_RWops *emd, *tim;
+	void *emd, *tim;
+	PHYSFS_sint64 emd_length, tim_length;
 
 	if (num_model>=MAX_MODELS) {
 		num_model = MAX_MODELS-1;
@@ -196,15 +197,15 @@ model_t *re2pcdemo_load_model(int num_model)
 	sprintf(filepath, re2pcdemo_model, num_model, "emd");
 
 	logMsg(1, "Loading model %s...", filepath);
-	emd = FS_makeRWops(filepath);
+	emd = FS_Load(filepath, &emd_length);
 	if (emd) {
 		sprintf(filepath, re2pcdemo_model, num_model, "tim");
-		tim = FS_makeRWops(filepath);
+		tim = FS_Load(filepath, &tim_length);
 		if (tim) {
-			model = model_emd2_load(emd, tim);
-			SDL_RWclose(tim);
+			model = model_emd2_load(emd, tim, emd_length, tim_length);
+		} else {
+			free(emd);
 		}
-		SDL_RWclose(emd);
 	}	
 	logMsg(1, "%s\n", model ? "done" : "failed");
 
