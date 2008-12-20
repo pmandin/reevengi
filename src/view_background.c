@@ -338,6 +338,7 @@ void view_background_draw(void)
 			re1pcgame_get_camera(cam_pos);
 			break;
 		case GAME_RE2_PS1_DEMO:
+		case GAME_RE2_PS1_DEMO2:
 		case GAME_RE2_PS1_GAME_LEON:
 		case GAME_RE2_PS1_GAME_CLAIRE:
 			re2ps1_get_camera(cam_pos);
