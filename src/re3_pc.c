@@ -42,6 +42,7 @@
 /*--- Defines ---*/
 
 #define MAX_MODELS_DEMO	16
+#define MAX_MODELS_GAME 65
 
 /*--- Types ---*/
 
@@ -53,9 +54,21 @@ static const char *rofs_dat = "%s/rofs%d.dat";
 static const char *rofs_cap_dat = "%s/Rofs%d.dat";
 static const char *re3pc_model = "room/emd/em%02x.%s";
 
-static const int map_models[MAX_MODELS_DEMO]={
+static const int map_models_demo[MAX_MODELS_DEMO]={
 	0x10,	0x11,	0x12,	0x14,	0x17,	0x1c,	0x1d,	0x1e,
 	0x1f,	0x20,	0x2d,	0x2f,	0x34,	0x53,	0x54,	0x58
+};
+
+static const int map_models_game[MAX_MODELS_GAME]={
+	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
+	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
+	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
+	0x28,	0x2c,	0x2d,	0x2e,	0x2f,	0x30,	0x32,	0x33,
+	0x34,	0x35,	0x36,	0x37,	0x38,	0x39,	0x3a,	0x3b,
+	0x3e,	0x3f,	0x40,	0x50,	0x51,	0x52,	0x53,	0x54,
+	0x55,	0x56,	0x57,	0x58,	0x59,	0x5a,	0x5b,	0x5c,
+	0x5d,	0x5e,	0x5f,	0x60,	0x61,	0x62,	0x63,	0x64,
+	0x65
 };
 
 static const char *re3pcdemo_movies[] = {
@@ -236,10 +249,22 @@ model_t *re3pc_load_model(int num_model)
 	void *emd, *tim;
 	PHYSFS_sint64 emd_length, tim_length;
 
-	if (num_model>=MAX_MODELS_DEMO) {
-		num_model = MAX_MODELS_DEMO-1;
+	switch(game_state.version) {
+		case GAME_RE3_PC_DEMO:
+			if (num_model>=MAX_MODELS_DEMO) {
+				num_model = MAX_MODELS_DEMO-1;
+			}
+			num_model = map_models_demo[num_model];
+			break;
+		case GAME_RE3_PC_GAME:
+			if (num_model>=MAX_MODELS_GAME) {
+				num_model = MAX_MODELS_GAME-1;
+			}
+			num_model = map_models_game[num_model];
+			break;
+		default:
+			return NULL;
 	}
-	num_model = map_models[num_model];
 
 	filepath = malloc(strlen(re3pc_model)+8);
 	if (!filepath) {
