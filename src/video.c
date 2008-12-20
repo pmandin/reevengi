@@ -156,6 +156,10 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 {
 	this->screen = SDL_SetVideoMode(width, height, bpp, this->flags);
 	if (!this->screen) {
+		/* Try 8 bpp if failed in true color */
+		this->screen = SDL_SetVideoMode(width, height, 8, this->flags);
+	}
+	if (!this->screen) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
 		return;
 	}
