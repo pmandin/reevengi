@@ -36,10 +36,12 @@
 #include "re3_pc.h"
 #include "parameters.h"
 #include "video.h"
-/*#include "model_emd3.h"*/
+#include "model_emd3.h"
 #include "log.h"
 
 /*--- Defines ---*/
+
+#define MAX_MODELS_DEMO	16
 
 /*--- Types ---*/
 
@@ -47,10 +49,14 @@
 
 static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
 static const char *re3pc_room = "data_%c/rdt/r%d%02x.rdt";
-/*static const char *re3pc_model = "room/emd/em10.emd";*/
-
 static const char *rofs_dat = "%s/rofs%d.dat";
 static const char *rofs_cap_dat = "%s/Rofs%d.dat";
+static const char *re3pc_model = "room/emd/em%02x.%s";
+
+static const int map_models[MAX_MODELS_DEMO]={
+	0x10,	0x11,	0x12,	0x14,	0x17,	0x1c,	0x1d,	0x1e,
+	0x1f,	0x20,	0x2d,	0x2f,	0x34,	0x53,	0x54,	0x58
+};
 
 static const char *re3pcdemo_movies[] = {
 	"zmovie/opn.dat",
@@ -92,6 +98,8 @@ static int re3pc_load_jpg_bg(const char *filename);
 static void re3pc_loadroom(void);
 static int re3pc_loadroom_rdt(const char *filename);
 
+static model_t *re3pc_load_model(int num_model);
+
 /*--- Functions ---*/
 
 void re3pc_init(state_t *game_state)
@@ -125,7 +133,7 @@ void re3pc_init(state_t *game_state)
 			break;
 	}
 
-	/*game_state->load_model = model_emd3_load;*/
+	game_state->load_model = re3pc_load_model;
 }
 
 void re3pc_shutdown(void)
@@ -219,6 +227,41 @@ static int re3pc_loadroom_rdt(const char *filename)
 
 	retval = 1;
 	return retval;
+}
+
+model_t *re3pc_load_model(int num_model)
+{
+	char *filepath;
+	model_t *model = NULL;
+	SDL_RWops *emd, *tim;
+
+	if (num_model>=MAX_MODELS_DEMO) {
+		num_model = MAX_MODELS_DEMO-1;
+	}
+	num_model = map_models[num_model];
+
+	filepath = malloc(strlen(re3pc_model)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return NULL;
+	}
+	sprintf(filepath, re3pc_model, num_model, "emd");
+
+	logMsg(1, "Loading model %s...", filepath);
+	emd = FS_makeRWops(filepath);
+	if (emd) {
+		sprintf(filepath, re3pc_model, num_model, "tim");
+		tim = FS_makeRWops(filepath);
+		if (tim) {
+			model = model_emd3_load(emd, tim);
+			SDL_RWclose(tim);
+		}
+		SDL_RWclose(emd);
+	}	
+	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	free(filepath);
+	return model;
 }
 
 typedef struct {

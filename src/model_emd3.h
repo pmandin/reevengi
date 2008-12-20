@@ -23,11 +23,10 @@
 #define MODEL_EMD3 1
 
 #include "video.h"
+#include "model.h"
 
 /*--- Functions ---*/
 
-int model_emd3_load(const char *filename);
-void model_emd3_close(void);
-void model_emd3_draw(void);
+model_t *model_emd3_load(SDL_RWops *emd, SDL_RWops *tim);
 
 #endif /* MODEL_EMD3 */
