@@ -28,6 +28,6 @@
 
 /*--- Functions ---*/
 
-model_t *model_emd_load(SDL_RWops *src_emd, SDL_RWops *src_tim);
+model_t *model_emd_load(void *emd, Uint32 emd_length);
 
 #endif /* MODEL_EMD */

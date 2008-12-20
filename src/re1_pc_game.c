@@ -209,7 +209,8 @@ model_t *re1pcgame_load_model(int num_model)
 	char *filepath;
 	const char *filename = re1pcgame_model1;
 	model_t *model = NULL;
-	SDL_RWops *src;
+	void *emd;
+	PHYSFS_sint64 emd_length;
 
 	if (num_model>0x03) {
 		filename = re1pcgame_model2;
@@ -237,10 +238,9 @@ model_t *re1pcgame_load_model(int num_model)
 	sprintf(filepath, filename, num_model);
 
 	logMsg(1, "Loading model %s...", filepath);
-	src = FS_makeRWops(filepath);
-	if (src) {
-		model = model_emd_load(src, NULL);
-		SDL_RWclose(src);
+	emd = FS_Load(filepath, &emd_length);
+	if (emd) {
+		model = model_emd_load(emd, emd_length);
 	}	
 	logMsg(1, "%s\n", model ? "done" : "failed");
 

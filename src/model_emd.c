@@ -113,7 +113,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh);
 
 /*--- Functions ---*/
 
-model_t *model_emd_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
+model_t *model_emd_load(void *emd, Uint32 emd_length)
 {
 	model_t	*model;
 	Uint32 *hdr_offsets;
@@ -124,16 +124,8 @@ model_t *model_emd_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
 		return NULL;
 	}
 
-	model->emd_file = FS_LoadRW(src_emd, &(model->emd_length));
-	if (!model->emd_file) {
-		fprintf(stderr, "Can not allocate memory for EMD file\n");
-		free(model);
-		return NULL;
-	}
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	emd_convert_endianness(model);
-#endif
+	model->emd_file = emd;
+	model->emd_length = emd_length;
 
 	/* TIM file embedded */
 	hdr_offsets = (Uint32 *)
@@ -141,6 +133,10 @@ model_t *model_emd_load(SDL_RWops *src_emd, SDL_RWops *src_tim)
 
 	model->tim_file = (&((char *) model->emd_file)[hdr_offsets[EMD_TIM]]);
 	model->tim_length = model->emd_length - hdr_offsets[EMD_TIM];
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	emd_convert_endianness(model);
+#endif
 
 	model->shutdown = model_emd_shutdown;
 	model->draw = model_emd_draw;

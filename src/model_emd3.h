@@ -27,6 +27,6 @@
 
 /*--- Functions ---*/
 
-model_t *model_emd3_load(SDL_RWops *emd, SDL_RWops *tim);
+model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_length);
 
 #endif /* MODEL_EMD3 */
