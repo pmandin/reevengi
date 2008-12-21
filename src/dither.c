@@ -39,6 +39,10 @@ static Uint8 sat[768];
 
 static void dither_init(void);
 
+static void dither2(SDL_Surface *src, SDL_Surface *dest, Uint8 *errbuffer);
+static void dither3(SDL_Surface *src, SDL_Surface *dest, Uint8 *errbuffer);
+static void dither4(SDL_Surface *src, SDL_Surface *dest, Uint8 *errbuffer);
+
 /*--- Functions ---*/
 
 void dither_setpalette(SDL_Surface *src)
@@ -63,16 +67,99 @@ void dither_setpalette(SDL_Surface *src)
 
 void dither(SDL_Surface *src, SDL_Surface *dest)
 {
+	void *errbuffer;
+
 	if (!src || !dest) {
 		return;
 	}
-	if (dest->format->BytesPerPixel!=1) {
+	if ((src->format->BytesPerPixel==1) || (dest->format->BytesPerPixel!=1)) {
 		return;
 	}
 
 	if (!inited) {
 		dither_init();
 		inited = 1;
+	}
+
+	errbuffer = calloc(2, (dest->w+2) * sizeof(Uint32));
+	if (!errbuffer) {
+		fprintf(stderr, "Can not allocate memory for error buffer\n");
+		return;
+	}
+
+	switch(src->format->BytesPerPixel) {
+		case 2:
+			dither2(src, dest, errbuffer);
+			break;
+		case 3:
+			dither3(src, dest, errbuffer);
+			break;
+		case 4:
+			dither4(src, dest, errbuffer);
+			break;
+		default:
+			break;
+	}
+
+	free(errbuffer);
+}
+
+static void dither2(SDL_Surface *src, SDL_Surface *dest, Uint8 *errbuffer)
+{
+	int x,y;
+	Uint16 *src_line;
+	Uint8 *dst_line;
+	Uint8 *err_cur = &errbuffer[4];
+	Uint8 *err_next = &errbuffer[4+dest->w+2];
+
+	src_line = (Uint16 *) src->pixels;
+	dst_line = dest->pixels;
+	for (y=0; y<dest->h; y++) {
+		Uint16 *src_col = src_line;
+		Uint8 *dst_col = dst_line;
+		for (x=0; x<dest->w; x++) {
+		}
+		src_line += src->pitch>>1;
+		dst_line += dest->pitch;
+	}
+}
+
+static void dither3(SDL_Surface *src, SDL_Surface *dest, Uint8 *errbuffer)
+{
+	int x,y;
+	Uint8 *src_line;
+	Uint8 *dst_line;
+	Uint8 *err_cur = &errbuffer[4];
+	Uint8 *err_next = &errbuffer[4+dest->w+2];
+
+	dst_line = dest->pixels;
+	for (y=0; y<dest->h; y++) {
+		Uint8 *src_col = src_line;
+		Uint8 *dst_col = dst_line;
+		for (x=0; x<dest->w; x++) {
+		}
+		src_line += src->pitch;
+		dst_line += dest->pitch;
+	}
+}
+
+static void dither4(SDL_Surface *src, SDL_Surface *dest, Uint8 *errbuffer)
+{
+	int x,y;
+	Uint8 *dst_line;
+	Uint32 *src_line;
+	Uint8 *err_cur = &errbuffer[4];
+	Uint8 *err_next = &errbuffer[4+dest->w+2];
+
+	src_line = (Uint32 *) src->pixels;
+	dst_line = dest->pixels;
+	for (y=0; y<dest->h; y++) {
+		Uint32 *src_col = src_line;
+		Uint8 *dst_col = dst_line;
+		for (x=0; x<dest->w; x++) {
+		}
+		src_line += src->pitch>>2;
+		dst_line += dest->pitch;
 	}
 }
 
