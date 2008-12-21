@@ -38,6 +38,7 @@ typedef struct {
 	int aspect_x;		/* Aspect ratio */
 	int aspect_y;
 	int aspect_user;	/* User gave us an aspect ratio */
+	int dithering;		/* Dithering enabled for 8 bit mode */
 } params_t;
 
 /*--- Variables ---*/

@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 
+#include "parameters.h"
 #include "video_surface.h"
 
 /*--- Functions prototypes ---*/
@@ -167,7 +168,14 @@ void video_surface_destroy(video_surface_t *this)
 
 void video_surface_convert(video_surface_t *this)
 {
-	SDL_Surface *scr_surf = SDL_DisplayFormat(this->sdl_surf);
+	SDL_Surface *scr_surf = NULL;
+
+	if ((this->bpp==8) && params.dithering) {
+		/* TODO: Dither to 216 color palette surface */
+		scr_surf = SDL_DisplayFormat(this->sdl_surf);
+	} else {
+		scr_surf = SDL_DisplayFormat(this->sdl_surf);
+	}
 
 	SDL_FreeSurface(this->sdl_surf);
 	this->sdl_surf = scr_surf;

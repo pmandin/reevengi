@@ -50,6 +50,7 @@ params_t params = {
 	DEFAULT_USE_OPENGL,
 	DEFAULT_ASPECT_X,
 	DEFAULT_ASPECT_Y,
+	0,
 	0
 };
 
@@ -126,6 +127,12 @@ int CheckParm(int argc,char **argv)
 		}
 	}
 
+	/*--- Check for dithering ---*/
+	p = ParmPresent("-dither", argc, argv);
+	if (p) {
+		params.dithering = 1;
+	}
+
 	return 1;
 }
 
@@ -141,6 +148,7 @@ void DisplayUsage(void)
 		"  [-logfile <filename>] (default=" PACKAGE_NAME ".log)\n"
 		"  [-opengl] (enable opengl mode)\n"
 		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
+		"  [-dither] (enable dithering in 8 bits mode)\n"
 		"  [-help] (print this message)\n",
 		DEFAULT_BASEDIR,
 		DEFAULT_GAMMA,

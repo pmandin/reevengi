@@ -28,6 +28,13 @@
 #include "render.h"
 #include "log.h"
 
+/*--- Const ---*/
+
+/* Map insensity for 216 color palette */
+static const int map_color[6] = {
+	0,	51,	102,	153,	204,	255
+};
+
 /*--- Function prototypes ---*/
 
 static void shutDown(video_t *this);
@@ -168,6 +175,25 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->height = this->screen->h;
 	this->bpp = this->screen->format->BitsPerPixel;
 	this->flags = this->screen->flags;
+
+	/* Set 216 color palette */
+	if ((this->bpp==8) && params.dithering) {
+		int r,g,b;
+		SDL_Color palette[216];
+
+		for (r=0; r<6; r++) {
+			for (g=0; g<6; g++) {
+				for (b=0; b<6; b++) {
+					int i = r*36+g*6+b;
+
+					palette[i].r = map_color[r];
+					palette[i].g = map_color[g];
+					palette[i].b = map_color[b];
+				}
+			}
+		}		
+		SDL_SetPalette(this->screen, SDL_LOGPAL|SDL_PHYSPAL, palette, 16, 216);
+	}
 
 	this->dirty_rects[0]->resize(this->dirty_rects[0], this->width, this->height);
 	this->upload_rects[0]->resize(this->upload_rects[0], this->width, this->height);
