@@ -238,7 +238,7 @@ static void state_detect(void)
 		game_state.version = GAME_RE2_PC_DEMO_U;
 	} else if (game_file_exists("horr/usa/data/capcom.ptc")) {
 		game_state.version = GAME_RE1_PC_GAME;
-	} else if (game_file_exists("sles_025.30")) {
+	} else if (game_file_exists("sles_025.30") || game_file_exists("slus_009.23")) {
 		game_state.version = GAME_RE3_PS1_GAME;
 	} else if (game_file_exists("sles_009.73")) {
 		game_state.version = GAME_RE2_PS1_GAME_LEON;
