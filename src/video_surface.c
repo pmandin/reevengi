@@ -21,14 +21,8 @@
 #include <stdlib.h>
 
 #include "parameters.h"
+#include "dither.h"
 #include "video_surface.h"
-
-/*--- Const ---*/
-
-/* Map insensity for 216 color palette */
-static const int map_color[6] = {
-	0,	51,	102,	153,	204,	255
-};
 
 /*--- Functions prototypes ---*/
 
@@ -178,28 +172,14 @@ void video_surface_convert(video_surface_t *this)
 	SDL_Surface *scr_surf = NULL;
 
 	if ((this->bpp==8) && params.dithering) {
-		int r,g,b;
-		SDL_Color palette[216];
 		video_surface_t *new_surf;
-
-		for (r=0; r<6; r++) {
-			for (g=0; g<6; g++) {
-				for (b=0; b<6; b++) {
-					int i = r*36+g*6+b;
-
-					palette[i].r = map_color[r];
-					palette[i].g = map_color[g];
-					palette[i].b = map_color[b];
-				}
-			}
-		}		
 
 		new_surf = video_surface_create(this->sdl_surf->w, this->sdl_surf->h, 8);
 		if (new_surf) {
 			scr_surf = new_surf->sdl_surf;
 
-			SDL_SetPalette(scr_surf, SDL_LOGPAL|SDL_PHYSPAL, palette, 16, 216);
-			/* Dither surface */
+			dither_setpalette(scr_surf);
+			dither(this->sdl_surf, scr_surf);
 		}
 	} else {
 		scr_surf = SDL_DisplayFormat(this->sdl_surf);
