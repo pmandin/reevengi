@@ -23,6 +23,7 @@
 #include "parameters.h"
 #include "dither.h"
 #include "video_surface.h"
+#include "video.h"
 
 /*--- Functions prototypes ---*/
 
@@ -171,7 +172,7 @@ void video_surface_convert(video_surface_t *this)
 {
 	SDL_Surface *scr_surf = NULL;
 
-	if ((this->bpp==8) && params.dithering) {
+	if ((video.bpp==8) && params.dithering) {
 		video_surface_t *new_surf;
 
 		new_surf = video_surface_create(this->sdl_surf->w, this->sdl_surf->h, 8);
