@@ -74,15 +74,15 @@ void draw_line(int x1, int y1, int x2, int y2)
 
 	/* Mark dirty rectangle */
 	{
-		int w = dx+1, h = dy+1, rx=x1, ry=y1;
+		int w = dx, h = dy, rx=x1, ry=y1;
 		if (dx<0) {
 			rx = x2; w = -w;
 		}
 		if (dy<0) {
 			ry = y2; h = -h;
 		}
-		video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb], rx,ry, w,h);
-		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb], rx,ry, w,h);
+		video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb], rx,ry, w+1,h+1);
+		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb], rx,ry, w+1,h+1);
 		/*printf("draw_line: dirty %d,%d %d,%d\n", x1,y1,w,h);*/
 	}
 
