@@ -162,6 +162,71 @@ void dither(SDL_Surface *src, SDL_Surface *dest)
 				}
 			}
 			break;
+		case 3:
+			{
+				Uint8 *src_line, *src_col;
+				Uint8 *dst_col;
+				Sint16 *err_col, *err_next;
+
+				src_line = (Uint8 *) src->pixels;
+				dst_line = dest->pixels;
+				for (y=0; y<dest->h; y++) {
+					src_col = src_line;
+					dst_col = dst_line;
+					err_col = err_line[line];
+					err_next = err_line[line ^ 1];
+					err_next[0] = err_next[1] = err_next[2] = 0;
+					for (x=0; x<dest->w; x++) {
+						Uint32 color;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+						color = (src_col[0]<<16)|(src_col[1]<<8)|src_col[2];
+#else
+						color = (src_col[2]<<16)|(src_col[1]<<8)|src_col[0];
+#endif
+						SDL_GetRGB(color, src->format, &r, &g, &b);
+						src_col+=3;
+
+						r1 = sat[255 + r + err_col[0]];
+						g1 = sat[255 + g + err_col[1]];
+						b1 = sat[255 + b + err_col[2]];
+
+						idx = FIND_COLOR_INDEX(r1,g1,b1);
+
+						FIND_APPROX(idx, r2,g2,b2);
+
+						dr = r1-r2;
+						dg = g1-g2;
+						db = b1-b2;
+
+						*dst_col++ = 16+idx;
+
+						err_col[4+0] += fact1[255+dr];
+						err_col[4+1] += fact1[255+dg];
+						err_col[4+2] += fact1[255+db];
+
+						err_next[-4+0] += fact2[255+dr];
+						err_next[-4+1] += fact2[255+dg];
+						err_next[-4+2] += fact2[255+db];
+
+						err_next[0] += fact3[255+dr];
+						err_next[1] += fact3[255+dg];
+						err_next[2] += fact3[255+db];
+
+						err_next[4+0] = fact4[255+dr];
+						err_next[4+1] = fact4[255+dg];
+						err_next[4+2] = fact4[255+db];
+
+						err_col += 4;
+						err_next += 4;
+					}
+
+					/* Next line */
+					src_line += src->pitch;
+					dst_line += dest->pitch;
+					line ^= 1;
+				}
+			}
+			break;
 		case 4:
 			{
 				Uint32 *src_line, *src_col;
