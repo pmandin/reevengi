@@ -71,6 +71,11 @@ void dither_setpalette(SDL_Surface *src)
 	SDL_SetPalette(src, SDL_LOGPAL|SDL_PHYSPAL, palette, 16, 216);
 }
 
+int dither_nearest_index(int r, int g, int b)
+{
+	return 16+FIND_COLOR_INDEX(r,g,b);
+}
+
 void dither(SDL_Surface *src, SDL_Surface *dest)
 {
 	void *errbuffer;

@@ -28,6 +28,9 @@
 /* Set 216 color palette */
 void dither_setpalette(SDL_Surface *src);
 
+/* Find nearest color in 216 color palette */
+int dither_nearest_index(int r, int g, int b);
+
 /* Dither image */
 void dither(SDL_Surface *src, SDL_Surface *dest);
 

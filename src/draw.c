@@ -21,6 +21,7 @@
 #include <SDL.h>
 
 #include "video.h"
+#include "parameters.h"
 
 /*--- Defines ---*/
 
@@ -46,6 +47,12 @@ static int clip_line(int *x1, int *y1, int *x2, int *y2);
 void draw_setColor(Uint32 color)
 {
 	SDL_Surface *surf = video.screen;
+
+	if ((video.bpp==8) && params.dithering) {
+		draw_color = dither_nearest_index((color>>16) & 0xff,
+			(color>>8) & 0xff, color & 0xff);
+		return;
+	}
 
 	draw_color = SDL_MapRGBA(surf->format,
 		(color>>16) & 0xff, (color>>8) & 0xff,
