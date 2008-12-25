@@ -22,6 +22,7 @@
 
 #include "video.h"
 #include "parameters.h"
+#include "dither.h"
 
 /*--- Defines ---*/
 

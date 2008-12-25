@@ -234,7 +234,6 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 	emd_mesh_header_t *emd_mesh_header;
 	emd_mesh_object_t *emd_mesh_object;
 	Uint32 *hdr_offsets, mesh_offset;
-	Sint32 posx,posy,posz;
 	int num_objects, i;
 	emd_vertex_t *emd_tri_vtx, *emd_quad_vtx;
 	emd_triangle_t *emd_tri_idx;

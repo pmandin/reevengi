@@ -31,6 +31,7 @@
 #include "background_bss.h"
 #include "parameters.h"
 #include "log.h"
+#include "model_emd2.h"
 
 /*--- Defines ---*/
 
@@ -910,7 +911,7 @@ model_t *re2ps1_load_model(int num_model)
 	char *filepath;
 	model_t *model = NULL;
 	SDL_RWops *src, *src_emd, *src_tim;
-	int i = 0, num_file = game_player;
+	int num_file = game_player;
 	int num_tim = -1, num_emd = -1;
 	int parsed = 0;
 	const re2ps1_ems_t *ems_array;

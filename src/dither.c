@@ -80,11 +80,10 @@ void dither(SDL_Surface *src, SDL_Surface *dest)
 {
 	void *errbuffer;
 	int x,y,line;
-	Uint8 r,g,b, r1,g1,b1, r2,g2,b2;
+	Uint8 r,g,b, r1,g1,b1, r2,g2,b2, idx;
 	Sint16 dr,dg,db;
 	Uint8 *dst_line;
 	Sint16 *err_line[2];
-	Uint8 smix[3], idx;
 
 	if (!src || !dest) {
 		return;
