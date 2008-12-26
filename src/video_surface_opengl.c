@@ -47,70 +47,76 @@ static SDL_Surface *getSurface(video_surface_t *this);
 
 video_surface_t *video_surface_gl_create(int w, int h, int bpp)
 {
+	video_surface_gl_t *newsurf;
+
 	video_surface_t *parent = video_surface_create(w,h,bpp);
 	if (!parent) {
 		return NULL;
 	}
 
-	video_surface_gl_t *this = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
-	if (!this) {
+	newsurf = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
+	if (!newsurf) {
 		video_surface_destroy(parent);
 		return NULL;
 	}
 
-	memcpy(&this->surf_soft, parent, sizeof(video_surface_t));
+	memcpy(&(newsurf->surf_soft), parent, sizeof(video_surface_t));
 	free(parent);
 
-	createTexture(this);
+	createTexture(newsurf);
 
-	this->surf_soft.getSurface = getSurface;
-	return (video_surface_t *) this;
+	newsurf->surf_soft.getSurface = getSurface;
+	return (video_surface_t *) newsurf;
 }
 
 video_surface_t *video_surface_gl_create_pf(int w, int h, SDL_PixelFormat *pixelFormat)
 {
+	video_surface_gl_t *newsurf;
+
 	video_surface_t *parent = video_surface_create_pf(w,h,pixelFormat);
 	if (!parent) {
 		return NULL;
 	}
 
-	video_surface_gl_t *this = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
-	if (!this) {
+	newsurf = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
+	if (!newsurf) {
 		video_surface_destroy(parent);
 		return NULL;
 	}
 
-	memcpy(&this->surf_soft, parent, sizeof(video_surface_t));
+	memcpy(&(newsurf->surf_soft), parent, sizeof(video_surface_t));
 	free(parent);
 
-	createTexture(this);
+	createTexture(newsurf);
 
-	this->surf_soft.getSurface = getSurface;
-	return (video_surface_t *) this;
+	newsurf->surf_soft.getSurface = getSurface;
+	return (video_surface_t *) newsurf;
 }
 
 video_surface_t *video_surface_gl_create_su(SDL_Surface *surface)
 {
+	video_surface_gl_t *newsurf;
+
 	video_surface_t *parent = video_surface_create_su(surface);
 	if (!parent) {
 		return NULL;
 	}
 
-	video_surface_gl_t *this = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
-	if (!this) {
+	newsurf = (video_surface_gl_t *) calloc(1, sizeof(video_surface_gl_t));
+	if (!newsurf) {
 		video_surface_destroy(parent);
 		return NULL;
 	}
 
-	memcpy(&this->surf_soft, parent, sizeof(video_surface_t));
+	memcpy(&(newsurf->surf_soft), parent, sizeof(video_surface_t));
 	free(parent);
 
-	createTexture(this);
+	createTexture(newsurf);
 
-	SDL_BlitSurface(surface, NULL, this->surf_soft.sdl_surf, NULL);
+	SDL_BlitSurface(surface, NULL, newsurf->surf_soft.sdl_surf, NULL);
 
-	this->surf_soft.getSurface = getSurface;
-	return (video_surface_t *) this;
+	newsurf->surf_soft.getSurface = getSurface;
+	return (video_surface_t *) newsurf;
 }
 
 void video_surface_gl_destroy(video_surface_t *this)
