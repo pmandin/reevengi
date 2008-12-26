@@ -125,5 +125,6 @@ AC_CONFIG_FILES([
 Makefile
 diff/Makefile
 src/Makefile
+vs2005/Makefile
 ])
 AC_OUTPUT
