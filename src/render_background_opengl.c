@@ -76,29 +76,29 @@ void render_background_opengl(video_t *this)
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gl.Ortho(0.0, this->width, this->height, 0.0, -1.0, 1.0);
+	gl.Ortho(0.0f, this->width, this->height, 0.0f, -1.0f, 1.0f);
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
-	gl.Scalef(backgroundSurf->width,backgroundSurf->height,1.0);
+	gl.Scalef(backgroundSurf->width, backgroundSurf->height, 1.0f);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
-	/*gl.Translatef(0.375, 0.375, 0.0);*/
-	gl.Scalef(this->width, this->height, 1.0);
+	/*gl.Translatef(0.375f, 0.375f, 0.0f);*/
+	gl.Scalef(this->width, this->height, 1.0f);
 
 	gl.Begin(GL_QUADS);
-		gl.TexCoord2f(0.0, 0.0);
-		gl.Vertex2f(0.0, 0.0);
+		gl.TexCoord2f(0.0f, 0.0f);
+		gl.Vertex2f(0.0f, 0.0f);
 
-		gl.TexCoord2f(1.0, 0.0);
-		gl.Vertex2f(1.0, 0.0);
+		gl.TexCoord2f(1.0f, 0.0f);
+		gl.Vertex2f(1.0f, 0.0f);
 
-		gl.TexCoord2f(1.0, 1.0);
-		gl.Vertex2f(1.0, 1.0);
+		gl.TexCoord2f(1.0f, 1.0f);
+		gl.Vertex2f(1.0f, 1.0f);
 
-		gl.TexCoord2f(0.0, 1.0);
-		gl.Vertex2f(0.0, 1.0);
+		gl.TexCoord2f(0.0f, 1.0f);
+		gl.Vertex2f(0.0f, 1.0f);
 	gl.End();
 
 	gl.Disable(GL_DITHER);
