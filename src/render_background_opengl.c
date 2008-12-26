@@ -41,7 +41,14 @@ static video_surface_t *backgroundSurf = NULL;
 
 void render_background_init_opengl(video_t *this, video_surface_t *source)
 {
+	video_surface_gl_t *gl_surf = (video_surface_gl_t *) backgroundSurf;
+
 	backgroundSurf = source;
+
+	/* Force reupload texture (needed on Win32), for a screen resize */
+	if (gl_surf) {
+		gl_surf->need_upload = 1;
+	}
 }
 
 void render_background_opengl(video_t *this)
