@@ -56,6 +56,8 @@ Use at your own risks.
 
 "-help" displays a little help.
 
+"-dither" to dither background image (in 8bits mode only).
+
 
 3 Controls
 ----------

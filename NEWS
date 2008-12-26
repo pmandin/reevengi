@@ -4,6 +4,8 @@ v 0.9
 - Model selection
 - Move model up/down
 - Fixed crash in OpenGL renderer, due to bad conversion of background image.
+- Add 8bit video mode support, with dithering for background if needed
+- Preliminary VS2005 project file.
 
 
 See ChangeLog for older changes.
