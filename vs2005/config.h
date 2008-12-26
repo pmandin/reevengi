@@ -5,7 +5,7 @@
 
 #define PACKAGE_STRING PACKAGE_NAME "0.9"
 
-#define ENABLE_OPENGL 1
+/*#define ENABLE_OPENGL 1*/
 
 /*#define ENABLE_MOVIES 1*/
 
