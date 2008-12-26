@@ -15,16 +15,16 @@ Use at your own risks.
 1 Libraries dependencies
 ------------------------
 
-- SDL for video and input.
+- SDL for video and input (mandatory).
   http://www.libsdl.org/
 
-- SDL_image with libjpeg support.
+- SDL_image with libjpeg support (optional, for RE3 PC).
   http://www.libsdl.org/projects/SDL_image/
 
-- FFmpeg for movie player
+- FFmpeg for movie player (optional, for movie player).
   http://ffmpeg.mplayerhq.hu/
 
-- PhysicsFS for all filesystem access.
+- PhysicsFS for all filesystem access (mandatory).
   http://www.icculus.org/physfs/
 
   Note: You need to apply the patch in the diff directory to the stable 1.0
