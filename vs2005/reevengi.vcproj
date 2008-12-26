@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_USE_MATH_DEFINES;PACKAGE_NAME=\&quot;reevengi\&quot;;PACKAGE_STRING=\&quot;reevengi 0.9\&quot;;WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="."
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_USE_MATH_DEFINES;HAVE_CONFIG_H;WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -119,8 +119,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_USE_MATH_DEFINES;PACKAGE_NAME=\&quot;reevengi\&quot;;PACKAGE_STRING=\&quot;reevengi 0.9\&quot;;WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="."
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_USE_MATH_DEFINES;HAVE_CONFIG_H;WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
