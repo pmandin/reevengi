@@ -63,7 +63,7 @@ static int ParmPresent(char *param, int argc, char **argv)
 	int	i;
 
 	for (i=1; i<argc; i++)
-		if ( !strcasecmp(param, argv[i]) )
+		if ( !strcmp(param, argv[i]) )
 			return i;
 
 	return 0;
