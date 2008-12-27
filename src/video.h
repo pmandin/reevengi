@@ -36,6 +36,7 @@ struct video_s {
 	SDL_Rect viewport;
 
 	void (*shutDown)(video_t *this);
+	void (*findNearestMode)(video_t *this, int *width, int *height, int bpp);
 	void (*setVideoMode)(video_t *this, int width, int height, int bpp);
 	void (*swapBuffers)(video_t *this);
 	void (*screenShot)(video_t *this);

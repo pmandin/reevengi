@@ -86,6 +86,10 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	int i;
 	SDL_Surface *screen;
 
+	if (this->flags & SDL_FULLSCREEN) {
+		this->findNearestMode(this, &width, &height, bpp);
+	}
+
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE,5);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,5);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,5);

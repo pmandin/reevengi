@@ -32,6 +32,7 @@
 /*--- Function prototypes ---*/
 
 static void shutDown(video_t *this);
+static void findNearestMode(video_t *this, int *width, int *height, int bpp);
 static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void countFps(video_t *this);
@@ -54,6 +55,7 @@ void video_soft_init(video_t *this)
 	this->num_screenshot = 0;
 
 	this->shutDown = shutDown;
+	this->findNearestMode = findNearestMode;
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
@@ -153,8 +155,17 @@ void video_detect_aspect(void)
 	}
 }
 
+static void findNearestMode(video_t *this, int *width, int *height, int bpp)
+{
+}
+
 static void setVideoMode(video_t *this, int width, int height, int bpp)
 {
+	/* Search nearest fullscreen mode */
+	if (this->flags & SDL_FULLSCREEN) {
+		findNearestMode(this, &width, &height, bpp);
+	}
+
 	this->screen = SDL_SetVideoMode(width, height, bpp, this->flags);
 	if (!this->screen) {
 		/* Try 8 bpp if failed in true color */
