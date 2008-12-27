@@ -157,6 +157,48 @@ void video_detect_aspect(void)
 
 static void findNearestMode(video_t *this, int *width, int *height, int bpp)
 {
+	SDL_Rect **modes;
+	SDL_PixelFormat pixelFormat;
+	int i, j=-1, pixcount, minpixcount, pixcount2, w=*width, h=*height;
+
+	memset(&pixelFormat, 0, sizeof(SDL_PixelFormat));
+	pixelFormat.BitsPerPixel = bpp;
+
+	modes = SDL_ListModes(NULL /*&pixelFormat*/, SDL_FULLSCREEN);
+	if (modes == (SDL_Rect **) 0) {
+		/* No fullscreen mode */
+		logMsg(2, "video: no fullscreen mode\n");
+		return;
+	} else if (modes == (SDL_Rect **) -1) {
+		/* Windowed mode */
+		logMsg(2, "video: windowed mode\n");
+		return;
+	}
+
+	pixcount = w*h;
+	minpixcount = 2000000000;
+	for (i=0; modes[i]; ++i) {
+		logMsg(2, "video: check nearest %dx%d\n", modes[i]->w, modes[i]->h);
+
+		/* Mode in list */
+		if ((modes[i]->w == w) && (modes[i]->h == h)) {
+			return;
+		}
+
+		/* Stop at first mode bigger than needed */
+		pixcount2 = modes[i]->w * modes[i]->h;
+		if (pixcount2 >= pixcount) {
+			if (pixcount2<=minpixcount) {
+				minpixcount = pixcount2;
+				j = i;
+			}
+		}
+	}
+
+	if (j>=0) {
+		*width = modes[j]->w;
+		*height = modes[j]->h;
+	}
 }
 
 static void setVideoMode(video_t *this, int width, int height, int bpp)
@@ -164,6 +206,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	/* Search nearest fullscreen mode */
 	if (this->flags & SDL_FULLSCREEN) {
 		findNearestMode(this, &width, &height, bpp);
+		logMsg(1, "video: found nearest %dx%d\n", width, height);
 	}
 
 	this->screen = SDL_SetVideoMode(width, height, bpp, this->flags);
