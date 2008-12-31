@@ -11,4 +11,6 @@
 
 /*#define ENABLE_MOVIES 1*/
 
+/*#define ENABLE_GAMMA 1*/
+
 #endif /* CONFIG_H */

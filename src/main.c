@@ -159,7 +159,9 @@ int main(int argc, char **argv)
 	}
 
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
+#ifdef ENABLE_GAMMA
 	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
+#endif
 
 	state_loadmodel();
 
@@ -222,6 +224,7 @@ static int viewer_loop(void)
 							switch_mode=1;
 						}
 						break;
+#ifdef ENABLE_GAMMA
 					case KEY_GAMMA_DOWN:
 						params.gamma -= 0.1;
 						if (params.gamma<0.1) {
@@ -240,6 +243,7 @@ static int viewer_loop(void)
 						params.gamma = 1.0;
 						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 						break;						
+#endif
 					default:
 						switch(params.viewmode) {
 							case VIEWMODE_BACKGROUND:

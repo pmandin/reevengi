@@ -102,6 +102,11 @@ if test "x$WANT_OPENGL" = "xyes"; then
 	AC_DEFINE(ENABLE_OPENGL, 1, [Define if you want OpenGL renderer])
 fi
 
+# Gamma setting
+# Some SDL versions have a bug using windib driver that makes it crash
+
+AC_DEFINE(ENABLE_GAMMA, 1, [Define if you want gamma setting])
+
 # Movies using FFmpeg
 
 AC_ARG_ENABLE(movies,
