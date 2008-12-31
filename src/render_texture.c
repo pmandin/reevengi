@@ -132,7 +132,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 				Uint8 *tex_pixels = &((Uint8 *)tex)[sizeof(render_texture_t)];
 				for (i=0; i<h; i++) {
 					Uint8 *tex_line = tex_pixels;
-					for (j=0; j<w; j++) {
+					for (j=0; j<w>>1; j++) {
 						Uint8 color = *src_pixels++;
 						*tex_line++ = color & 15;
 						*tex_line++ = (color>>4) & 15;
@@ -171,9 +171,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 
 void render_texture_shutdown(render_texture_t *texture)
 {
-	if (!texture) {
-		return;
+	if (texture) {
+		free(texture);
 	}
-
-	free(texture);
 }
