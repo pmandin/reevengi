@@ -21,11 +21,26 @@
 #ifndef RENDER_TEXTURE_H
 #define RENDER_TEXTURE_H 1
 
+/*--- Defines ---*/
+
+#define MAX_TEX_PALETTE 8
+
+/*--- Types ---*/
+
 typedef struct {
 	int w, h;
 	int pitch;
-	Uint32 palettes[256][4];	/* 4 palettes max per texture */
+	int paletted;
+	Uint32 palettes[256][MAX_TEX_PALETTE];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
 } render_texture_t;
+
+/*--- Functions prototypes ---*/
+
+/* Load texture from a TIM image file as pointer */
+render_texture_t *render_texture_load_from_tim(void *tim_ptr);
+
+/* Free texture data */
+void render_texture_shutdown(render_texture_t *texture);
 
 #endif /* RENDER_TEXTURE_H */
