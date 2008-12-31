@@ -37,6 +37,8 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	int w,h, wpot, tim_type;
 	render_texture_t *tex;
 	tim_size_t *tim_size;
+	SDL_PixelFormat *fmt = video.screen->format;
+	int bytes_per_pixel;
 
 	/* Read dimensions */
 	tim_header = (tim_header_t *) tim_ptr;
@@ -53,7 +55,6 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 
 	num_colors = SDL_SwapLE16(tim_header->palette_colors);
 
-	paletted = 0;
 	img_offset = SDL_SwapLE32(tim_header->offset) + 20;
 
 	tim_size = (tim_size_t *) (&((Uint8 *) tim_ptr)[img_offset-4]);
@@ -61,16 +62,21 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	h = SDL_SwapLE16(tim_size->height);
 
 	tim_type = SDL_SwapLE16(tim_header->type);
+	bytes_per_pixel = 1;
+	paletted = 1;
 	switch(tim_type) {
 		case TIM_TYPE_4:
-			paletted = 1;
 			w <<= 2;
 			break;
 		case TIM_TYPE_8:
-			paletted = 1;
 			w <<= 1;
 			break;
 		case TIM_TYPE_16:
+			paletted = 0;
+			bytes_per_pixel=2;
+			if (fmt->BytesPerPixel>2) {
+				bytes_per_pixel=4;
+			}
 			break;
 	}
 	if ((w==0) || (h==0)) {
@@ -85,21 +91,19 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	}	
 
 	/* Allocate memory */
-	tex = calloc(1, sizeof(render_texture_t) + wpot*h*(paletted ? 1 : 2));
+	tex = calloc(1, sizeof(render_texture_t) + wpot*h*bytes_per_pixel);
 	if (!tex) {
 		fprintf(stderr, "Can not allocate memory for texture\n");
 		return NULL;
 	}
 
 	tex->paletted = paletted;
-	tex->pitch = wpot*(paletted ? 1 : 2);
+	tex->pitch = wpot*bytes_per_pixel;
 	tex->w = w;
 	tex->h = h;
 
 	/* Copy palettes to video format */
 	if (paletted) {
-		SDL_PixelFormat *fmt = video.screen->format;
-
 		pal_header = & ((Uint16 *) tim_ptr)[sizeof(tim_header_t)/2];
 		for (i=0; i<num_palettes; i++) {
 			for (j=0; j<num_colors; j++) {
@@ -154,14 +158,56 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 			break;
 		case TIM_TYPE_16:
 			{
+				int r,g,b, color;
 				Uint16 *src_pixels = (Uint16 *) (&((Uint8 *) tim_ptr)[img_offset]);
-				Uint16 *tex_pixels = (Uint16 *) (&((Uint8 *)tex)[sizeof(render_texture_t)]);
-				for (i=0; i<h; i++) {
-					for (j=0; j<w; j++) {
-						/* TODO: convert to video format */
-						/* FIXME: need to allocate more for video bpp=24 or 32 */
-					}
+				switch(fmt->BytesPerPixel) {
+					case 2:
+						{
+							Uint16 *tex_pixels = (Uint16 *) (&((Uint8 *)tex)[sizeof(render_texture_t)]);
+							for (i=0; i<h; i++) {
+								Uint16 *tex_line = tex_pixels;
+								for (j=0; j<w; j++) {
+									color = *src_pixels++;
+									color = SDL_SwapLE16(color);
+
+									r = color & 31;
+									r = (r<<3)|(r>>2);
+									g = (color>>5) & 31;
+									g = (g<<3)|(g>>2);
+									b = (color>>10) & 31;
+									b = (b<<3)|(b>>2);
+									
+									*tex_line++ = SDL_MapRGB(fmt, r,g,b);
+								}
+								tex_pixels += tex->pitch>>1;
+							}
+						}
+						break;
+					case 3:
+					case 4:
+						{
+							Uint32 *tex_pixels = (Uint32 *) (&((Uint8 *)tex)[sizeof(render_texture_t)]);
+							for (i=0; i<h; i++) {
+								Uint32 *tex_line = tex_pixels;
+								for (j=0; j<w; j++) {
+									color = *src_pixels++;
+									color = SDL_SwapLE16(color);
+
+									r = color & 31;
+									r = (r<<3)|(r>>2);
+									g = (color>>5) & 31;
+									g = (g<<3)|(g>>2);
+									b = (color>>10) & 31;
+									b = (b<<3)|(b>>2);
+									
+									*tex_line++ = SDL_MapRGB(fmt, r,g,b);
+								}
+								tex_pixels += tex->pitch>>1;
+							}
+						}
+						break;
 				}
+				
 			}
 			break;
 	}
