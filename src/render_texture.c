@@ -92,6 +92,9 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	}
 
 	tex->paletted = paletted;
+	tex->pitch = wpot*(paletted ? 1 : 2);
+	tex->w = w;
+	tex->h = h;
 
 	/* Copy palettes to video format */
 	if (paletted) {
@@ -127,18 +130,38 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 			{
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
 				Uint8 *tex_pixels = &((Uint8 *)tex)[sizeof(render_texture_t)];
+				for (i=0; i<h; i++) {
+					Uint8 *tex_line = tex_pixels;
+					for (j=0; j<w; j++) {
+						Uint8 color = *src_pixels++;
+						*tex_line++ = color & 15;
+						*tex_line++ = (color>>4) & 15;
+					}
+					tex_pixels += tex->pitch;
+				}
 			}
 			break;
 		case TIM_TYPE_8:
 			{
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
 				Uint8 *tex_pixels = &((Uint8 *)tex)[sizeof(render_texture_t)];
+				for (i=0; i<h; i++) {
+					memcpy(tex_pixels, src_pixels, w);
+					src_pixels += w;
+					tex_pixels += tex->pitch;
+				}
 			}
 			break;
 		case TIM_TYPE_16:
 			{
 				Uint16 *src_pixels = (Uint16 *) (&((Uint8 *) tim_ptr)[img_offset]);
 				Uint16 *tex_pixels = (Uint16 *) (&((Uint8 *)tex)[sizeof(render_texture_t)]);
+				for (i=0; i<h; i++) {
+					for (j=0; j<w; j++) {
+						/* TODO: convert to video format */
+						/* FIXME: need to allocate more for video bpp=24 or 32 */
+					}
+				}
 			}
 			break;
 	}
