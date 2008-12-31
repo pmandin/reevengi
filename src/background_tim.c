@@ -24,34 +24,6 @@
 #include "state.h"
 #include "background_tim.h"
 
-/*--- Defines ---*/
-
-#define MAGIC_TIM	0x10
-#define TIM_TYPE_4	8
-#define TIM_TYPE_8	9
-#define TIM_TYPE_16	2
-
-/*--- Types ---*/
-
-typedef struct {
-	Uint32	magic;
-	Uint32	type;
-	Uint32	offset;
-	Uint16	dummy0;
-	Uint16	dummy1;
-	Uint16	palette_colors;
-	Uint16	nb_palettes;
-} tim_header_t;
-
-typedef struct {
-	Uint16	width;
-	Uint16	height;
-} tim_size_t;
-
-/*--- Variables ---*/
-
-/*--- Functions prototypes ---*/
-
 /*--- Functions ---*/
 
 SDL_Surface *background_tim_load(SDL_RWops *src)
