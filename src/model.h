@@ -23,6 +23,8 @@
 
 #include <SDL.h>
 
+#include "render_texture.h"
+
 /*--- Types ---*/
 
 typedef struct model_s model_t;
@@ -36,6 +38,8 @@ struct model_s {
 
 	void *tim_file;
 	int tim_length;
+
+	render_texture_t *texture;
 };
 
 #endif /* MODEL_H */

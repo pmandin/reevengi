@@ -151,6 +151,8 @@ model_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	emd_convert_endianness(model);
 #endif
 
+	model->texture = render_texture_load_from_tim(model->tim_file);
+
 	model->shutdown = model_emd2_shutdown;
 	model->draw = model_emd2_draw;
 
@@ -165,6 +167,9 @@ static void model_emd2_shutdown(model_t *this)
 		}
 		if (this->tim_file) {
 			free(this->tim_file);
+		}
+		if (this->texture) {
+			render_texture_shutdown(this->texture);
 		}
 		free(this);
 	}

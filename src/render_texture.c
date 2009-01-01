@@ -25,6 +25,7 @@
 #include "video.h"
 #include "dither.h"
 #include "parameters.h"
+#include "log.h"
 
 /*--- Functions ---*/
 
@@ -66,12 +67,15 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	paletted = 1;
 	switch(tim_type) {
 		case TIM_TYPE_4:
+			logMsg(2, "texture: 4 bits source\n");
 			w <<= 2;
 			break;
 		case TIM_TYPE_8:
+			logMsg(2, "texture: 8 bits source\n");
 			w <<= 1;
 			break;
 		case TIM_TYPE_16:
+			logMsg(2, "texture: 16 bits source\n");
 			paletted = 0;
 			bytes_per_pixel=2;
 			if (fmt->BytesPerPixel>2) {
@@ -83,6 +87,8 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 		fprintf(stderr, "Can not read image dimension\n");
 		return NULL;
 	}
+
+	logMsg(1, "texture: %dx%d, %d palettes * %d colors\n", w,h, num_palettes, num_colors);
 
 	/* Align on POT size */
 	wpot = 2;
