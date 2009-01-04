@@ -24,6 +24,10 @@
 
 #include "matrix.h"
 
+/*--- Functions prototypes ---*/
+
+static void mtx_clipSegPlane(float points[4][4], int num_clipped, float clip[4]);
+
 /*--- Functions ---*/
 
 /*
@@ -316,13 +320,36 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4])
 	return result;
 }
 
+/* Clip a segment against a plane, return clipped point */
+static void mtx_clipSegPlane(float points[4][4], int num_clipped, float clip[4])
+{
+	float num,den, u, x,y,z,w;
+
+	num =	clip[0]*points[0][0]+
+		clip[1]*points[0][1]+
+		clip[2]*points[0][2]+
+		clip[3]*points[0][3];
+
+	den =	clip[0]*(points[0][0]-points[1][0])+
+		clip[1]*(points[0][1]-points[1][1])+
+		clip[2]*(points[0][2]-points[1][2])+
+		clip[3]*(points[0][3]-points[1][3]);
+
+	u = num/den;
+
+	points[num_clipped][0] = points[0][0]+u*(points[1][0]-points[0][0]);
+	points[num_clipped][1] = points[0][1]+u*(points[1][1]-points[0][1]);
+	points[num_clipped][2] = points[0][2]+u*(points[1][2]-points[0][2]);
+	points[num_clipped][3] = points[0][3]+u*(points[1][3]-points[0][3]);
+}
+
+/* Clip a segment to view frustum */
 int mtx_clipSegment(float points[4][4], float clip[6][4])
 {
 	int i, result = CLIPPING_INSIDE;
 
 	for (i=0; i<6; i++) {
 		int j, num_outsides = 0, num_point_outside=-1;
-		float num,den, u, x,y,z,w;
 
 		for (j=0; j<2; j++) {
 			if (dotProductPlus(points[j], clip[i])<0.0f) {
@@ -341,28 +368,7 @@ int mtx_clipSegment(float points[4][4], float clip[6][4])
 			continue;
 		}
 
-		/* Ah, clip this segment against clip plane */
-		num =	clip[i][0]*points[0][0]+
-			clip[i][1]*points[0][1]+
-			clip[i][2]*points[0][2]+
-			clip[i][3]*points[0][3];
-		den =	clip[i][0]*(points[0][0]-points[1][0])+
-			clip[i][1]*(points[0][1]-points[1][1])+
-			clip[i][2]*(points[0][2]-points[1][2])+
-			clip[i][3]*(points[0][3]-points[1][3]);
-
-		u = num/den;
-
-		x = points[0][0]+u*(points[1][0]-points[0][0]);
-		y = points[0][1]+u*(points[1][1]-points[0][1]);
-		z = points[0][2]+u*(points[1][2]-points[0][2]);
-		w = points[0][3]+u*(points[1][3]-points[0][3]);
-
-		/* Replace point outside, with the one which is on the clip plane */
-		points[num_point_outside][0] = x;
-		points[num_point_outside][1] = y;
-		points[num_point_outside][2] = z;
-		points[num_point_outside][3] = w;
+		mtx_clipSegPlane(points, num_point_outside, clip[i]);
 
 		result = CLIPPING_NEEDED;
 	}
