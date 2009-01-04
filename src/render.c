@@ -322,3 +322,10 @@ static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
 	line(v3,v4);
 	line(v4,v1);
 }
+
+/*
+	Draw textured triangle / quad (2 triangles)
+
+	Generate polygon if triangle clipped
+	Draw triangles, given parts of poly
+*/

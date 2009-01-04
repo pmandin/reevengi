@@ -21,6 +21,8 @@
 #ifndef MATRIX_H
 #define MATRIX_H 1
 
+/*--- Function prototoypes ---*/
+
 void mtx_setIdentity(float m[4][4]);
 void mtx_print(float m[4][4]);
 

@@ -25,6 +25,13 @@
 
 #include "video_surface.h"
 
+/*--- Types ---*/
+
+typedef struct {
+	float x,y,z,w;	/* Vertex coords */
+	int u,v;	/* Texture coords */
+} vertex_t;
+
 typedef struct render_s render_t;
 
 struct render_s {
