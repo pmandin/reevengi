@@ -245,17 +245,25 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
+		int page = emd_tri_idx[i].page << 6;
+
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
 		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
 		v[0].z = emd_tri_vtx[emd_tri_idx[i].v0].z;
+		v[0].u = emd_tri_idx[i].tu0 + page;
+		v[0].v = emd_tri_idx[i].tv0;
 
 		v[1].x = emd_tri_vtx[emd_tri_idx[i].v1].x;
 		v[1].y = emd_tri_vtx[emd_tri_idx[i].v1].y;
 		v[1].z = emd_tri_vtx[emd_tri_idx[i].v1].z;
+		v[1].u = emd_tri_idx[i].tu1 + page;
+		v[1].v = emd_tri_idx[i].tv1;
 
 		v[2].x = emd_tri_vtx[emd_tri_idx[i].v2].x;
 		v[2].y = emd_tri_vtx[emd_tri_idx[i].v2].y;
 		v[2].z = emd_tri_vtx[emd_tri_idx[i].v2].z;
+		v[2].u = emd_tri_idx[i].tu2 + page;
+		v[2].v = emd_tri_idx[i].tv2;
 
 		render.triangle(&v[0], &v[1], &v[2]);
 	}

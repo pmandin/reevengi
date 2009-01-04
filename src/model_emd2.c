@@ -245,6 +245,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 	emd_quad_t *emd_quad_idx;
 	void *emd_file = this->emd_file;
 	vertex_t v[4];
+	emd_triangle_tex_t *emd_tri_tex;
+	emd_quad_tex_t *emd_quad_tex;
 
 	emd_header = (emd_header_t *) emd_file;
 
@@ -271,19 +273,29 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.vtx_offset]);
 	emd_tri_idx = (emd_triangle_t *)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
+	emd_tri_tex = (emd_triangle_tex_t *)
+		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.tex_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
+		int page = emd_tri_tex[i].page << 6;
+
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
 		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
 		v[0].z = emd_tri_vtx[emd_tri_idx[i].v0].z;
+		v[0].u = emd_tri_tex[i].u0 + page;
+		v[0].v = emd_tri_tex[i].v0;
 
 		v[1].x = emd_tri_vtx[emd_tri_idx[i].v1].x;
 		v[1].y = emd_tri_vtx[emd_tri_idx[i].v1].y;
 		v[1].z = emd_tri_vtx[emd_tri_idx[i].v1].z;
+		v[1].u = emd_tri_tex[i].u1 + page;
+		v[1].v = emd_tri_tex[i].v1;
 
 		v[2].x = emd_tri_vtx[emd_tri_idx[i].v2].x;
 		v[2].y = emd_tri_vtx[emd_tri_idx[i].v2].y;
 		v[2].z = emd_tri_vtx[emd_tri_idx[i].v2].z;
+		v[2].u = emd_tri_tex[i].u2 + page;
+		v[2].v = emd_tri_tex[i].v2;
 
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
@@ -293,23 +305,35 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.vtx_offset]);
 	emd_quad_idx = (emd_quad_t *)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.mesh_offset]);
+	emd_quad_tex = (emd_quad_tex_t *)
+		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.tex_offset]);
 
 	for (i=0; i<emd_mesh_object->quads.mesh_count; i++) {
+		int page = emd_quad_tex[i].page << 6;
+
 		v[0].x = emd_quad_vtx[emd_quad_idx[i].v0].x;
 		v[0].y = emd_quad_vtx[emd_quad_idx[i].v0].y;
 		v[0].z = emd_quad_vtx[emd_quad_idx[i].v0].z;
+		v[0].u = emd_quad_tex[i].u0 + page;
+		v[0].v = emd_quad_tex[i].v0;
 
 		v[1].x = emd_quad_vtx[emd_quad_idx[i].v1].x;
 		v[1].y = emd_quad_vtx[emd_quad_idx[i].v1].y;
 		v[1].z = emd_quad_vtx[emd_quad_idx[i].v1].z;
+		v[1].u = emd_quad_tex[i].u1 + page;
+		v[1].v = emd_quad_tex[i].v1;
 
 		v[2].x = emd_quad_vtx[emd_quad_idx[i].v2].x;
 		v[2].y = emd_quad_vtx[emd_quad_idx[i].v2].y;
 		v[2].z = emd_quad_vtx[emd_quad_idx[i].v2].z;
+		v[2].u = emd_quad_tex[i].u2 + page;
+		v[2].v = emd_quad_tex[i].v2;
 
 		v[3].x = emd_quad_vtx[emd_quad_idx[i].v3].x;
 		v[3].y = emd_quad_vtx[emd_quad_idx[i].v3].y;
 		v[3].z = emd_quad_vtx[emd_quad_idx[i].v3].z;
+		v[3].u = emd_quad_tex[i].u3 + page;
+		v[3].v = emd_quad_tex[i].v3;
 
 		render.quad(&v[0], &v[1], &v[3], &v[2]);
 	}

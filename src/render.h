@@ -29,7 +29,7 @@
 
 typedef struct {
 	Sint16 x,y,z;	/* Vertex coords */
-	int u,v;	/* Texture coords */
+	Uint16 u,v;	/* Texture coords */
 } vertex_t;
 
 typedef struct render_s render_t;

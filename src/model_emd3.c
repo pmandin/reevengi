@@ -265,14 +265,20 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
 		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
 		v[0].z = emd_tri_vtx[emd_tri_idx[i].v0].z;
+		v[0].u = emd_tri_idx[i].tu0;
+		v[0].v = emd_tri_idx[i].tv0;
 
 		v[1].x = emd_tri_vtx[emd_tri_idx[i].v1].x;
 		v[1].y = emd_tri_vtx[emd_tri_idx[i].v1].y;
 		v[1].z = emd_tri_vtx[emd_tri_idx[i].v1].z;
+		v[1].u = emd_tri_idx[i].tu1;
+		v[1].v = emd_tri_idx[i].tv1;
 
 		v[2].x = emd_tri_vtx[emd_tri_idx[i].v2].x;
 		v[2].y = emd_tri_vtx[emd_tri_idx[i].v2].y;
 		v[2].z = emd_tri_vtx[emd_tri_idx[i].v2].z;
+		v[2].u = emd_tri_idx[i].tu2;
+		v[2].v = emd_tri_idx[i].tv2;
 
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
@@ -287,18 +293,26 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[0].x = emd_quad_vtx[emd_quad_idx[i].v0].x;
 		v[0].y = emd_quad_vtx[emd_quad_idx[i].v0].y;
 		v[0].z = emd_quad_vtx[emd_quad_idx[i].v0].z;
+		v[0].u = emd_quad_idx[i].tu0;
+		v[0].v = emd_quad_idx[i].tv0;
 
 		v[1].x = emd_quad_vtx[emd_quad_idx[i].v1].x;
 		v[1].y = emd_quad_vtx[emd_quad_idx[i].v1].y;
 		v[1].z = emd_quad_vtx[emd_quad_idx[i].v1].z;
+		v[1].u = emd_quad_idx[i].tu1;
+		v[1].v = emd_quad_idx[i].tv1;
 
-		v[2].x = emd_quad_vtx[emd_quad_idx[i].v3].x;
-		v[2].y = emd_quad_vtx[emd_quad_idx[i].v3].y;
-		v[2].z = emd_quad_vtx[emd_quad_idx[i].v3].z;
+		v[2].x = emd_quad_vtx[emd_quad_idx[i].v2].x;
+		v[2].y = emd_quad_vtx[emd_quad_idx[i].v2].y;
+		v[2].z = emd_quad_vtx[emd_quad_idx[i].v2].z;
+		v[2].u = emd_quad_idx[i].tu2;
+		v[2].v = emd_quad_idx[i].tv2;
 
-		v[3].x = emd_quad_vtx[emd_quad_idx[i].v2].x;
-		v[3].y = emd_quad_vtx[emd_quad_idx[i].v2].y;
-		v[3].z = emd_quad_vtx[emd_quad_idx[i].v2].z;
+		v[3].x = emd_quad_vtx[emd_quad_idx[i].v3].x;
+		v[3].y = emd_quad_vtx[emd_quad_idx[i].v3].y;
+		v[3].z = emd_quad_vtx[emd_quad_idx[i].v3].z;
+		v[3].u = emd_quad_idx[i].tu3;
+		v[3].v = emd_quad_idx[i].tv3;
 
 		render.quad(&v[0], &v[1], &v[3], &v[2]);
 	}
