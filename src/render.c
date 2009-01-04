@@ -59,9 +59,9 @@ static void pop_matrix(void);
 static void recalc_frustum_mtx(void);
 
 static void set_color(Uint32 color);
-static void line(Sint16 *v1, Sint16 *v2);
-static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
-static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
+static void line(vertex_t *v1, vertex_t *v2);
+static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 /*--- Functions ---*/
 
@@ -218,19 +218,19 @@ static void set_color(Uint32 color)
 	draw_setColor(color);
 }
 
-static void line(Sint16 *v1, Sint16 *v2)
+static void line(vertex_t *v1, vertex_t *v2)
 {
 	float segment[4][4], result[4][4];
 	/*int clip_result;*/
 
 	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1[0];
-	segment[0][1] = v1[1];
-	segment[0][2] = v1[2];
+	segment[0][0] = v1->x;
+	segment[0][1] = v1->y;
+	segment[0][2] = v1->z;
 	segment[0][3] = 1.0f;
-	segment[1][0] = v2[0];
-	segment[1][1] = v2[1];
-	segment[1][2] = v2[2];
+	segment[1][0] = v2->x;
+	segment[1][1] = v2->y;
+	segment[1][2] = v2->z;
 	segment[1][3] = 1.0f;
 
 	/* Project in current modelview */
@@ -252,22 +252,22 @@ static void line(Sint16 *v1, Sint16 *v2)
 	);
 }
 
-static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
+static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
 
 	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1[0];
-	segment[0][1] = v1[1];
-	segment[0][2] = v1[2];
+	segment[0][0] = v1->x;
+	segment[0][1] = v1->y;
+	segment[0][2] = v1->z;
 	segment[0][3] = 1.0f;
-	segment[1][0] = v2[0];
-	segment[1][1] = v2[1];
-	segment[1][2] = v2[2];
+	segment[1][0] = v2->x;
+	segment[1][1] = v2->y;
+	segment[1][2] = v2->z;
 	segment[1][3] = 1.0f;
-	segment[2][0] = v3[0];
-	segment[2][1] = v3[1];
-	segment[2][2] = v3[2];
+	segment[2][0] = v3->x;
+	segment[2][1] = v3->y;
+	segment[2][2] = v3->z;
 	segment[2][3] = 1.0f;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
@@ -285,26 +285,26 @@ static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
 	line(v3,v1);
 }
 
-static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
+static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
 	float segment[4][4], result[4][4];
 
 	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1[0];
-	segment[0][1] = v1[1];
-	segment[0][2] = v1[2];
+	segment[0][0] = v1->x;
+	segment[0][1] = v1->y;
+	segment[0][2] = v1->z;
 	segment[0][3] = 1.0f;
-	segment[1][0] = v2[0];
-	segment[1][1] = v2[1];
-	segment[1][2] = v2[2];
+	segment[1][0] = v2->x;
+	segment[1][1] = v2->y;
+	segment[1][2] = v2->z;
 	segment[1][3] = 1.0f;
-	segment[2][0] = v3[0];
-	segment[2][1] = v3[1];
-	segment[2][2] = v3[2];
+	segment[2][0] = v3->x;
+	segment[2][1] = v3->y;
+	segment[2][2] = v3->z;
 	segment[2][3] = 1.0f;
-	segment[3][0] = v4[0];
-	segment[3][1] = v4[1];
-	segment[3][2] = v4[2];
+	segment[3][0] = v4->x;
+	segment[3][1] = v4->y;
+	segment[3][2] = v4->z;
 	segment[3][3] = 1.0f;
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);

@@ -244,6 +244,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 	emd_triangle_t *emd_tri_idx;
 	emd_quad_t *emd_quad_idx;
 	void *emd_file = this->emd_file;
+	vertex_t v[4];
 
 	emd_header = (emd_header_t *) emd_file;
 
@@ -272,11 +273,19 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
-		render.triangle(
-			&emd_tri_vtx[emd_tri_idx[i].v0].x,
-			&emd_tri_vtx[emd_tri_idx[i].v1].x,
-			&emd_tri_vtx[emd_tri_idx[i].v2].x
-		);
+		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
+		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
+		v[0].z = emd_tri_vtx[emd_tri_idx[i].v0].z;
+
+		v[1].x = emd_tri_vtx[emd_tri_idx[i].v1].x;
+		v[1].y = emd_tri_vtx[emd_tri_idx[i].v1].y;
+		v[1].z = emd_tri_vtx[emd_tri_idx[i].v1].z;
+
+		v[2].x = emd_tri_vtx[emd_tri_idx[i].v2].x;
+		v[2].y = emd_tri_vtx[emd_tri_idx[i].v2].y;
+		v[2].z = emd_tri_vtx[emd_tri_idx[i].v2].z;
+
+		render.triangle(&v[0], &v[1], &v[2]);
 	}
 
 	/* Draw quads */
@@ -286,12 +295,23 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quads.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->quads.mesh_count; i++) {
-		render.quad(
-			&emd_quad_vtx[emd_quad_idx[i].v0].x,
-			&emd_quad_vtx[emd_quad_idx[i].v1].x,
-			&emd_quad_vtx[emd_quad_idx[i].v3].x,
-			&emd_quad_vtx[emd_quad_idx[i].v2].x
-		);
+		v[0].x = emd_quad_vtx[emd_quad_idx[i].v0].x;
+		v[0].y = emd_quad_vtx[emd_quad_idx[i].v0].y;
+		v[0].z = emd_quad_vtx[emd_quad_idx[i].v0].z;
+
+		v[1].x = emd_quad_vtx[emd_quad_idx[i].v1].x;
+		v[1].y = emd_quad_vtx[emd_quad_idx[i].v1].y;
+		v[1].z = emd_quad_vtx[emd_quad_idx[i].v1].z;
+
+		v[2].x = emd_quad_vtx[emd_quad_idx[i].v2].x;
+		v[2].y = emd_quad_vtx[emd_quad_idx[i].v2].y;
+		v[2].z = emd_quad_vtx[emd_quad_idx[i].v2].z;
+
+		v[3].x = emd_quad_vtx[emd_quad_idx[i].v3].x;
+		v[3].y = emd_quad_vtx[emd_quad_idx[i].v3].y;
+		v[3].z = emd_quad_vtx[emd_quad_idx[i].v3].z;
+
+		render.quad(&v[0], &v[1], &v[3], &v[2]);
 	}
 }
 

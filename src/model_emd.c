@@ -218,6 +218,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 	emd_vertex_t *emd_tri_vtx;
 	emd_triangle_t *emd_tri_idx;
 	void *emd_file = this->emd_file;
+	vertex_t v[3];
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) emd_file)[this->emd_length-16]);
@@ -244,11 +245,19 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
-		render.triangle(
-			&emd_tri_vtx[emd_tri_idx[i].v0].x,
-			&emd_tri_vtx[emd_tri_idx[i].v1].x,
-			&emd_tri_vtx[emd_tri_idx[i].v2].x
-		);
+		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
+		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
+		v[0].z = emd_tri_vtx[emd_tri_idx[i].v0].z;
+
+		v[1].x = emd_tri_vtx[emd_tri_idx[i].v1].x;
+		v[1].y = emd_tri_vtx[emd_tri_idx[i].v1].y;
+		v[1].z = emd_tri_vtx[emd_tri_idx[i].v1].z;
+
+		v[2].x = emd_tri_vtx[emd_tri_idx[i].v2].x;
+		v[2].y = emd_tri_vtx[emd_tri_idx[i].v2].y;
+		v[2].z = emd_tri_vtx[emd_tri_idx[i].v2].z;
+
+		render.triangle(&v[0], &v[1], &v[2]);
 	}
 }
 

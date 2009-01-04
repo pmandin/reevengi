@@ -28,7 +28,7 @@
 /*--- Types ---*/
 
 typedef struct {
-	float x,y,z,w;	/* Vertex coords */
+	Sint16 x,y,z;	/* Vertex coords */
 	int u,v;	/* Texture coords */
 } vertex_t;
 
@@ -49,9 +49,9 @@ struct render_s {
 	void (*pop_matrix)(void);
 
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
-	void (*line)(Sint16 *v1, Sint16 *v2);
-	void (*triangle)(Sint16 *v1, Sint16 *v2, Sint16 *v3);
-	void (*quad)(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
+	void (*line)(vertex_t *v1, vertex_t *v2);
+	void (*triangle)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);

@@ -52,9 +52,9 @@ static void push_matrix(void);
 static void pop_matrix(void);
 
 static void set_color(Uint32 color);
-static void line(Sint16 *v1, Sint16 *v2);
-static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3);
-static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4);
+static void line(vertex_t *v1, vertex_t *v2);
+static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 static void render_opengl_shutdown(render_t *render);
 
@@ -159,41 +159,41 @@ static void set_color(Uint32 color)
 		color & 0xff, (color>>24) & 0xff);
 }
 
-static void line(Sint16 *v1, Sint16 *v2)
+static void line(vertex_t *v1, vertex_t *v2)
 {
 	gl.Begin(GL_LINES);
-	gl.Vertex3sv(v1);
-	gl.Vertex3sv(v2);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
 	gl.End();
 }
 
-static void triangle(Sint16 *v1, Sint16 *v2, Sint16 *v3)
+static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_TRIANGLES);
-	gl.Vertex3sv(v1);
-	gl.Vertex3sv(v2);
-	gl.Vertex3sv(v3);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
+	gl.Vertex3s(v3->x, v3->y, v3->z);
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	gl.Disable(GL_CULL_FACE);
 }
 
-static void quad(Sint16 *v1, Sint16 *v2, Sint16 *v3, Sint16 *v4)
+static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_QUADS);
-	gl.Vertex3sv(v1);
-	gl.Vertex3sv(v2);
-	gl.Vertex3sv(v3);
-	gl.Vertex3sv(v4);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
+	gl.Vertex3s(v3->x, v3->y, v3->z);
+	gl.Vertex3s(v4->x, v4->y, v4->z);
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);

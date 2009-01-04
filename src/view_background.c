@@ -391,22 +391,23 @@ void view_background_draw(void)
 
 static void drawOrigin(void)
 {
-	Sint16 v1[3],v2[3];
+	vertex_t v[2];
 
 	render.push_matrix();
 
-	v1[0] = v1[1] = v1[2] = 0;
-	v2[0] = 3000; v2[1] = v2[2] = 0;
+	v[0].x = v[0].y = v[0].z = 0;
+	v[1].x = 3000; v[1].y = v[1].z = 0;
+
 	render.set_color(0x00ff0000);
-	render.line(v1,v2);
+	render.line(&v[0], &v[1]);
 
-	v2[1] = 3000; v2[0] = v2[2] = 0;
+	v[1].y = 3000; v[1].x = v[1].z = 0;
 	render.set_color(0x0000ff00);
-	render.line(v1,v2);
+	render.line(&v[0], &v[1]);
 
-	v2[2] = 3000; v2[0] = v2[1] = 0;
+	v[1].z = 3000; v[1].x = v[1].y = 0;
 	render.set_color(0x000000ff);
-	render.line(v1,v2);
+	render.line(&v[0], &v[1]);
 
 	render.pop_matrix();
 }
@@ -414,37 +415,41 @@ static void drawOrigin(void)
 static void drawGrid(void)
 {
 	int i;
-	Sint16 v1[3],v2[3];
+	vertex_t v[2];
 
 	render.set_color(0x00ffffff);
 
 	render.push_matrix();
 	render.scale(50.0f, 50.0f, 50.0f);
 	for (i=-400; i<=400; i+=100) {
-		v1[0] = -400;
-		v1[1] = 200;
-		v1[2] = i;
-		v2[0] = 400;
-		v2[1] = 200;
-		v2[2] = i;
-		render.line(v1,v2);
+		v[0].x = -400;
+		v[0].y = 200;
+		v[0].z = i;
 
-		v1[0] = i;
-		v1[1] = 200;
-		v1[2] = -400;
-		v2[0] = i;
-		v2[1] = 200;
-		v2[2] = 400;
-		render.line(v1,v2);
+		v[1].x = 400;
+		v[1].y = 200;
+		v[1].z = i;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = i;
+		v[0].y = 200;
+		v[0].z = -400;
+
+		v[1].x = i;
+		v[1].y = 200;
+		v[1].z = 400;
+
+		render.line(&v[0], &v[1]);
 	}
 	render.pop_matrix();
 }
 
 static void drawCameraSwitches(void)
 {
-	int i, num_switches = 0;
+	int i, j, num_switches = 0;
 	short switchPos[8];
-	Sint16 v1[3],v2[3],v3[3],v4[3];
+	vertex_t v[4];
 
 	switch(game_state.version) {
 		case GAME_RE2_PC_DEMO_P:
@@ -462,23 +467,13 @@ static void drawCameraSwitches(void)
 			continue;
 		}
 
-		v1[0] = switchPos[0];
-		v1[1] = 2000;
-		v1[2] = switchPos[1];
+		for (j=0; j<4; j++) {
+			v[j].x = switchPos[j*2];
+			v[j].y = 2000;
+			v[j].z = switchPos[j*2+1];
+		}
 
-		v2[0] = switchPos[2];
-		v2[1] = 2000;
-		v2[2] = switchPos[3];
-		
-		v3[0] = switchPos[4];
-		v3[1] = 2000;
-		v3[2] = switchPos[5];
-
-		v4[0] = switchPos[6];
-		v4[1] = 2000;
-		v4[2] = switchPos[7];
-
-		render.quad(v1,v2,v3,v4);
+		render.quad(&v[0], &v[1], &v[2], &v[3]);
 	}
 	render.pop_matrix();
 }
