@@ -35,7 +35,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	tim_header_t *tim_header;
 	Uint16 *pal_header;
 	int num_colors, num_palettes, i,j, paletted, img_offset;
-	int w,h, wpot, tim_type;
+	int w,h, wpot,hpot, tim_type;
 	render_texture_t *tex;
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format;
@@ -95,9 +95,13 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	while (wpot<w) {
 		wpot <<= 1;
 	}	
+	hpot = 2;
+	while (hpot<h) {
+		hpot <<= 1;
+	}
 
 	/* Allocate memory */
-	tex = calloc(1, sizeof(render_texture_t) + wpot*h*bytes_per_pixel);
+	tex = calloc(1, sizeof(render_texture_t) + wpot*hpot*bytes_per_pixel);
 	if (!tex) {
 		fprintf(stderr, "Can not allocate memory for texture\n");
 		return NULL;
@@ -107,7 +111,8 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	tex->pitch = wpot*bytes_per_pixel;
 	tex->w = w;
 	tex->pitchw = wpot;
-	tex->h = tex->pitchh = h;
+	tex->h = h;
+	tex->pitchh = hpot;
 
 	/* Copy palettes to video format */
 	if (paletted) {
