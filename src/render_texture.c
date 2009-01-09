@@ -170,9 +170,16 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 			break;
 		case TIM_TYPE_16:
 			{
+				int bytesPerPixel = fmt->BytesPerPixel;
 				int r,g,b, color;
 				Uint16 *src_pixels = (Uint16 *) (&((Uint8 *) tim_ptr)[img_offset]);
-				switch(fmt->BytesPerPixel) {
+
+				/* With OpenGL, we can keep source in its proper format */
+				if (params.use_opengl) {
+					bytesPerPixel = 2;
+				}
+
+				switch(bytesPerPixel) {
 					case 2:
 						{
 							Uint16 *tex_pixels = (Uint16 *) (&((Uint8 *)tex)[sizeof(render_texture_t)]);
