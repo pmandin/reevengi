@@ -297,7 +297,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[2].u = emd_tri_tex[i].u2 + page;
 		v[2].v = emd_tri_tex[i].v2;
 
-		render.triangle(&v[0], &v[1], &v[2]);
+		render.set_texture(emd_tri_tex[i].clutid, this->texture);
+		render.triangle_tex(&v[0], &v[1], &v[2]);
 	}
 
 	/* Draw quads */
@@ -335,7 +336,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[3].u = emd_quad_tex[i].u3 + page;
 		v[3].v = emd_quad_tex[i].v3;
 
-		render.quad(&v[0], &v[1], &v[3], &v[2]);
+		render.set_texture(emd_quad_tex[i].clutid, this->texture);
+		render.quad_tex(&v[0], &v[1], &v[3], &v[2]);
 	}
 }
 
