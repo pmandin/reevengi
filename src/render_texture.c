@@ -106,7 +106,8 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	tex->paletted = paletted;
 	tex->pitch = wpot*bytes_per_pixel;
 	tex->w = w;
-	tex->h = h;
+	tex->pitchw = wpot;
+	tex->h = tex->pitchh = h;
 
 	/* Copy palettes to video format */
 	if (paletted) {

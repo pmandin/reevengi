@@ -28,7 +28,8 @@
 /*--- Types ---*/
 
 typedef struct {
-	int w, h;
+	int w, h;		/* Dimension of image zone */
+	int pitchw, pitchh;	/* Dimension of bouding zone */
 	int pitch;
 	int paletted;
 	Uint32 palettes[256][MAX_TEX_PALETTE];	/* N palettes max per texture */
