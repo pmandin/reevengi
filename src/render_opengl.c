@@ -37,6 +37,11 @@
 #include "render_background_opengl.h"
 #include "matrix.h"
 
+/*--- Variables ---*/
+
+static int tex_cur_pal = -1;
+static GLuint tex_obj = (GLuint) -1;
+
 /*--- Functions prototypes ---*/
 
 static void set_viewport(int x, int y, int w, int h);
@@ -95,6 +100,10 @@ void render_opengl_init(render_t *render)
 
 static void render_opengl_shutdown(render_t *render)
 {
+	/* Delete texture obj ? */
+	if (tex_obj != (GLuint) -1) {
+		gl.DeleteTextures(1, &tex_obj);
+	}
 }
 
 static void set_viewport(int x, int y, int w, int h)
@@ -212,7 +221,28 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
-	render.texture = render_tex;
+	int reupload_tex = 0;
+
+	if (num_pal!=tex_cur_pal) {
+		tex_cur_pal = num_pal;
+		reupload_tex = 1;
+	}
+	if (render_tex!=render.texture) {
+		render.texture = render_tex;
+		reupload_tex = 1;
+	}
+	if (tex_obj == (GLuint) -1) {
+		gl.GenTextures(1, &tex_obj);
+		reupload_tex = 1;
+	}
+
+	if (!reupload_tex) {
+		return;
+	}
+
+	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
+
+	/* TODO: upload texture */
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
