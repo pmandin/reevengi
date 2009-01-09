@@ -24,6 +24,7 @@
 #include <SDL.h>
 
 #include "video_surface.h"
+#include "render_texture.h"
 
 /*--- Types ---*/
 
@@ -49,14 +50,21 @@ struct render_s {
 	void (*pop_matrix)(void);
 
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
+	void (*set_texture)(int num_pal, render_texture_t *render_tex);
+
 	void (*line)(vertex_t *v1, vertex_t *v2);
 	void (*triangle)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
+
+	void (*triangle_tex)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+	void (*quad_tex)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);
 
 	void (*shutdown)(render_t *this);
+
+	render_texture_t *texture;
 };
 
 void render_soft_init(render_t *render);

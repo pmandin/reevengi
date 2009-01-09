@@ -59,9 +59,14 @@ static void pop_matrix(void);
 static void recalc_frustum_mtx(void);
 
 static void set_color(Uint32 color);
+static void set_texture(int num_pal, render_texture_t *render_tex);
+
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
+
+static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 /*--- Functions ---*/
 
@@ -78,14 +83,21 @@ void render_soft_init(render_t *render)
 	render->pop_matrix = pop_matrix;
 
 	render->set_color = set_color;
+	render->set_texture = set_texture;
+
 	render->line = line;
 	render->triangle = triangle;
 	render->quad = quad;
+
+	render->triangle_tex = triangle_tex;
+	render->quad_tex = quad_tex;
 
 	render->initBackground = render_background_init;
 	render->drawBackground = render_background;
 
 	render->shutdown = render_soft_shutdown;
+
+	render->texture = NULL;
 
 	num_modelview_mtx = 0;
 	mtx_setIdentity(modelview_mtx[0]);
@@ -329,3 +341,25 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	Generate polygon if triangle clipped
 	Draw triangles, given parts of poly
 */
+
+static void set_texture(int num_pal, render_texture_t *render_tex)
+{
+	render.texture = render_tex;
+}
+
+static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
+{
+	if (!render.texture) {
+		return;
+	}
+}
+
+static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
+{
+	if (!render.texture) {
+		return;
+	}
+
+	triangle_tex(v1,v2,v3);
+	triangle_tex(v3,v4,v1);
+}

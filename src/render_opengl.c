@@ -52,9 +52,14 @@ static void push_matrix(void);
 static void pop_matrix(void);
 
 static void set_color(Uint32 color);
+static void set_texture(int num_pal, render_texture_t *render_tex);
+
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
+
+static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 static void render_opengl_shutdown(render_t *render);
 
@@ -73,9 +78,14 @@ void render_opengl_init(render_t *render)
 	render->pop_matrix = pop_matrix;
 
 	render->set_color = set_color;
+	render->set_texture = set_texture;
+
 	render->line = line;
 	render->triangle = triangle;
 	render->quad = quad;
+
+	render->triangle_tex = triangle_tex;
+	render->quad_tex = quad_tex;
 
 	render->initBackground = render_background_init_opengl;
 	render->drawBackground = render_background_opengl;
@@ -197,6 +207,63 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	gl.Disable(GL_CULL_FACE);
+}
+
+static void set_texture(int num_pal, render_texture_t *render_tex)
+{
+	render.texture = render_tex;
+}
+
+static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
+{
+	render_texture_t *texture = render.texture;
+
+	if (!texture) {
+		return;
+	}
+
+	gl.Enable(GL_CULL_FACE);
+	gl.CullFace(GL_FRONT);
+	gl.Enable(GL_TEXTURE_2D);
+
+	gl.Begin(GL_TRIANGLES);
+	gl.TexCoord2f(v1->u / texture->pitchw, v1->v / texture->pitchh);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.TexCoord2f(v2->u / texture->pitchw, v2->v / texture->pitchh);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
+	gl.TexCoord2f(v3->u / texture->pitchw, v3->v / texture->pitchh);
+	gl.Vertex3s(v3->x, v3->y, v3->z);
+	gl.End();
+
+	gl.Disable(GL_TEXTURE_2D);
+	gl.Disable(GL_CULL_FACE);
+}
+
+static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
+{
+	render_texture_t *texture = render.texture;
+
+	if (!texture) {
+		return;
+	}
+
+	gl.Enable(GL_CULL_FACE);
+	gl.CullFace(GL_FRONT);
+	gl.Enable(GL_TEXTURE_2D);
+
+	gl.Begin(GL_QUADS);
+	gl.TexCoord2f(v1->u / texture->pitchw, v1->v / texture->pitchh);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.TexCoord2f(v2->u / texture->pitchw, v2->v / texture->pitchh);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
+	gl.TexCoord2f(v3->u / texture->pitchw, v3->v / texture->pitchh);
+	gl.Vertex3s(v3->x, v3->y, v3->z);
+	gl.TexCoord2f(v4->u / texture->pitchw, v4->v / texture->pitchh);
+	gl.Vertex3s(v4->x, v4->y, v4->z);
+	gl.End();
+
+	gl.Disable(GL_TEXTURE_2D);
 	gl.Disable(GL_CULL_FACE);
 }
 
