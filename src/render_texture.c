@@ -200,7 +200,14 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 									b = (color>>10) & 31;
 									b = (b<<3)|(b>>2);
 									
-									*tex_line++ = SDL_MapRGB(fmt, r,g,b);
+									if (params.use_opengl) {
+										Uint16 c = (r<<8) & (31<<11);
+										c |= (g<<3) & (63<<5);
+										c |= (b>>3) & 31;
+										*tex_line++ = c;
+									} else {
+										*tex_line++ = SDL_MapRGB(fmt, r,g,b);
+									}
 								}
 								tex_pixels += tex->pitch>>1;
 							}
