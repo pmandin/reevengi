@@ -309,6 +309,11 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.CullFace(GL_FRONT);
 	gl.Enable(GL_TEXTURE_2D);
 
+	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
 	gl.Begin(GL_TRIANGLES);
 	gl.TexCoord2f(v1->u / texture->pitchw, v1->v / texture->pitchh);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
@@ -333,6 +338,11 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 	gl.Enable(GL_TEXTURE_2D);
+
+	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	gl.Begin(GL_QUADS);
 	gl.TexCoord2f(v1->u / texture->pitchw, v1->v / texture->pitchh);
