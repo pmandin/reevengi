@@ -205,7 +205,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 										c |= (g<<3) & (63<<5);
 										c |= (b>>3) & 31;
 										*tex_line++ = c;
-									} else {
+									} else {
 										*tex_line++ = SDL_MapRGB(fmt, r,g,b);
 									}
 								}
