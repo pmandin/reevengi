@@ -242,7 +242,24 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
 
-	/* TODO: upload texture */
+	/* Upload new palette */
+	if (render_tex->paletted) {
+		Uint8 mapP[256*3];
+		Uint8 *pMap = mapP;
+
+		internalFormat = GL_COLOR_INDEX8_EXT;
+		for (i=0; i<256; i++) {
+			Uint32 color = render_tex->palettes[i][num_pal];
+
+			*pMap++ = (color>>16) & 0xff;
+			*pMap++ = (color>>8) & 0xff;
+			*pMap++ = color & 0xff;
+		}
+		gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGB, 256, 
+			GL_RGB, GL_UNSIGNED_BYTE, mapP);
+	}
+
+	/* Upload texture */
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)

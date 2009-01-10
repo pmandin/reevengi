@@ -131,10 +131,14 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 				b = (color>>10) & 31;
 				b = (b<<3)|(b>>2);
 
-				if ((fmt->BytesPerPixel==1) && params.dithering) {
-					tex->palettes[j][i] = dither_nearest_index(r,g,b);
+				if (params.use_opengl) {
+					tex->palettes[j][i] = (r<<16)|(g<<8)|b;
 				} else {
-					tex->palettes[j][i] = SDL_MapRGB(fmt, r,g,b);
+					if ((fmt->BytesPerPixel==1) && params.dithering) {
+						tex->palettes[j][i] = dither_nearest_index(r,g,b);
+					} else {
+						tex->palettes[j][i] = SDL_MapRGB(fmt, r,g,b);
+					}
 				}
 			}
 		}
