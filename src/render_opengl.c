@@ -221,7 +221,9 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
-	int reupload_tex = 0;
+	int reupload_tex = 0, i;
+	GLenum internalFormat = GL_RGBA;
+	GLenum pixelType = GL_UNSIGNED_BYTE;
 
 	if (num_pal!=tex_cur_pal) {
 		tex_cur_pal = num_pal;
@@ -244,22 +246,55 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 
 	/* Upload new palette */
 	if (render_tex->paletted) {
-		Uint8 mapP[256*3];
-		Uint8 *pMap = mapP;
+#ifdef GL_EXT_paletted_texture
+		/* FIXME: check GL_EXT_paletted_texture presence */
+		if (1) {
+			Uint8 mapP[256*3];
+			Uint8 *pMap = mapP;
 
-		internalFormat = GL_COLOR_INDEX8_EXT;
-		for (i=0; i<256; i++) {
-			Uint32 color = render_tex->palettes[i][num_pal];
+			internalFormat = GL_COLOR_INDEX8_EXT;
+			for (i=0; i<256; i++) {
+				Uint32 color = render_tex->palettes[i][num_pal];
 
-			*pMap++ = (color>>16) & 0xff;
-			*pMap++ = (color>>8) & 0xff;
-			*pMap++ = color & 0xff;
+				*pMap++ = (color>>16) & 0xff;
+				*pMap++ = (color>>8) & 0xff;
+				*pMap++ = color & 0xff;
+			}
+			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGB, 256, 
+				GL_RGB, GL_UNSIGNED_BYTE, mapP);
+		} else
+#endif
+		{
+			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
+
+			memset(mapR, 0, sizeof(mapR));
+			memset(mapG, 0, sizeof(mapG));
+			memset(mapB, 0, sizeof(mapB));
+			memset(mapA, 0, sizeof(mapA));
+			for (i=0; i<256; i++) {
+				Uint32 color = render_tex->palettes[i][num_pal];
+
+				mapR[i] = ((color>>16) & 0xff) / 255.0;
+				mapG[i] = ((color>>8) & 0xff) / 255.0;
+				mapB[i] = (color & 0xff) / 255.0;
+				mapA[i] = 1.0;
+			}
+			gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_G, 256, mapG);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
 		}
-		gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGB, 256, 
-			GL_RGB, GL_UNSIGNED_BYTE, mapP);
+	} else {
+		pixelType = GL_UNSIGNED_SHORT_5_6_5;
 	}
 
-	/* Upload texture */
+	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
+		render_tex->pitchw, render_tex->pitchh, 0,
+		GL_RGBA, pixelType, render_tex->pixels
+	);
+
+	/*gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);*/
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
