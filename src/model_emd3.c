@@ -62,10 +62,10 @@ typedef struct {
 
 typedef struct {
 	unsigned char tu0,tv0;
-	unsigned char dummy0, dummy1;
+	unsigned char page, dummy1;
 
 	unsigned char tu1,tv1;
-	unsigned char dummy2, v0;
+	unsigned char clutid, v0;
 
 	unsigned char tu2,tv2;
 	unsigned char v1,v2;
@@ -73,10 +73,10 @@ typedef struct {
 
 typedef struct {
 	unsigned char tu0,tv0;
-	unsigned char dummy0, dummy1;
+	unsigned char page, dummy1;
 
 	unsigned char tu1,tv1;
-	unsigned char dummy2, dummy3;
+	unsigned char clutid, dummy3;
 
 	unsigned char tu2,tv2;
 	unsigned char v0,v1;
@@ -144,6 +144,8 @@ model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_convert_endianness(model);
 #endif
+
+	model->texture = render_texture_load_from_tim(model->tim_file);
 
 	model->shutdown = model_emd3_shutdown;
 	model->draw = model_emd3_draw;
@@ -262,25 +264,29 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->tri_offset]);
 
 	for (i=0; i<emd_mesh_object->tri_count; i++) {
+		int page = emd_tri_idx[i].page;
+		/*printf("d: 0x%04x 0x%04x 0x%04x\n", emd_tri_idx[i].dummy0, emd_tri_idx[i].dummy1, emd_tri_idx[i].dummy2);*/
+
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
 		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
 		v[0].z = emd_tri_vtx[emd_tri_idx[i].v0].z;
-		v[0].u = emd_tri_idx[i].tu0;
+		v[0].u = emd_tri_idx[i].tu0 + page;
 		v[0].v = emd_tri_idx[i].tv0;
 
 		v[1].x = emd_tri_vtx[emd_tri_idx[i].v1].x;
 		v[1].y = emd_tri_vtx[emd_tri_idx[i].v1].y;
 		v[1].z = emd_tri_vtx[emd_tri_idx[i].v1].z;
-		v[1].u = emd_tri_idx[i].tu1;
+		v[1].u = emd_tri_idx[i].tu1 + page;
 		v[1].v = emd_tri_idx[i].tv1;
 
 		v[2].x = emd_tri_vtx[emd_tri_idx[i].v2].x;
 		v[2].y = emd_tri_vtx[emd_tri_idx[i].v2].y;
 		v[2].z = emd_tri_vtx[emd_tri_idx[i].v2].z;
-		v[2].u = emd_tri_idx[i].tu2;
+		v[2].u = emd_tri_idx[i].tu2 + page;
 		v[2].v = emd_tri_idx[i].tv2;
 
-		render.triangle(&v[0], &v[1], &v[2]);
+		render.set_texture(emd_tri_idx[i].clutid & 3, this->texture);
+		render.triangle_tex(&v[0], &v[1], &v[2]);
 	}
 
 	/* Draw quads */
@@ -290,22 +296,24 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quad_offset]);
 
 	for (i=0; i<emd_mesh_object->quad_count; i++) {
+		int page = emd_quad_idx[i].page;
+
 		v[0].x = emd_quad_vtx[emd_quad_idx[i].v0].x;
 		v[0].y = emd_quad_vtx[emd_quad_idx[i].v0].y;
 		v[0].z = emd_quad_vtx[emd_quad_idx[i].v0].z;
-		v[0].u = emd_quad_idx[i].tu0;
+		v[0].u = emd_quad_idx[i].tu0 + page;
 		v[0].v = emd_quad_idx[i].tv0;
 
 		v[1].x = emd_quad_vtx[emd_quad_idx[i].v1].x;
 		v[1].y = emd_quad_vtx[emd_quad_idx[i].v1].y;
 		v[1].z = emd_quad_vtx[emd_quad_idx[i].v1].z;
-		v[1].u = emd_quad_idx[i].tu1;
+		v[1].u = emd_quad_idx[i].tu1 + page;
 		v[1].v = emd_quad_idx[i].tv1;
 
 		v[2].x = emd_quad_vtx[emd_quad_idx[i].v2].x;
 		v[2].y = emd_quad_vtx[emd_quad_idx[i].v2].y;
 		v[2].z = emd_quad_vtx[emd_quad_idx[i].v2].z;
-		v[2].u = emd_quad_idx[i].tu2;
+		v[2].u = emd_quad_idx[i].tu2 + page;
 		v[2].v = emd_quad_idx[i].tv2;
 
 		v[3].x = emd_quad_vtx[emd_quad_idx[i].v3].x;
@@ -314,7 +322,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[3].u = emd_quad_idx[i].tu3;
 		v[3].v = emd_quad_idx[i].tv3;
 
-		render.quad(&v[0], &v[1], &v[3], &v[2]);
+		render.set_texture(emd_quad_idx[i].clutid & 3, this->texture);
+		render.quad_tex(&v[0], &v[1], &v[3], &v[2]);
 	}
 }
 

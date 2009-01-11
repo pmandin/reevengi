@@ -64,9 +64,9 @@ typedef struct {
 	Uint32 id;
 
 	unsigned char tu0,tv0;
-	Uint16 clutid;
-	unsigned char tu1,tv1;
 	Uint16 page;
+	unsigned char tu1,tv1;
+	Uint16 clutid;
 	unsigned char tu2,tv2;
 	Uint16 dummy;
 
@@ -137,6 +137,8 @@ model_t *model_emd_load(void *emd, Uint32 emd_length)
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_convert_endianness(model);
 #endif
+
+	model->texture = render_texture_load_from_tim(model->tim_file);
 
 	model->shutdown = model_emd_shutdown;
 	model->draw = model_emd_draw;
@@ -245,7 +247,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.mesh_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
-		int page = emd_tri_idx[i].page << 6;
+		int page = (emd_tri_idx[i].page<<1) & 0xff;
+		/*printf("page: 0x%04x, palette: 0x%04x\n", emd_tri_idx[i].page, emd_tri_idx[i].clutid);*/
 
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
 		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
@@ -265,7 +268,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[2].u = emd_tri_idx[i].tu2 + page;
 		v[2].v = emd_tri_idx[i].tv2;
 
-		render.triangle(&v[0], &v[1], &v[2]);
+		render.set_texture(emd_tri_idx[i].clutid & 3, this->texture);
+		render.triangle_tex(&v[0], &v[1], &v[2]);
 	}
 }
 
