@@ -264,7 +264,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->tri_offset]);
 
 	for (i=0; i<emd_mesh_object->tri_count; i++) {
-		int page = emd_tri_idx[i].page;
+		int page = (emd_tri_idx[i].page & 0xff)<<1;
 		/*printf("d: 0x%04x 0x%04x 0x%04x\n", emd_tri_idx[i].dummy0, emd_tri_idx[i].dummy1, emd_tri_idx[i].dummy2);*/
 
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
@@ -296,7 +296,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->quad_offset]);
 
 	for (i=0; i<emd_mesh_object->quad_count; i++) {
-		int page = emd_quad_idx[i].page;
+		int page = (emd_quad_idx[i].page & 0xff)<<1;
+		/*printf("d: 0x%02x 0x%02x 0x%02x 0x%02x\n", emd_quad_idx[i].page, emd_quad_idx[i].dummy1, emd_quad_idx[i].clutid, emd_quad_idx[i].dummy3);*/
 
 		v[0].x = emd_quad_vtx[emd_quad_idx[i].v0].x;
 		v[0].y = emd_quad_vtx[emd_quad_idx[i].v0].y;
@@ -319,7 +320,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[3].x = emd_quad_vtx[emd_quad_idx[i].v3].x;
 		v[3].y = emd_quad_vtx[emd_quad_idx[i].v3].y;
 		v[3].z = emd_quad_vtx[emd_quad_idx[i].v3].z;
-		v[3].u = emd_quad_idx[i].tu3;
+		v[3].u = emd_quad_idx[i].tu3 + page;
 		v[3].v = emd_quad_idx[i].tv3;
 
 		render.set_texture(emd_quad_idx[i].clutid & 3, this->texture);
