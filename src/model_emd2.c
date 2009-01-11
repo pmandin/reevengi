@@ -277,7 +277,8 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		(&((char *) emd_file)[mesh_offset+emd_mesh_object->triangles.tex_offset]);
 
 	for (i=0; i<emd_mesh_object->triangles.mesh_count; i++) {
-		int page = emd_tri_tex[i].page << 6;
+		int page = emd_tri_tex[i].page & 0xff;
+		/*printf("page: %d, palette: %d\n", emd_tri_tex[i].page & 0xff, emd_tri_tex[i].clutid & 0x1f);*/
 
 		v[0].x = emd_tri_vtx[emd_tri_idx[i].v0].x;
 		v[0].y = emd_tri_vtx[emd_tri_idx[i].v0].y;
@@ -297,8 +298,10 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		v[2].u = emd_tri_tex[i].u2 + page;
 		v[2].v = emd_tri_tex[i].v2;
 
-		render.set_texture(emd_tri_tex[i].clutid, this->texture);
+		render.set_texture(emd_tri_tex[i].clutid & 0x1f, this->texture);
 		render.triangle_tex(&v[0], &v[1], &v[2]);
+
+		/*return;*/
 	}
 
 	/* Draw quads */
