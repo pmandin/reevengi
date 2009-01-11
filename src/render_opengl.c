@@ -327,6 +327,10 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		return;
 	}
 
+	gl.MatrixMode(GL_TEXTURE);
+	gl.LoadIdentity();
+	gl.MatrixMode(GL_MODELVIEW);
+
 	gl.Enable(GL_DEPTH_TEST);
 
 	gl.Enable(GL_CULL_FACE);
@@ -359,6 +363,10 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	if (!texture) {
 		return;
 	}
+
+	gl.MatrixMode(GL_TEXTURE);
+	gl.LoadIdentity();
+	gl.MatrixMode(GL_MODELVIEW);
 
 	gl.Enable(GL_DEPTH_TEST);
 
