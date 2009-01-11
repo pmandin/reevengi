@@ -76,10 +76,10 @@ void render_background_opengl(video_t *this)
 
  	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	gl.Enable(GL_DITHER);
+	/*gl.Enable(GL_DITHER);*/
 
-	gl.Enable(GL_BLEND);
-	gl.BlendFunc(GL_ONE, GL_ZERO);
+	/*gl.Enable(GL_BLEND);
+	gl.BlendFunc(GL_ONE, GL_ZERO);*/
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
@@ -108,8 +108,8 @@ void render_background_opengl(video_t *this)
 		gl.Vertex2f(0.0f, 1.0f);
 	gl.End();
 
-	gl.Disable(GL_DITHER);
-	gl.Disable(GL_BLEND);
+	/*gl.Disable(GL_DITHER);
+	gl.Disable(GL_BLEND);*/
 	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
 }
 
