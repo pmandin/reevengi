@@ -334,18 +334,17 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
- 	/*gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);*/
+
+	/*printf("%d,%d (%d %.3f) %d,%d %d,%d\n", v1->u, v1->v, texture->pitchw,
+		(float) v1->u / texture->pitchw,
+		v2->u, v2->v, v3->u, v3->v);*/
 
 	gl.Begin(GL_TRIANGLES);
-	gl.TexCoord2f((float) v1->u / (float) texture->pitchw, (float) v1->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
-	gl.TexCoord2f((float) v2->u / (float) texture->pitchw, (float) v2->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v2->u / texture->pitchw, (float) v2->v / texture->pitchh);
 	gl.Vertex3s(v2->x, v2->y, v2->z);
-	gl.TexCoord2f((float) v3->u / (float) texture->pitchw, (float) v3->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v3->u / texture->pitchw, (float) v3->v / texture->pitchh);
 	gl.Vertex3s(v3->x, v3->y, v3->z);
 	gl.End();
 
@@ -368,20 +367,15 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
- 	/*gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);*/
 
 	gl.Begin(GL_QUADS);
-	gl.TexCoord2f((float) v1->u / (float) texture->pitchw, (float) v1->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
-	gl.TexCoord2f((float) v2->u / (float) texture->pitchw, (float) v2->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v2->u / texture->pitchw, (float) v2->v / texture->pitchh);
 	gl.Vertex3s(v2->x, v2->y, v2->z);
-	gl.TexCoord2f((float) v3->u / (float) texture->pitchw, (float) v3->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v3->u / texture->pitchw, (float) v3->v / texture->pitchh);
 	gl.Vertex3s(v3->x, v3->y, v3->z);
-	gl.TexCoord2f((float) v4->u / (float) texture->pitchw, (float) v4->v / (float) texture->pitchh);
+	gl.TexCoord2f((float) v4->u / texture->pitchw, (float) v4->v / texture->pitchh);
 	gl.Vertex3s(v4->x, v4->y, v4->z);
 	gl.End();
 
