@@ -180,6 +180,8 @@ static void set_color(Uint32 color)
 
 static void line(vertex_t *v1, vertex_t *v2)
 {
+	gl.Disable(GL_DEPTH_TEST);
+
 	gl.Begin(GL_LINES);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
 	gl.Vertex3s(v2->x, v2->y, v2->z);
@@ -188,6 +190,8 @@ static void line(vertex_t *v1, vertex_t *v2)
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
+	gl.Disable(GL_DEPTH_TEST);
+
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
@@ -204,6 +208,8 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
+	gl.Disable(GL_DEPTH_TEST);
+
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
@@ -224,6 +230,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	int reupload_tex = 0, i;
 	GLenum internalFormat = GL_RGBA;
 	GLenum pixelType = GL_UNSIGNED_BYTE;
+	GLenum surfaceFormat = GL_RGBA;
 
 	if (num_pal!=tex_cur_pal) {
 		tex_cur_pal = num_pal;
@@ -242,10 +249,21 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 		return;
 	}
 
+	/*printf("[error: %d\n", gl.GetError());*/
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
+
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	/*printf("error: %d\n", gl.GetError());*/
 
 	/* Upload new palette */
 	if (render_tex->paletted) {
+		surfaceFormat = GL_COLOR_INDEX;
+
 #ifdef GL_EXT_paletted_texture
 		/* FIXME: check GL_EXT_paletted_texture presence */
 		if (1) {
@@ -285,16 +303,20 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
 			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
 		}
+		/*printf("texture paletted\n");*/
 	} else {
 		pixelType = GL_UNSIGNED_SHORT_5_6_5;
+		/*printf("texture rgb565\n");*/
 	}
 
+	/*printf("error: %d (0x%08x)\n", gl.GetError(), render_tex->pixels);*/
 	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
 		render_tex->pitchw, render_tex->pitchh, 0,
-		GL_RGBA, pixelType, render_tex->pixels
+		surfaceFormat, pixelType, render_tex->pixels
 	);
 
 	/*gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);*/
+	/*printf("error: %d]\n", gl.GetError());*/
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -305,21 +327,25 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		return;
 	}
 
+	gl.Enable(GL_DEPTH_TEST);
+
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+ 	/*gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);*/
 
 	gl.Begin(GL_TRIANGLES);
-	gl.TexCoord2f(v1->u / texture->pitchw, v1->v / texture->pitchh);
+	gl.TexCoord2f((float) v1->u / (float) texture->pitchw, (float) v1->v / (float) texture->pitchh);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
-	gl.TexCoord2f(v2->u / texture->pitchw, v2->v / texture->pitchh);
+	gl.TexCoord2f((float) v2->u / (float) texture->pitchw, (float) v2->v / (float) texture->pitchh);
 	gl.Vertex3s(v2->x, v2->y, v2->z);
-	gl.TexCoord2f(v3->u / texture->pitchw, v3->v / texture->pitchh);
+	gl.TexCoord2f((float) v3->u / (float) texture->pitchw, (float) v3->v / (float) texture->pitchh);
 	gl.Vertex3s(v3->x, v3->y, v3->z);
 	gl.End();
 
@@ -335,23 +361,27 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 		return;
 	}
 
+	gl.Enable(GL_DEPTH_TEST);
+
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+ 	/*gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);*/
 
 	gl.Begin(GL_QUADS);
-	gl.TexCoord2f(v1->u / texture->pitchw, v1->v / texture->pitchh);
+	gl.TexCoord2f((float) v1->u / (float) texture->pitchw, (float) v1->v / (float) texture->pitchh);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
-	gl.TexCoord2f(v2->u / texture->pitchw, v2->v / texture->pitchh);
+	gl.TexCoord2f((float) v2->u / (float) texture->pitchw, (float) v2->v / (float) texture->pitchh);
 	gl.Vertex3s(v2->x, v2->y, v2->z);
-	gl.TexCoord2f(v3->u / texture->pitchw, v3->v / texture->pitchh);
+	gl.TexCoord2f((float) v3->u / (float) texture->pitchw, (float) v3->v / (float) texture->pitchh);
 	gl.Vertex3s(v3->x, v3->y, v3->z);
-	gl.TexCoord2f(v4->u / texture->pitchw, v4->v / texture->pitchh);
+	gl.TexCoord2f((float) v4->u / (float) texture->pitchw, (float) v4->v / (float) texture->pitchh);
 	gl.Vertex3s(v4->x, v4->y, v4->z);
 	gl.End();
 

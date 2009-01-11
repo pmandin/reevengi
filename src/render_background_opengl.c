@@ -81,6 +81,8 @@ void render_background_opengl(video_t *this)
 	/*gl.Enable(GL_BLEND);
 	gl.BlendFunc(GL_ONE, GL_ZERO);*/
 
+	gl.Disable(GL_DEPTH_TEST);
+
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
 	gl.Ortho(0.0f, this->width, this->height, 0.0f, -1.0f, 1.0f);

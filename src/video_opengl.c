@@ -138,6 +138,8 @@ static void swapBuffers(video_t *this)
 	this->countFps(this);
 
 	SDL_GL_SwapBuffers();
+
+	gl.Clear(GL_DEPTH_BUFFER_BIT);
 }
 
 static void screenShot(video_t *this)
