@@ -28,3 +28,6 @@ http://local.wasp.uwa.edu.au/~pbourke/geometry/planeline/
 - View frustum culling
 Antonio Ramires Fernandes
 http://www.lighthouse3d.com/opengl/viewfrustum/
+
+- Game state independent of frame rate
+http://gafferongames.wordpress.com/game-physics/fix-your-timestep/
