@@ -57,6 +57,7 @@ static void push_matrix(void);
 static void pop_matrix(void);
 
 static void set_color(Uint32 color);
+static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 
 static void line(vertex_t *v1, vertex_t *v2);
@@ -83,19 +84,15 @@ void render_opengl_init(render_t *render)
 	render->pop_matrix = pop_matrix;
 
 	render->set_color = set_color;
+	render->set_render = set_render;
 	render->set_texture = set_texture;
-
-	render->line = line;
-	render->triangle = triangle;
-	render->quad = quad;
-
-	render->triangle_tex = triangle_tex;
-	render->quad_tex = quad_tex;
 
 	render->initBackground = render_background_init_opengl;
 	render->drawBackground = render_background_opengl;
 
 	render->shutdown = render_opengl_shutdown;
+
+	set_render(render, RENDER_WIREFRAME);
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -178,6 +175,26 @@ static void set_color(Uint32 color)
 		color & 0xff, (color>>24) & 0xff);
 }
 
+static void set_render(render_t *this, int num_render)
+{
+	switch(num_render) {
+		case RENDER_WIREFRAME:
+			this->line = line;
+			this->triangle = triangle;
+			this->quad = quad;
+			break;
+		case RENDER_TEXTURED:
+			this->line = line;
+			this->triangle = triangle_tex;
+			this->quad = quad_tex;
+			break;
+	}
+}
+
+/*
+	Wireframe triangles/quads
+*/
+
 static void line(vertex_t *v1, vertex_t *v2)
 {
 	gl.Disable(GL_DEPTH_TEST);
@@ -224,6 +241,10 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	gl.Disable(GL_CULL_FACE);
 }
+
+/*
+	Textured triangles/quads
+*/
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {

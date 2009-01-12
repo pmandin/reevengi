@@ -26,6 +26,11 @@
 #include "video_surface.h"
 #include "render_texture.h"
 
+/*--- Defines ---*/
+
+#define RENDER_WIREFRAME 0
+#define RENDER_TEXTURED 1
+
 /*--- Types ---*/
 
 typedef struct {
@@ -50,14 +55,12 @@ struct render_s {
 	void (*pop_matrix)(void);
 
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
+	void (*set_render)(render_t *this, int num_render);
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 
 	void (*line)(vertex_t *v1, vertex_t *v2);
 	void (*triangle)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
-
-	void (*triangle_tex)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
-	void (*quad_tex)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);

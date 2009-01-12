@@ -67,6 +67,8 @@ Use at your own risks.
 
 ESC		quit
 F1		screenshot
+F2		wireframe rendering for model
+F3		textured rendering for model
 Alt+Enter	toggle between fullscreen and windowed mode.
 
 A		decrement gamma

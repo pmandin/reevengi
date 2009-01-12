@@ -39,6 +39,9 @@
 
 /*--- Defines ---*/
 
+#define KEY_RENDER_WIREFRAME	SDLK_F2
+#define KEY_RENDER_TEXTURED	SDLK_F3
+
 #define KEY_STAGE_DOWN		SDLK_z
 #define KEY_STAGE_UP		SDLK_s
 #define KEY_STAGE_RESET		SDLK_x
@@ -229,6 +232,12 @@ void view_background_input(SDL_Event *event)
 				player_turnright = 1;
 				tick_turnright = SDL_GetTicks();
 				playerstart_a = player_a;
+				break;
+			case KEY_RENDER_WIREFRAME:
+				render.set_render(&render, RENDER_WIREFRAME);
+				break;
+			case KEY_RENDER_TEXTURED:
+				render.set_render(&render, RENDER_TEXTURED);
 				break;
 			default:
 				break;

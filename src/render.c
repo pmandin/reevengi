@@ -59,6 +59,7 @@ static void pop_matrix(void);
 static void recalc_frustum_mtx(void);
 
 static void set_color(Uint32 color);
+static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 
 static void line(vertex_t *v1, vertex_t *v2);
@@ -83,14 +84,8 @@ void render_soft_init(render_t *render)
 	render->pop_matrix = pop_matrix;
 
 	render->set_color = set_color;
+	render->set_render = set_render;
 	render->set_texture = set_texture;
-
-	render->line = line;
-	render->triangle = triangle;
-	render->quad = quad;
-
-	render->triangle_tex = triangle_tex;
-	render->quad_tex = quad_tex;
 
 	render->initBackground = render_background_init;
 	render->drawBackground = render_background;
@@ -98,6 +93,8 @@ void render_soft_init(render_t *render)
 	render->shutdown = render_soft_shutdown;
 
 	render->texture = NULL;
+
+	set_render(render, RENDER_WIREFRAME);
 
 	num_modelview_mtx = 0;
 	mtx_setIdentity(modelview_mtx[0]);
@@ -230,6 +227,26 @@ static void set_color(Uint32 color)
 	draw_setColor(color);
 }
 
+static void set_render(render_t *this, int num_render)
+{
+	switch(num_render) {
+		case RENDER_WIREFRAME:
+			this->line = line;
+			this->triangle = triangle;
+			this->quad = quad;
+			break;
+		case RENDER_TEXTURED:
+			this->line = line;
+			this->triangle = triangle_tex;
+			this->quad = quad_tex;
+			break;
+	}
+}
+
+/*
+	Wireframe triangles/quads
+*/
+
 static void line(vertex_t *v1, vertex_t *v2)
 {
 	float segment[4][4], result[4][4];
@@ -336,8 +353,10 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 }
 
 /*
-	Draw textured triangle / quad (2 triangles)
+	Textured triangles/quads
+*/
 
+/*
 	Generate polygon if triangle clipped
 	Draw triangles, given parts of poly
 */
