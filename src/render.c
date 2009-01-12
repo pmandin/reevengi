@@ -367,19 +367,38 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-	if (!render.texture) {
+	render_texture_t *texture = render.texture;
+	Uint32 color;
+
+	if (!texture) {
 		return;
 	}
+
+	if (texture->paletted) {
+		Uint8 pix;
+		
+		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
+		color = texture->palettes[pix][tex_cur_pal];
+	} else {
+		int r,g,b;
+		Uint16 pix;
+		
+		pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
+		r = (pix>>8) & 0xf8;
+		r |= r>>5;
+		g = (pix>>3) & 0xfc;
+		g |= g>>6;
+		b = (pix<<3) & 0xf8;
+		b |= b>>5;
+		color = (r<<16)|(g<<8)|b;
+	}
+	set_color(color);
 
 	triangle(v1,v2,v3);
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-	if (!render.texture) {
-		return;
-	}
-
 	triangle_fill(v1,v2,v3);
 	triangle_fill(v3,v4,v1);
 }
@@ -409,10 +428,6 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-	if (!render.texture) {
-		return;
-	}
-
 	triangle_tex(v1,v2,v3);
 	triangle_tex(v3,v4,v1);
 }
