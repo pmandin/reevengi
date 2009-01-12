@@ -64,6 +64,9 @@ static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
+static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
+
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
@@ -177,14 +180,20 @@ static void set_color(Uint32 color)
 
 static void set_render(render_t *this, int num_render)
 {
+	this->line = line;
+	this->triangle_wf = triangle;
+	this->quad_wf = quad;
+
 	switch(num_render) {
 		case RENDER_WIREFRAME:
-			this->line = line;
 			this->triangle = triangle;
 			this->quad = quad;
 			break;
+		case RENDER_FILLED:
+			this->triangle = triangle_fill;
+			this->quad = quad_fill;
+			break;
 		case RENDER_TEXTURED:
-			this->line = line;
 			this->triangle = triangle_tex;
 			this->quad = quad_tex;
 			break;
@@ -239,6 +248,97 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	gl.Disable(GL_CULL_FACE);
+}
+
+/*
+	Filled triangles/quads
+*/
+
+static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
+{
+	render_texture_t *texture = render.texture;
+	Uint32 color;
+
+	if (!texture) {
+		return;
+	}
+
+	if (texture->paletted) {
+		Uint8 pix;
+		
+		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
+		color = texture->palettes[pix][tex_cur_pal];
+	} else {
+		int r,g,b;
+		Uint16 pix;
+		
+		pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
+		r = (pix>>8) & 0xf8;
+		r |= r>>5;
+		g = (pix>>3) & 0xfc;
+		g |= g>>6;
+		b = (pix<<3) & 0xf8;
+		b |= b>>5;
+		color = (r<<16)|(g<<8)|b;
+	}
+	set_color(color);
+
+	gl.Enable(GL_DEPTH_TEST);
+
+	gl.Enable(GL_CULL_FACE);
+	gl.CullFace(GL_FRONT);
+
+	gl.Begin(GL_TRIANGLES);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
+	gl.Vertex3s(v3->x, v3->y, v3->z);
+	gl.End();
+
+	gl.Disable(GL_CULL_FACE);
+}
+
+static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
+{
+	render_texture_t *texture = render.texture;
+	Uint32 color, offset;
+
+	if (!texture) {
+		return;
+	}
+
+	if (texture->paletted) {
+		Uint8 pix;
+
+		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
+		color = texture->palettes[pix][tex_cur_pal];
+	} else {
+		int r,g,b;
+		Uint16 pix;
+		
+		pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
+		r = (pix>>8) & 0xf8;
+		r |= r>>5;
+		g = (pix>>3) & 0xfc;
+		g |= g>>6;
+		b = (pix<<3) & 0xf8;
+		b |= b>>5;
+		color = (r<<16)|(g<<8)|b;
+	}
+	set_color(color);
+
+	gl.Enable(GL_DEPTH_TEST);
+
+	gl.Enable(GL_CULL_FACE);
+	gl.CullFace(GL_FRONT);
+
+	gl.Begin(GL_QUADS);
+	gl.Vertex3s(v1->x, v1->y, v1->z);
+	gl.Vertex3s(v2->x, v2->y, v2->z);
+	gl.Vertex3s(v3->x, v3->y, v3->z);
+	gl.Vertex3s(v4->x, v4->y, v4->z);
+	gl.End();
+
 	gl.Disable(GL_CULL_FACE);
 }
 

@@ -28,8 +28,11 @@
 
 /*--- Defines ---*/
 
-#define RENDER_WIREFRAME 0
-#define RENDER_TEXTURED 1
+enum {
+	RENDER_WIREFRAME=0,
+	RENDER_FILLED,
+	RENDER_TEXTURED
+};
 
 /*--- Types ---*/
 
@@ -58,7 +61,12 @@ struct render_s {
 	void (*set_render)(render_t *this, int num_render);
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 
+	/* Wireframe functions */
 	void (*line)(vertex_t *v1, vertex_t *v2);
+	void (*triangle_wf)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+	void (*quad_wf)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
+
+	/* Model drawing functions */
 	void (*triangle)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 

@@ -66,6 +66,9 @@ static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
+static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
+
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
@@ -229,14 +232,20 @@ static void set_color(Uint32 color)
 
 static void set_render(render_t *this, int num_render)
 {
+	this->line = line;
+	this->triangle_wf = triangle;
+	this->quad_wf = quad;
+
 	switch(num_render) {
 		case RENDER_WIREFRAME:
-			this->line = line;
 			this->triangle = triangle;
 			this->quad = quad;
 			break;
+		case RENDER_FILLED:
+			this->triangle = triangle_fill;
+			this->quad = quad_fill;
+			break;
 		case RENDER_TEXTURED:
-			this->line = line;
 			this->triangle = triangle_tex;
 			this->quad = quad_tex;
 			break;
@@ -350,6 +359,29 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	line(v2,v3);
 	line(v3,v4);
 	line(v4,v1);
+}
+
+/*
+	Filled triangles/quads
+*/
+
+static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
+{
+	if (!render.texture) {
+		return;
+	}
+
+	triangle(v1,v2,v3);
+}
+
+static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
+{
+	if (!render.texture) {
+		return;
+	}
+
+	triangle_fill(v1,v2,v3);
+	triangle_fill(v3,v4,v1);
 }
 
 /*

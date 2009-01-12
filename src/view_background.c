@@ -40,7 +40,8 @@
 /*--- Defines ---*/
 
 #define KEY_RENDER_WIREFRAME	SDLK_F2
-#define KEY_RENDER_TEXTURED	SDLK_F3
+#define KEY_RENDER_FILLED	SDLK_F3
+#define KEY_RENDER_TEXTURED	SDLK_F4
 
 #define KEY_STAGE_DOWN		SDLK_z
 #define KEY_STAGE_UP		SDLK_s
@@ -235,6 +236,9 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_RENDER_WIREFRAME:
 				render.set_render(&render, RENDER_WIREFRAME);
+				break;
+			case KEY_RENDER_FILLED:
+				render.set_render(&render, RENDER_FILLED);
 				break;
 			case KEY_RENDER_TEXTURED:
 				render.set_render(&render, RENDER_TEXTURED);
@@ -482,7 +486,7 @@ static void drawCameraSwitches(void)
 			v[j].z = switchPos[j*2+1];
 		}
 
-		render.quad(&v[0], &v[1], &v[2], &v[3]);
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 	}
 	render.pop_matrix();
 }
@@ -514,4 +518,3 @@ static void drawPlayer(void)
 #endif
 	render.pop_matrix();
 }
-
