@@ -55,4 +55,7 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 /* Clip segment against one of view frustum planes */
 int mtx_clipSegment(float points[4][4], float clip[6][4]);
 
+/* Clip a list of triangles */
+int mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4]);
+
 #endif /* MATRIX_H */

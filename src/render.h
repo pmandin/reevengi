@@ -41,6 +41,16 @@ typedef struct {
 	Uint16 u,v;	/* Texture coords */
 } vertex_t;
 
+typedef struct {
+	float pos[4];	/* x,y,z,w */
+	float tx[2];	/* u,v */
+} vertexf_t;
+
+typedef struct {
+	int num_tri;	/* Number of triangles stored */
+	vertexf_t vtx[3][16];	/* Max 16 triangles */
+} triangle_list_t;
+
 typedef struct render_s render_t;
 
 struct render_s {

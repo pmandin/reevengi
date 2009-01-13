@@ -39,6 +39,8 @@ static float viewport_mtx[4][4]; /* viewport matrix */
 static float frustum_mtx[4][4]; /* frustum = viewport*projection*camera */
 static float clip_planes[6][4]; /* view frustum clip planes */
 
+static triangle_list_t tri_list;
+
 /*--- Functions prototypes ---*/
 
 static void render_soft_shutdown(render_t *render);
@@ -370,6 +372,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
+	float segment[4][4], result[4][4];
 	render_texture_t *texture = render.texture;
 	Uint32 color;
 
@@ -397,6 +400,60 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	}
 	set_color(color);
 
+	/*
+		Clip triangle against clip planes
+		for each plane
+			clip list of triangles against plane:
+				keep triangle (if non clipped)
+				generate smaller triangle (if one vertex in)
+				generate two triangles (if one vertex out)
+	*/
+
+	memset(segment, 0, sizeof(float)*4*4);
+	segment[0][0] = v1->x;
+	segment[0][1] = v1->y;
+	segment[0][2] = v1->z;
+	segment[0][3] = 1.0f;
+	segment[1][0] = v2->x;
+	segment[1][1] = v2->y;
+	segment[1][2] = v2->z;
+	segment[1][3] = 1.0f;
+	segment[2][0] = v3->x;
+	segment[2][1] = v3->y;
+	segment[2][2] = v3->z;
+	segment[2][3] = 1.0f;
+
+	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
+
+	tri_list.vtx[0][0].pos[0] = result[0][0];
+	tri_list.vtx[0][0].pos[1] = result[0][1];
+	tri_list.vtx[0][0].pos[2] = result[0][2];
+	tri_list.vtx[0][0].pos[3] = result[0][3];
+	tri_list.vtx[0][0].tx[0] = v1->u;
+	tri_list.vtx[0][0].tx[1] = v1->v;
+
+	tri_list.vtx[1][0].pos[0] = result[1][0];
+	tri_list.vtx[1][0].pos[1] = result[1][1];
+	tri_list.vtx[1][0].pos[2] = result[1][2];
+	tri_list.vtx[1][0].pos[3] = result[1][3];
+	tri_list.vtx[1][0].tx[0] = v2->u;
+	tri_list.vtx[1][0].tx[1] = v2->v;
+
+	tri_list.vtx[2][0].pos[0] = result[2][0];
+	tri_list.vtx[2][0].pos[1] = result[2][1];
+	tri_list.vtx[2][0].pos[2] = result[2][2];
+	tri_list.vtx[2][0].pos[3] = result[2][3];
+	tri_list.vtx[2][0].tx[0] = v3->u;
+	tri_list.vtx[2][0].tx[1] = v3->v;
+
+	tri_list.num_tri=1;
+
+	if (mtx_clipTriList(&tri_list, clip_planes) == CLIPPING_OUTSIDE) {
+		return;
+	}
+
+	/* Draw each triangle in the list */
+
 	triangle(v1,v2,v3);
 }
 
@@ -410,11 +467,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	Textured triangles/quads
 */
 
-/*
-	Generate polygon if triangle clipped
-	Draw triangles, given parts of poly
-*/
-
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
 	render.tex_pal = num_pal;
@@ -426,6 +478,8 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	if (!render.texture) {
 		return;
 	}
+
+	tri_list.num_tri=1;
 
 	triangle(v1,v2,v3);
 }

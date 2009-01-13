@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "video.h"
+#include "render.h"
 #include "matrix.h"
 
 /*--- Functions prototypes ---*/
@@ -374,4 +376,24 @@ int mtx_clipSegment(float points[4][4], float clip[6][4])
 	}
 
 	return result;
+}
+
+/*
+	Clip a triangle against all planes
+
+		Clip a triangle against each plane
+		p1	p2	p3
+		in	in	in	-
+		out	out	out	-
+		out	in	in	generate p4
+		in	out	in	generate p4
+		in	in	out	generate p4
+		in	out	out	clip p2,p3
+		out	in	out	clip p1,p3
+		out	out	in	clip p1,p2
+*/
+
+int mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4])
+{
+	return CLIPPING_OUTSIDE;
 }
