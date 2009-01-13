@@ -162,6 +162,9 @@ static void model_emd3_shutdown(model_t *this)
 		if (this->tim_file) {
 			free(this->tim_file);
 		}
+		if (this->texture) {
+			render_texture_shutdown(this->texture);
+		}
 		free(this);
 	}
 }

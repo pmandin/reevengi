@@ -152,6 +152,9 @@ static void model_emd_shutdown(model_t *this)
 		if (this->emd_file) {
 			free(this->emd_file);
 		}
+		if (this->texture) {
+			render_texture_shutdown(this->texture);
+		}
 		free(this);
 	}
 }
