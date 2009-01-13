@@ -93,6 +93,9 @@ void render_soft_init(render_t *render)
 	render->initBackground = render_background_init;
 	render->drawBackground = render_background;
 
+	render->texture = NULL;
+	render->tex_pal = -1;
+
 	render->shutdown = render_soft_shutdown;
 
 	render->texture = NULL;
@@ -378,7 +381,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		Uint8 pix;
 		
 		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		color = texture->palettes[pix][tex_cur_pal];
+		color = texture->palettes[pix][render.tex_pal];
 	} else {
 		int r,g,b;
 		Uint16 pix;
@@ -414,6 +417,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
+	render.tex_pal = num_pal;
 	render.texture = render_tex;
 }
 

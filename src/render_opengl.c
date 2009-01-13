@@ -39,7 +39,6 @@
 
 /*--- Variables ---*/
 
-static int tex_cur_pal = -1;
 static GLuint tex_obj = (GLuint) -1;
 
 /*--- Functions prototypes ---*/
@@ -92,6 +91,9 @@ void render_opengl_init(render_t *render)
 
 	render->initBackground = render_background_init_opengl;
 	render->drawBackground = render_background_opengl;
+
+	render->texture = NULL;
+	render->tex_pal = -1;
 
 	render->shutdown = render_opengl_shutdown;
 
@@ -268,7 +270,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		Uint8 pix;
 		
 		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		color = texture->palettes[pix][tex_cur_pal];
+		color = texture->palettes[pix][render.tex_pal];
 	} else {
 		int r,g,b;
 		Uint16 pix;
@@ -311,7 +313,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 		Uint8 pix;
 
 		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		color = texture->palettes[pix][tex_cur_pal];
+		color = texture->palettes[pix][render.tex_pal];
 	} else {
 		int r,g,b;
 		Uint16 pix;
@@ -353,8 +355,8 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	GLenum pixelType = GL_UNSIGNED_BYTE;
 	GLenum surfaceFormat = GL_RGBA;
 
-	if (num_pal!=tex_cur_pal) {
-		tex_cur_pal = num_pal;
+	if (num_pal!=render.tex_pal) {
+		render.tex_pal = num_pal;
 		reupload_tex = 1;
 	}
 	if (render_tex!=render.texture) {
@@ -373,8 +375,8 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	/*printf("[error: %d\n", gl.GetError());*/
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
 
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);

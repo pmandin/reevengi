@@ -76,6 +76,7 @@ struct render_s {
 	void (*shutdown)(render_t *this);
 
 	render_texture_t *texture;
+	int tex_pal;	/* Palette to use */
 };
 
 void render_soft_init(render_t *render);
