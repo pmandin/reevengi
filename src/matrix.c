@@ -394,6 +394,31 @@ static float dotProductPlusVf(vertexf_t *vtx, float plane[4])
 	return (vtx->pos[0]*plane[0] + vtx->pos[1]*plane[1] + vtx->pos[2]*plane[2] + vtx->pos[3]*plane[3]);
 }
 
+/* Clip vtx0->vtx1 by calculating new vtx1 */
+static void mtx_clipSegPlaneVf(vertexf_t *vtx0, vertexf_t *vtx1, float clip[4])
+{
+	float num,den, u;
+
+	num =	clip[0]*vtx0->pos[0]+
+		clip[1]*vtx0->pos[1]+
+		clip[2]*vtx0->pos[2]+
+		clip[3]*vtx0->pos[3];
+
+	den =	clip[0]*(vtx0->pos[0]-vtx1->pos[0])+
+		clip[1]*(vtx0->pos[1]-vtx1->pos[1])+
+		clip[2]*(vtx0->pos[2]-vtx1->pos[2])+
+		clip[3]*(vtx0->pos[3]-vtx1->pos[3]);
+
+	u = num/den;
+
+	vtx1->pos[0] = vtx0->pos[0]+u*(vtx1->pos[0]-vtx0->pos[0]);
+	vtx1->pos[1] = vtx0->pos[1]+u*(vtx1->pos[1]-vtx0->pos[1]);
+	vtx1->pos[2] = vtx0->pos[2]+u*(vtx1->pos[2]-vtx0->pos[2]);
+	vtx1->pos[3] = vtx0->pos[3]+u*(vtx1->pos[3]-vtx0->pos[3]);
+	vtx1->tx[0] = vtx0->tx[0]+u*(vtx1->tx[0]-vtx0->tx[0]);
+	vtx1->tx[1] = vtx0->tx[1]+u*(vtx1->tx[1]-vtx0->tx[1]);
+}
+
 void mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4])
 {
 	int i;
