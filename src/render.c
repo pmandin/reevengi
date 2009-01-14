@@ -448,9 +448,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	tri_list.num_tri=1;
 
-	if (mtx_clipTriList(&tri_list, clip_planes) == CLIPPING_OUTSIDE) {
-		return;
-	}
+	mtx_clipTriList(&tri_list, clip_planes);
 
 	/* Draw each triangle in the list */
 

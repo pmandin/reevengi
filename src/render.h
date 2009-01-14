@@ -34,6 +34,8 @@ enum {
 	RENDER_TEXTURED
 };
 
+#define TRI_LIST_SIZE 16
+
 /*--- Types ---*/
 
 typedef struct {
@@ -48,7 +50,8 @@ typedef struct {
 
 typedef struct {
 	int num_tri;	/* Number of triangles stored */
-	vertexf_t vtx[3][16];	/* Max 16 triangles */
+	int clipped[TRI_LIST_SIZE];	/* Clipped status */
+	vertexf_t vtx[3][TRI_LIST_SIZE];	/* Max 16 triangles */
 } triangle_list_t;
 
 typedef struct render_s render_t;

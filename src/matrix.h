@@ -21,6 +21,14 @@
 #ifndef MATRIX_H
 #define MATRIX_H 1
 
+/*--- Defines ---*/
+
+enum {
+	CLIPPING_OUTSIDE=0,
+	CLIPPING_INSIDE,
+	CLIPPING_NEEDED
+};
+
 /*--- Function prototoypes ---*/
 
 void mtx_setIdentity(float m[4][4]);
@@ -45,10 +53,6 @@ float mtx_faceVisible(float points[4][4]);
 /* Calculate clip planes for view frustum */
 void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4]);
 
-#define CLIPPING_OUTSIDE 0
-#define CLIPPING_INSIDE 1
-#define CLIPPING_NEEDED 2
-
 /* Check if points array are all in view frustum or not */
 int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 
@@ -56,6 +60,6 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 int mtx_clipSegment(float points[4][4], float clip[6][4]);
 
 /* Clip a list of triangles */
-int mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4]);
+void mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4]);
 
 #endif /* MATRIX_H */

@@ -26,10 +26,6 @@
 #include "render.h"
 #include "matrix.h"
 
-/*--- Functions prototypes ---*/
-
-static void mtx_clipSegPlane(float points[4][4], int num_clipped, float clip[4]);
-
 /*--- Functions ---*/
 
 /*
@@ -393,7 +389,50 @@ int mtx_clipSegment(float points[4][4], float clip[6][4])
 		out	out	in	clip p1,p2
 */
 
-int mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4])
+static float dotProductPlusVf(vertexf_t *vtx, float plane[4])
 {
-	return CLIPPING_OUTSIDE;
+	return (vtx->pos[0]*plane[0] + vtx->pos[1]*plane[1] + vtx->pos[2]*plane[2] + vtx->pos[3]*plane[3]);
+}
+
+void mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4])
+{
+	int i;
+
+	/* For each clip plane */
+	for (i=0; i<6; i++) {
+		int j;
+
+		/* For each triangle */
+		for (j=0; j<tri_list->num_tri; j++) {
+			int k, num_outsides = 0, point_outside[3];
+
+			tri_list->clipped[j] = CLIPPING_INSIDE;
+
+			/* For each vertex */
+			for (k=0; k<3; k++) {
+				point_outside[k] = 0;
+				if (dotProductPlusVf(&(tri_list->vtx[k][j]), clip[i])<0.0f) {
+					point_outside[k] = 1;
+					++num_outsides;
+				}
+			}
+
+			if (num_outsides==2) {
+				/* All points outside of current clip plane */
+				tri_list->clipped[j] = CLIPPING_OUTSIDE;
+				continue;
+			} else if (num_outsides==0) {
+				/* All points inside, check other planes */
+				continue;
+			}
+
+			/* Clip triangle, cut in half, adding a triangle if needed */
+
+			if (num_outsides==1) {
+				/* Clipped triangle is a quad, generate a new triangle */
+			} else {
+				/* Clipped triangle is smaller */
+			}
+		}
+	}
 }
