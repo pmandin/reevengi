@@ -29,6 +29,32 @@
 
 /*--- Functions ---*/
 
+static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
+{
+	int r1,g1,b1,a1;
+
+	r1 = color & 31;
+	r1 = (r1<<3)|(r1>>2);
+
+	g1 = (color>>5) & 31;
+	g1 = (g1<<3)|(g1>>2);
+
+	b1 = (color>>10) & 31;
+	b1 = (b1<<3)|(b1>>2);
+
+	a1 = (color>>15) & 1;
+	if (r1+g1+b1 == 0) {
+		a1 = (a1 ? 0xff : 0);
+	} else {
+		a1 = (a1 ? 0x80 : 0xff);
+	}
+
+	*r = r1;
+	*g = g1;
+	*b = b1;
+	*a = a1;
+}
+
 /* Load texture from a TIM image file as pointer */
 render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 {
@@ -40,6 +66,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format;
 	int bytes_per_pixel;
+	int r,g,b,a;
 
 	/* Read dimensions */
 	tim_header = (tim_header_t *) tim_ptr;
@@ -125,17 +152,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 				Uint16 color = *pal_header++;
 				color = SDL_SwapLE16(color);
 
-				r = color & 31;
-				r = (r<<3)|(r>>2);
-				g = (color>>5) & 31;
-				g = (g<<3)|(g>>2);
-				b = (color>>10) & 31;
-				b = (b<<3)|(b>>2);
-				a = (color>>15) & 1;
-				if ((r!=0) || (g!=0) || (b!=0)) {
-					a = 1-a;
-				}
-				a = (a ? 0xff : 0);
+				read_rgba(color, &r,&g,&b,&a);
 
 				if (params.use_opengl) {
 					tex->palettes[j][i] = (a<<24)|(r<<16)|(g<<8)|b;
@@ -199,17 +216,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 									color = *src_pixels++;
 									color = SDL_SwapLE16(color);
 
-									r = color & 31;
-									r = (r<<3)|(r>>2);
-									g = (color>>5) & 31;
-									g = (g<<3)|(g>>2);
-									b = (color>>10) & 31;
-									b = (b<<3)|(b>>2);
-									a = (color>>15) & 1;
-									if ((r!=0) || (g!=0) || (b!=0)) {
-										a = 1-a;
-									}
-									a = (a ? 0xff : 0);
+									read_rgba(color, &r,&g,&b,&a);
 
 									if (params.use_opengl) {
 										Uint16 c = (r<<8) & (31<<11);
@@ -234,17 +241,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 									color = *src_pixels++;
 									color = SDL_SwapLE16(color);
 
-									r = color & 31;
-									r = (r<<3)|(r>>2);
-									g = (color>>5) & 31;
-									g = (g<<3)|(g>>2);
-									b = (color>>10) & 31;
-									b = (b<<3)|(b>>2);
-									a = (color>>15) & 1;
-									if ((r!=0) || (g!=0) || (b!=0)) {
-										a = 1-a;
-									}
-									a = (a ? 0xff : 0);
+									read_rgba(color, &r,&g,&b,&a);
 									
 									*tex_line++ = SDL_MapRGBA(fmt, r,g,b,a);
 								}
