@@ -368,7 +368,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 		reupload_tex = 1;
 	}
 
-	if (!reupload_tex) {
+	if (!reupload_tex || !render.texture) {
 		return;
 	}
 
@@ -379,7 +379,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
 	/*printf("error: %d\n", gl.GetError());*/
 
@@ -390,7 +390,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 #ifdef GL_EXT_paletted_texture
 		/* FIXME: check GL_EXT_paletted_texture presence */
 		if (1) {
-			Uint8 mapP[256*3];
+			Uint8 mapP[256*4];
 			Uint8 *pMap = mapP;
 
 			internalFormat = GL_COLOR_INDEX8_EXT;
@@ -400,9 +400,10 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 				*pMap++ = (color>>16) & 0xff;
 				*pMap++ = (color>>8) & 0xff;
 				*pMap++ = color & 0xff;
+				*pMap++ = (color>>24) & 0xff;
 			}
-			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGB, 256, 
-				GL_RGB, GL_UNSIGNED_BYTE, mapP);
+			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
+				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
 		} else
 #endif
 		{
@@ -418,7 +419,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 				mapR[i] = ((color>>16) & 0xff) / 255.0;
 				mapG[i] = ((color>>8) & 0xff) / 255.0;
 				mapB[i] = (color & 0xff) / 255.0;
-				mapA[i] = 1.0;
+				mapA[i] = ((color>>24) & 0xff) / 255.0;
 			}
 			gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
 			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
@@ -428,7 +429,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 		}
 		/*printf("texture paletted\n");*/
 	} else {
-		pixelType = GL_UNSIGNED_SHORT_5_6_5;
+		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
 		/*printf("texture rgb565\n");*/
 	}
 
@@ -458,6 +459,10 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
+
+	/*gl.Enable(GL_BLEND);
+	gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
+
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
@@ -476,6 +481,7 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.End();
 
 	gl.Disable(GL_TEXTURE_2D);
+	gl.Disable(GL_BLEND);
 	gl.Disable(GL_CULL_FACE);
 }
 
@@ -495,6 +501,10 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
+
+	/*gl.Enable(GL_BLEND);
+	gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
+
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
@@ -511,6 +521,7 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.Disable(GL_TEXTURE_2D);
+	gl.Disable(GL_BLEND);
 	gl.Disable(GL_CULL_FACE);
 }
 

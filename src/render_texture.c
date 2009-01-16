@@ -120,7 +120,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 		pal_header = & ((Uint16 *) tim_ptr)[sizeof(tim_header_t)/2];
 		for (i=0; i<num_palettes; i++) {
 			for (j=0; j<num_colors; j++) {
-				int r,g,b;
+				int r,g,b,a;
 
 				Uint16 color = *pal_header++;
 				color = SDL_SwapLE16(color);
@@ -131,14 +131,19 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 				g = (g<<3)|(g>>2);
 				b = (color>>10) & 31;
 				b = (b<<3)|(b>>2);
+				a = (color>>15) & 1;
+				if ((r!=0) || (g!=0) || (b!=0)) {
+					a = 1-a;
+				}
+				a = (a ? 0xff : 0);
 
 				if (params.use_opengl) {
-					tex->palettes[j][i] = (r<<16)|(g<<8)|b;
+					tex->palettes[j][i] = (a<<24)|(r<<16)|(g<<8)|b;
 				} else {
 					if ((fmt->BytesPerPixel==1) && params.dithering) {
 						tex->palettes[j][i] = dither_nearest_index(r,g,b);
 					} else {
-						tex->palettes[j][i] = SDL_MapRGB(fmt, r,g,b);
+						tex->palettes[j][i] = SDL_MapRGBA(fmt, r,g,b,a);
 					}
 				}
 			}
@@ -176,7 +181,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 		case TIM_TYPE_16:
 			{
 				int bytesPerPixel = fmt->BytesPerPixel;
-				int r,g,b, color;
+				int r,g,b,a, color;
 				Uint16 *src_pixels = (Uint16 *) (&((Uint8 *) tim_ptr)[img_offset]);
 
 				/* With OpenGL, we can keep source in its proper format */
@@ -200,14 +205,19 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 									g = (g<<3)|(g>>2);
 									b = (color>>10) & 31;
 									b = (b<<3)|(b>>2);
-									
+									a = (color>>15) & 1;
+									if ((r!=0) || (g!=0) || (b!=0)) {
+										a = 1-a;
+									}
+									a = (a ? 0xff : 0);
+
 									if (params.use_opengl) {
 										Uint16 c = (r<<8) & (31<<11);
 										c |= (g<<3) & (63<<5);
 										c |= (b>>3) & 31;
 										*tex_line++ = c;
 									} else {
-										*tex_line++ = SDL_MapRGB(fmt, r,g,b);
+										*tex_line++ = SDL_MapRGBA(fmt, r,g,b,a);
 									}
 								}
 								tex_pixels += tex->pitch>>1;
@@ -230,8 +240,13 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 									g = (g<<3)|(g>>2);
 									b = (color>>10) & 31;
 									b = (b<<3)|(b>>2);
+									a = (color>>15) & 1;
+									if ((r!=0) || (g!=0) || (b!=0)) {
+										a = 1-a;
+									}
+									a = (a ? 0xff : 0);
 									
-									*tex_line++ = SDL_MapRGB(fmt, r,g,b);
+									*tex_line++ = SDL_MapRGBA(fmt, r,g,b,a);
 								}
 								tex_pixels += tex->pitch>>1;
 							}
