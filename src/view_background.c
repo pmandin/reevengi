@@ -514,7 +514,9 @@ static void drawPlayer(void)
 	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
 #else
 	if (game_state.model) {
+		/*render.set_blending(1);*/
 		game_state.model->draw(game_state.model);
+		render.set_blending(0);
 	}
 #endif
 	render.pop_matrix();
