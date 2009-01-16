@@ -73,6 +73,7 @@ struct render_s {
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
 	void (*set_render)(render_t *this, int num_render);
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
+	void (*set_blending)(int enable);
 
 	/* Wireframe functions */
 	void (*line)(vertex_t *v1, vertex_t *v2);

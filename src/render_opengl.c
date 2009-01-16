@@ -40,6 +40,7 @@
 /*--- Variables ---*/
 
 static GLuint tex_obj = (GLuint) -1;
+static int blending;
 
 /*--- Functions prototypes ---*/
 
@@ -58,6 +59,7 @@ static void pop_matrix(void);
 static void set_color(Uint32 color);
 static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
+static void set_blending(int enable);
 
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
@@ -88,6 +90,7 @@ void render_opengl_init(render_t *render)
 	render->set_color = set_color;
 	render->set_render = set_render;
 	render->set_texture = set_texture;
+	render->set_blending = set_blending;
 
 	render->initBackground = render_background_init_opengl;
 	render->drawBackground = render_background_opengl;
@@ -98,6 +101,7 @@ void render_opengl_init(render_t *render)
 	render->shutdown = render_opengl_shutdown;
 
 	set_render(render, RENDER_WIREFRAME);
+	blending = 0;
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -348,6 +352,18 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	Textured triangles/quads
 */
 
+static void set_blending(int enable)
+{
+	blending = enable;
+
+	if (enable) {
+		gl.Enable(GL_BLEND);
+		gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		gl.Disable(GL_BLEND);
+	}
+}
+
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
 	int reupload_tex = 0, i;
@@ -372,16 +388,14 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 		return;
 	}
 
-	/*printf("[error: %d\n", gl.GetError());*/
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
 
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);	/* GL_DECAL for blending */
-
-	/*printf("error: %d\n", gl.GetError());*/
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,
+		blending ? GL_DECAL : GL_REPLACE);
 
 	/* Upload new palette */
 	if (render_tex->paletted) {
@@ -427,20 +441,16 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
 			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
 		}
-		/*printf("texture paletted\n");*/
 	} else {
 		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
-		/*printf("texture rgb565\n");*/
 	}
 
-	/*printf("error: %d (0x%08x)\n", gl.GetError(), render_tex->pixels);*/
 	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
 		render_tex->pitchw, render_tex->pitchh, 0,
 		surfaceFormat, pixelType, render_tex->pixels
 	);
 
 	/*gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);*/
-	/*printf("error: %d]\n", gl.GetError());*/
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -460,16 +470,9 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
-	/*gl.Enable(GL_BLEND);
-	gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
-
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
-
-	/*printf("%d,%d (%d %.3f) %d,%d %d,%d\n", v1->u, v1->v, texture->pitchw,
-		(float) v1->u / texture->pitchw,
-		v2->u, v2->v, v3->u, v3->v);*/
 
 	gl.Begin(GL_TRIANGLES);
 	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
@@ -481,7 +484,6 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.End();
 
 	gl.Disable(GL_TEXTURE_2D);
-	gl.Disable(GL_BLEND);
 	gl.Disable(GL_CULL_FACE);
 }
 
@@ -502,9 +504,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
-	/*gl.Enable(GL_BLEND);
-	gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
-
 	gl.Enable(GL_TEXTURE_2D);
 
 	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
@@ -521,7 +520,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.Disable(GL_TEXTURE_2D);
-	gl.Disable(GL_BLEND);
 	gl.Disable(GL_CULL_FACE);
 }
 
