@@ -299,6 +299,7 @@ void view_background_update(void)
 		refresh_bg = 0;
 	}
 	if (reload_model) {
+		render.set_texture(0, NULL);	/* To force reloading texture */
 		state_loadmodel();
 		reload_model = 0;
 	}
