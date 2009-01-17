@@ -1022,18 +1022,17 @@ model_t *re2ps1_load_model(int num_model)
 	return model;
 }
 
-
 typedef struct {
-	unsigned short unk0;
-	unsigned short const0; /* 0x683c, or 0x73b7 */
+	Uint16 unk0;
+	Uint16 const0; /* 0x683c, or 0x73b7 */
 	/* const0>>7 used for engine */
-	long camera_from_x;
-	long camera_from_y;
-	long camera_from_z;
-	long camera_to_x;
-	long camera_to_y;
-	long camera_to_z;
-	unsigned long offset;
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 offset;
 } rdt_camera_pos_t;
 
 void re2ps1_get_camera(long *camera_pos)

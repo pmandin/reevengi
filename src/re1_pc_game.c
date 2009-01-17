@@ -250,13 +250,13 @@ model_t *re1pcgame_load_model(int num_model)
 
 
 typedef struct {
-	long camera_from_x;
-	long camera_from_y;
-	long camera_from_z;
-	long camera_to_x;
-	long camera_to_y;
-	long camera_to_z;
-	long unknown[5];
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 unknown[5];
 } rdt_camera_pos_t;
 
 void re1pcgame_get_camera(long *camera_pos)

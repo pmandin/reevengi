@@ -214,16 +214,16 @@ model_t *re2pcdemo_load_model(int num_model)
 }
 
 typedef struct {
-	unsigned short unk0;
-	unsigned short const0; /* 0x683c, or 0x73b7 */
+	Uint16 unk0;
+	Uint16 const0; /* 0x683c, or 0x73b7 */
 	/* const0>>7 used for engine */
-	long camera_from_x;
-	long camera_from_y;
-	long camera_from_z;
-	long camera_to_x;
-	long camera_to_y;
-	long camera_to_z;
-	unsigned long offset;
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 offset;
 } rdt_camera_pos_t;
 
 void re2pcdemo_get_camera(long *camera_pos)
@@ -244,13 +244,12 @@ void re2pcdemo_get_camera(long *camera_pos)
 }
 
 typedef struct {
-	unsigned short const0; /* 0xff01 */
-	unsigned char cam0;
-	unsigned char cam1;
-	short x1,y1; /* Coordinates to use to calc when player crosses switch zone */
-	short x2,y2;
-	short x3,y3;
-	short x4,y4;
+	Uint16 const0; /* 0xff01 */
+	Uint8 cam0, cam1;
+	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
+	Sint16 x2,y2;
+	Sint16 x3,y3;
+	Sint16 x4,y4;
 } rdt_camera_switch_t;
 
 int re2pcdemo_get_num_camswitch(void)

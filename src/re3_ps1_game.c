@@ -119,13 +119,13 @@ static void re3ps1game_loadroom(void)
 }
 
 typedef struct {
-	unsigned long length;
-	unsigned long count;
+	Uint32 length;
+	Uint32 count;
 } ard_header_t;
 
 typedef struct {
-	unsigned long length;
-	unsigned long unknown;
+	Uint32 length;
+	Uint32 unknown;
 } ard_object_t;
 
 static int re3ps1game_loadroom_ard(const char *filename)
@@ -176,16 +176,16 @@ static int re3ps1game_loadroom_ard(const char *filename)
 }
 
 typedef struct {
-	unsigned short unk0;
-	unsigned short const0; /* 0x683c, or 0x73b7 */
+	Uint16 unk0;
+	Uint16 const0; /* 0x683c, or 0x73b7 */
 	/* const0>>7 used for engine */
-	long camera_from_x;
-	long camera_from_y;
-	long camera_from_z;
-	long camera_to_x;
-	long camera_to_y;
-	long camera_to_z;
-	unsigned long offset;
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 offset;
 } rdt_camera_pos_t;
 
 void re3ps1game_get_camera(long *camera_pos)
