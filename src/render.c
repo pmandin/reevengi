@@ -64,6 +64,7 @@ static void set_color(Uint32 color);
 static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
+static void set_color_from_texture(vertex_t *v1);
 
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
@@ -234,7 +235,14 @@ static void pop_matrix(void)
 
 static void set_color(Uint32 color)
 {
-	draw_setColor(color);
+	int r,g,b,a;
+	SDL_Surface *surf = video.screen;
+
+	a = (color>>24) & 0xff;
+	r = (color>>16) & 0xff;
+	g = (color>>8) & 0xff;
+	b = color & 0xff;
+	draw_setColor(SDL_MapRGBA(surf->format, r,g,b,a));
 }
 
 static void set_render(render_t *this, int num_render)
@@ -257,6 +265,37 @@ static void set_render(render_t *this, int num_render)
 			this->quad = quad_tex;
 			break;
 	}
+}
+
+static void set_color_from_texture(vertex_t *v1)
+{
+	render_texture_t *texture = render.texture;
+	Uint32 color = 0xffffffff;
+
+	if (!texture || !video.screen) {
+		return;
+	}
+
+	if (texture->paletted) {
+		Uint8 pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
+		
+		color = texture->palettes[pix][render.tex_pal];
+	} else {
+		SDL_Surface *surf = video.screen;
+
+		switch(surf->format->BytesPerPixel) {
+			case 2:
+				color = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
+				break;
+			case 3:
+				/* TODO */
+				break;
+			case 4:
+				color = ((Uint32 *) texture->pixels)[((texture->pitch>>2) * v1->v) + v1->u];
+				break;
+		}
+	}
+	draw_setColor(color);
 }
 
 /*
@@ -301,6 +340,8 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
 
+	set_color_from_texture(v1);
+
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
 	segment[0][1] = v1->y;
@@ -333,6 +374,8 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
 	float segment[4][4], result[4][4];
+
+	set_color_from_texture(v1);
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
@@ -375,33 +418,8 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
-	render_texture_t *texture = render.texture;
-	Uint32 color;
 
-	if (!texture) {
-		return;
-	}
-
-	if (texture->paletted) {
-		Uint8 pix;
-		
-		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		color = texture->palettes[pix][render.tex_pal];
-	} else {
-		int r,g,b;
-		Uint16 pix;
-		
-		pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
-		r = (pix>>8) & 0xf8;
-		r |= r>>5;
-		g = (pix>>3) & 0xfc;
-		g |= g>>6;
-		b = (pix<<3) & 0xf8;
-		b |= b>>5;
-		color = (r<<16)|(g<<8)|b;
-	}
-	set_color(color);
-
+#if 0
 	/*
 		Clip triangle against clip planes
 		for each plane
@@ -453,6 +471,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	mtx_clipTriList(&tri_list, clip_planes);
 
 	/* Draw each triangle in the list */
+#endif
 
 	triangle(v1,v2,v3);
 }
@@ -479,13 +498,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-	if (!render.texture) {
-		return;
-	}
-
-	tri_list.num_tri=1;
-
-	triangle(v1,v2,v3);
+	triangle_fill(v1,v2,v3);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)

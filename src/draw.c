@@ -50,14 +50,14 @@ void draw_setColor(Uint32 color)
 	SDL_Surface *surf = video.screen;
 
 	if ((video.bpp==8) && params.dithering) {
-		draw_color = dither_nearest_index((color>>16) & 0xff,
-			(color>>8) & 0xff, color & 0xff);
+		Uint8 r,g,b,a;
+		
+		SDL_GetRGBA(color, surf->format, &r,&g,&b,&a);
+		draw_color = dither_nearest_index(r,g,b);
 		return;
 	}
 
-	draw_color = SDL_MapRGBA(surf->format,
-		(color>>16) & 0xff, (color>>8) & 0xff,
-		color & 0xff, (color>>24) & 0xff);
+	draw_color = color;
 }
 
 void draw_line(int x1, int y1, int x2, int y2)
