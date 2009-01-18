@@ -60,6 +60,7 @@ static void set_color(Uint32 color);
 static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
+static void set_color_from_texture(vertex_t *v1);
 
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
@@ -206,6 +207,34 @@ static void set_render(render_t *this, int num_render)
 	}
 }
 
+static void set_color_from_texture(vertex_t *v1)
+{
+	render_texture_t *texture = render.texture;
+	Uint32 color = 0xffffffff;
+
+	if (!texture) {
+		return;
+	}
+
+	if (texture->paletted) {
+		Uint8 pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
+		
+		color = texture->palettes[pix][render.tex_pal];
+	} else {
+		int r,g,b;
+		Uint16 pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
+
+		r = (pix>>8) & 0xf8;
+		r |= r>>5;
+		g = (pix>>3) & 0xfc;
+		g |= g>>6;
+		b = (pix<<3) & 0xf8;
+		b |= b>>5;
+		color = (r<<16)|(g<<8)|b;
+	}
+	set_color(color);
+}
+
 /*
 	Wireframe triangles/quads
 */
@@ -222,6 +251,8 @@ static void line(vertex_t *v1, vertex_t *v2)
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
+	set_color_from_texture(v1);
+
 	gl.Disable(GL_DEPTH_TEST);
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -240,6 +271,8 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
+	set_color_from_texture(v1);
+
 	gl.Disable(GL_DEPTH_TEST);
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -263,32 +296,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-	render_texture_t *texture = render.texture;
-	Uint32 color;
-
-	if (!texture) {
-		return;
-	}
-
-	if (texture->paletted) {
-		Uint8 pix;
-		
-		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		color = texture->palettes[pix][render.tex_pal];
-	} else {
-		int r,g,b;
-		Uint16 pix;
-		
-		pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
-		r = (pix>>8) & 0xf8;
-		r |= r>>5;
-		g = (pix>>3) & 0xfc;
-		g |= g>>6;
-		b = (pix<<3) & 0xf8;
-		b |= b>>5;
-		color = (r<<16)|(g<<8)|b;
-	}
-	set_color(color);
+	set_color_from_texture(v1);
 
 	gl.Enable(GL_DEPTH_TEST);
 
@@ -306,32 +314,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-	render_texture_t *texture = render.texture;
-	Uint32 color, offset;
-
-	if (!texture) {
-		return;
-	}
-
-	if (texture->paletted) {
-		Uint8 pix;
-
-		pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		color = texture->palettes[pix][render.tex_pal];
-	} else {
-		int r,g,b;
-		Uint16 pix;
-		
-		pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
-		r = (pix>>8) & 0xf8;
-		r |= r>>5;
-		g = (pix>>3) & 0xfc;
-		g |= g>>6;
-		b = (pix<<3) & 0xf8;
-		b |= b>>5;
-		color = (r<<16)|(g<<8)|b;
-	}
-	set_color(color);
+	set_color_from_texture(v1);
 
 	gl.Enable(GL_DEPTH_TEST);
 
