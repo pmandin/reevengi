@@ -26,7 +26,8 @@
 enum {
 	CLIPPING_OUTSIDE=0,
 	CLIPPING_INSIDE,
-	CLIPPING_NEEDED
+	CLIPPING_NEEDED,
+	CLIPPING_NEWTRIANGLE
 };
 
 /*--- Function prototoypes ---*/
@@ -60,6 +61,6 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 int mtx_clipSegment(float points[4][4], float clip[6][4]);
 
 /* Clip a list of triangles */
-void mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4]);
+int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4]);
 
 #endif /* MATRIX_H */

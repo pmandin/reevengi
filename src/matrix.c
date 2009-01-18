@@ -375,18 +375,17 @@ int mtx_clipSegment(float points[4][4], float clip[6][4])
 }
 
 /*
-	Clip a triangle against all planes
+	Clip a triangle against near plane
 
-		Clip a triangle against each plane
-		p1	p2	p3
-		in	in	in	-
-		out	out	out	-
-		out	in	in	generate p4
-		in	out	in	generate p4
-		in	in	out	generate p4
-		in	out	out	clip p2,p3
-		out	in	out	clip p1,p3
-		out	out	in	clip p1,p2
+	p1	p2	p3
+	in	in	in	-
+	out	out	out	-
+	out	in	in	generate p4, new triangle
+	in	out	in	generate p4, new triangle
+	in	in	out	generate p4, new triangle
+	in	out	out	clip p2,p3
+	out	in	out	clip p1,p3
+	out	out	in	clip p1,p2
 */
 
 static float dotProductPlusVf(vertexf_t *vtx, float plane[4])
@@ -419,45 +418,39 @@ static void mtx_clipSegPlaneVf(vertexf_t *vtx0, vertexf_t *vtx1, float clip[4])
 	vtx1->tx[1] = vtx0->tx[1]+u*(vtx1->tx[1]-vtx0->tx[1]);
 }
 
-void mtx_clipTriList(triangle_list_t *tri_list, float clip[6][4])
+int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
 {
-	int i;
+	int i, result = CLIPPING_INSIDE;
+	int k, num_outsides = 0, point_outside[3];
 
-	/* For each clip plane */
-	for (i=0; i<6; i++) {
-		int j;
-
-		/* For each triangle */
-		for (j=0; j<tri_list->num_tri; j++) {
-			int k, num_outsides = 0, point_outside[3];
-
-			tri_list->clipped[j] = CLIPPING_INSIDE;
-
-			/* For each vertex */
-			for (k=0; k<3; k++) {
-				point_outside[k] = 0;
-				if (dotProductPlusVf(&(tri_list->vtx[k][j]), clip[i])<0.0f) {
-					point_outside[k] = 1;
-					++num_outsides;
-				}
-			}
-
-			if (num_outsides==2) {
-				/* All points outside of current clip plane */
-				tri_list->clipped[j] = CLIPPING_OUTSIDE;
-				continue;
-			} else if (num_outsides==0) {
-				/* All points inside, check other planes */
-				continue;
-			}
-
-			/* Clip triangle, cut in half, adding a triangle if needed */
-
-			if (num_outsides==1) {
-				/* Clipped triangle is a quad, generate a new triangle */
-			} else {
-				/* Clipped triangle is smaller */
-			}
+	/* For each vertex */
+	for (k=0; k<3; k++) {
+		point_outside[k] = 0;
+		if (dotProductPlusVf(&tri1[k], clip)<0.0f) {
+			point_outside[k] = 1;
+			++num_outsides;
 		}
 	}
+
+	if (num_outsides==2) {
+		/* All points outside of current clip plane */
+		return CLIPPING_OUTSIDE;
+	}
+
+	if (num_outsides==0) {
+		/* All points inside, check other triangles */
+		return CLIPPING_INSIDE;
+	}
+
+	/* Clip triangle, cut in half, adding a triangle if needed */
+
+	if (num_outsides==1) {
+		/* Clipped triangle is a quad, generate a new triangle */
+
+		result = CLIPPING_NEWTRIANGLE;
+	} else {
+		/* Clipped triangle is smaller */
+	}
+
+	return result;
 }

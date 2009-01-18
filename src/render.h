@@ -48,12 +48,6 @@ typedef struct {
 	float tx[2];	/* u,v */
 } vertexf_t;
 
-typedef struct {
-	int num_tri;	/* Number of triangles stored */
-	int clipped[TRI_LIST_SIZE];	/* Clipped status */
-	vertexf_t vtx[3][TRI_LIST_SIZE];	/* Max 16 triangles */
-} triangle_list_t;
-
 typedef struct render_s render_t;
 
 struct render_s {

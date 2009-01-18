@@ -39,8 +39,6 @@ static float viewport_mtx[4][4]; /* viewport matrix */
 static float frustum_mtx[4][4]; /* frustum = viewport*projection*camera */
 static float clip_planes[6][4]; /* view frustum clip planes */
 
-static triangle_list_t tri_list;
-
 /*--- Functions prototypes ---*/
 
 static void render_soft_shutdown(render_t *render);
@@ -431,6 +429,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
+	vertexf_t tri1[3], tri2[3];
 
 #if 0
 	/*
@@ -458,30 +457,30 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
 
-	tri_list.vtx[0][0].pos[0] = result[0][0];
-	tri_list.vtx[0][0].pos[1] = result[0][1];
-	tri_list.vtx[0][0].pos[2] = result[0][2];
-	tri_list.vtx[0][0].pos[3] = result[0][3];
-	tri_list.vtx[0][0].tx[0] = v1->u;
-	tri_list.vtx[0][0].tx[1] = v1->v;
+	tri1[0].pos[0] = result[0][0];
+	tri1[0].pos[1] = result[0][1];
+	tri1[0].pos[2] = result[0][2];
+	tri1[0].pos[3] = result[0][3];
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
 
-	tri_list.vtx[1][0].pos[0] = result[1][0];
-	tri_list.vtx[1][0].pos[1] = result[1][1];
-	tri_list.vtx[1][0].pos[2] = result[1][2];
-	tri_list.vtx[1][0].pos[3] = result[1][3];
-	tri_list.vtx[1][0].tx[0] = v2->u;
-	tri_list.vtx[1][0].tx[1] = v2->v;
+	tri1[1].pos[0] = result[1][0];
+	tri1[1].pos[1] = result[1][1];
+	tri1[1].pos[2] = result[1][2];
+	tri1[1].pos[3] = result[1][3];
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
 
-	tri_list.vtx[2][0].pos[0] = result[2][0];
-	tri_list.vtx[2][0].pos[1] = result[2][1];
-	tri_list.vtx[2][0].pos[2] = result[2][2];
-	tri_list.vtx[2][0].pos[3] = result[2][3];
-	tri_list.vtx[2][0].tx[0] = v3->u;
-	tri_list.vtx[2][0].tx[1] = v3->v;
+	tri1[2].pos[0] = result[2][0];
+	tri1[2].pos[1] = result[2][1];
+	tri1[2].pos[2] = result[2][2];
+	tri1[2].pos[3] = result[2][3];
+	tri1[2].tx[0] = v3->u;
+	tri1[2].tx[1] = v3->v;
 
-	tri_list.num_tri=1;
-
-	mtx_clipTriList(&tri_list, clip_planes);
+	if (mtx_clipTriList(tri1, tri2, &clip_planes[5]) == CLIPPING_OUTSIDE) {
+		return;
+	}
 
 	/* Draw each triangle in the list */
 #endif
