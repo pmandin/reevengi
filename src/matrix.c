@@ -451,7 +451,7 @@ int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
 		/* clip [point_outside-1] -> [point_outside] */
 		/* clip [point_outside+1] -> [point_outside] */
 
-		prev_point = (point_outside-1) % 3;
+		prev_point = (point_outside-1+3) % 3;
 		next_point = (point_outside+1) % 3;
 
 		/* Generate new triangle */
@@ -468,7 +468,7 @@ int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
 		result = CLIPPING_NEWTRIANGLE;
 	} else {
 		/* Clipped triangle is smaller */
-		prev_point = (point_inside-1) % 3;
+		prev_point = (point_inside-1+3) % 3;
 		next_point = (point_inside+1) % 3;
 
 		/* clip [point_inside-1] -> [point_inside] */
