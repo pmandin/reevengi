@@ -89,7 +89,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	w = SDL_SwapLE16(tim_size->width);
 	h = SDL_SwapLE16(tim_size->height);
 
-	tim_type = SDL_SwapLE16(tim_header->type);
+	tim_type = SDL_SwapLE32(tim_header->type);
 	bytes_per_pixel = 1;
 	paletted = 1;
 	switch(tim_type) {
