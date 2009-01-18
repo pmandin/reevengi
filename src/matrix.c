@@ -421,24 +421,26 @@ static void mtx_clipSegPlaneVf(vertexf_t *vtx0, vertexf_t *vtx1, float clip[4])
 int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
 {
 	int i, result = CLIPPING_INSIDE;
-	int k, num_outsides = 0, point_outside[3];
+	int k, num_outsides = 0, point_outside=-1, point_inside=-1;
+	int prev_point, next_point;
 
 	/* For each vertex */
 	for (k=0; k<3; k++) {
-		point_outside[k] = 0;
 		if (dotProductPlusVf(&tri1[k], clip)<0.0f) {
-			point_outside[k] = 1;
 			++num_outsides;
+			point_outside = k;
+		} else {
+			point_inside = k;
 		}
 	}
 
 	if (num_outsides==2) {
-		/* All points outside of current clip plane */
+		/* All points outside */
 		return CLIPPING_OUTSIDE;
 	}
 
 	if (num_outsides==0) {
-		/* All points inside, check other triangles */
+		/* All points inside */
 		return CLIPPING_INSIDE;
 	}
 
@@ -446,10 +448,34 @@ int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
 
 	if (num_outsides==1) {
 		/* Clipped triangle is a quad, generate a new triangle */
+		/* clip [point_outside-1] -> [point_outside] */
+		/* clip [point_outside+1] -> [point_outside] */
+
+		prev_point = (point_outside-1) % 3;
+		next_point = (point_outside+1) % 3;
+
+		/* Generate new triangle */
+		memcpy(&tri2[prev_point], &tri1[prev_point], sizeof(vertexf_t));
+		memcpy(&tri2[point_outside], &tri1[point_outside], sizeof(vertexf_t));
+		mtx_clipSegPlaneVf(&tri2[prev_point], &tri2[point_outside], clip);
+
+		/* Clip first */
+		mtx_clipSegPlaneVf(&tri1[next_point], &tri1[point_outside], clip);
+
+		/* And use it for last vertex of second triangle */
+		memcpy(&tri2[next_point], &tri1[point_outside], sizeof(vertexf_t));
 
 		result = CLIPPING_NEWTRIANGLE;
 	} else {
 		/* Clipped triangle is smaller */
+		prev_point = (point_inside-1) % 3;
+		next_point = (point_inside+1) % 3;
+
+		/* clip [point_inside-1] -> [point_inside] */
+		mtx_clipSegPlaneVf(&tri1[point_inside], &tri1[prev_point], clip);
+
+		/* clip [point_inside+1] -> [point_inside] */
+		mtx_clipSegPlaneVf(&tri1[point_inside], &tri1[next_point], clip);
 	}
 
 	return result;
