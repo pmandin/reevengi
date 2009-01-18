@@ -21,8 +21,25 @@
 #ifndef DRAW_H
 #define DRAW_H 1
 
+/*--- Types ---*/
+
+typedef struct {
+	int x,y;	/* 2D screen coordinates */
+	int u,v;	/* U,V texture coordinates */
+} draw_vertex_t;
+
+/*--- Functions prototypes ---*/
+
 void draw_setColor(Uint32 color);
 
-void draw_line(int x1, int y1, int x2, int y2);
+void draw_line(draw_vertex_t *v1, draw_vertex_t *v2);
+
+void draw_triangle(draw_vertex_t v[3]);
+
+void draw_quad(draw_vertex_t v[4]);
+
+void draw_triangle_fill(draw_vertex_t v[3]);
+
+void draw_triangle_tex(draw_vertex_t v[3]);
 
 #endif /* DRAW_H */

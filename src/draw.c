@@ -23,6 +23,7 @@
 #include "video.h"
 #include "parameters.h"
 #include "dither.h"
+#include "draw.h"
 
 /*--- Defines ---*/
 
@@ -60,11 +61,16 @@ void draw_setColor(Uint32 color)
 	draw_color = color;
 }
 
-void draw_line(int x1, int y1, int x2, int y2)
+void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
 {
 	SDL_Surface *surf = video.screen;
 	int tmp, x=0, y=0, dx,dy, sx,sy, pixx,pixy;
 	Uint8 *pixel;
+
+	int x1 = v1->x;
+	int y1 = v1->y;
+	int x2 = v2->x;
+	int y2 = v2->y;
 
 	x1 += video.viewport.x;
 	y1 += video.viewport.y;
@@ -215,4 +221,33 @@ static int clip_line(int *x1, int *y1, int *x2, int *y2)
 	}
 
 	return draw;
+}
+
+void draw_triangle(draw_vertex_t v[3])
+{
+	draw_line(&v[0], &v[1]);
+	draw_line(&v[1], &v[2]);
+	draw_line(&v[2], &v[0]);
+}
+
+void draw_quad(draw_vertex_t v[4])
+{
+	draw_line(&v[0], &v[1]);
+	draw_line(&v[1], &v[2]);
+	draw_line(&v[2], &v[3]);
+	draw_line(&v[3], &v[0]);
+}
+
+void draw_triangle_fill(draw_vertex_t v[3])
+{
+	draw_line(&v[0], &v[1]);
+	draw_line(&v[1], &v[2]);
+	draw_line(&v[2], &v[0]);
+}
+
+void draw_triangle_tex(draw_vertex_t v[3])
+{
+	draw_line(&v[0], &v[1]);
+	draw_line(&v[1], &v[2]);
+	draw_line(&v[2], &v[0]);
 }

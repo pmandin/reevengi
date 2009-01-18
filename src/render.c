@@ -305,7 +305,7 @@ static void set_color_from_texture(vertex_t *v1)
 static void line(vertex_t *v1, vertex_t *v2)
 {
 	float segment[4][4], result[4][4];
-	/*int clip_result;*/
+	draw_vertex_t v[2];
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
@@ -328,17 +328,18 @@ static void line(vertex_t *v1, vertex_t *v2)
 	/* Project against view frustum */
 	mtx_mult(frustum_mtx, result, segment);
 
-	draw_line(
-		(int) (segment[0][0]/segment[0][2]),
-		(int) (segment[0][1]/segment[0][2]),
-		(int) (segment[1][0]/segment[1][2]),
-		(int) (segment[1][1]/segment[1][2])
-	);
+	v[0].x = segment[0][0]/segment[0][2];
+	v[0].y = segment[0][1]/segment[0][2];
+	v[1].x = segment[1][0]/segment[1][2];
+	v[1].y = segment[1][1]/segment[1][2];
+
+	draw_line(&v[0], &v[1]);
 }
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
+	draw_vertex_t v[3];
 
 	set_color_from_texture(v1);
 
@@ -366,14 +367,20 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		return;
 	}
 
-	line(v1,v2);
-	line(v2,v3);
-	line(v3,v1);
+	v[0].x = segment[0][0]/segment[0][2];
+	v[0].y = segment[0][1]/segment[0][2];
+	v[1].x = segment[1][0]/segment[1][2];
+	v[1].y = segment[1][1]/segment[1][2];
+	v[2].x = segment[2][0]/segment[2][2];
+	v[2].y = segment[2][1]/segment[2][2];
+
+	draw_triangle(v);
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
 	float segment[4][4], result[4][4];
+	draw_vertex_t v[4];
 
 	set_color_from_texture(v1);
 
@@ -405,10 +412,16 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 		return;
 	}
 
-	line(v1,v2);
-	line(v2,v3);
-	line(v3,v4);
-	line(v4,v1);
+	v[0].x = segment[0][0]/segment[0][2];
+	v[0].y = segment[0][1]/segment[0][2];
+	v[1].x = segment[1][0]/segment[1][2];
+	v[1].y = segment[1][1]/segment[1][2];
+	v[2].x = segment[2][0]/segment[2][2];
+	v[2].y = segment[2][1]/segment[2][2];
+	v[3].x = segment[3][0]/segment[3][2];
+	v[3].y = segment[3][1]/segment[3][2];
+
+	draw_quad(v);
 }
 
 /*
