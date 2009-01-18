@@ -1,6 +1,7 @@
 v 0.10
 
 - Texturing for models.
+- Switchable wireframe/filled/textured for model drawing.
 - 64 bits fixes for camera position.
 
 v 0.9
