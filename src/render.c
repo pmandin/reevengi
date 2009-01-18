@@ -430,16 +430,10 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[3], tri2[3];
+	int clip_result, i;
+	draw_vertex_t v[3];
 
-#if 0
-	/*
-		Clip triangle against clip planes
-		for each plane
-			clip list of triangles against plane:
-				keep triangle (if non clipped)
-				generate smaller triangle (if one vertex in)
-				generate two triangles (if one vertex out)
-	*/
+	set_color_from_texture(v1);
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
@@ -478,14 +472,48 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[2].tx[0] = v3->u;
 	tri1[2].tx[1] = v3->v;
 
-	if (mtx_clipTriList(tri1, tri2, &clip_planes[5]) == CLIPPING_OUTSIDE) {
+	clip_result = mtx_clipTriangle(tri1, tri2, clip_planes[5]);
+	if (clip_result == CLIPPING_OUTSIDE) {
 		return;
 	}
 
-	/* Draw each triangle in the list */
+	/* Check face visible */
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = tri1[i].pos[0];
+		result[i][1] = tri1[i].pos[1];
+		result[i][2] = tri1[i].pos[2];
+		result[i][3] = tri1[i].pos[3];
+	}
+	mtx_mult(frustum_mtx, result, segment);
+
+#if 0
+	if (mtx_faceVisible(segment)<0.0f) {
+		return;
+	}
 #endif
 
-	triangle(v1,v2,v3);
+	/* Draw each triangle in the list */
+	v[0].x = segment[0][0]/segment[0][2];
+	v[0].y = segment[0][1]/segment[0][2];
+	v[1].x = segment[1][0]/segment[1][2];
+	v[1].y = segment[1][1]/segment[1][2];
+	v[2].x = segment[2][0]/segment[2][2];
+	v[2].y = segment[2][1]/segment[2][2];
+	draw_triangle_fill(v);
+
+#if 0
+	if (clip_result == CLIPPING_NEWTRIANGLE) {
+		v[0].x = tri2[0].pos[0]/tri2[0].pos[2];
+		v[0].y = tri2[0].pos[1]/tri2[0].pos[2];
+		v[1].x = tri2[1].pos[0]/tri2[1].pos[2];
+		v[1].y = tri2[1].pos[1]/tri2[1].pos[2];
+		v[2].x = tri2[2].pos[0]/tri2[2].pos[2];
+		v[2].y = tri2[2].pos[1]/tri2[2].pos[2];
+
+		draw_triangle_fill(v);
+	}
+#endif
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
