@@ -50,6 +50,7 @@ static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
 static const char *re2ps1_room = "pl%d/rdt/room%d%02x%d.rdt";
 static const char *re2ps1_model = "pl%d/pld/cdemd%d.ems";
 
+static const char *re2ps1_model2 = "res2/zpl%d/pld/cdemd%d.ems";
 static const char *re2ps1_bg1 = "res2/zcommon/bss/room%d%02x.bss";
 static const char *re2ps1_bg2 = "res2/zcommon/bss2/room%d%02x.bss";
 static const char *re2ps1_room1 = "res2/zpl%d/rdt/room%d%02x%d.rdt";
@@ -918,6 +919,7 @@ model_t *re2ps1_load_model(int num_model)
 	Uint32 emd_offset, tim_offset;
 	Uint32 emd_length, tim_length;
 	void *emdBuf, *timBuf;
+	const char *model_file = re2ps1_model;
 
 	switch(game_state.version) {
 		case GAME_RE2_PS1_DEMO:
@@ -927,6 +929,7 @@ model_t *re2ps1_load_model(int num_model)
 				&num_tim, &num_emd);
 			break;
 		case GAME_RE2_PS1_DEMO2:
+			model_file = re2ps1_model2;
 			ems_array = re2ps1demo21_ems;
 			parsed = re2ps1_parse_ems(num_model,
 				re2ps1demo21_ems, sizeof(re2ps1demo21_ems)/sizeof(re2ps1_ems_t),
@@ -966,7 +969,6 @@ model_t *re2ps1_load_model(int num_model)
 				parsed = re2ps1_parse_ems(num_model2,
 					re2ps1gamec2_ems, sizeof(re2ps1gamec2_ems)/sizeof(re2ps1_ems_t),
 					&num_tim, &num_emd);
-				printf("tim %d, emd %d, parsed %d\n", num_tim, num_emd, parsed);
 			}
 			break;
 		default:
@@ -981,15 +983,15 @@ model_t *re2ps1_load_model(int num_model)
 	tim_offset = ems_array[num_tim].offset;
 	tim_length = ems_array[num_tim+1].offset - tim_offset;
 
-	filepath = malloc(strlen(re2ps1_model)+8);
+	filepath = malloc(strlen(model_file)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, re2ps1_model,
+	sprintf(filepath, model_file,
 		game_player, num_file);
 
-	logMsg(1, "Loading model 0x%02x...", num_model);
+	logMsg(1, "Loading model 0x%02x from %s...", num_model, filepath);
 	src = FS_makeRWops(filepath);	
 	if (src) {
 		src_tim = src_emd = NULL;
