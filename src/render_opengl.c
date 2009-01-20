@@ -342,8 +342,12 @@ static void set_blending(int enable)
 	if (enable) {
 		gl.Enable(GL_BLEND);
 		gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		gl.Enable(GL_ALPHA_TEST);
+		gl.AlphaFunc(GL_NOTEQUAL, 0.0f);
 	} else {
 		gl.Disable(GL_BLEND);
+		gl.Disable(GL_ALPHA_TEST);
 	}
 }
 
@@ -377,8 +381,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,
-		blending ? GL_DECAL : GL_REPLACE);
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	/* Upload new palette */
 	if (render_tex->paletted) {

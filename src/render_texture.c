@@ -46,7 +46,7 @@ static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 	if (r1+g1+b1 == 0) {
 		a1 = (a1 ? 0xff : 0);
 	} else {
-		a1 = (a1 ? 0x80 : 0xff);
+		a1 = 0xff;
 	}
 
 	*r = r1;
