@@ -344,7 +344,7 @@ static void set_blending(int enable)
 		gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		gl.Enable(GL_ALPHA_TEST);
-		gl.AlphaFunc(GL_NOTEQUAL, 0.0f);
+		gl.AlphaFunc(GL_GREATER, 0.5f);
 	} else {
 		gl.Disable(GL_BLEND);
 		gl.Disable(GL_ALPHA_TEST);
