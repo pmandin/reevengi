@@ -48,6 +48,8 @@ void mtx_setRotation(float m[4][4], float angle,
 
 void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4]);
 
+void mtx_multMtxVtx(float m1[4][4], vertexf_t vtx[4], float result[4][4]);
+
 /* Calculate if face visible using dot product */
 float mtx_faceVisible(float points[4][4]);
 
@@ -61,6 +63,6 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 int mtx_clipSegment(float points[4][4], float clip[6][4]);
 
 /* Clip a list of triangles */
-int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4]);
+int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t poly[16], float clip[6][4]);
 
 #endif /* MATRIX_H */

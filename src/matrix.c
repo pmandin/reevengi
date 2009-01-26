@@ -223,6 +223,21 @@ void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 	}
 }
 
+void mtx_multMtxVtx(float m1[4][4], vertexf_t vtx[4], float result[4][4])
+{
+	int row,col;
+
+	for (row=0; row<4; row++) {
+		for (col=0; col<4; col++) {
+			result[col][row] =
+				m1[0][row]*vtx[col].pos[0]
+				+ m1[1][row]*vtx[col].pos[1]
+				+ m1[2][row]*vtx[col].pos[2]
+				+ m1[3][row]*vtx[col].pos[3];
+		}
+	}
+}
+
 /* Calc dot product against vector (0,0,1) to see if face visible */
 float mtx_faceVisible(float points[4][4])
 {
@@ -418,32 +433,80 @@ static void mtx_clipSegPlaneVf(vertexf_t *vtx0, vertexf_t *vtx1, float clip[4])
 	vtx1->tx[1] = vtx0->tx[1]+u*(vtx1->tx[1]-vtx0->tx[1]);
 }
 
-int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
+int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float clip[6][4])
 {
 	int i, result = CLIPPING_INSIDE;
-	int k, num_outsides = 0, point_outside=-1, point_inside=-1;
 	int prev_point, next_point;
+	int cur_num_vtx = *num_vtx;
+	vertexf_t tmp_poly[16];
+	int flag_inside[16];
 
-	/* For each vertex */
-	for (k=0; k<3; k++) {
-		if (dotProductPlusVf(&tri1[k], clip)<0.0f) {
-			++num_outsides;
-			point_outside = k;
-		} else {
-			point_inside = k;
+	/* Copy source to dest */
+	for (i=0; i<cur_num_vtx; i++) {
+		memcpy(&tri2[i], &tri1[i], sizeof(vertexf_t));
+	}
+
+	/* For each clip plane */
+	for (i=0; i<6; i++) {
+		int j, num_outsides = 0;
+		int new_num_vtx, p1, p2;
+
+		/* Copy dest to tmp, and use tmp to generate new dest */
+		for (j=0; j<cur_num_vtx; j++) {
+			memcpy(&tmp_poly[j], &tri2[j], sizeof(vertexf_t));
 		}
+
+		for (j=0; j<cur_num_vtx; j++) {
+			flag_inside[j] = 1;
+			if (dotProductPlusVf(&tmp_poly[j], clip[i])<0.0f) {
+				flag_inside[j] = 0;
+				++num_outsides;
+			}
+		}
+
+		if (num_outsides==cur_num_vtx) {
+			/* All points outside of current clip plane */
+			return CLIPPING_OUTSIDE;
+		} else if (num_outsides==0) {
+			/* All points inside, check other planes */
+			continue;
+		}
+
+		/* For each segment */
+		new_num_vtx = 0;
+		p2 = cur_num_vtx-1;
+		for (p1=0; p1<cur_num_vtx; p1++) {
+			if (flag_inside[p1]) {
+				memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
+				++new_num_vtx;
+				if (!flag_inside[p2]) {
+					/* Clip p2 to a new one */
+					memcpy(&tri2[p2], &tmp_poly[p2], sizeof(vertexf_t));
+					++new_num_vtx;
+
+					mtx_clipSegPlaneVf(&tmp_poly[p1], &tmp_poly[p2], clip[i]);
+				}
+			} else {
+				if (flag_inside[p2]) {
+					/* Clip p1 to a new one */
+					memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
+					++new_num_vtx;
+
+					memcpy(&tri2[p2], &tmp_poly[p2], sizeof(vertexf_t));
+					++new_num_vtx;
+
+					mtx_clipSegPlaneVf(&tmp_poly[p2], &tmp_poly[p1], clip[i]);
+				}
+			}
+			p2 = p1;
+		}
+
+		cur_num_vtx = new_num_vtx;
 	}
 
-	if (num_outsides==2) {
-		/* All points outside */
-		return CLIPPING_OUTSIDE;
-	}
+	*num_vtx = cur_num_vtx;
 
-	if (num_outsides==0) {
-		/* All points inside */
-		return CLIPPING_INSIDE;
-	}
-
+#if 0
 	/* Clip triangle, cut in half, adding a triangle if needed */
 
 	if (num_outsides==1) {
@@ -477,6 +540,7 @@ int mtx_clipTriangle(vertexf_t tri1[3], vertexf_t tri2[3], float clip[4])
 		/* clip [point_inside+1] -> [point_inside] */
 		mtx_clipSegPlaneVf(&tri1[point_inside], &tri1[next_point], clip);
 	}
+#endif
 
 	return result;
 }

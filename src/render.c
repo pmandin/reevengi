@@ -429,69 +429,61 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
-	vertexf_t tri1[3], tri2[3];
-	int clip_result, i;
+	vertexf_t tri1[4], poly[16];
+	int clip_result, i, num_vtx;
 	draw_vertex_t v[3];
 
 	set_color_from_texture(v1);
 
-	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1->x;
-	segment[0][1] = v1->y;
-	segment[0][2] = v1->z;
-	segment[0][3] = 1.0f;
-	segment[1][0] = v2->x;
-	segment[1][1] = v2->y;
-	segment[1][2] = v2->z;
-	segment[1][3] = 1.0f;
-	segment[2][0] = v3->x;
-	segment[2][1] = v3->y;
-	segment[2][2] = v3->z;
-	segment[2][3] = 1.0f;
+	tri1[0].pos[0] = v1->x;
+	tri1[0].pos[1] = v1->y;
+	tri1[0].pos[2] = v1->z;
+	tri1[0].pos[3] = 1.0f;
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
 
-	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
+	tri1[1].pos[0] = v2->x;
+	tri1[1].pos[1] = v2->y;
+	tri1[1].pos[2] = v2->z;
+	tri1[1].pos[3] = 1.0f;
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
+
+	tri1[2].pos[0] = v3->x;
+	tri1[2].pos[1] = v3->y;
+	tri1[2].pos[2] = v3->z;
+	tri1[2].pos[3] = 1.0f;
+	tri1[2].tx[0] = v3->u;
+	tri1[2].tx[1] = v3->v;
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], tri1, result);
 
 	tri1[0].pos[0] = result[0][0];
 	tri1[0].pos[1] = result[0][1];
 	tri1[0].pos[2] = result[0][2];
 	tri1[0].pos[3] = result[0][3];
-	tri1[0].tx[0] = v1->u;
-	tri1[0].tx[1] = v1->v;
 
 	tri1[1].pos[0] = result[1][0];
 	tri1[1].pos[1] = result[1][1];
 	tri1[1].pos[2] = result[1][2];
 	tri1[1].pos[3] = result[1][3];
-	tri1[1].tx[0] = v2->u;
-	tri1[1].tx[1] = v2->v;
 
 	tri1[2].pos[0] = result[2][0];
 	tri1[2].pos[1] = result[2][1];
 	tri1[2].pos[2] = result[2][2];
 	tri1[2].pos[3] = result[2][3];
-	tri1[2].tx[0] = v3->u;
-	tri1[2].tx[1] = v3->v;
 
-	clip_result = mtx_clipTriangle(tri1, tri2, clip_planes[5]);
+	num_vtx = 3;
+	clip_result = mtx_clipTriangle(tri1, &num_vtx, poly, clip_planes);
 	if (clip_result == CLIPPING_OUTSIDE) {
 		return;
 	}
 
 	/* Check face visible */
-	memset(result, 0, sizeof(float)*4*4);
-	for (i=0; i<3; i++) {
-		result[i][0] = tri1[i].pos[0];
-		result[i][1] = tri1[i].pos[1];
-		result[i][2] = tri1[i].pos[2];
-		result[i][3] = tri1[i].pos[3];
-	}
 	mtx_mult(frustum_mtx, result, segment);
-
-#if 0
 	if (mtx_faceVisible(segment)<0.0f) {
 		return;
 	}
-#endif
 
 	/* Draw each triangle in the list */
 	v[0].x = segment[0][0]/segment[0][2];
