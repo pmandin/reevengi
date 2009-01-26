@@ -435,8 +435,7 @@ static void mtx_clipSegPlaneVf(vertexf_t *vtx0, vertexf_t *vtx1, float clip[4])
 
 int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float clip[6][4])
 {
-	int i, result = CLIPPING_INSIDE;
-	int prev_point, next_point;
+	int i;
 	int cur_num_vtx = *num_vtx;
 	vertexf_t tmp_poly[16];
 	int flag_inside[16];
@@ -506,41 +505,5 @@ int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float 
 
 	*num_vtx = cur_num_vtx;
 
-#if 0
-	/* Clip triangle, cut in half, adding a triangle if needed */
-
-	if (num_outsides==1) {
-		/* Clipped triangle is a quad, generate a new triangle */
-		/* clip [point_outside-1] -> [point_outside] */
-		/* clip [point_outside+1] -> [point_outside] */
-
-		prev_point = (point_outside-1+3) % 3;
-		next_point = (point_outside+1) % 3;
-
-		/* Generate new triangle */
-		memcpy(&tri2[prev_point], &tri1[prev_point], sizeof(vertexf_t));
-		memcpy(&tri2[point_outside], &tri1[point_outside], sizeof(vertexf_t));
-		mtx_clipSegPlaneVf(&tri2[prev_point], &tri2[point_outside], clip);
-
-		/* Clip first */
-		mtx_clipSegPlaneVf(&tri1[next_point], &tri1[point_outside], clip);
-
-		/* And use it for last vertex of second triangle */
-		memcpy(&tri2[next_point], &tri1[point_outside], sizeof(vertexf_t));
-
-		result = CLIPPING_NEWTRIANGLE;
-	} else {
-		/* Clipped triangle is smaller */
-		prev_point = (point_inside-1+3) % 3;
-		next_point = (point_inside+1) % 3;
-
-		/* clip [point_inside-1] -> [point_inside] */
-		mtx_clipSegPlaneVf(&tri1[point_inside], &tri1[prev_point], clip);
-
-		/* clip [point_inside+1] -> [point_inside] */
-		mtx_clipSegPlaneVf(&tri1[point_inside], &tri1[next_point], clip);
-	}
-#endif
-
-	return result;
+	return CLIPPING_INSIDE;
 }
