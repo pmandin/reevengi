@@ -483,7 +483,7 @@ int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float 
 					memcpy(&tri2[p2], &tmp_poly[p2], sizeof(vertexf_t));
 					++new_num_vtx;
 
-					mtx_clipSegPlaneVf(&tmp_poly[p1], &tmp_poly[p2], clip[i]);
+					mtx_clipSegPlaneVf(&tri2[p1], &tri2[p2], clip[i]);
 				}
 			} else {
 				if (flag_inside[p2]) {
@@ -491,10 +491,7 @@ int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float 
 					memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
 					++new_num_vtx;
 
-					memcpy(&tri2[p2], &tmp_poly[p2], sizeof(vertexf_t));
-					++new_num_vtx;
-
-					mtx_clipSegPlaneVf(&tmp_poly[p2], &tmp_poly[p1], clip[i]);
+					mtx_clipSegPlaneVf(&tri2[p2], &tri2[p1], clip[i]);
 				}
 			}
 			p2 = p1;
