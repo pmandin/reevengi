@@ -429,7 +429,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
-	vertexf_t tri1[4], poly[16];
+	vertexf_t tri1[3], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
 	draw_vertex_t v[3];
 
@@ -456,56 +456,37 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[2].tx[0] = v3->u;
 	tri1[2].tx[1] = v3->v;
 
-	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], tri1, result);
-
-	tri1[0].pos[0] = result[0][0];
-	tri1[0].pos[1] = result[0][1];
-	tri1[0].pos[2] = result[0][2];
-	tri1[0].pos[3] = result[0][3];
-
-	tri1[1].pos[0] = result[1][0];
-	tri1[1].pos[1] = result[1][1];
-	tri1[1].pos[2] = result[1][2];
-	tri1[1].pos[3] = result[1][3];
-
-	tri1[2].pos[0] = result[2][0];
-	tri1[2].pos[1] = result[2][1];
-	tri1[2].pos[2] = result[2][2];
-	tri1[2].pos[3] = result[2][3];
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 3, tri1, poly);
 
 	num_vtx = 3;
-	clip_result = mtx_clipTriangle(tri1, &num_vtx, poly, clip_planes);
+	clip_result = mtx_clipTriangle(poly, &num_vtx, poly2, clip_planes);
 	if (clip_result == CLIPPING_OUTSIDE) {
 		return;
 	}
 
 	/* Check face visible */
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = poly[i].pos[0];
+		result[i][1] = poly[i].pos[1];
+		result[i][2] = poly[i].pos[2];
+		result[i][3] = poly[i].pos[3];
+	}
+
 	mtx_mult(frustum_mtx, result, segment);
 	if (mtx_faceVisible(segment)<0.0f) {
 		return;
 	}
 
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
 	/* Draw each triangle in the list */
-	v[0].x = segment[0][0]/segment[0][2];
-	v[0].y = segment[0][1]/segment[0][2];
-	v[1].x = segment[1][0]/segment[1][2];
-	v[1].y = segment[1][1]/segment[1][2];
-	v[2].x = segment[2][0]/segment[2][2];
-	v[2].y = segment[2][1]/segment[2][2];
-	draw_triangle_fill(v);
-
-#if 0
-	if (clip_result == CLIPPING_NEWTRIANGLE) {
-		v[0].x = tri2[0].pos[0]/tri2[0].pos[2];
-		v[0].y = tri2[0].pos[1]/tri2[0].pos[2];
-		v[1].x = tri2[1].pos[0]/tri2[1].pos[2];
-		v[1].y = tri2[1].pos[1]/tri2[1].pos[2];
-		v[2].x = tri2[2].pos[0]/tri2[2].pos[2];
-		v[2].y = tri2[2].pos[1]/tri2[2].pos[2];
-
-		draw_triangle_fill(v);
+	for (i=0; i<3; i++) {
+		v[i].x = poly[i].pos[0]/poly[i].pos[2];
+		v[i].y = poly[i].pos[1]/poly[i].pos[2];
 	}
-#endif
+	draw_triangle_fill(v);
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)

@@ -223,17 +223,19 @@ void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 	}
 }
 
-void mtx_multMtxVtx(float m1[4][4], vertexf_t vtx[4], float result[4][4])
+void mtx_multMtxVtx(float m1[4][4], int num_vtx, vertexf_t *vtx, vertexf_t *result)
 {
 	int row,col;
 
 	for (row=0; row<4; row++) {
-		for (col=0; col<4; col++) {
-			result[col][row] =
+		for (col=0; col<num_vtx; col++) {
+			result[col].pos[row] =
 				m1[0][row]*vtx[col].pos[0]
 				+ m1[1][row]*vtx[col].pos[1]
 				+ m1[2][row]*vtx[col].pos[2]
 				+ m1[3][row]*vtx[col].pos[3];
+			result[col].tx[0] = vtx[col].tx[0];
+			result[col].tx[1] = vtx[col].tx[1];
 		}
 	}
 }
