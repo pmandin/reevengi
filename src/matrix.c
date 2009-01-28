@@ -476,24 +476,34 @@ int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float 
 		/* For each segment */
 		new_num_vtx = 0;
 		p2 = cur_num_vtx-1;
+		/*printf("--\n");*/
 		for (p1=0; p1<cur_num_vtx; p1++) {
+			/*printf("p[%d]:%.3f %.3f %.3f %.3f\n",
+				p1,tmp_poly[p1].pos[0],tmp_poly[p1].pos[1],
+				tmp_poly[p1].pos[2],tmp_poly[p1].pos[3]);*/
 			if (flag_inside[p1]) {
 				memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
 				++new_num_vtx;
 				if (!flag_inside[p2]) {
+					/*printf("p1 inside, p2 outside\n");*/
 					/* Clip p2 to a new one */
 					memcpy(&tri2[p2], &tmp_poly[p2], sizeof(vertexf_t));
 					++new_num_vtx;
 
 					mtx_clipSegPlaneVf(&tri2[p1], &tri2[p2], clip[i]);
+				/*} else {
+					printf("p1 inside, p2 inside\n");*/
 				}
 			} else {
 				if (flag_inside[p2]) {
+					/*printf("p1 outside, p2 inside\n");*/
 					/* Clip p1 to a new one */
 					memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
 					++new_num_vtx;
 
 					mtx_clipSegPlaneVf(&tri2[p2], &tri2[p1], clip[i]);
+				/*} else {
+					printf("p1 outside, p2 outside\n");*/
 				}
 			}
 			p2 = p1;
