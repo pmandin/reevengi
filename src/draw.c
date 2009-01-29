@@ -39,6 +39,11 @@
 
 static Uint32 draw_color = 0;
 
+/* for poly rendering */
+static int size_poly_minmaxx = 0;
+static int *poly_minx = NULL;
+static int *poly_maxx = NULL;
+
 /*--- Functions prototypes ---*/
 
 static int clipEncode (int x, int y, int left, int top, int right, int bottom);
@@ -52,6 +57,15 @@ void draw_init(void)
 
 void draw_shutdown(void)
 {
+	if (poly_minx) {
+		free(poly_minx);
+		poly_minx = NULL;
+	}
+	if (poly_maxx) {
+		free(poly_maxx);
+		poly_maxx = NULL;
+	}
+	size_poly_minmaxx = 0;
 }
 
 void draw_setColor(Uint32 color)
@@ -248,9 +262,23 @@ void draw_quad(draw_vertex_t v[4])
 
 void draw_triangle_fill(draw_vertex_t v[3])
 {
+	int miny = video.viewport.h;
+	int maxy = -1;
+
 	draw_line(&v[0], &v[1]);
 	draw_line(&v[1], &v[2]);
 	draw_line(&v[2], &v[0]);
+
+	if (video.viewport.h>size_poly_minmaxx) {
+		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
+		poly_maxx = realloc(poly_maxx, sizeof(int) * video.viewport.h);
+		size_poly_minmaxx = video.viewport.h;
+	}
+
+	if (!poly_minx || !poly_maxx) {
+		fprintf(stderr, "Not enough memory for poly rendering\n");
+		return;
+	}
 }
 
 void draw_triangle_tex(draw_vertex_t v[3])
