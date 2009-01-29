@@ -46,6 +46,14 @@ static int clip_line(int *x1, int *y1, int *x2, int *y2);
 
 /*--- Functions ---*/
 
+void draw_init(void)
+{
+}
+
+void draw_shutdown(void)
+{
+}
+
 void draw_setColor(Uint32 color)
 {
 	SDL_Surface *surf = video.screen;

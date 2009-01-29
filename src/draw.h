@@ -30,6 +30,9 @@ typedef struct {
 
 /*--- Functions prototypes ---*/
 
+void draw_init(void);
+void draw_shutdown(void);
+
 void draw_setColor(Uint32 color);
 
 void draw_line(draw_vertex_t *v1, draw_vertex_t *v2);
