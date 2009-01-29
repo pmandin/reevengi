@@ -185,6 +185,14 @@ void draw_hline(int x1, int x2, int y)
 		x1 = x2;
 		x2 = tmp;
 	}
+
+	x1 += video.viewport.x;
+	x2 += video.viewport.x;
+	y += video.viewport.y;
+
+	/* TODO/FIXME: clip line ? */
+
+
 }
 
 /* Clip line to viewport size */
@@ -279,6 +287,7 @@ void draw_triangle_fill(draw_vertex_t v[3])
 	int miny = video.viewport.h;
 	int maxy = -1;
 	int y, p1, p2;
+	int minx = video.viewport.x, maxx = -1;
 
 	draw_line(&v[0], &v[1]);
 	draw_line(&v[1], &v[2]);
@@ -337,8 +346,20 @@ void draw_triangle_fill(draw_vertex_t v[3])
 	}
 	
 	for (y=miny; y<maxy; y++) {
+		if (poly_minx[y]<minx) {
+			minx = poly_minx[y];
+		}
+		if (poly_maxx[y]>maxx) {
+			maxx = poly_maxx[y];
+		}
 		draw_hline(poly_minx[y], poly_maxx[y], y);
 	}
+
+	/* Mark dirty rectangle */
+	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
+	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
 
 void draw_triangle_tex(draw_vertex_t v[3])
