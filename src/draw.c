@@ -187,6 +187,12 @@ void draw_hline(int x1, int x2, int y)
 		x1 = x2;
 		x2 = tmp;
 	}
+	if (x1<0) {
+		x1 = 0;
+	}
+	if (x2>=video.viewport.w) {
+		x2 = video.viewport.w-1;
+	}
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
