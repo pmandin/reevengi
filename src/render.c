@@ -443,6 +443,7 @@ static void render_poly_fill(int num_vtx, vertexf_t *poly2)
 	for (i=0; i<num_vtx-2; i++) {
 		draw_vertex_t v[3];
 
+		/*printf("draw triangle %d,%d,%d\n",p1,p2,p3);*/
 		v[0].x = poly[p1].pos[0]/poly[p1].pos[2];
 		v[0].y = poly[p1].pos[1]/poly[p1].pos[2];
 		v[1].x = poly[p2].pos[0]/poly[p2].pos[2];
@@ -458,6 +459,7 @@ static void render_poly_fill(int num_vtx, vertexf_t *poly2)
 
 		p1=p2++;
 
+		/*printf("draw triangle %d,%d,%d\n",p1,p2,p3);*/
 		v[0].x = poly[p1].pos[0]/poly[p1].pos[2];
 		v[0].y = poly[p1].pos[1]/poly[p1].pos[2];
 		v[1].x = poly[p2].pos[0]/poly[p2].pos[2];
