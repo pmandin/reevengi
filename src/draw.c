@@ -179,6 +179,8 @@ void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
 void draw_hline(int x1, int x2, int y)
 {
 	int tmp;
+	SDL_Surface *surf = video.screen;
+	Uint8 *src;
 
 	if (x1>x2) {
 		tmp = x1;
@@ -192,7 +194,35 @@ void draw_hline(int x1, int x2, int y)
 
 	/* TODO/FIXME: clip line ? */
 
+	src = surf->pixels;
+	src += surf->pitch * y;
+	src += x1 * surf->format->BytesPerPixel;
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			memset(src, x2-x1+1, draw_color);
+			break;
+		case 2:
+			{
+				Uint16 *src_line = (Uint16 *) src;
 
+				for (; x1<=x2; x1++) {
+					*src_line++ = draw_color;
+				}
+			}
+			break;
+		case 3:
+			/* FIXME */
+			break;
+		case 4:
+			{
+				Uint32 *src_line = (Uint32 *) src;
+
+				for (; x1<=x2; x1++) {
+					*src_line++ = draw_color;
+				}
+			}
+			break;
+	}
 }
 
 /* Clip line to viewport size */
