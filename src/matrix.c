@@ -442,6 +442,8 @@ int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float 
 	vertexf_t tmp_poly[16];
 	int flag_inside[16];
 
+	/*printf("--- clip poly\n");*/
+
 	/* Copy source to dest */
 	for (i=0; i<cur_num_vtx; i++) {
 		memcpy(&tri2[i], &tri1[i], sizeof(vertexf_t));
@@ -478,38 +480,57 @@ int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float 
 		p2 = cur_num_vtx-1;
 		/*printf("--\n");*/
 		for (p1=0; p1<cur_num_vtx; p1++) {
-			/*printf("p[%d]:%.3f %.3f %.3f %.3f\n",
+			/*printf("src[%d]:%.3f %.3f %.3f %.3f\n",
 				p1,tmp_poly[p1].pos[0],tmp_poly[p1].pos[1],
 				tmp_poly[p1].pos[2],tmp_poly[p1].pos[3]);*/
 			if (flag_inside[p1]) {
-				memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
+				/*printf(" p1 inside\n");*/
+				memcpy(&tri2[new_num_vtx], &tmp_poly[p1], sizeof(vertexf_t));
+				/*printf(" p[%d]:%.3f %.3f %.3f %.3f\n",
+					new_num_vtx,tri2[new_num_vtx].pos[0],tri2[new_num_vtx].pos[1],
+					tri2[new_num_vtx].pos[2],tri2[new_num_vtx].pos[3]);*/
 				++new_num_vtx;
 				if (!flag_inside[p2]) {
-					/*printf("p1 inside, p2 outside\n");*/
+					/*printf("  p2 outside\n");*/
 					/* Clip p2 to a new one */
-					memcpy(&tri2[p2], &tmp_poly[p2], sizeof(vertexf_t));
-					++new_num_vtx;
+					memcpy(&tri2[new_num_vtx], &tmp_poly[p2], sizeof(vertexf_t));
 
-					mtx_clipSegPlaneVf(&tri2[p1], &tri2[p2], clip[i]);
+					/*printf("  p[%d]:%.3f %.3f %.3f %.3f (before)\n",
+						new_num_vtx,tri2[new_num_vtx].pos[0],tri2[new_num_vtx].pos[1],
+						tri2[new_num_vtx].pos[2],tri2[new_num_vtx].pos[3]);*/
+					mtx_clipSegPlaneVf(&tmp_poly[p1], &tri2[new_num_vtx], clip[i]);
+					/*printf("  p[%d]:%.3f %.3f %.3f %.3f (after)\n",
+						new_num_vtx,tri2[new_num_vtx].pos[0],tri2[new_num_vtx].pos[1],
+						tri2[new_num_vtx].pos[2],tri2[new_num_vtx].pos[3]);*/
+					++new_num_vtx;
 				/*} else {
-					printf("p1 inside, p2 inside\n");*/
+					printf("  p2 inside\n");*/
 				}
 			} else {
+				/*printf(" p1 outside\n");*/
 				if (flag_inside[p2]) {
-					/*printf("p1 outside, p2 inside\n");*/
+					/*printf("  p2 inside\n");*/
 					/* Clip p1 to a new one */
-					memcpy(&tri2[p1], &tmp_poly[p1], sizeof(vertexf_t));
-					++new_num_vtx;
+					memcpy(&tri2[new_num_vtx], &tmp_poly[p1], sizeof(vertexf_t));
 
-					mtx_clipSegPlaneVf(&tri2[p2], &tri2[p1], clip[i]);
+					/*printf("  p[%d]:%.3f %.3f %.3f %.3f (before)\n",
+						new_num_vtx,tri2[new_num_vtx].pos[0],tri2[new_num_vtx].pos[1],
+						tri2[new_num_vtx].pos[2],tri2[new_num_vtx].pos[3]);*/
+					mtx_clipSegPlaneVf(&tmp_poly[p2], &tri2[new_num_vtx], clip[i]);
+					/*printf("  p[%d]:%.3f %.3f %.3f %.3f (after)\n",
+						new_num_vtx,tri2[new_num_vtx].pos[0],tri2[new_num_vtx].pos[1],
+						tri2[new_num_vtx].pos[2],tri2[new_num_vtx].pos[3]);*/
+
+					++new_num_vtx;
 				/*} else {
-					printf("p1 outside, p2 outside\n");*/
+					printf("  p2 outside\n");*/
 				}
 			}
 			p2 = p1;
 		}
 
 		cur_num_vtx = new_num_vtx;
+		/*printf("%d vertices\n", cur_num_vtx);*/
 	}
 
 	*num_vtx = cur_num_vtx;
