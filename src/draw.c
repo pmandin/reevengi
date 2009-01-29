@@ -46,6 +46,8 @@ static int *poly_maxx = NULL;
 
 /*--- Functions prototypes ---*/
 
+static void draw_hline(int x1, int x2, int y);
+
 static int clipEncode (int x, int y, int left, int top, int right, int bottom);
 static int clip_line(int *x1, int *y1, int *x2, int *y2);
 
@@ -173,6 +175,18 @@ void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
 	}
 }
 
+/* Draw horizontal line */
+void draw_hline(int x1, int x2, int y)
+{
+	int tmp;
+
+	if (x1>x2) {
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+}
+
 /* Clip line to viewport size */
 static int clipEncode (int x, int y, int left, int top, int right, int bottom)
 {
@@ -264,6 +278,7 @@ void draw_triangle_fill(draw_vertex_t v[3])
 {
 	int miny = video.viewport.h;
 	int maxy = -1;
+	int y, p1, p2;
 
 	draw_line(&v[0], &v[1]);
 	draw_line(&v[1], &v[2]);
@@ -278,6 +293,51 @@ void draw_triangle_fill(draw_vertex_t v[3])
 	if (!poly_minx || !poly_maxx) {
 		fprintf(stderr, "Not enough memory for poly rendering\n");
 		return;
+	}
+
+	/* Fill poly min/max array with segments */
+	p1 = 2;
+	for (p2=0; p2<3; p2++) {
+		int v1 = p1;
+		int v2 = p2;
+		int y1,dx,dy;
+		int *array = poly_maxx;
+
+		if (v[v1].y > v[v2].y) {
+			v1 = p2;
+			v2 = p1;
+			array = poly_minx;
+		}
+		if (v[v1].y < miny) {
+			miny = v[v1].y;
+		}
+		if (v[v2].y > maxy) {
+			maxy = v[v2].y;
+		}
+
+		y1 = v[v1].y;
+		dx = v[v2].x - v[v1].x;
+		dy = v[v2].y - v[v1].y;
+		for (y=0; y<dy; y++) {
+			if ((y1<0) || (y1>=video.viewport.h)) {
+				continue;
+			}
+			array[y1++] = v[v1].x + ((dx*y)/dy);
+		}
+
+		p1 = p2;
+	}
+
+	/* Render horizontal lines */
+	if (miny<0) {
+		miny = 0;
+	}
+	if (maxy>=video.viewport.h) {
+		maxy = video.viewport.h;
+	}
+	
+	for (y=miny; y<maxy; y++) {
+		draw_hline(poly_minx[y], poly_maxx[y], y);
 	}
 }
 
