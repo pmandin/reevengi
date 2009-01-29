@@ -68,6 +68,7 @@ static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
+static void render_poly_fill(int num_vtx, vertexf_t *poly2);
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
@@ -426,6 +427,49 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	Filled triangles/quads
 */
 
+static void render_poly_fill(int num_vtx, vertexf_t *poly2)
+{
+	vertexf_t poly[16];
+	int i, p1,p2,p3;
+
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
+	/* Draw each triangle in the list */
+	p1=0;
+	p2=1;
+	p3=num_vtx-1;
+
+	for (i=0; i<num_vtx-2; i++) {
+		draw_vertex_t v[3];
+
+		v[0].x = poly[p1].pos[0]/poly[p1].pos[2];
+		v[0].y = poly[p1].pos[1]/poly[p1].pos[2];
+		v[1].x = poly[p2].pos[0]/poly[p2].pos[2];
+		v[1].y = poly[p2].pos[1]/poly[p2].pos[2];
+		v[2].x = poly[p3].pos[0]/poly[p3].pos[2];
+		v[2].y = poly[p3].pos[1]/poly[p3].pos[2];
+		draw_triangle_fill(v);
+
+		++i;
+		if (i>=num_vtx-2) {
+			break;
+		}
+
+		p1=p2++;
+
+		v[0].x = poly[p1].pos[0]/poly[p1].pos[2];
+		v[0].y = poly[p1].pos[1]/poly[p1].pos[2];
+		v[1].x = poly[p2].pos[0]/poly[p2].pos[2];
+		v[1].y = poly[p2].pos[1]/poly[p2].pos[2];
+		v[2].x = poly[p3].pos[0]/poly[p3].pos[2];
+		v[2].y = poly[p3].pos[1]/poly[p3].pos[2];
+		draw_triangle_fill(v);
+
+		p1=p3--;
+	}
+}
+
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
@@ -478,15 +522,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		return;
 	}
 
-	/* Project poly in frustum */
-	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
-
-	/* Draw each triangle in the list */
-	for (i=0; i<3; i++) {
-		v[i].x = poly[i].pos[0]/poly[i].pos[2];
-		v[i].y = poly[i].pos[1]/poly[i].pos[2];
-	}
-	draw_triangle_fill(v);
+	render_poly_fill(num_vtx, poly2);
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -548,20 +584,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 		return;
 	}
 
-	/* Project poly in frustum */
-	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
-
-	/* Draw each triangle in the list */
-	for (i=0; i<4; i++) {
-		v[i].x = poly[i].pos[0]/poly[i].pos[2];
-		v[i].y = poly[i].pos[1]/poly[i].pos[2];
-	}
-	draw_triangle_fill(v);
-
-#if 0
-	triangle_fill(v1,v2,v3);
-	triangle_fill(v3,v4,v1);
-#endif
+	render_poly_fill(num_vtx, poly2);
 }
 
 /*
