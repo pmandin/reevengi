@@ -301,8 +301,6 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		/*render.set_blending((emd_tri_tex[i].clutid>>7) & 1);*/
 		render.set_texture(emd_tri_tex[i].clutid & 3, this->texture);
 		render.triangle(&v[0], &v[1], &v[2]);
-
-		/*return;*/
 	}
 
 	/* Draw quads */
