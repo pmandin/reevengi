@@ -322,10 +322,9 @@ void draw_quad(draw_vertex_t v[4])
 
 void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 {
-	int miny = video.viewport.h;
-	int maxy = -1;
+	int miny = video.viewport.h, maxy = -1;
+	int minx = video.viewport.w, maxx = -1;
 	int y, p1, p2;
-	int minx = video.viewport.x, maxx = -1;
 
 	if (video.viewport.h>size_poly_minmaxx) {
 		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
