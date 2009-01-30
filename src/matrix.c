@@ -236,6 +236,10 @@ void mtx_multMtxVtx(float m1[4][4], int num_vtx, vertexf_t *vtx, vertexf_t *resu
 				+ m1[3][row]*vtx[col].pos[3];
 			result[col].tx[0] = vtx[col].tx[0];
 			result[col].tx[1] = vtx[col].tx[1];
+			result[col].col[0] = vtx[col].col[0];
+			result[col].col[1] = vtx[col].col[1];
+			result[col].col[2] = vtx[col].col[2];
+			result[col].col[3] = vtx[col].col[3];
 		}
 	}
 }
