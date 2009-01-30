@@ -194,12 +194,13 @@ void draw_hline(int x1, int x2, int y)
 	if (x2>=video.viewport.w) {
 		x2 = video.viewport.w-1;
 	}
+	if ((y<0) || (y>=video.viewport.h)) {
+		return;
+	}
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
 	y += video.viewport.y;
-
-	/* TODO/FIXME: clip line ? */
 
 	src = surf->pixels;
 	src += surf->pitch * y;
