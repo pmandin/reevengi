@@ -4,6 +4,7 @@ v 0.10
 - Switchable wireframe/filled/textured for model drawing.
 - 64 bits fixes for camera position.
 - Software renderer: filled polygons.
+- OpenGL: Add gouraud rendering.
 
 v 0.9
 

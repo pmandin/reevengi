@@ -69,7 +69,8 @@ ESC		quit
 F1		screenshot
 F2		wireframe rendering for model
 F3		filled rendering for model
-F4		textured rendering for model
+F4		gouraud rendering for model (OpenGL only)
+F5		textured rendering for model (OpenGL only)
 Alt+Enter	toggle between fullscreen and windowed mode.
 
 A		decrement gamma
@@ -126,5 +127,5 @@ support for them. I just need a list of all files on each CD (recursive director
 tree).
 
 -- 
-Patrice Mandin <pmandin -at- caramail -dot -com>
+Patrice Mandin <patmandin@gmail.com>
 Web: http://pmandin.atari.org/
