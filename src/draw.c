@@ -44,6 +44,8 @@ static Uint32 draw_color = 0;
 static int size_poly_minmaxx = 0;
 static int *poly_minx = NULL;
 static int *poly_maxx = NULL;
+static Uint32 *poly_minc = NULL;
+static Uint32 *poly_maxc = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -67,6 +69,14 @@ void draw_shutdown(void)
 	if (poly_maxx) {
 		free(poly_maxx);
 		poly_maxx = NULL;
+	}
+	if (poly_minc) {
+		free(poly_minc);
+		poly_minc = NULL;
+	}
+	if (poly_maxc) {
+		free(poly_maxc);
+		poly_maxc = NULL;
 	}
 	size_poly_minmaxx = 0;
 }
@@ -356,6 +366,8 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
 			array = poly_minx;
+			v1 = p2;
+			v2 = p1;
 		}
 		if (y1 < miny) {
 			miny = y1;
@@ -405,7 +417,105 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 
 void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 {
-	draw_poly_fill(vtx, num_vtx);
+	int miny = video.viewport.h, maxy = -1;
+	int minx = video.viewport.w, maxx = -1;
+	int y, p1, p2;
+
+	if (video.viewport.h>size_poly_minmaxx) {
+		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
+		poly_maxx = realloc(poly_maxx, sizeof(int) * video.viewport.h);
+		poly_minc = realloc(poly_minc, sizeof(int) * video.viewport.h);
+		poly_maxc = realloc(poly_maxc, sizeof(int) * video.viewport.h);
+		size_poly_minmaxx = video.viewport.h;
+	}
+
+	if (!poly_minx || !poly_maxx || !poly_minc || !poly_maxc)
+	{
+		fprintf(stderr, "Not enough memory for poly rendering\n");
+		return;
+	}
+
+	/* Fill poly min/max array with segments */
+	p1 = num_vtx-1;
+	for (p2=0; p2<num_vtx; p2++) {
+		int v1 = p1;
+		int v2 = p2;
+		int x1,y1, x2,y2;
+		int dy;
+		int *array_x = poly_maxx;
+		Uint32 *array_c = poly_maxc;
+
+		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
+		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
+		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
+		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
+
+		/* Swap if p1 lower than p2 */
+		if (y1 > y2) {
+			int tmp;
+
+			tmp = x1; x1 = x2; x2 = tmp;
+			tmp = y1; y1 = y2; y2 = tmp;
+			array_x = poly_minx;
+			array_c = poly_minc;
+			v1 = p2;
+			v2 = p1;
+		}
+		if (y1 < miny) {
+			miny = y1;
+		}
+		if (y2 > maxy) {
+			maxy = y2;
+		}
+
+		dy = y2 - y1;
+		if (dy>0) {
+			int dx = x2 - x1;
+			int r1 = vtx[v1].col[0];
+			int dr = vtx[v2].col[0] - vtx[v1].col[0];
+			int g1 = vtx[v1].col[1];
+			int dg = vtx[v2].col[1] - vtx[v1].col[1];
+			int b1 = vtx[v1].col[2];
+			int db = vtx[v2].col[2] - vtx[v1].col[2];
+			for (y=0; y<dy; y++) {
+				Uint32 r,g,b;
+				if ((y1<0) || (y1>=video.viewport.h)) {
+					continue;
+				}
+				r = (r1 + ((dr*y)/dy)) & 0xff;
+				g = (g1 + ((dg*y)/dy)) & 0xff;
+				b = (b1 + ((db*y)/dy)) & 0xff;
+				array_c[y1] = (r<<16)|(g<<8)|b;
+				array_x[y1++] = x1 + ((dx*y)/dy);
+			}
+		}
+
+		p1 = p2;
+	}
+
+	/* Render horizontal lines */
+	if (miny<0) {
+		miny = 0;
+	}
+	if (maxy>=video.viewport.h) {
+		maxy = video.viewport.h;
+	}
+	
+	for (y=miny; y<maxy; y++) {
+		if (poly_minx[y]<minx) {
+			minx = poly_minx[y];
+		}
+		if (poly_maxx[y]>maxx) {
+			maxx = poly_maxx[y];
+		}
+		draw_hline(poly_minx[y], poly_maxx[y], y);
+	}
+
+	/* Mark dirty rectangle */
+	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
+	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
 
 void draw_poly_tex(vertexf_t *vtx, int num_vtx)
