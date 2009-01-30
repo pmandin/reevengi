@@ -361,8 +361,8 @@ void draw_triangle_fill(draw_vertex_t v[3])
 		}
 
 		y1 = v[v1].y;
-		dx = v[v2].x - v[v1].x;
-		dy = v[v2].y - v[v1].y;
+		dx = v[v2].x - v[v1].x + 1;
+		dy = v[v2].y - v[v1].y + 1;
 		for (y=0; y<dy; y++) {
 			if ((y1<0) || (y1>=video.viewport.h)) {
 				continue;
