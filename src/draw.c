@@ -247,11 +247,13 @@ static void draw_hline(int x1, int x2, int y)
 /* Draw horizontal line, gouraud */
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 {
-	int tmp;
 	SDL_Surface *surf = video.screen;
 	Uint8 *src;
+	int r1,g1,b1, r2,g2,b2, dr,dg,db, dx,x;
 
 	if (x1>x2) {
+		int tmp;
+
 		tmp = x1;
 		x1 = x2;
 		x2 = tmp;
@@ -269,20 +271,35 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
 	y += video.viewport.y;
+	dx = x2-x1+1;
+
+	r1 = (c1>>16) & 0xff;
+	g1 = (c1>>8) & 0xff;
+	b1 = c1 & 0xff;
+	r2 = (c2>>16) & 0xff;
+	g2 = (c2>>8) & 0xff;
+	b2 = c2 & 0xff;
+	dr = r2-r1;
+	dg = g2-g1;
+	db = b2-b1;
 
 	src = surf->pixels;
 	src += surf->pitch * y;
 	src += x1 * surf->format->BytesPerPixel;
 	switch(surf->format->BytesPerPixel) {
 		case 1:
-			memset(src, x2-x1+1, draw_color);
+			/* TODO: gouraud using 216 palette */
+			memset(src, dx, draw_color);
 			break;
 		case 2:
 			{
 				Uint16 *src_line = (Uint16 *) src;
 
-				for (; x1<=x2; x1++) {
-					*src_line++ = draw_color;
+				for (x=0; x<dx; x++) {
+					int r = r1 + ((dr*x)/dx);
+					int g = g1 + ((dg*x)/dx);
+					int b = b1 + ((db*x)/dx);
+					*src_line++ = SDL_MapRGB(surf->format, r,g,b);
 				}
 			}
 			break;
@@ -293,8 +310,11 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 			{
 				Uint32 *src_line = (Uint32 *) src;
 
-				for (; x1<=x2; x1++) {
-					*src_line++ = draw_color;
+				for (x=0; x<dx; x++) {
+					int r = r1 + ((dr*x)/dx);
+					int g = g1 + ((dg*x)/dx);
+					int b = b1 + ((db*x)/dx);
+					*src_line++ = SDL_MapRGB(surf->format, r,g,b);
 				}
 			}
 			break;
@@ -397,6 +417,8 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 	if (video.viewport.h>size_poly_minmaxx) {
 		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
 		poly_maxx = realloc(poly_maxx, sizeof(int) * video.viewport.h);
+		poly_minc = realloc(poly_minc, sizeof(Uint32) * video.viewport.h);
+		poly_maxc = realloc(poly_maxc, sizeof(Uint32) * video.viewport.h);
 		size_poly_minmaxx = video.viewport.h;
 	}
 
@@ -482,8 +504,8 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 	if (video.viewport.h>size_poly_minmaxx) {
 		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
 		poly_maxx = realloc(poly_maxx, sizeof(int) * video.viewport.h);
-		poly_minc = realloc(poly_minc, sizeof(int) * video.viewport.h);
-		poly_maxc = realloc(poly_maxc, sizeof(int) * video.viewport.h);
+		poly_minc = realloc(poly_minc, sizeof(Uint32) * video.viewport.h);
+		poly_maxc = realloc(poly_maxc, sizeof(Uint32) * video.viewport.h);
 		size_poly_minmaxx = video.viewport.h;
 	}
 
