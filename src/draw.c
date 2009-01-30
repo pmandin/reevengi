@@ -558,7 +558,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 			int b1 = vtx[v1].col[2];
 			int db = vtx[v2].col[2] - vtx[v1].col[2];
 			for (y=0; y<dy; y++) {
-				Uint32 r,g,b;
+				int r,g,b;
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
