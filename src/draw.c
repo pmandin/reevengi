@@ -50,6 +50,7 @@ static Uint32 *poly_maxc = NULL;
 /*--- Functions prototypes ---*/
 
 static void draw_hline(int x1, int x2, int y);
+static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
 
 static int clipEncode (int x, int y, int left, int top, int right, int bottom);
 static int clip_line(int *x1, int *y1, int *x2, int *y2);
@@ -187,7 +188,64 @@ void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
 }
 
 /* Draw horizontal line */
-void draw_hline(int x1, int x2, int y)
+static void draw_hline(int x1, int x2, int y)
+{
+	int tmp;
+	SDL_Surface *surf = video.screen;
+	Uint8 *src;
+
+	if (x1>x2) {
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+	if (x1<0) {
+		x1 = 0;
+	}
+	if (x2>=video.viewport.w) {
+		x2 = video.viewport.w-1;
+	}
+	if ((y<0) || (y>=video.viewport.h)) {
+		return;
+	}
+
+	x1 += video.viewport.x;
+	x2 += video.viewport.x;
+	y += video.viewport.y;
+
+	src = surf->pixels;
+	src += surf->pitch * y;
+	src += x1 * surf->format->BytesPerPixel;
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			memset(src, x2-x1+1, draw_color);
+			break;
+		case 2:
+			{
+				Uint16 *src_line = (Uint16 *) src;
+
+				for (; x1<=x2; x1++) {
+					*src_line++ = draw_color;
+				}
+			}
+			break;
+		case 3:
+			/* FIXME */
+			break;
+		case 4:
+			{
+				Uint32 *src_line = (Uint32 *) src;
+
+				for (; x1<=x2; x1++) {
+					*src_line++ = draw_color;
+				}
+			}
+			break;
+	}
+}
+
+/* Draw horizontal line, gouraud */
+static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 {
 	int tmp;
 	SDL_Surface *surf = video.screen;
@@ -508,7 +566,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 		if (poly_maxx[y]>maxx) {
 			maxx = poly_maxx[y];
 		}
-		draw_hline(poly_minx[y], poly_maxx[y], y);
+		draw_hline_gouraud(poly_minx[y], poly_maxx[y], y, poly_minc[y], poly_maxc[y]);
 	}
 
 	/* Mark dirty rectangle */
