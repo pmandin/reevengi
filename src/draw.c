@@ -251,6 +251,8 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 	Uint8 *src;
 	int r1,g1,b1, r2,g2,b2, dr,dg,db, dx,x;
 
+	/*printf("from 0x%08x to 0x%08x\n", c1,c2);*/
+
 	if (x1>x2) {
 		int tmp;
 
@@ -557,6 +559,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 			int dg = vtx[v2].col[1] - vtx[v1].col[1];
 			int b1 = vtx[v1].col[2];
 			int db = vtx[v2].col[2] - vtx[v1].col[2];
+			/*printf("vtx from %d,%d,%d to %d,%d,%d\n",r1,g1,b1,r1+dr,g1+dg,b1+db);*/
 			for (y=0; y<dy; y++) {
 				int r,g,b;
 				if ((y1<0) || (y1>=video.viewport.h)) {
