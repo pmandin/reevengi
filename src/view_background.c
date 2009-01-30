@@ -41,7 +41,8 @@
 
 #define KEY_RENDER_WIREFRAME	SDLK_F2
 #define KEY_RENDER_FILLED	SDLK_F3
-#define KEY_RENDER_TEXTURED	SDLK_F4
+#define KEY_RENDER_GOURAUD	SDLK_F4
+#define KEY_RENDER_TEXTURED	SDLK_F5
 
 #define KEY_STAGE_DOWN		SDLK_z
 #define KEY_STAGE_UP		SDLK_s
@@ -239,6 +240,9 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_RENDER_FILLED:
 				render.set_render(&render, RENDER_FILLED);
+				break;
+			case KEY_RENDER_GOURAUD:
+				render.set_render(&render, RENDER_GOURAUD);
 				break;
 			case KEY_RENDER_TEXTURED:
 				render.set_render(&render, RENDER_TEXTURED);

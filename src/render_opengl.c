@@ -41,6 +41,7 @@
 
 static GLuint tex_obj = (GLuint) -1;
 static int blending;
+static int gouraud;
 
 /*--- Functions prototypes ---*/
 
@@ -103,6 +104,7 @@ void render_opengl_init(render_t *render)
 
 	set_render(render, RENDER_WIREFRAME);
 	blending = 0;
+	gouraud = 0;
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -197,6 +199,12 @@ static void set_render(render_t *this, int num_render)
 			this->quad = quad;
 			break;
 		case RENDER_FILLED:
+			gouraud = 0;
+			this->triangle = triangle_fill;
+			this->quad = quad_fill;
+			break;
+		case RENDER_GOURAUD:
+			gouraud = 1;
 			this->triangle = triangle_fill;
 			this->quad = quad_fill;
 			break;
@@ -296,7 +304,11 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-	set_color_from_texture(v1);
+	if (!gouraud) {
+		set_color_from_texture(v1);
+	} else {
+		gl.ShadeModel(GL_SMOOTH);
+	}
 
 	gl.Enable(GL_DEPTH_TEST);
 
@@ -304,17 +316,31 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_TRIANGLES);
+	if (gouraud) {
+		set_color_from_texture(v1);
+	}
 	gl.Vertex3s(v1->x, v1->y, v1->z);
+	if (gouraud) {
+		set_color_from_texture(v2);
+	}
 	gl.Vertex3s(v2->x, v2->y, v2->z);
+	if (gouraud) {
+		set_color_from_texture(v3);
+	}
 	gl.Vertex3s(v3->x, v3->y, v3->z);
 	gl.End();
 
 	gl.Disable(GL_CULL_FACE);
+	gl.ShadeModel(GL_FLAT);
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-	set_color_from_texture(v1);
+	if (!gouraud) {
+		set_color_from_texture(v1);
+	} else {
+		gl.ShadeModel(GL_SMOOTH);
+	}
 
 	gl.Enable(GL_DEPTH_TEST);
 
@@ -322,13 +348,26 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_QUADS);
+	if (gouraud) {
+		set_color_from_texture(v1);
+	}
 	gl.Vertex3s(v1->x, v1->y, v1->z);
+	if (gouraud) {
+		set_color_from_texture(v2);
+	}
 	gl.Vertex3s(v2->x, v2->y, v2->z);
+	if (gouraud) {
+		set_color_from_texture(v3);
+	}
 	gl.Vertex3s(v3->x, v3->y, v3->z);
+	if (gouraud) {
+		set_color_from_texture(v4);
+	}
 	gl.Vertex3s(v4->x, v4->y, v4->z);
 	gl.End();
 
 	gl.Disable(GL_CULL_FACE);
+	gl.ShadeModel(GL_FLAT);
 }
 
 /*

@@ -256,6 +256,7 @@ static void set_render(render_t *this, int num_render)
 			this->quad = quad;
 			break;
 		case RENDER_FILLED:
+		case RENDER_GOURAUD:
 			this->triangle = triangle_fill;
 			this->quad = quad_fill;
 			break;
