@@ -403,9 +403,12 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
 
-void draw_triangle_tex(draw_vertex_t v[3])
+void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 {
-	draw_line(&v[0], &v[1]);
-	draw_line(&v[1], &v[2]);
-	draw_line(&v[2], &v[0]);
+	draw_poly_fill(vtx, num_vtx);
+}
+
+void draw_poly_tex(vertexf_t *vtx, int num_vtx)
+{
+	draw_poly_fill(vtx, num_vtx);
 }

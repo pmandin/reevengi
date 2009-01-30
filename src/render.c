@@ -39,6 +39,8 @@ static float viewport_mtx[4][4]; /* viewport matrix */
 static float frustum_mtx[4][4]; /* frustum = viewport*projection*camera */
 static float clip_planes[6][4]; /* view frustum clip planes */
 
+static int gouraud;
+
 /*--- Functions prototypes ---*/
 
 static void render_soft_shutdown(render_t *render);
@@ -62,7 +64,8 @@ static void set_color(Uint32 color);
 static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
-static void set_color_from_texture(vertex_t *v1);
+
+static Uint32 get_color_from_texture(vertex_t *v1);
 
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
@@ -112,6 +115,8 @@ void render_soft_init(render_t *render)
 	mtx_setIdentity(viewport_mtx);
 	mtx_setIdentity(camera_mtx);
 	mtx_setIdentity(frustum_mtx);
+
+	gouraud = 0;
 }
 
 static void render_soft_shutdown(render_t *render)
@@ -256,7 +261,12 @@ static void set_render(render_t *this, int num_render)
 			this->quad = quad;
 			break;
 		case RENDER_FILLED:
+			gouraud = 0;
+			this->triangle = triangle_fill;
+			this->quad = quad_fill;
+			break;
 		case RENDER_GOURAUD:
+			gouraud = 1;
 			this->triangle = triangle_fill;
 			this->quad = quad_fill;
 			break;
@@ -267,7 +277,7 @@ static void set_render(render_t *this, int num_render)
 	}
 }
 
-static void set_color_from_texture(vertex_t *v1)
+static Uint32 get_color_from_texture(vertex_t *v1)
 {
 	render_texture_t *texture = render.texture;
 	Uint32 color = 0xffffffff;
@@ -295,7 +305,8 @@ static void set_color_from_texture(vertex_t *v1)
 				break;
 		}
 	}
-	draw_setColor(color);
+
+	return color;
 }
 
 /*
@@ -341,7 +352,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[3];
 
-	set_color_from_texture(v1);
+	draw_setColor(get_color_from_texture(v1));
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
@@ -382,7 +393,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[4];
 
-	set_color_from_texture(v1);
+	draw_setColor(get_color_from_texture(v1));
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
@@ -434,8 +445,12 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	vertexf_t tri1[3], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
 	draw_vertex_t v[3];
+	Uint32 color;
 
-	set_color_from_texture(v1);
+	color = get_color_from_texture(v1);
+	if (!gouraud) {
+		draw_setColor(color);
+	}
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -443,20 +458,38 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[0].pos[3] = 1.0f;
 	tri1[0].tx[0] = v1->u;
 	tri1[0].tx[1] = v1->v;
+	tri1[0].col[0] = (color>>16) & 0xff;
+	tri1[0].col[1] = (color>>8) & 0xff;
+	tri1[0].col[2] = color & 0xff;
+	tri1[0].col[3] = (color>>24) & 0xff;
 
+	if (gouraud) {
+		color = get_color_from_texture(v2);
+	}
 	tri1[1].pos[0] = v2->x;
 	tri1[1].pos[1] = v2->y;
 	tri1[1].pos[2] = v2->z;
 	tri1[1].pos[3] = 1.0f;
 	tri1[1].tx[0] = v2->u;
 	tri1[1].tx[1] = v2->v;
+	tri1[1].col[0] = (color>>16) & 0xff;
+	tri1[1].col[1] = (color>>8) & 0xff;
+	tri1[1].col[2] = color & 0xff;
+	tri1[1].col[3] = (color>>24) & 0xff;
 
+	if (gouraud) {
+		color = get_color_from_texture(v3);
+	}
 	tri1[2].pos[0] = v3->x;
 	tri1[2].pos[1] = v3->y;
 	tri1[2].pos[2] = v3->z;
 	tri1[2].pos[3] = 1.0f;
 	tri1[2].tx[0] = v3->u;
 	tri1[2].tx[1] = v3->v;
+	tri1[2].col[0] = (color>>16) & 0xff;
+	tri1[2].col[1] = (color>>8) & 0xff;
+	tri1[2].col[2] = color & 0xff;
+	tri1[2].col[3] = (color>>24) & 0xff;
 
 	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 3, tri1, poly);
 
@@ -493,8 +526,12 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	vertexf_t tri1[4], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
 	draw_vertex_t v[4];
+	Uint32 color;
 
-	set_color_from_texture(v1);
+	color = get_color_from_texture(v1);
+	if (!gouraud) {
+		draw_setColor(color);
+	}
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -502,27 +539,52 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[0].pos[3] = 1.0f;
 	tri1[0].tx[0] = v1->u;
 	tri1[0].tx[1] = v1->v;
+	tri1[0].col[0] = (color>>16) & 0xff;
+	tri1[0].col[1] = (color>>8) & 0xff;
+	tri1[0].col[2] = color & 0xff;
+	tri1[0].col[3] = (color>>24) & 0xff;
 
+	if (gouraud) {
+		color = get_color_from_texture(v2);
+	}
 	tri1[1].pos[0] = v2->x;
 	tri1[1].pos[1] = v2->y;
 	tri1[1].pos[2] = v2->z;
 	tri1[1].pos[3] = 1.0f;
 	tri1[1].tx[0] = v2->u;
 	tri1[1].tx[1] = v2->v;
+	tri1[1].col[0] = (color>>16) & 0xff;
+	tri1[1].col[1] = (color>>8) & 0xff;
+	tri1[1].col[2] = color & 0xff;
+	tri1[1].col[3] = (color>>24) & 0xff;
 
+	if (gouraud) {
+		color = get_color_from_texture(v3);
+	}
 	tri1[2].pos[0] = v3->x;
 	tri1[2].pos[1] = v3->y;
 	tri1[2].pos[2] = v3->z;
 	tri1[2].pos[3] = 1.0f;
 	tri1[2].tx[0] = v3->u;
 	tri1[2].tx[1] = v3->v;
+	tri1[2].col[0] = (color>>16) & 0xff;
+	tri1[2].col[1] = (color>>8) & 0xff;
+	tri1[2].col[2] = color & 0xff;
+	tri1[2].col[3] = (color>>24) & 0xff;
 
+	if (gouraud) {
+		color = get_color_from_texture(v4);
+	}
 	tri1[3].pos[0] = v4->x;
 	tri1[3].pos[1] = v4->y;
 	tri1[3].pos[2] = v4->z;
 	tri1[3].pos[3] = 1.0f;
 	tri1[3].tx[0] = v4->u;
 	tri1[3].tx[1] = v4->v;
+	tri1[3].col[0] = (color>>16) & 0xff;
+	tri1[3].col[1] = (color>>8) & 0xff;
+	tri1[3].col[2] = color & 0xff;
+	tri1[3].col[3] = (color>>24) & 0xff;
 
 	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 4, tri1, poly);
 

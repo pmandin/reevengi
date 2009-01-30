@@ -433,6 +433,10 @@ static void mtx_clipSegPlaneVf(vertexf_t *vtx0, vertexf_t *vtx1, float clip[4])
 	vtx1->pos[3] = vtx0->pos[3]+u*(vtx1->pos[3]-vtx0->pos[3]);
 	vtx1->tx[0] = vtx0->tx[0]+u*(vtx1->tx[0]-vtx0->tx[0]);
 	vtx1->tx[1] = vtx0->tx[1]+u*(vtx1->tx[1]-vtx0->tx[1]);
+	vtx1->col[0] = vtx0->col[0]+u*(vtx1->col[0]-vtx0->col[0]);
+	vtx1->col[1] = vtx0->col[1]+u*(vtx1->col[1]-vtx0->col[1]);
+	vtx1->col[2] = vtx0->col[2]+u*(vtx1->col[2]-vtx0->col[2]);
+	vtx1->col[3] = vtx0->col[3]+u*(vtx1->col[3]-vtx0->col[3]);
 }
 
 int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t tri2[16], float clip[6][4])

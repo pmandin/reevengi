@@ -47,6 +47,7 @@ typedef struct {
 typedef struct {
 	float pos[4];	/* x,y,z,w */
 	float tx[2];	/* u,v */
+	float col[4];	/* r,g,b,a */
 } vertexf_t;
 
 typedef struct render_s render_t;
