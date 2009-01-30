@@ -517,7 +517,11 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw_poly_fill(poly, num_vtx);
+	if (gouraud) {
+		draw_poly_gouraud(poly, num_vtx);
+	} else {
+		draw_poly_fill(poly, num_vtx);
+	}
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -612,7 +616,11 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw_poly_fill(poly, num_vtx);
+	if (gouraud) {
+		draw_poly_gouraud(poly, num_vtx);
+	} else {
+		draw_poly_fill(poly, num_vtx);
+	}
 }
 
 /*
