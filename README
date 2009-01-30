@@ -69,7 +69,7 @@ ESC		quit
 F1		screenshot
 F2		wireframe rendering for model
 F3		filled rendering for model
-F4		gouraud rendering for model (OpenGL only)
+F4		gouraud rendering for model
 F5		textured rendering for model (OpenGL only)
 Alt+Enter	toggle between fullscreen and windowed mode.
 
