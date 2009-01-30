@@ -23,6 +23,7 @@
 #include "video.h"
 #include "parameters.h"
 #include "dither.h"
+#include "render.h"
 #include "draw.h"
 
 /*--- Defines ---*/
@@ -318,16 +319,12 @@ void draw_quad(draw_vertex_t v[4])
 	draw_line(&v[3], &v[0]);
 }
 
-void draw_triangle_fill(draw_vertex_t v[3])
+void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 {
 	int miny = video.viewport.h;
 	int maxy = -1;
 	int y, p1, p2;
 	int minx = video.viewport.x, maxx = -1;
-
-	draw_line(&v[0], &v[1]);
-	draw_line(&v[1], &v[2]);
-	draw_line(&v[2], &v[0]);
 
 	if (video.viewport.h>size_poly_minmaxx) {
 		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
@@ -341,34 +338,40 @@ void draw_triangle_fill(draw_vertex_t v[3])
 	}
 
 	/* Fill poly min/max array with segments */
-	p1 = 2;
-	for (p2=0; p2<3; p2++) {
+	p1 = num_vtx-1;
+	for (p2=0; p2<num_vtx; p2++) {
 		int v1 = p1;
 		int v2 = p2;
-		int y1,dx,dy;
+		int x1,y1, x2,y2;
+		int dx,dy, tmp;
 		int *array = poly_maxx;
 
-		if (v[v1].y > v[v2].y) {
-			v1 = p2;
-			v2 = p1;
+		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
+		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
+		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
+		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
+
+		/* Swap if p1 lower than p2 */
+		if (y1 > y2) {
+			tmp = x1; x1 = x2; x2 = tmp;
+			tmp = y1; y1 = y2; y2 = tmp;
 			array = poly_minx;
 		}
-		if (v[v1].y < miny) {
-			miny = v[v1].y;
+		if (y1 < miny) {
+			miny = y1;
 		}
-		if (v[v2].y > maxy) {
-			maxy = v[v2].y;
+		if (y2 > maxy) {
+			maxy = y2;
 		}
 
-		y1 = v[v1].y;
-		dx = v[v2].x - v[v1].x;
-		dy = v[v2].y - v[v1].y;
+		dx = x2 - x1;
+		dy = y2 - y1;
 		if (dy>0) {
 			for (y=0; y<dy; y++) {
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
-				array[y1++] = v[v1].x + ((dx*y)/dy);
+				array[y1++] = x1 + ((dx*y)/dy);
 			}
 		}
 
