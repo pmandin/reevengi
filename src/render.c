@@ -610,6 +610,5 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-	triangle_tex(v1,v2,v3);
-	triangle_tex(v3,v4,v1);
+	quad_fill(v1,v2,v3,v4);
 }
