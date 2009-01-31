@@ -1,10 +1,8 @@
 v 0.10
 
-- Switchable wireframe/filled/gouraud-ed/textured for model drawing.
+- Switchable wireframe/filled/gouraud-ed/textured for model drawing, for
+  both OpenGL and software renderers.
 - 64 bits fixes for camera position.
-- Software and OpenGL renderers: filled polygons.
-- Software and OpenGL renderers: gouraud polygons.
-- OpenGL: Texturing for models.
 
 v 0.9
 

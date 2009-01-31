@@ -1,11 +1,8 @@
-v 0.9
+v 0.10
 
-- Display EMD model also for RE1 (pc/ps1), RE2 (pc/ps1) and RE3 pc.
-- Model selection
-- Move model up/down
-- Fixed crash in OpenGL renderer, due to bad conversion of background image.
-- Add 8bit video mode support, with dithering for background if needed
-- Preliminary VS2005 project file.
+- Switchable wireframe/filled/gouraud-ed/textured for model drawing, for
+  both OpenGL and software renderers.
+- 64 bits fixes for camera position.
 
 
 See ChangeLog for older changes.
