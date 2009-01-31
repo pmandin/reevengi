@@ -26,7 +26,7 @@
 
 /*--- Defines ---*/
 
-#define MAX_MODELVIEW_MTX 16
+#define MAX_MODELVIEW_MTX 32
 
 /*--- Variables ---*/
 
