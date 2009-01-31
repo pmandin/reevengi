@@ -652,6 +652,8 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 {
 	render.tex_pal = num_pal;
 	render.texture = render_tex;
+
+	draw_setTexture(num_pal, render_tex);
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)

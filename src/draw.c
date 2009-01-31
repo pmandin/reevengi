@@ -91,6 +91,10 @@ void draw_setColor(Uint32 color)
 	draw_color = color;
 }
 
+void draw_setTexture(int num_pal, render_texture_t *render_tex)
+{
+}
+
 void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
 {
 	SDL_Surface *surf = video.screen;
