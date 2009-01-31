@@ -459,7 +459,6 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[3], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
-	draw_vertex_t v[3];
 	Uint32 color;
 
 	color = get_color_from_texture(v1);
@@ -546,7 +545,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[4], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
-	draw_vertex_t v[4];
 	Uint32 color;
 
 	color = get_color_from_texture(v1);
@@ -658,10 +656,119 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-	triangle_fill(v1,v2,v3);
+	float segment[4][4], result[4][4];
+	vertexf_t tri1[3], poly[16], poly2[16];
+	int clip_result, i, num_vtx;
+
+	tri1[0].pos[0] = v1->x;
+	tri1[0].pos[1] = v1->y;
+	tri1[0].pos[2] = v1->z;
+	tri1[0].pos[3] = 1.0f;
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
+
+	tri1[1].pos[0] = v2->x;
+	tri1[1].pos[1] = v2->y;
+	tri1[1].pos[2] = v2->z;
+	tri1[1].pos[3] = 1.0f;
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
+
+	tri1[2].pos[0] = v3->x;
+	tri1[2].pos[1] = v3->y;
+	tri1[2].pos[2] = v3->z;
+	tri1[2].pos[3] = 1.0f;
+	tri1[2].tx[0] = v3->u;
+	tri1[2].tx[1] = v3->v;
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 3, tri1, poly);
+
+	num_vtx = 3;
+	clip_result = mtx_clipTriangle(poly, &num_vtx, poly2, clip_planes);
+	if (clip_result == CLIPPING_OUTSIDE) {
+		return;
+	}
+
+	/* Check face visible */
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = poly[i].pos[0];
+		result[i][1] = poly[i].pos[1];
+		result[i][2] = poly[i].pos[2];
+		result[i][3] = poly[i].pos[3];
+	}
+
+	mtx_mult(frustum_mtx, result, segment);
+	if (mtx_faceVisible(segment)<0.0f) {
+		return;
+	}
+
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
+	/* Draw polygon */
+	draw_poly_tex(poly, num_vtx);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-	quad_fill(v1,v2,v3,v4);
+	float segment[4][4], result[4][4];
+	vertexf_t tri1[4], poly[16], poly2[16];
+	int clip_result, i, num_vtx;
+
+	tri1[0].pos[0] = v1->x;
+	tri1[0].pos[1] = v1->y;
+	tri1[0].pos[2] = v1->z;
+	tri1[0].pos[3] = 1.0f;
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
+
+	tri1[1].pos[0] = v2->x;
+	tri1[1].pos[1] = v2->y;
+	tri1[1].pos[2] = v2->z;
+	tri1[1].pos[3] = 1.0f;
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
+
+	tri1[2].pos[0] = v3->x;
+	tri1[2].pos[1] = v3->y;
+	tri1[2].pos[2] = v3->z;
+	tri1[2].pos[3] = 1.0f;
+	tri1[2].tx[0] = v3->u;
+	tri1[2].tx[1] = v3->v;
+
+	tri1[3].pos[0] = v4->x;
+	tri1[3].pos[1] = v4->y;
+	tri1[3].pos[2] = v4->z;
+	tri1[3].pos[3] = 1.0f;
+	tri1[3].tx[0] = v4->u;
+	tri1[3].tx[1] = v4->v;
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 4, tri1, poly);
+
+	num_vtx = 4;
+	clip_result = mtx_clipTriangle(poly, &num_vtx, poly2, clip_planes);
+	if (clip_result == CLIPPING_OUTSIDE) {
+		return;
+	}
+
+	/* Check face visible */
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = poly[i].pos[0];
+		result[i][1] = poly[i].pos[1];
+		result[i][2] = poly[i].pos[2];
+		result[i][3] = poly[i].pos[3];
+	}
+
+	mtx_mult(frustum_mtx, result, segment);
+	if (mtx_faceVisible(segment)<0.0f) {
+		return;
+	}
+
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
+	/* Draw polygon */
+	draw_poly_tex(poly, num_vtx);
 }
