@@ -36,16 +36,20 @@
 #define CLIP_REJECT(a,b) (a&b)
 #define CLIP_ACCEPT(a,b) (!(a|b))
 
+/*--- Types ---*/
+
+typedef struct {
+	int x[2];	/* 0:min, 1:max */
+	Uint32 c[2];	/* 0:min, 1:max */
+} poly_hline_t;
+
 /*--- Variables ---*/
 
 static Uint32 draw_color = 0;
 
 /* for poly rendering */
 static int size_poly_minmaxx = 0;
-static int *poly_minx = NULL;
-static int *poly_maxx = NULL;
-static Uint32 *poly_minc = NULL;
-static Uint32 *poly_maxc = NULL;
+static poly_hline_t *poly_hlines = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -63,21 +67,9 @@ void draw_init(void)
 
 void draw_shutdown(void)
 {
-	if (poly_minx) {
-		free(poly_minx);
-		poly_minx = NULL;
-	}
-	if (poly_maxx) {
-		free(poly_maxx);
-		poly_maxx = NULL;
-	}
-	if (poly_minc) {
-		free(poly_minc);
-		poly_minc = NULL;
-	}
-	if (poly_maxc) {
-		free(poly_maxc);
-		poly_maxc = NULL;
+	if (poly_hlines) {
+		free(poly_hlines);
+		poly_hlines = NULL;
 	}
 	size_poly_minmaxx = 0;
 }
@@ -417,14 +409,11 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 	int y, p1, p2;
 
 	if (video.viewport.h>size_poly_minmaxx) {
-		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
-		poly_maxx = realloc(poly_maxx, sizeof(int) * video.viewport.h);
-		poly_minc = realloc(poly_minc, sizeof(Uint32) * video.viewport.h);
-		poly_maxc = realloc(poly_maxc, sizeof(Uint32) * video.viewport.h);
+		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
 		size_poly_minmaxx = video.viewport.h;
 	}
 
-	if (!poly_minx || !poly_maxx) {
+	if (!poly_hlines) {
 		fprintf(stderr, "Not enough memory for poly rendering\n");
 		return;
 	}
@@ -436,7 +425,7 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		int v2 = p2;
 		int x1,y1, x2,y2;
 		int dx,dy, tmp;
-		int *array = poly_maxx;
+		int num_array = 1; /* max */
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
@@ -447,7 +436,7 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		if (y1 > y2) {
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
-			array = poly_minx;
+			num_array = 0;	/* min */
 			v1 = p2;
 			v2 = p1;
 		}
@@ -465,7 +454,7 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
-				array[y1++] = x1 + ((dx*y)/dy);
+				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
 			}
 		}
 
@@ -481,13 +470,15 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 	}
 	
 	for (y=miny; y<maxy; y++) {
-		if (poly_minx[y]<minx) {
-			minx = poly_minx[y];
+		int pminx = poly_hlines[y].x[0];
+		int pmaxx = poly_hlines[y].x[1];
+		if (pminx<minx) {
+			minx = pminx;
 		}
-		if (poly_maxx[y]>maxx) {
-			maxx = poly_maxx[y];
+		if (pmaxx>maxx) {
+			maxx = pmaxx;
 		}
-		draw_hline(poly_minx[y], poly_maxx[y], y);
+		draw_hline(pminx, pmaxx, y);
 	}
 
 	/* Mark dirty rectangle */
@@ -504,15 +495,11 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 	int y, p1, p2;
 
 	if (video.viewport.h>size_poly_minmaxx) {
-		poly_minx = realloc(poly_minx, sizeof(int) * video.viewport.h);
-		poly_maxx = realloc(poly_maxx, sizeof(int) * video.viewport.h);
-		poly_minc = realloc(poly_minc, sizeof(Uint32) * video.viewport.h);
-		poly_maxc = realloc(poly_maxc, sizeof(Uint32) * video.viewport.h);
+		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
 		size_poly_minmaxx = video.viewport.h;
 	}
 
-	if (!poly_minx || !poly_maxx || !poly_minc || !poly_maxc)
-	{
+	if (!poly_hlines) {
 		fprintf(stderr, "Not enough memory for poly rendering\n");
 		return;
 	}
@@ -524,8 +511,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 		int v2 = p2;
 		int x1,y1, x2,y2;
 		int dy;
-		int *array_x = poly_maxx;
-		Uint32 *array_c = poly_maxc;
+		int num_array = 1; /* max */
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
@@ -538,8 +524,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
-			array_x = poly_minx;
-			array_c = poly_minc;
+			num_array = 0; /* min */
 			v1 = p2;
 			v2 = p1;
 		}
@@ -568,8 +553,8 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 				r = (r1 + ((dr*y)/dy)) & 0xff;
 				g = (g1 + ((dg*y)/dy)) & 0xff;
 				b = (b1 + ((db*y)/dy)) & 0xff;
-				array_c[y1] = (r<<16)|(g<<8)|b;
-				array_x[y1++] = x1 + ((dx*y)/dy);
+				poly_hlines[y1].c[num_array] = (r<<16)|(g<<8)|b;
+				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
 			}
 		}
 
@@ -585,13 +570,15 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 	}
 	
 	for (y=miny; y<maxy; y++) {
-		if (poly_minx[y]<minx) {
-			minx = poly_minx[y];
+		int pminx = poly_hlines[y].x[0];
+		int pmaxx = poly_hlines[y].x[1];
+		if (pminx<minx) {
+			minx = pminx;
 		}
-		if (poly_maxx[y]>maxx) {
-			maxx = poly_maxx[y];
+		if (pmaxx>maxx) {
+			maxx = pmaxx;
 		}
-		draw_hline_gouraud(poly_minx[y], poly_maxx[y], y, poly_minc[y], poly_maxc[y]);
+		draw_hline_gouraud(pminx, pmaxx, y, poly_hlines[y].c[0], poly_hlines[y].c[1]);
 	}
 
 	/* Mark dirty rectangle */
