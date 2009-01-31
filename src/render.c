@@ -289,7 +289,7 @@ static Uint32 get_color_from_texture(vertex_t *v1)
 	if (texture->paletted) {
 		Uint8 pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
 		
-		color = texture->palettes[pix][render.tex_pal];
+		color = texture->palettes[render.tex_pal][pix];
 	} else {
 		SDL_Surface *surf = video.screen;
 

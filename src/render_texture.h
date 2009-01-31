@@ -32,7 +32,7 @@ typedef struct {
 	int pitchw, pitchh;	/* Dimension of bouding zone */
 	int pitch;
 	int paletted;
-	Uint32 palettes[256][MAX_TEX_PALETTE];	/* N palettes max per texture */
+	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
 } render_texture_t;
 

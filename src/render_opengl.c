@@ -227,7 +227,7 @@ static void set_color_from_texture(vertex_t *v1)
 	if (texture->paletted) {
 		Uint8 pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
 		
-		color = texture->palettes[pix][render.tex_pal];
+		color = texture->palettes[render.tex_pal][pix];
 	} else {
 		int r,g,b;
 		Uint16 pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];

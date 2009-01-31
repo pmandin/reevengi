@@ -155,12 +155,12 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 				read_rgba(color, &r,&g,&b,&a);
 
 				if (params.use_opengl) {
-					tex->palettes[j][i] = (a<<24)|(r<<16)|(g<<8)|b;
+					tex->palettes[i][j] = (a<<24)|(r<<16)|(g<<8)|b;
 				} else {
 					if ((fmt->BytesPerPixel==1) && params.dithering) {
-						tex->palettes[j][i] = dither_nearest_index(r,g,b);
+						tex->palettes[i][j] = dither_nearest_index(r,g,b);
 					} else {
-						tex->palettes[j][i] = SDL_MapRGBA(fmt, r,g,b,a);
+						tex->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
 					}
 				}
 			}
