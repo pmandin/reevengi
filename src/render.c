@@ -367,7 +367,9 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[3];
 
-	draw_setColor(get_color_from_texture(v1));
+	if (render.texture) {
+		draw_setColor(get_color_from_texture(v1));
+	}
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
@@ -408,7 +410,9 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[4];
 
-	draw_setColor(get_color_from_texture(v1));
+	if (render.texture) {
+		draw_setColor(get_color_from_texture(v1));
+	}
 
 	memset(segment, 0, sizeof(float)*4*4);
 	segment[0][0] = v1->x;
