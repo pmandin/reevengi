@@ -41,7 +41,8 @@
 typedef struct {
 	int x[2];	/* x 0:min, 1:max */
 	Uint32 c[2];	/* color 0:min, 1:max */
-	Uint16 t[2];	/* texture 0:min, 1:max */
+	float tu[2];	/* texture 0:min, 1:max */
+	float tv[2];
 } poly_hline_t;
 
 /*--- Variables ---*/
@@ -60,7 +61,7 @@ static poly_hline_t *poly_hlines = NULL;
 
 static void draw_hline(int x1, int x2, int y);
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
-static void draw_hline_tex(int x1, int x2, int y, Uint16 u1, Uint16 u2);
+static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu2, float tv2);
 
 static int clipEncode (int x, int y, int left, int top, int right, int bottom);
 static int clip_line(int *x1, int *y1, int *x2, int *y2);
@@ -328,11 +329,12 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 }
 
 /* Draw horizontal line, textured */
-static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
+static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu2, float tv2)
 {
 	SDL_Surface *surf = video.screen;
 	Uint8 *src;
-	int u1,v1, u2,v2, du,dv, dx,x;
+	float du,dv;
+	int dx,x;
 
 	/*printf("from 0x%08x to 0x%08x\n", c1,c2);*/
 
@@ -358,12 +360,8 @@ static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
 	y += video.viewport.y;
 	dx = x2-x1+1;
 
-	v1 = (t1>>8) & 0xff;
-	u1 = t1 & 0xff;
-	v2 = (t2>>8) & 0xff;
-	u2 = t2 & 0xff;
-	du = u2-u1;
-	dv = v2-v1;
+	du = tu2-tu1;
+	dv = tv2-tv1;
 
 	src = surf->pixels;
 	src += surf->pitch * y;
@@ -379,16 +377,16 @@ static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
 				if (texture->paletted) {
 					Uint32 *palette = texture->palettes[tex_num_pal];
 					for (x=0; x<dx; x++) {
-						int u = u1 + ((du*x)/dx);
-						int v = v1 + ((dv*x)/dx);
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
 						*src_line++ = palette[texture->pixels[v*texture->pitchw + u]];
 					}
 				} else {
 					Uint16 *tex_pixels = (Uint16 *) texture->pixels;
 				
 					for (x=0; x<dx; x++) {
-						int u = u1 + ((du*x)/dx);
-						int v = v1 + ((dv*x)/dx);
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
 						*src_line++ = texture->pixels[v*texture->pitchw + u];
 					}
 				}
@@ -404,16 +402,16 @@ static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
 				if (texture->paletted) {
 					Uint32 *palette = texture->palettes[tex_num_pal];
 					for (x=0; x<dx; x++) {
-						int u = u1 + ((du*x)/dx);
-						int v = v1 + ((dv*x)/dx);
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
 						*src_line++ = palette[texture->pixels[v*texture->pitchw + u]];
 					}
 				} else {
 					Uint32 *tex_pixels = (Uint32 *) texture->pixels;
 
 					for (x=0; x<dx; x++) {
-						int u = u1 + ((du*x)/dx);
-						int v = v1 + ((dv*x)/dx);
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
 						*src_line++ = texture->pixels[v*texture->pitchw + u];
 					}
 				}
@@ -750,18 +748,16 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 		dy = y2 - y1;
 		if (dy>0) {
 			int dx = x2 - x1;
-			int tu1 = vtx[v1].tx[0];
-			int du = vtx[v2].tx[0] - vtx[v1].tx[0];
-			int tv1 = vtx[v1].tx[1];
-			int dv = vtx[v2].tx[1] - vtx[v1].tx[1];
+			float tu1 = vtx[v1].tx[0];
+			float du = vtx[v2].tx[0] - vtx[v1].tx[0];
+			float tv1 = vtx[v1].tx[1];
+			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
 			for (y=0; y<dy; y++) {
-				int tu,tv;
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
-				tu = (tu1 + ((du*y)/dy)) & 0xff;
-				tv = (tv1 + ((dv*y)/dy)) & 0xff;
-				poly_hlines[y1].t[num_array] = (tv<<8)|tu;
+				poly_hlines[y1].tu[num_array] = tu1 + ((du*y)/dy);
+				poly_hlines[y1].tv[num_array] = tv1 + ((dv*y)/dy);
 				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
 			}
 		}
@@ -786,7 +782,11 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 		if (pmaxx>maxx) {
 			maxx = pmaxx;
 		}
-		draw_hline_tex(pminx, pmaxx, y, poly_hlines[y].t[0], poly_hlines[y].t[1]);
+		draw_hline_tex(
+			pminx, pmaxx, y,
+			poly_hlines[y].tu[0], poly_hlines[y].tv[0],
+			poly_hlines[y].tu[1], poly_hlines[y].tv[1]
+		);
 	}
 
 	/* Mark dirty rectangle */
