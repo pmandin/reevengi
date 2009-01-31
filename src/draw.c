@@ -48,6 +48,10 @@ typedef struct {
 
 static Uint32 draw_color = 0;
 
+/* texture */
+static int tex_num_pal;
+static render_texture_t *texture = NULL;
+
 /* for poly rendering */
 static int size_poly_minmaxx = 0;
 static poly_hline_t *poly_hlines = NULL;
@@ -93,6 +97,8 @@ void draw_setColor(Uint32 color)
 
 void draw_setTexture(int num_pal, render_texture_t *render_tex)
 {
+	tex_num_pal = num_pal;
+	texture = render_tex;
 }
 
 void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
@@ -672,6 +678,11 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 	int miny = video.viewport.h, maxy = -1;
 	int minx = video.viewport.w, maxx = -1;
 	int y, p1, p2;
+
+	if (!texture) {
+		fprintf(stderr, "No active texture\n");
+		return;
+	}
 
 	if (video.viewport.h>size_poly_minmaxx) {
 		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
