@@ -376,10 +376,21 @@ static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
 			{
 				Uint16 *src_line = (Uint16 *) src;
 
-				for (x=0; x<dx; x++) {
-					int u = u1 + ((du*x)/dx);
-					int v = v1 + ((dv*x)/dx);
-					/* *src_line++ = SDL_MapRGB(surf->format, r,g,b); */
+				if (texture->paletted) {
+					Uint32 *palette = texture->palettes[tex_num_pal];
+					for (x=0; x<dx; x++) {
+						int u = u1 + ((du*x)/dx);
+						int v = v1 + ((dv*x)/dx);
+						*src_line++ = palette[texture->pixels[v*texture->pitchw + u]];
+					}
+				} else {
+					Uint16 *tex_pixels = (Uint16 *) texture->pixels;
+				
+					for (x=0; x<dx; x++) {
+						int u = u1 + ((du*x)/dx);
+						int v = v1 + ((dv*x)/dx);
+						*src_line++ = texture->pixels[v*texture->pitchw + u];
+					}
 				}
 			}
 			break;
@@ -390,10 +401,21 @@ static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
 			{
 				Uint32 *src_line = (Uint32 *) src;
 
-				for (x=0; x<dx; x++) {
-					int u = u1 + ((du*x)/dx);
-					int v = v1 + ((dv*x)/dx);
-					/* *src_line++ = SDL_MapRGB(surf->format, r,g,b); */
+				if (texture->paletted) {
+					Uint32 *palette = texture->palettes[tex_num_pal];
+					for (x=0; x<dx; x++) {
+						int u = u1 + ((du*x)/dx);
+						int v = v1 + ((dv*x)/dx);
+						*src_line++ = palette[texture->pixels[v*texture->pitchw + u]];
+					}
+				} else {
+					Uint32 *tex_pixels = (Uint32 *) texture->pixels;
+
+					for (x=0; x<dx; x++) {
+						int u = u1 + ((du*x)/dx);
+						int v = v1 + ((dv*x)/dx);
+						*src_line++ = texture->pixels[v*texture->pitchw + u];
+					}
 				}
 			}
 			break;
@@ -728,18 +750,18 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 		dy = y2 - y1;
 		if (dy>0) {
 			int dx = x2 - x1;
-			int u1 = vtx[v1].tx[0];
+			int tu1 = vtx[v1].tx[0];
 			int du = vtx[v2].tx[0] - vtx[v1].tx[0];
-			int v1 = vtx[v1].tx[1];
+			int tv1 = vtx[v1].tx[1];
 			int dv = vtx[v2].tx[1] - vtx[v1].tx[1];
 			for (y=0; y<dy; y++) {
-				int u,v;
+				int tu,tv;
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
-				u = (u1 + ((du*y)/dy)) & 0xff;
-				v = (v1 + ((dv*y)/dy)) & 0xff;
-				poly_hlines[y1].t[num_array] = (v<<8)|u;
+				tu = (tu1 + ((du*y)/dy)) & 0xff;
+				tv = (tv1 + ((dv*y)/dy)) & 0xff;
+				poly_hlines[y1].t[num_array] = (tv<<8)|tu;
 				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
 			}
 		}
