@@ -478,8 +478,8 @@ static void drawCameraSwitches(void)
 			return;
 	}
 
-	render.set_color(0x00cc8844);
 	render.set_texture(0, NULL);
+	render.set_color(0x00cc8844);
 	render.push_matrix();
 	for (i=0; i<num_switches; i++) {
 		if (!re2pcdemo_get_camswitch(i,switchPos)) {
