@@ -39,8 +39,9 @@
 /*--- Types ---*/
 
 typedef struct {
-	int x[2];	/* 0:min, 1:max */
-	Uint32 c[2];	/* 0:min, 1:max */
+	int x[2];	/* x 0:min, 1:max */
+	Uint32 c[2];	/* color 0:min, 1:max */
+	Uint16 t[2];	/* texture 0:min, 1:max */
 } poly_hline_t;
 
 /*--- Variables ---*/
@@ -55,6 +56,7 @@ static poly_hline_t *poly_hlines = NULL;
 
 static void draw_hline(int x1, int x2, int y);
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
+static void draw_hline_tex(int x1, int x2, int y, Uint16 u1, Uint16 u2);
 
 static int clipEncode (int x, int y, int left, int top, int right, int bottom);
 static int clip_line(int *x1, int *y1, int *x2, int *y2);
@@ -309,6 +311,79 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 					int g = g1 + ((dg*x)/dx);
 					int b = b1 + ((db*x)/dx);
 					*src_line++ = SDL_MapRGB(surf->format, r,g,b);
+				}
+			}
+			break;
+	}
+}
+
+/* Draw horizontal line, textured */
+static void draw_hline_tex(int x1, int x2, int y, Uint16 t1, Uint16 t2)
+{
+	SDL_Surface *surf = video.screen;
+	Uint8 *src;
+	int u1,v1, u2,v2, du,dv, dx,x;
+
+	/*printf("from 0x%08x to 0x%08x\n", c1,c2);*/
+
+	if (x1>x2) {
+		int tmp;
+
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+	if (x1<0) {
+		x1 = 0;
+	}
+	if (x2>=video.viewport.w) {
+		x2 = video.viewport.w-1;
+	}
+	if ((y<0) || (y>=video.viewport.h)) {
+		return;
+	}
+
+	x1 += video.viewport.x;
+	x2 += video.viewport.x;
+	y += video.viewport.y;
+	dx = x2-x1+1;
+
+	v1 = (t1>>8) & 0xff;
+	u1 = t1 & 0xff;
+	v2 = (t2>>8) & 0xff;
+	u2 = t2 & 0xff;
+	du = u2-u1;
+	dv = v2-v1;
+
+	src = surf->pixels;
+	src += surf->pitch * y;
+	src += x1 * surf->format->BytesPerPixel;
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			/* TODO */
+			break;
+		case 2:
+			{
+				Uint16 *src_line = (Uint16 *) src;
+
+				for (x=0; x<dx; x++) {
+					int u = u1 + ((du*x)/dx);
+					int v = v1 + ((dv*x)/dx);
+					/* *src_line++ = SDL_MapRGB(surf->format, r,g,b); */
+				}
+			}
+			break;
+		case 3:
+			/* FIXME */
+			break;
+		case 4:
+			{
+				Uint32 *src_line = (Uint32 *) src;
+
+				for (x=0; x<dx; x++) {
+					int u = u1 + ((du*x)/dx);
+					int v = v1 + ((dv*x)/dx);
+					/* *src_line++ = SDL_MapRGB(surf->format, r,g,b); */
 				}
 			}
 			break;
@@ -590,5 +665,96 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 
 void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 {
-	draw_poly_fill(vtx, num_vtx);
+	int miny = video.viewport.h, maxy = -1;
+	int minx = video.viewport.w, maxx = -1;
+	int y, p1, p2;
+
+	if (video.viewport.h>size_poly_minmaxx) {
+		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
+		size_poly_minmaxx = video.viewport.h;
+	}
+
+	if (!poly_hlines) {
+		fprintf(stderr, "Not enough memory for poly rendering\n");
+		return;
+	}
+
+	/* Fill poly min/max array with segments */
+	p1 = num_vtx-1;
+	for (p2=0; p2<num_vtx; p2++) {
+		int v1 = p1;
+		int v2 = p2;
+		int x1,y1, x2,y2;
+		int dy;
+		int num_array = 1; /* max */
+
+		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
+		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
+		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
+		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
+
+		/* Swap if p1 lower than p2 */
+		if (y1 > y2) {
+			int tmp;
+
+			tmp = x1; x1 = x2; x2 = tmp;
+			tmp = y1; y1 = y2; y2 = tmp;
+			num_array = 0; /* min */
+			v1 = p2;
+			v2 = p1;
+		}
+		if (y1 < miny) {
+			miny = y1;
+		}
+		if (y2 > maxy) {
+			maxy = y2;
+		}
+
+		dy = y2 - y1;
+		if (dy>0) {
+			int dx = x2 - x1;
+			int u1 = vtx[v1].tx[0];
+			int du = vtx[v2].tx[0] - vtx[v1].tx[0];
+			int v1 = vtx[v1].tx[1];
+			int dv = vtx[v2].tx[1] - vtx[v1].tx[1];
+			for (y=0; y<dy; y++) {
+				int u,v;
+				if ((y1<0) || (y1>=video.viewport.h)) {
+					continue;
+				}
+				u = (u1 + ((du*y)/dy)) & 0xff;
+				v = (v1 + ((dv*y)/dy)) & 0xff;
+				poly_hlines[y1].t[num_array] = (v<<8)|u;
+				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
+			}
+		}
+
+		p1 = p2;
+	}
+
+	/* Render horizontal lines */
+	if (miny<0) {
+		miny = 0;
+	}
+	if (maxy>=video.viewport.h) {
+		maxy = video.viewport.h;
+	}
+	
+	for (y=miny; y<maxy; y++) {
+		int pminx = poly_hlines[y].x[0];
+		int pmaxx = poly_hlines[y].x[1];
+		if (pminx<minx) {
+			minx = pminx;
+		}
+		if (pmaxx>maxx) {
+			maxx = pmaxx;
+		}
+		draw_hline_tex(pminx, pmaxx, y, poly_hlines[y].t[0], poly_hlines[y].t[1]);
+	}
+
+	/* Mark dirty rectangle */
+	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
+	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
