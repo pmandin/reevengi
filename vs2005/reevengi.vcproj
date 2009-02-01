@@ -307,6 +307,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\render_texture.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\state.c"
 				>
 			</File>
@@ -454,6 +458,10 @@
 			</File>
 			<File
 				RelativePath="..\src\render_background_opengl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_texture.h"
 				>
 			</File>
 			<File
