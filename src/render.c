@@ -373,13 +373,13 @@ static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 				dist_i = dist_j;
 				dist_j = tmp_dist;
 
-				memcpy(tmp_vertex, &vtx[i], sizeof(vertex_t));
+				memcpy(&tmp_vertex, &vtx[i], sizeof(vertex_t));
 				memcpy(&vtx[i], &vtx[j], sizeof(vertex_t));
-				memcpy(&vtx[j], tmp_vertex, sizeof(vertex_t));
+				memcpy(&vtx[j], &tmp_vertex, sizeof(vertex_t));
 
-				memcpy(tmp_vertexf, &vtx1[i], sizeof(vertexf_t));
+				memcpy(&tmp_vertexf, &vtx1[i], sizeof(vertexf_t));
 				memcpy(&vtx1[i], &vtx1[j], sizeof(vertexf_t));
-				memcpy(&vtx1[j], tmp_vertexf, sizeof(vertexf_t));
+				memcpy(&vtx1[j], &tmp_vertexf, sizeof(vertexf_t));
 
 				tmp_idx = num_idx[i];
 				num_idx[i] = num_idx[j];
