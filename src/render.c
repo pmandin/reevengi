@@ -333,7 +333,7 @@ static Uint32 get_rgbaColor_from_drawColor(Uint32 color)
 */
 static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 {
-	int i;
+	int i,j;
 	vertexf_t vtx1[32], vtx2[32];
 
 	if (num_vtx>=32) {
@@ -351,6 +351,42 @@ static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, vtx2, vtx1);
 
 	/* Then sort them */
+	for (i=0; i<num_vtx-1; i++) {
+		float dist_i = vtx1[i].pos[0]*vtx1[i].pos[0]
+			+ vtx1[i].pos[1]*vtx1[i].pos[1]
+			+ vtx1[i].pos[2]*vtx1[i].pos[2];
+
+		/* Find the farer, swap against the one at pos i */
+		for (j=i+1; j<num_vtx; j++) {
+			float dist_j = vtx1[j].pos[0]*vtx1[j].pos[0]
+				+ vtx1[j].pos[1]*vtx1[j].pos[1]
+				+ vtx1[j].pos[2]*vtx1[j].pos[2];
+
+			if (dist_i<dist_j) {
+				float tmp_dist;
+				vertex_t tmp_vertex;
+				vertexf_t tmp_vertexf;
+				int tmp_idx;
+			
+				/* Swap vtx at i,j */
+				tmp_dist = dist_i;
+				dist_i = dist_j;
+				dist_j = tmp_dist;
+
+				memcpy(tmp_vertex, &vtx[i], sizeof(vertex_t));
+				memcpy(&vtx[i], &vtx[j], sizeof(vertex_t));
+				memcpy(&vtx[j], tmp_vertex, sizeof(vertex_t));
+
+				memcpy(tmp_vertexf, &vtx1[i], sizeof(vertexf_t));
+				memcpy(&vtx1[i], &vtx1[j], sizeof(vertexf_t));
+				memcpy(&vtx1[j], tmp_vertexf, sizeof(vertexf_t));
+
+				tmp_idx = num_idx[i];
+				num_idx[i] = num_idx[j];
+				num_idx[j] = tmp_idx;
+			}
+		}
+	}
 }
 
 /*
