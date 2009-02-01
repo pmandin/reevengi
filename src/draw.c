@@ -675,6 +675,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 				r = (r1 + ((dr*y)/dy)) & 0xff;
 				g = (g1 + ((dg*y)/dy)) & 0xff;
 				b = (b1 + ((db*y)/dy)) & 0xff;
+				/* TODO: calc rgb if px<>x1 */
 				poly_hlines[y1].c[num_array] = (r<<16)|(g<<8)|b;
 				poly_hlines[y1++].x[num_array] = px;
 			}
@@ -782,6 +783,7 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 				if (px>=video.viewport.w) {
 					px = video.viewport.w-1;
 				}
+				/* TODO: calc uv if px<>x1 */
 				poly_hlines[y1].tu[num_array] = tu1 + ((du*y)/dy);
 				poly_hlines[y1].tv[num_array] = tv1 + ((dv*y)/dy);
 				poly_hlines[y1++].x[num_array] = px;
