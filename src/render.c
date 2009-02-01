@@ -333,7 +333,22 @@ static Uint32 get_rgbaColor_from_drawColor(Uint32 color)
 */
 static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 {
-	/* Project vertex */
+	int i;
+	vertexf_t vtx1[32], vtx2[32];
+
+	if (num_vtx>=32) {
+		num_vtx = 32;
+	}
+
+	/* Project vertex list in view frustum */
+	for (i=0; i<num_vtx; i++) {
+		vtx1[i].pos[0] = vtx[i].x;
+		vtx1[i].pos[1] = vtx[i].y;
+		vtx1[i].pos[2] = vtx[i].z;
+		vtx1[i].pos[3] = 1.0f;
+	}
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], num_vtx, vtx1, vtx2);
+	mtx_multMtxVtx(frustum_mtx, num_vtx, vtx2, vtx1);
 
 	/* Then sort them */
 }
