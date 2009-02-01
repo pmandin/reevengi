@@ -42,6 +42,7 @@
 static GLuint tex_obj = (GLuint) -1;
 static int blending;
 static int gouraud;
+static int has_gl_ext_paletted_texture;
 
 /*--- Functions prototypes ---*/
 
@@ -79,6 +80,8 @@ static void render_opengl_shutdown(render_t *render);
 
 void render_opengl_init(render_t *render)
 {
+	char *extensions = (char *) gl.GetString(GL_EXTENSIONS);
+
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
 	render->set_modelview = set_modelview;
@@ -105,6 +108,12 @@ void render_opengl_init(render_t *render)
 	set_render(render, RENDER_WIREFRAME);
 	blending = 0;
 	gouraud = 0;
+
+#ifdef GL_EXT_paletted_texture
+	has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
+#else
+	has_gl_ext_paletted_texture = 0;
+#endif
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -426,15 +435,13 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	if (render_tex->paletted) {
 		surfaceFormat = GL_COLOR_INDEX;
 
-#ifdef GL_EXT_paletted_texture
-		/* FIXME: check GL_EXT_paletted_texture presence */
-		if (1) {
+		if (has_gl_ext_paletted_texture) {
 			Uint8 mapP[256*4];
 			Uint8 *pMap = mapP;
 
 			internalFormat = GL_COLOR_INDEX8_EXT;
 			for (i=0; i<256; i++) {
-				Uint32 color = render_tex->palettes[i][num_pal];
+				Uint32 color = render_tex->palettes[num_pal][i];
 
 				*pMap++ = (color>>16) & 0xff;
 				*pMap++ = (color>>8) & 0xff;
@@ -443,9 +450,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 			}
 			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
 				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
-		} else
-#endif
-		{
+		} else {
 			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
 
 			memset(mapR, 0, sizeof(mapR));
@@ -453,7 +458,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 			memset(mapB, 0, sizeof(mapB));
 			memset(mapA, 0, sizeof(mapA));
 			for (i=0; i<256; i++) {
-				Uint32 color = render_tex->palettes[i][num_pal];
+				Uint32 color = render_tex->palettes[num_pal][i];
 
 				mapR[i] = ((color>>16) & 0xff) / 255.0;
 				mapG[i] = ((color>>8) & 0xff) / 255.0;
@@ -475,7 +480,11 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 		surfaceFormat, pixelType, render_tex->pixels
 	);
 
-	/*gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);*/
+	if (render_tex->paletted) {
+		if (!has_gl_ext_paletted_texture) {
+			gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
+		}
+	}
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
