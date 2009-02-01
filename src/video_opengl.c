@@ -128,6 +128,8 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
 
+	dyngl_initfuncs();
+
 	/* Check OpenGL extensions */
 	extensions = (char *) gl.GetString(GL_EXTENSIONS);
 

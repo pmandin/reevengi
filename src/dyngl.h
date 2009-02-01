@@ -57,4 +57,6 @@ extern dyngl_funcs gl;
 
 int dyngl_load(char *filename);
 
+void dyngl_initfuncs(void);
+
 #endif

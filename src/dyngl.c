@@ -58,10 +58,13 @@ int dyngl_load(char *filename)
 		fprintf(stderr, "Loaded default OpenGL library\n");
 	}
 
+	return 1;
+}
+
+void dyngl_initfuncs(void)
+{
 	#include "dyngl_gl.c"
 	#include "dyngl_glext.c"
-
-	return 1;
 }
 
 #endif /* ENABLE_OPENGL */
