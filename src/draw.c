@@ -204,7 +204,7 @@ static void draw_hline(int x1, int x2, int y)
 		x1 = x2;
 		x2 = tmp;
 	}
-	if (x1<0) {
+	/*if (x1<0) {
 		x1 = 0;
 	}
 	if (x2>=video.viewport.w) {
@@ -212,7 +212,7 @@ static void draw_hline(int x1, int x2, int y)
 	}
 	if ((y<0) || (y>=video.viewport.h)) {
 		return;
-	}
+	}*/
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
@@ -265,7 +265,7 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 		x1 = x2;
 		x2 = tmp;
 	}
-	if (x1<0) {
+	/*if (x1<0) {
 		x1 = 0;
 	}
 	if (x2>=video.viewport.w) {
@@ -273,7 +273,7 @@ static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2)
 	}
 	if ((y<0) || (y>=video.viewport.h)) {
 		return;
-	}
+	}*/
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
@@ -345,7 +345,7 @@ static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu
 		x1 = x2;
 		x2 = tmp;
 	}
-	if (x1<0) {
+	/*if (x1<0) {
 		x1 = 0;
 	}
 	if (x2>=video.viewport.w) {
@@ -353,7 +353,7 @@ static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu
 	}
 	if ((y<0) || (y>=video.viewport.h)) {
 		return;
-	}
+	}*/
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
@@ -556,10 +556,19 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		dy = y2 - y1;
 		if (dy>0) {
 			for (y=0; y<dy; y++) {
+				int px;
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
-				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
+				/* Clip line horizontally */
+				px = x1 + ((dx*y)/dy);
+				if (px<0) {
+					px = 0;
+				}
+				if (px>=video.viewport.w) {
+					px = video.viewport.w-1;
+				}
+				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
 
@@ -651,15 +660,23 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 			int db = vtx[v2].col[2] - vtx[v1].col[2];
 			/*printf("vtx from %d,%d,%d to %d,%d,%d\n",r1,g1,b1,r1+dr,g1+dg,b1+db);*/
 			for (y=0; y<dy; y++) {
-				int r,g,b;
+				int r,g,b, px;
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
+				}
+				/* Clip line horizontally */
+				px = x1 + ((dx*y)/dy);
+				if (px<0) {
+					px = 0;
+				}
+				if (px>=video.viewport.w) {
+					px = video.viewport.w-1;
 				}
 				r = (r1 + ((dr*y)/dy)) & 0xff;
 				g = (g1 + ((dg*y)/dy)) & 0xff;
 				b = (b1 + ((db*y)/dy)) & 0xff;
 				poly_hlines[y1].c[num_array] = (r<<16)|(g<<8)|b;
-				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
+				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
 
@@ -753,12 +770,21 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 			float tv1 = vtx[v1].tx[1];
 			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
 			for (y=0; y<dy; y++) {
+				int px;
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
+				/* Clip line horizontally */
+				px = x1 + ((dx*y)/dy);
+				if (px<0) {
+					px = 0;
+				}
+				if (px>=video.viewport.w) {
+					px = video.viewport.w-1;
+				}
 				poly_hlines[y1].tu[num_array] = tu1 + ((du*y)/dy);
 				poly_hlines[y1].tv[num_array] = tv1 + ((dv*y)/dy);
-				poly_hlines[y1++].x[num_array] = x1 + ((dx*y)/dy);
+				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
 
