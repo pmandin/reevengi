@@ -42,7 +42,6 @@
 static GLuint tex_obj = (GLuint) -1;
 static int blending;
 static int gouraud;
-static int has_gl_ext_paletted_texture;
 
 /*--- Functions prototypes ---*/
 
@@ -108,12 +107,6 @@ void render_opengl_init(render_t *render)
 	set_render(render, RENDER_WIREFRAME);
 	blending = 0;
 	gouraud = 0;
-
-#ifdef GL_EXT_paletted_texture
-	has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
-#else
-	has_gl_ext_paletted_texture = 0;
-#endif
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -435,7 +428,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	if (render_tex->paletted) {
 		surfaceFormat = GL_COLOR_INDEX;
 
-		if (has_gl_ext_paletted_texture) {
+		if (video.has_gl_ext_paletted_texture) {
 			Uint8 mapP[256*4];
 			Uint8 *pMap = mapP;
 
@@ -481,7 +474,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	);
 
 	if (render_tex->paletted) {
-		if (!has_gl_ext_paletted_texture) {
+		if (!video.has_gl_ext_paletted_texture) {
 			gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
 		}
 	}

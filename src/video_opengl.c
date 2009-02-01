@@ -85,6 +85,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	const int gl_bpp[4]={0,16,24,32};
 	int i;
 	SDL_Surface *screen;
+	char *extensions;
 
 	if (this->flags & SDL_FULLSCREEN) {
 		this->findNearestMode(this, &width, &height, bpp);
@@ -126,6 +127,13 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
+
+#ifdef GL_EXT_paletted_texture
+	extensions = (char *) gl.GetString(GL_EXTENSIONS);
+	this->has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
+#else
+	this->has_gl_ext_paletted_texture = 0;
+#endif
 
 	video.initViewport(&video);
 

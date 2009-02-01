@@ -49,6 +49,9 @@ struct video_s {
 	video_surface_t * (*createSurfaceSu)(SDL_Surface *surface);
 	void (*destroySurface)(video_surface_t *this);
 	void (*convertSurface)(video_surface_t *this);
+
+	/* OpenGL extensions */
+	int has_gl_ext_paletted_texture;
 };
 
 void video_detect_aspect(void);
