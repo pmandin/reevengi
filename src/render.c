@@ -67,6 +67,8 @@ static void set_blending(int enable);
 
 static Uint32 get_color_from_texture(vertex_t *v1);
 
+static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx);
+
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
@@ -96,6 +98,8 @@ void render_soft_init(render_t *render)
 	render->set_render = set_render;
 	render->set_texture = set_texture;
 	render->set_blending = set_blending;
+
+	render->sortBackToFront = sortBackToFront;
 
 	render->initBackground = render_background_init;
 	render->drawBackground = render_background;
@@ -322,6 +326,16 @@ static Uint32 get_rgbaColor_from_drawColor(Uint32 color)
 	SDL_GetRGBA(color, surf->format, &r,&g,&b,&a);
 
 	return (a<<24)|(r<<16)|(g<<8)|b;
+}
+
+/*
+	Sort vertex back to front
+*/
+static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
+{
+	/* Project vertex */
+
+	/* Then sort them */
 }
 
 /*

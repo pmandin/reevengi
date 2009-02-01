@@ -71,6 +71,9 @@ struct render_s {
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 	void (*set_blending)(int enable);
 
+	/* Misc functions */
+	void (*sortBackToFront)(int num_vtx, int *num_idx, vertex_t *vtx);
+
 	/* Wireframe functions */
 	void (*line)(vertex_t *v1, vertex_t *v2);
 	void (*triangle_wf)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
