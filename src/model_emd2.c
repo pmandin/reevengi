@@ -129,6 +129,11 @@ static void emd_draw_skel(model_t *this, int num_skel,
 	emd_skel_data_t *emd_skel_data);
 static void emd_draw_mesh(model_t *this, int num_mesh);
 
+static void emd_add_mesh(model_t *this, int num_skel, int *num_idx, int *idx, vertex_t *vtx,
+	int x, int y, int z,
+	emd_skel_relpos_t *emd_skel_relpos,
+	emd_skel_data_t *emd_skel_data);
+
 /*--- Functions ---*/
 
 model_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_length)
@@ -184,6 +189,12 @@ static void model_emd2_draw(model_t *this)
 	Uint32 *hdr_offsets;
 	void *emd_file;
 
+#if 0
+	int idx_mesh[32];
+	vertex_t pos_mesh[32];
+	int count;
+#endif
+
 	if (!this) {
 		return;
 	}
@@ -204,7 +215,44 @@ static void model_emd2_draw(model_t *this)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
+#if 1
 	emd_draw_skel(this, 0, emd_skel_relpos, emd_skel_data);
+#else
+	count = 0;
+	emd_add_mesh(this, 0, &count, idx_mesh,pos_mesh, 0,0,0, emd_skel_relpos, emd_skel_data);
+	render.sortBackToFront(count, idx_mesh,pos_mesh);
+#endif
+}
+
+static void emd_add_mesh(model_t *this, int num_skel, int *num_idx, int *idx, vertex_t *vtx,
+	int x, int y, int z,
+	emd_skel_relpos_t *emd_skel_relpos,
+	emd_skel_data_t *emd_skel_data)
+{
+	int i, count = *num_idx;
+	Uint8 *emd_skel_mesh = (Uint8 *) emd_skel_data;
+
+	if (count>=32) {
+		return;
+	}
+
+	x += emd_skel_relpos[num_skel].x;
+	y += emd_skel_relpos[num_skel].y;
+	z += emd_skel_relpos[num_skel].z;
+
+	/* Add current mesh */
+	idx[count] = num_skel;
+	vtx[count].x = x;
+	vtx[count].y = y;
+	vtx[count].z = z;
+
+	*num_idx = ++count;
+
+	/* Add children meshes */
+	for (i=0; i<emd_skel_data[num_skel].num_mesh; i++) {
+		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
+		emd_add_mesh(this, num_mesh, num_idx, idx, vtx, x,y,z, emd_skel_relpos, emd_skel_data);
+	}
 }
 
 static void emd_draw_skel(model_t *this, int num_skel,
