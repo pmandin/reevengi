@@ -426,6 +426,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	if (render_tex->paletted) {
 		surfaceFormat = GL_COLOR_INDEX;
 
+#if defined(GL_EXT_paletted_texture)
 		if (video.has_gl_ext_paletted_texture) {
 			Uint8 mapP[256*4];
 			Uint8 *pMap = mapP;
@@ -441,7 +442,9 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 			}
 			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
 				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
-		} else {
+		} else
+#endif
+		{
 			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
 
 			memset(mapR, 0, sizeof(mapR));
