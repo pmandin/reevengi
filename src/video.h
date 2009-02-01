@@ -51,7 +51,11 @@ struct video_s {
 	void (*convertSurface)(video_surface_t *this);
 
 	/* OpenGL extensions */
+	int has_gl_arb_texture_non_power_of_two;
+	int has_gl_arb_texture_rectangle;
 	int has_gl_ext_paletted_texture;
+	int has_gl_ext_texture_rectangle;
+	int has_gl_nv_texture_rectangle;
 };
 
 void video_detect_aspect(void);
