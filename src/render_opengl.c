@@ -79,8 +79,6 @@ static void render_opengl_shutdown(render_t *render);
 
 void render_opengl_init(render_t *render)
 {
-	char *extensions = (char *) gl.GetString(GL_EXTENSIONS);
-
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
 	render->set_modelview = set_modelview;

@@ -31,6 +31,7 @@
 
 #include "log.h"
 #include "dyngl.h"
+#include "video.h"
 #include "video_surface.h"
 #include "video_surface_opengl.h"
 
@@ -185,16 +186,12 @@ static void createTexture(video_surface_gl_t *this)
 
 	gl.GenTextures(1, &this->textureObject);
 
-#if defined(GL_EXT_paletted_texture)
-	extensions = (char *) gl.GetString(GL_EXTENSIONS);
-
-	if (strstr(extensions, "GL_EXT_paletted_texture")
+	if (video.has_gl_ext_paletted_texture
 	  && (this->surf_soft.sdl_surf->format->BitsPerPixel == 8)
 	  && this->can_palette)
 	{
 		this->use_palette = 1;
 	}
-#endif
 }
 
 /* Find right size for texture, given extensions */
@@ -202,7 +199,6 @@ static void createTexture(video_surface_gl_t *this)
 static void findTextureSize(video_surface_gl_t *this, int *width, int *height)
 {
 	int w = *width, h = *height;
-	char *extensions;
 
 	/* Minimal size */
 	if (w<64) {
@@ -220,26 +216,24 @@ static void findTextureSize(video_surface_gl_t *this, int *width, int *height)
 		h = (h | 15)+1;
 	}
 
-	extensions = (char *) gl.GetString(GL_EXTENSIONS);
-
-	if (strstr(extensions, "GL_ARB_texture_non_power_of_two")) {
+	if (video.has_gl_arb_texture_non_power_of_two) {
 		this->textureTarget = GL_TEXTURE_2D;
 		this->can_palette = 1;
 	}
 #if defined(GL_ARB_texture_rectangle)
-	else if (strstr(extensions, "GL_ARB_texture_rectangle")) {
+	else if (video.has_gl_arb_texture_rectangle) {
 		this->textureTarget = GL_TEXTURE_RECTANGLE_ARB;
 		this->can_palette = 0;
 	}
 #endif
 #if defined(GL_EXT_texture_rectangle)
-	else if (strstr(extensions, "GL_EXT_texture_rectangle")) {
+	else if (video.has_gl_ext_texture_rectangle) {
 		this->textureTarget = GL_TEXTURE_RECTANGLE_EXT;
 		this->can_palette = 0;
 	}
 #endif
 #if defined(GL_NV_texture_rectangle)
-	else if (strstr(extensions, "GL_NV_texture_rectangle")) {
+	else if (video.has_gl_nv_texture_rectangle) {
 		this->textureTarget = GL_TEXTURE_RECTANGLE_NV;
 		this->can_palette = 0;
 	}
@@ -288,7 +282,7 @@ static void uploadTexture(video_surface_gl_t *this)
 				SDL_Color *palette = surface->format->palette->colors;
 				int i;
 
-#ifdef GL_EXT_paletted_texture
+#if defined(GL_EXT_paletted_texture)
 				if (this->use_palette) {
 					Uint8 mapP[256*3];
 					Uint8 *pMap = mapP;

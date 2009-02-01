@@ -43,16 +43,13 @@ static void initViewport(video_t *this);
 
 void video_soft_init(video_t *this)
 {
+	memset(this, 0, sizeof(video_t));
+
 	this->width = 320;
 	this->height = 240;
 	this->bpp = 16;
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
-	this->numfb = 0;
-	this->fps = 0;
 	this->start_tick = SDL_GetTicks();
-
-	this->screen = NULL;
-	this->num_screenshot = 0;
 
 	this->shutDown = shutDown;
 	this->findNearestMode = findNearestMode;

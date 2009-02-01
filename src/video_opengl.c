@@ -128,12 +128,39 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
 
-#ifdef GL_EXT_paletted_texture
+	/* Check OpenGL extensions */
 	extensions = (char *) gl.GetString(GL_EXTENSIONS);
+
+	this->has_gl_arb_texture_non_power_of_two = (strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL);
+	logMsg(2, "GL_ARB_texture_non_power_of_two: %d\n", this->has_gl_arb_texture_non_power_of_two);
+
+#if defined(GL_ARB_texture_rectangle)
+	this->has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);
+#else
+	this->has_gl_arb_texture_rectangle = 0;
+#endif
+	logMsg(2, "GL_ARB_texture_rectangle: %d\n", this->has_gl_arb_texture_rectangle);
+
+#if defined(GL_EXT_paletted_texture)
 	this->has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
 #else
 	this->has_gl_ext_paletted_texture = 0;
 #endif
+	logMsg(2, "GL_EXT_paletted_texture: %d\n", this->has_gl_ext_paletted_texture);
+
+#if defined(GL_EXT_texture_rectangle)
+	this->has_gl_ext_texture_rectangle = (strstr(extensions, "GL_EXT_texture_rectangle") != NULL);
+#else
+	this->has_gl_ext_texture_rectangle = 0;
+#endif
+	logMsg(2, "GL_EXT_texture_rectangle: %d\n", this->has_gl_ext_texture_rectangle);
+
+#if defined(GL_NV_texture_rectangle)
+	this->has_gl_nv_texture_rectangle = (strstr(extensions, "GL_NV_texture_rectangle") != NULL);
+#else
+	this->has_gl_nv_texture_rectangle = 0;
+#endif
+	logMsg(2, "GL_NV_texture_rectangle: %d\n", this->has_gl_nv_texture_rectangle);
 
 	video.initViewport(&video);
 
