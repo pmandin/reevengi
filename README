@@ -96,7 +96,7 @@ B		reset model
 Y		toggle grid display
 H		toggle background restoration display
 SPACE		refresh background, move player at current camera position
-Arrow keys	Move player (only for RE1 and RE2 currently)
+Arrow keys	Move player
 Pageup/down	Move player up/down (Atari: use ClrHome/Insert)
 
 4 Supported games
@@ -125,6 +125,8 @@ Missing:
 All PS1 demos and games use same image format, so it should be easy to add
 support for them. I just need a list of all files on each CD (recursive directory
 tree).
+
+RE3 PS1: No model rendering, don't know where they are stored.
 
 -- 
 Patrice Mandin <patmandin@gmail.com>
