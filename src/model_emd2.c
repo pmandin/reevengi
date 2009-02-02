@@ -189,10 +189,10 @@ static void model_emd2_draw(model_t *this)
 	Uint32 *hdr_offsets;
 	void *emd_file;
 
-#if 0
+#if 1
 	int idx_mesh[32];
 	vertex_t pos_mesh[32];
-	int count;
+	int count, i;
 #endif
 
 	if (!this) {
@@ -215,12 +215,25 @@ static void model_emd2_draw(model_t *this)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
-#if 1
+#if 0
 	emd_draw_skel(this, 0, emd_skel_relpos, emd_skel_data);
 #else
 	count = 0;
 	emd_add_mesh(this, 0, &count, idx_mesh,pos_mesh, 0,0,0, emd_skel_relpos, emd_skel_data);
 	render.sortBackToFront(count, idx_mesh,pos_mesh);
+
+	for (i=0; i<count; i++) {
+		render.push_matrix();
+		render.translate(
+			pos_mesh[i].x,
+			pos_mesh[i].y,
+			pos_mesh[i].z
+		);
+
+		emd_draw_mesh(this, idx_mesh[i]);
+
+		render.pop_matrix();
+	}
 #endif
 }
 
