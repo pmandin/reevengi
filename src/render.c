@@ -352,15 +352,15 @@ static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 
 	/* Then sort them */
 	for (i=0; i<num_vtx-1; i++) {
-		float dist_i = vtx1[i].pos[0]*vtx1[i].pos[0]
+		float dist_i = /* vtx1[i].pos[0]*vtx1[i].pos[0]
 			+ vtx1[i].pos[1]*vtx1[i].pos[1]
-			+ vtx1[i].pos[2]*vtx1[i].pos[2];
+			+ vtx1[i].pos[2]* */ vtx1[i].pos[2];
 
 		/* Find the farer, swap against the one at pos i */
 		for (j=i+1; j<num_vtx; j++) {
-			float dist_j = vtx1[j].pos[0]*vtx1[j].pos[0]
+			float dist_j = /*vtx1[j].pos[0]*vtx1[j].pos[0]
 				+ vtx1[j].pos[1]*vtx1[j].pos[1]
-				+ vtx1[j].pos[2]*vtx1[j].pos[2];
+				+ vtx1[j].pos[2]* */ vtx1[j].pos[2];
 
 			if (dist_i<dist_j) {
 				float tmp_dist;
