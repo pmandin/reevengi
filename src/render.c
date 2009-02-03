@@ -178,6 +178,8 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	/* Reset matrix stack for modelview */
 	num_modelview_mtx = 0;
 	mtx_setIdentity(modelview_mtx[num_modelview_mtx]);
+
+	draw_clear();
 }
 
 static void set_identity(void)

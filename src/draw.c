@@ -94,12 +94,23 @@ void draw_init(void)
 {
 }
 
+void draw_clear(void)
+{
+	int i;
+
+	for (i=0; i<sbuffer_numrows; i++) {
+		sbuffer_rows[i].num_segs = 0;
+	}
+}
+
 void draw_resize(int w, int h)
 {
 	if (h>sbuffer_numrows) {
 		sbuffer_rows = realloc(sbuffer_rows, h * sizeof(sbuffer_row_t));
 		sbuffer_numrows = h;
 	}
+
+	draw_clear();
 }
 
 void draw_shutdown(void)

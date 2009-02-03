@@ -32,6 +32,7 @@ typedef struct {
 
 void draw_init(void);
 void draw_resize(int w, int h);
+void draw_clear(void);
 void draw_shutdown(void);
 
 void draw_setColor(Uint32 color);
