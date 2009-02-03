@@ -28,6 +28,7 @@
 #include "render.h"
 #include "dither.h"
 #include "log.h"
+#include "draw.h"
 
 /*--- Function prototypes ---*/
 
@@ -233,6 +234,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
+	draw_resize(this->width, this->height);
 	video.initViewport(&video);
 }
 

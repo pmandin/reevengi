@@ -36,6 +36,8 @@
 #define CLIP_REJECT(a,b) (a&b)
 #define CLIP_ACCEPT(a,b) (!(a|b))
 
+#define NUM_SEGMENTS 64
+
 /*--- Types ---*/
 
 typedef struct {
@@ -45,6 +47,21 @@ typedef struct {
 	float tv[2];
 	float w[2];	/* 1/z, 0:min, 1:max */
 } poly_hline_t;
+
+typedef struct {
+	int x;		/* x on screen */
+	Uint32 c;	/* color */
+	float tu, tv, w;	/* u,v coords, w=1/z */
+} sbuffer_point_t;
+
+typedef struct {
+	sbuffer_point_t start, end;
+} sbuffer_segment_t;
+
+typedef struct {
+	int num_segs;
+	sbuffer_segment_t segment[NUM_SEGMENTS];
+} sbuffer_row_t;
 
 /*--- Variables ---*/
 
@@ -57,6 +74,10 @@ static render_texture_t *texture = NULL;
 /* for poly rendering */
 static int size_poly_minmaxx = 0;
 static poly_hline_t *poly_hlines = NULL;
+
+/* Sbuffer */
+static int sbuffer_numrows = 0;
+static sbuffer_row_t *sbuffer_rows = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -73,8 +94,22 @@ void draw_init(void)
 {
 }
 
+void draw_resize(int w, int h)
+{
+	if (h>sbuffer_numrows) {
+		sbuffer_rows = realloc(sbuffer_rows, h * sizeof(sbuffer_row_t));
+		sbuffer_numrows = h;
+	}
+}
+
 void draw_shutdown(void)
 {
+	if (sbuffer_rows) {
+		free(sbuffer_rows);
+		sbuffer_rows = NULL;
+	}
+	sbuffer_numrows = 0;
+
 	if (poly_hlines) {
 		free(poly_hlines);
 		poly_hlines = NULL;
