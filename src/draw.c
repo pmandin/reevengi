@@ -94,6 +94,22 @@ void draw_init(void)
 {
 }
 
+void draw_shutdown(void)
+{
+	if (sbuffer_rows) {
+		free(sbuffer_rows);
+		sbuffer_rows = NULL;
+	}
+	sbuffer_numrows = 0;
+
+	if (poly_hlines) {
+		free(poly_hlines);
+		poly_hlines = NULL;
+	}
+	size_poly_minmaxx = 0;
+}
+
+/* Sbuffer functions */
 void draw_clear(void)
 {
 	int i;
@@ -113,19 +129,8 @@ void draw_resize(int w, int h)
 	draw_clear();
 }
 
-void draw_shutdown(void)
+void draw_render(void)
 {
-	if (sbuffer_rows) {
-		free(sbuffer_rows);
-		sbuffer_rows = NULL;
-	}
-	sbuffer_numrows = 0;
-
-	if (poly_hlines) {
-		free(poly_hlines);
-		poly_hlines = NULL;
-	}
-	size_poly_minmaxx = 0;
 }
 
 void draw_setColor(Uint32 color)

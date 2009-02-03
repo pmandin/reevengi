@@ -31,9 +31,11 @@ typedef struct {
 /*--- Functions prototypes ---*/
 
 void draw_init(void);
+void draw_shutdown(void);
+
 void draw_resize(int w, int h);
 void draw_clear(void);
-void draw_shutdown(void);
+void draw_render(void);
 
 void draw_setColor(Uint32 color);
 void draw_setTexture(int num_pal, render_texture_t *render_tex);

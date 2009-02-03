@@ -255,6 +255,8 @@ static void swapBuffers(video_t *this)
 	SDL_Rect *list_rects;
 	int i, x, y;
 
+	draw_render();
+
 	this->countFps(this);
 
 	if ((this->flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
