@@ -81,6 +81,10 @@ static sbuffer_row_t *sbuffer_rows = NULL;
 
 /*--- Functions prototypes ---*/
 
+static void draw_render8(void);
+static void draw_render16(void);
+static void draw_render32(void);
+
 static void draw_hline(int x1, int x2, int y);
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
 static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu2, float tv2);
@@ -131,6 +135,26 @@ void draw_resize(int w, int h)
 
 void draw_render(void)
 {
+	SDL_Surface *surf = video.screen;
+
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			draw_render8();
+			break;
+		case 2:
+			draw_render16();
+			break;
+		case 3:
+			/* TODO */
+			break;
+		case 4:
+			draw_render32();
+			break;
+	}
+}
+
+static void draw_render8(void)
+{
 	int i,j;
 	SDL_Surface *surf = video.screen;
 	Uint8 *dst = (Uint8 *) surf->pixels;
@@ -147,6 +171,43 @@ void draw_render(void)
 	}
 }
 
+static void draw_render16(void)
+{
+	int i,j;
+	SDL_Surface *surf = video.screen;
+	Uint16 *dst = (Uint16 *) surf->pixels;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint16 *dst_line = dst;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+		}
+
+		dst += surf->pitch;
+	}
+}
+
+static void draw_render32(void)
+{
+	int i,j;
+	SDL_Surface *surf = video.screen;
+	Uint32 *dst = (Uint32 *) surf->pixels;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint32 *dst_line = dst;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+		}
+
+		dst += surf->pitch;
+	}
+}
+
+/* Drawing functions */
 void draw_setColor(Uint32 color)
 {
 	SDL_Surface *surf = video.screen;
