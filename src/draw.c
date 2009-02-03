@@ -51,7 +51,7 @@ typedef struct {
 typedef struct {
 	int x;		/* x on screen */
 	Uint32 c;	/* color */
-	float tu, tv, w;	/* u,v coords, w=1/z */
+	float u,v, w;	/* u,v coords, w=1/z */
 } sbuffer_point_t;
 
 typedef struct {
@@ -84,6 +84,8 @@ static sbuffer_row_t *sbuffer_rows = NULL;
 static void draw_render8_fill(void);
 static void draw_render16_fill(void);
 static void draw_render32_fill(void);
+
+static void draw_add_segment(int y, sbuffer_point_t *p1, sbuffer_point_t *p2);
 
 static void draw_hline(int x1, int x2, int y);
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
@@ -228,6 +230,70 @@ static void draw_render32_fill(void)
 		}
 
 		dst += surf->pitch>>2;
+	}
+}
+
+static void draw_add_segment(int y, sbuffer_point_t *p1, sbuffer_point_t *p2)
+{
+	/* Clip if outside */
+	if ((p2->x<0) || (p1->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
+		return;
+	}
+
+	/* Clip against left */
+	if (p1->x<0) {
+		int dx = p2->x - p1->x;
+		int nx = 0 - p1->x;
+
+		int r = (p1->c >> 16) & 0xff;
+		int dr = ((p2->c >> 16) & 0xff) - r;
+		int g = (p1->c >> 8) & 0xff;
+		int dg = ((p2->c >> 8) & 0xff) - g;
+		int b = p1->c & 0xff;
+		int db = (p2->c & 0xff) - b;
+
+		float du = p2->u - p1->u;
+		float dv = p2->v - p1->v;
+
+		float dw = p2->w - p1->w;
+
+		r += (dr * nx)/dx;
+		g += (dg * nx)/dx;
+		b += (db * nx)/dx;
+
+		p1->c = (r<<16)|(g<<8)|b;
+		p1->u += (du * nx)/dx;
+		p1->v += (dv * nx)/dx;
+		p1->w += (dw * nx)/dx;
+		p1->x = 0;
+	}
+	
+	/* Clip against right */
+	if (p2->x>=video.viewport.w) {
+		int dx = p2->x - p1->x;
+		int nx = (video.viewport.w-1)-p1->x;
+
+		int r = (p1->c >> 16) & 0xff;
+		int dr = ((p2->c >> 16) & 0xff) - r;
+		int g = (p1->c >> 8) & 0xff;
+		int dg = ((p2->c >> 8) & 0xff) - g;
+		int b = p1->c & 0xff;
+		int db = (p2->c & 0xff) - b;
+
+		float du = p2->u - p1->u;
+		float dv = p2->v - p1->v;
+
+		float dw = p2->w - p1->w;
+
+		r += (dr * nx)/dx;
+		g += (dg * nx)/dx;
+		b += (db * nx)/dx;
+
+		p2->c = (r<<16)|(g<<8)|b;
+		p2->u += (du * nx)/dx;
+		p2->v += (dv * nx)/dx;
+		p2->w += (dw * nx)/dx;
+		p2->x = video.viewport.w-1;
 	}
 }
 
