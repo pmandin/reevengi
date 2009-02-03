@@ -185,7 +185,7 @@ static void draw_render16(void)
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 		}
 
-		dst += surf->pitch;
+		dst += surf->pitch>>1;
 	}
 }
 
@@ -203,7 +203,7 @@ static void draw_render32(void)
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 		}
 
-		dst += surf->pitch;
+		dst += surf->pitch>>2;
 	}
 }
 
