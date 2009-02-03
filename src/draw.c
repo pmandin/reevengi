@@ -131,6 +131,14 @@ void draw_resize(int w, int h)
 
 void draw_render(void)
 {
+	int i,j;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+		}
+	}
 }
 
 void draw_setColor(Uint32 color)
