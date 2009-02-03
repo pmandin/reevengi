@@ -81,9 +81,9 @@ static sbuffer_row_t *sbuffer_rows = NULL;
 
 /*--- Functions prototypes ---*/
 
-static void draw_render8(void);
-static void draw_render16(void);
-static void draw_render32(void);
+static void draw_render8_fill(void);
+static void draw_render16_fill(void);
+static void draw_render32_fill(void);
 
 static void draw_hline(int x1, int x2, int y);
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
@@ -139,21 +139,23 @@ void draw_render(void)
 
 	switch(surf->format->BytesPerPixel) {
 		case 1:
-			draw_render8();
+			draw_render8_fill();
 			break;
 		case 2:
-			draw_render16();
+			draw_render16_fill();
 			break;
 		case 3:
 			/* TODO */
 			break;
 		case 4:
-			draw_render32();
+			draw_render32_fill();
 			break;
 	}
+
+	/* TODO: mark dirtied lines */
 }
 
-static void draw_render8(void)
+static void draw_render8_fill(void)
 {
 	int i,j;
 	SDL_Surface *surf = video.screen;
@@ -167,14 +169,14 @@ static void draw_render8(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
-			memset(dst_col, segments[j].start.c, segments[j].end.x - segments[j].start.x + 1);
+			memset(dst_col, draw_color, segments[j].end.x - segments[j].start.x + 1);
 		}
 
 		dst += surf->pitch;
 	}
 }
 
-static void draw_render16(void)
+static void draw_render16_fill(void)
 {
 	int i,j,k;
 	SDL_Surface *surf = video.screen;
@@ -188,9 +190,8 @@ static void draw_render16(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
-			Uint16 color = segments[j].start.c;
 			for (k=segments[j].start.x; k<segments[j].end.x; k++) {
-				*dst_col++ = color;
+				*dst_col++ = draw_color;
 			}
 		}
 
@@ -198,7 +199,7 @@ static void draw_render16(void)
 	}
 }
 
-static void draw_render32(void)
+static void draw_render32_fill(void)
 {
 	int i,j,k;
 	SDL_Surface *surf = video.screen;
@@ -212,9 +213,8 @@ static void draw_render32(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
-			Uint32 color = segments[j].start.c;
 			for (k=segments[j].start.x; k<segments[j].end.x; k++) {
-				*dst_col++ = color;
+				*dst_col++ = draw_color;
 			}
 		}
 
