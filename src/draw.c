@@ -43,6 +43,7 @@ typedef struct {
 	Uint32 c[2];	/* color 0:min, 1:max */
 	float tu[2];	/* texture 0:min, 1:max */
 	float tv[2];
+	float w[2];	/* 1/z, 0:min, 1:max */
 } poly_hline_t;
 
 /*--- Variables ---*/
@@ -531,16 +532,21 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		int x1,y1, x2,y2;
 		int dx,dy, tmp;
 		int num_array = 1; /* max */
+		float w1, w2;
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
+		w1 = vtx[p1].pos[2] / vtx[p1].pos[3];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
+		w2 = vtx[p2].pos[2] / vtx[p2].pos[3];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
+			float tmpz;
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
+			tmpz = w1; w1 = w2; w2 = tmpz;
 			num_array = 0;	/* min */
 			v1 = p2;
 			v2 = p1;
@@ -555,6 +561,7 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		dx = x2 - x1;
 		dy = y2 - y1;
 		if (dy>0) {
+			float dw = w2 - w1;
 			for (y=0; y<dy; y++) {
 				int px;
 				if ((y1<0) || (y1>=video.viewport.h)) {
@@ -568,6 +575,7 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 				if (px>=video.viewport.w) {
 					px = video.viewport.w-1;
 				}
+				poly_hlines[y1].w[num_array] = w1 + ((dw*y)/dy);
 				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
@@ -626,18 +634,23 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 		int x1,y1, x2,y2;
 		int dy;
 		int num_array = 1; /* max */
+		float w1, w2;
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
+		w1 = vtx[p1].pos[2] / vtx[p1].pos[3];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
+		w2 = vtx[p2].pos[2] / vtx[p2].pos[3];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
 			int tmp;
+			float tmpz;
 
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
+			tmpz = w1; w1 = w2; w2 = tmpz;
 			num_array = 0; /* min */
 			v1 = p2;
 			v2 = p1;
@@ -658,6 +671,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 			int dg = vtx[v2].col[1] - vtx[v1].col[1];
 			int b1 = vtx[v1].col[2];
 			int db = vtx[v2].col[2] - vtx[v1].col[2];
+			float dw = w2 - w1;
 			/*printf("vtx from %d,%d,%d to %d,%d,%d\n",r1,g1,b1,r1+dr,g1+dg,b1+db);*/
 			for (y=0; y<dy; y++) {
 				int r,g,b, px;
@@ -677,6 +691,7 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 				b = (b1 + ((db*y)/dy)) & 0xff;
 				/* TODO: calc rgb if px<>x1 */
 				poly_hlines[y1].c[num_array] = (r<<16)|(g<<8)|b;
+				poly_hlines[y1].w[num_array] = w1 + ((dw*y)/dy);
 				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
@@ -740,18 +755,23 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 		int x1,y1, x2,y2;
 		int dy;
 		int num_array = 1; /* max */
+		float w1, w2;
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
+		w1 = vtx[p1].pos[2] / vtx[p1].pos[3];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
+		w2 = vtx[p2].pos[2] / vtx[p2].pos[3];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
 			int tmp;
+			float tmpz;
 
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
+			tmpz = w1; w1 = w2; w2 = tmpz;
 			num_array = 0; /* min */
 			v1 = p2;
 			v2 = p1;
@@ -770,6 +790,7 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 			float du = vtx[v2].tx[0] - vtx[v1].tx[0];
 			float tv1 = vtx[v1].tx[1];
 			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
+			float dw = w2 - w1;
 			for (y=0; y<dy; y++) {
 				int px;
 				if ((y1<0) || (y1>=video.viewport.h)) {
@@ -786,6 +807,7 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 				/* TODO: calc uv if px<>x1 */
 				poly_hlines[y1].tu[num_array] = tu1 + ((du*y)/dy);
 				poly_hlines[y1].tv[num_array] = tv1 + ((dv*y)/dy);
+				poly_hlines[y1].w[num_array] = w1 + ((w2*y)/dy);
 				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
