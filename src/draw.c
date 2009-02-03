@@ -160,6 +160,8 @@ static void draw_render8_fill(void)
 	int i,j;
 	SDL_Surface *surf = video.screen;
 	Uint8 *dst = (Uint8 *) surf->pixels;
+	dst += video.viewport.y * surf->pitch;
+	dst += video.viewport.x;
 
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
@@ -181,6 +183,8 @@ static void draw_render16_fill(void)
 	int i,j,k;
 	SDL_Surface *surf = video.screen;
 	Uint16 *dst = (Uint16 *) surf->pixels;
+	dst += video.viewport.y * (surf->pitch>>1);
+	dst += video.viewport.x;
 
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
@@ -204,6 +208,8 @@ static void draw_render32_fill(void)
 	int i,j,k;
 	SDL_Surface *surf = video.screen;
 	Uint32 *dst = (Uint32 *) surf->pixels;
+	dst += video.viewport.y * (surf->pitch>>2);
+	dst += video.viewport.x;
 
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
