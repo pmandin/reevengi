@@ -162,9 +162,12 @@ static void draw_render8(void)
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
 		Uint8 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint8 *dst_col = &dst_line[segments[j].start.x];
+			memset(dst_col, segments[j].start.c, segments[j].end.x - segments[j].start.x + 1);
 		}
 
 		dst += surf->pitch;
@@ -180,9 +183,11 @@ static void draw_render16(void)
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
 		Uint16 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint16 *dst_col = &dst_line[segments[j].start.x];
 		}
 
 		dst += surf->pitch>>1;
@@ -198,9 +203,11 @@ static void draw_render32(void)
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
 		Uint32 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint32 *dst_col = &dst_line[segments[j].start.x];
 		}
 
 		dst += surf->pitch>>2;
