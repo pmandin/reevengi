@@ -176,7 +176,7 @@ static void draw_render8(void)
 
 static void draw_render16(void)
 {
-	int i,j;
+	int i,j,k;
 	SDL_Surface *surf = video.screen;
 	Uint16 *dst = (Uint16 *) surf->pixels;
 
@@ -188,6 +188,10 @@ static void draw_render16(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
+			Uint16 color = segments[j].start.c;
+			for (k=segments[j].start.x; k<segments[j].end.x; k++) {
+				*dst_col++ = color;
+			}
 		}
 
 		dst += surf->pitch>>1;
@@ -196,7 +200,7 @@ static void draw_render16(void)
 
 static void draw_render32(void)
 {
-	int i,j;
+	int i,j,k;
 	SDL_Surface *surf = video.screen;
 	Uint32 *dst = (Uint32 *) surf->pixels;
 
@@ -208,6 +212,10 @@ static void draw_render32(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
+			Uint32 color = segments[j].start.c;
+			for (k=segments[j].start.x; k<segments[j].end.x; k++) {
+				*dst_col++ = color;
+			}
 		}
 
 		dst += surf->pitch>>2;
