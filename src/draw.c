@@ -137,6 +137,9 @@ void draw_render(void)
 {
 	SDL_Surface *surf = video.screen;
 
+	/* Disable for now */
+	return;
+
 	switch(surf->format->BytesPerPixel) {
 		case 1:
 			draw_render8_fill();
