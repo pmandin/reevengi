@@ -536,10 +536,10 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
-		w1 = vtx[p1].pos[2] / vtx[p1].pos[3];
+		w1 = vtx[p1].pos[3] / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
-		w2 = vtx[p2].pos[2] / vtx[p2].pos[3];
+		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -638,10 +638,10 @@ void draw_poly_gouraud(vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
-		w1 = vtx[p1].pos[2] / vtx[p1].pos[3];
+		w1 = vtx[p1].pos[3] / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
-		w2 = vtx[p2].pos[2] / vtx[p2].pos[3];
+		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -759,10 +759,10 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
-		w1 = vtx[p1].pos[2] / vtx[p1].pos[3];
+		w1 = vtx[p1].pos[3] / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
-		w2 = vtx[p2].pos[2] / vtx[p2].pos[3];
+		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
