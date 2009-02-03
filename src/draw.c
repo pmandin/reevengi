@@ -235,6 +235,8 @@ static void draw_render32_fill(void)
 
 static void draw_add_segment(int y, sbuffer_point_t *p1, sbuffer_point_t *p2)
 {
+	int insert_pos, i;
+
 	/* Clip if outside */
 	if ((p2->x<0) || (p1->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
 		return;
@@ -294,6 +296,20 @@ static void draw_add_segment(int y, sbuffer_point_t *p1, sbuffer_point_t *p2)
 		p2->v += (dv * nx)/dx;
 		p2->w += (dw * nx)/dx;
 		p2->x = video.viewport.w-1;
+	}
+
+	/* Insert remaining segment at the right place */
+	if (sbuffer_rows[y].num_segs==0) {
+		/* Simple insertion */
+		memcpy(&(sbuffer_rows[y].segment[0].start), p1, sizeof(sbuffer_point_t));
+		memcpy(&(sbuffer_rows[y].segment[0].end), p2, sizeof(sbuffer_point_t));
+		
+		sbuffer_rows[y].num_segs = 1;
+		return;
+	}
+
+	insert_pos = -1;
+	for (i=0; i<sbuffer_rows[y].num_segs; i++) {
 	}
 }
 
