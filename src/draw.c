@@ -132,12 +132,18 @@ void draw_resize(int w, int h)
 void draw_render(void)
 {
 	int i,j;
+	SDL_Surface *surf = video.screen;
+	Uint8 *dst = (Uint8 *) surf->pixels;
 
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
+		Uint8 *dst_line = dst;
+
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 		}
+
+		dst += surf->pitch;
 	}
 }
 
