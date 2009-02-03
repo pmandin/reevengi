@@ -190,7 +190,7 @@ static void draw_render16_fill(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
-			for (k=segments[j].start.x; k<segments[j].end.x; k++) {
+			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
 				*dst_col++ = draw_color;
 			}
 		}
@@ -213,7 +213,7 @@ static void draw_render32_fill(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
-			for (k=segments[j].start.x; k<segments[j].end.x; k++) {
+			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
 				*dst_col++ = draw_color;
 			}
 		}
