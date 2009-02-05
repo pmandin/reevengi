@@ -121,7 +121,7 @@ static void emd_add_mesh(model_t *this, int num_skel, int *num_idx, int *idx, ve
 model_t *model_emd_load(void *emd, Uint32 emd_length)
 {
 	model_t	*model;
-	Uint32 *hdr_offsets;
+	Uint32 *hdr_offsets, tim_offset;
 	
 	model = (model_t *) calloc(1, sizeof(model_t));
 	if (!model) {
@@ -136,8 +136,9 @@ model_t *model_emd_load(void *emd, Uint32 emd_length)
 	hdr_offsets = (Uint32 *)
 		(&((char *) model->emd_file)[model->emd_length-16]);
 
-	model->tim_file = (&((char *) model->emd_file)[hdr_offsets[EMD_TIM]]);
-	model->tim_length = model->emd_length - hdr_offsets[EMD_TIM];
+	tim_offset = SDL_SwapLE32(hdr_offsets[EMD_TIM]);
+	model->tim_file = (&((char *) model->emd_file)[tim_offset]);
+	model->tim_length = model->emd_length - tim_offset;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_convert_endianness(model);
