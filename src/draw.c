@@ -85,7 +85,9 @@ static void draw_render8_fill(void);
 static void draw_render16_fill(void);
 static void draw_render32_fill(void);
 
-static void draw_add_segment(int y, sbuffer_point_t *p1, sbuffer_point_t *p2);
+static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
+	sbuffer_point_t *clipped);
+static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end);
 
 static void draw_hline(int x1, int x2, int y);
 static void draw_hline_gouraud(int x1, int x2, int y, Uint32 c1, Uint32 c2);
@@ -233,76 +235,67 @@ static void draw_render32_fill(void)
 	}
 }
 
-static void draw_add_segment(int y, sbuffer_point_t *p1, sbuffer_point_t *p2)
+/* clipped can be start or end */
+static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
+	sbuffer_point_t *clipped)
+{
+	int dx,nx, r,dr, g,dg, b,db;
+	float du,dv, dw;
+
+	dx = end->x - start->x;
+	nx = x - start->x;
+
+	r = (start->c >> 16) & 0xff;
+	dr = ((end->c >> 16) & 0xff) - r;
+	g = (start->c >> 8) & 0xff;
+	dg = ((end->c >> 8) & 0xff) - g;
+	b = start->c & 0xff;
+	db = (end->c & 0xff) - b;
+	r += (dr * nx)/dx;
+	g += (dg * nx)/dx;
+	b += (db * nx)/dx;
+
+	clipped->c = (r<<16)|(g<<8)|b;
+
+	du = end->u - start->u;
+	dv = end->v - start->v;
+	clipped->u = start->u + ((du * nx)/dx);
+	clipped->v = start->v + ((dv * nx)/dx);
+
+	dw = end->w - start->w;
+	clipped->w = start->w + ((dw * nx)/dx);
+
+	clipped->x = x;
+}
+
+static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end)
 {
 	int insert_pos, i;
+	sbuffer_point_t p1, p2;
 
 	/* Clip if outside */
-	if ((p2->x<0) || (p1->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
+	if ((end->x<0) || (start->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
 		return;
 	}
 
+	memcpy(&p1, start, sizeof(sbuffer_point_t));
+	memcpy(&p2, end, sizeof(sbuffer_point_t));
+
 	/* Clip against left */
-	if (p1->x<0) {
-		int dx = p2->x - p1->x;
-		int nx = 0 - p1->x;
-
-		int r = (p1->c >> 16) & 0xff;
-		int dr = ((p2->c >> 16) & 0xff) - r;
-		int g = (p1->c >> 8) & 0xff;
-		int dg = ((p2->c >> 8) & 0xff) - g;
-		int b = p1->c & 0xff;
-		int db = (p2->c & 0xff) - b;
-
-		float du = p2->u - p1->u;
-		float dv = p2->v - p1->v;
-
-		float dw = p2->w - p1->w;
-
-		r += (dr * nx)/dx;
-		g += (dg * nx)/dx;
-		b += (db * nx)/dx;
-
-		p1->c = (r<<16)|(g<<8)|b;
-		p1->u += (du * nx)/dx;
-		p1->v += (dv * nx)/dx;
-		p1->w += (dw * nx)/dx;
-		p1->x = 0;
+	if (p1.x<0) {
+		draw_clip_segment(0, start, end, &p1);
 	}
 	
 	/* Clip against right */
-	if (p2->x>=video.viewport.w) {
-		int dx = p2->x - p1->x;
-		int nx = (video.viewport.w-1)-p1->x;
-
-		int r = (p1->c >> 16) & 0xff;
-		int dr = ((p2->c >> 16) & 0xff) - r;
-		int g = (p1->c >> 8) & 0xff;
-		int dg = ((p2->c >> 8) & 0xff) - g;
-		int b = p1->c & 0xff;
-		int db = (p2->c & 0xff) - b;
-
-		float du = p2->u - p1->u;
-		float dv = p2->v - p1->v;
-
-		float dw = p2->w - p1->w;
-
-		r += (dr * nx)/dx;
-		g += (dg * nx)/dx;
-		b += (db * nx)/dx;
-
-		p2->c = (r<<16)|(g<<8)|b;
-		p2->u += (du * nx)/dx;
-		p2->v += (dv * nx)/dx;
-		p2->w += (dw * nx)/dx;
-		p2->x = video.viewport.w-1;
+	if (p2.x>=video.viewport.w) {
+		draw_clip_segment(video.viewport.w-1, start, end, &p2);
 	}
 
-	/* Insert remaining segment at the right place */
+	/* Empty line? simple insertion */
 	if (sbuffer_rows[y].num_segs==0) {
 		/* Simple insertion */
-		memcpy(&(sbuffer_rows[y].segment[0].start), p1, sizeof(sbuffer_point_t));
-		memcpy(&(sbuffer_rows[y].segment[0].end), p2, sizeof(sbuffer_point_t));
+		memcpy(&(sbuffer_rows[y].segment[0].start), &p1, sizeof(sbuffer_point_t));
+		memcpy(&(sbuffer_rows[y].segment[0].end), &p2, sizeof(sbuffer_point_t));
 		
 		sbuffer_rows[y].num_segs = 1;
 		return;
