@@ -26,10 +26,14 @@ AC_CHECK_FUNCS([memset pow])
 # Checks for target
 
 SYS_SDLIMAGE_ADDLIBS=""
+WANT_GAMMA="yes"
 case "$target" in
-    *-*-mint*)
-	SYS_SDLIMAGE_ADDLIBS="-ltiff -ljpeg -lpng"
-        ;;
+	*-*-mingw* | *-*-cygwin*)
+		WANT_GAMMA="no"
+		;;
+	*-*-mint*)
+		SYS_SDLIMAGE_ADDLIBS="-ltiff -ljpeg -lpng"
+	;;
 esac	
 
 # Checks for libraries.
@@ -105,7 +109,9 @@ fi
 # Gamma setting
 # Some SDL versions have a bug using windib driver that makes it crash
 
-AC_DEFINE(ENABLE_GAMMA, 1, [Define if you want gamma setting])
+if test "x$WANT_GAMMA" = "xyes"; then
+	AC_DEFINE(ENABLE_GAMMA, 1, [Define if you want gamma setting])
+fi
 
 # Movies using FFmpeg
 
