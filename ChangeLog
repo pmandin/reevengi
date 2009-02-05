@@ -3,6 +3,7 @@ v 0.10
 - Switchable wireframe/filled/gouraud-ed/textured for model drawing, for
   both OpenGL and software renderers.
 - 64 bits fixes for camera position.
+- Win32: Disable gamma, due to some buggy SDL versions.
 
 v 0.9
 
