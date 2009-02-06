@@ -271,31 +271,35 @@ static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer
 static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end)
 {
 	int insert_pos, i;
-	sbuffer_point_t p1, p2;
+	int x1, x2;
 
 	/* Clip if outside */
 	if ((end->x<0) || (start->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
 		return;
 	}
 
-	memcpy(&p1, start, sizeof(sbuffer_point_t));
-	memcpy(&p2, end, sizeof(sbuffer_point_t));
-
 	/* Clip against left */
-	if (p1.x<0) {
-		draw_clip_segment(0, start, end, &p1);
+	if (x1<0) {
+		x1 = 0;
 	}
 	
 	/* Clip against right */
-	if (p2.x>=video.viewport.w) {
-		draw_clip_segment(video.viewport.w-1, start, end, &p2);
+	if (x2>=video.viewport.w) {
+		x2 = video.viewport.w-1;
 	}
 
 	/* Empty line? simple insertion */
 	if (sbuffer_rows[y].num_segs==0) {
+		sbuffer_point_t *p;
+
 		/* Simple insertion */
-		memcpy(&(sbuffer_rows[y].segment[0].start), &p1, sizeof(sbuffer_point_t));
-		memcpy(&(sbuffer_rows[y].segment[0].end), &p2, sizeof(sbuffer_point_t));
+		p = &(sbuffer_rows[y].segment[0].start);
+		memcpy(p, start, sizeof(sbuffer_point_t));
+		draw_clip_segment(x1, start, end, p);
+
+		p = &(sbuffer_rows[y].segment[0].end);
+		memcpy(p, end, sizeof(sbuffer_point_t));
+		draw_clip_segment(x2, start, end, p);
 		
 		sbuffer_rows[y].num_segs = 1;
 		return;
