@@ -87,7 +87,12 @@ void render_background_opengl(video_t *this)
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
-	gl.Scalef(backgroundSurf->width, backgroundSurf->height, 1.0f);
+	if (textureTarget != GL_TEXTURE_2D) {
+		/* Rescale to width/height range */
+		gl.Scalef(backgroundSurf->width, backgroundSurf->height, 1.0f);
+	} else {
+		/* Rescale to 0-1 range */
+	}
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
