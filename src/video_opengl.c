@@ -36,6 +36,10 @@
 #include "state.h"
 #include "log.h"
 
+/*--- Variables ---*/
+
+static int first_time = 1;	/* To display OpenGL driver properties */
+
 /*--- Function prototypes ---*/
 
 static void setVideoMode(video_t *this, int width, int height, int bpp);
@@ -85,7 +89,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	const int gl_bpp[4]={0,16,24,32};
 	int i;
 	SDL_Surface *screen;
-	char *extensions;
+	const char *extensions;
 
 	if (this->flags & SDL_FULLSCREEN) {
 		this->findNearestMode(this, &width, &height, bpp);
@@ -130,23 +134,37 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	dyngl_initfuncs();
 
-	/* Check OpenGL extensions */
-	extensions = (char *) gl.GetString(GL_EXTENSIONS);
+	/* Read infos about OpenGL driver */
+	if (first_time) {
+		extensions = (const char *) gl.GetString(GL_VENDOR);
+		logMsg(2, "GL_VENDOR: %s\n", extensions);
 
-	this->has_gl_arb_texture_non_power_of_two = (strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL);
-	logMsg(2, "GL_ARB_texture_non_power_of_two: %d\n", this->has_gl_arb_texture_non_power_of_two);
+		extensions = (const char *) gl.GetString(GL_RENDERER);
+		logMsg(2, "GL_RENDERER: %s\n", extensions);
 
-	this->has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);
-	logMsg(2, "GL_ARB_texture_rectangle: %d\n", this->has_gl_arb_texture_rectangle);
+		extensions = (const char *) gl.GetString(GL_VERSION);
+		logMsg(2, "GL_VERSION: %s\n", extensions);
 
-	this->has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
-	logMsg(2, "GL_EXT_paletted_texture: %d\n", this->has_gl_ext_paletted_texture);
+		/* Check OpenGL extensions */
+		extensions = (char *) gl.GetString(GL_EXTENSIONS);
 
-	this->has_gl_ext_texture_rectangle = (strstr(extensions, "GL_EXT_texture_rectangle") != NULL);
-	logMsg(2, "GL_EXT_texture_rectangle: %d\n", this->has_gl_ext_texture_rectangle);
+		this->has_gl_arb_texture_non_power_of_two = (strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL);
+		logMsg(2, "GL_ARB_texture_non_power_of_two: %d\n", this->has_gl_arb_texture_non_power_of_two);
 
-	this->has_gl_nv_texture_rectangle = (strstr(extensions, "GL_NV_texture_rectangle") != NULL);
-	logMsg(2, "GL_NV_texture_rectangle: %d\n", this->has_gl_nv_texture_rectangle);
+		this->has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);
+		logMsg(2, "GL_ARB_texture_rectangle: %d\n", this->has_gl_arb_texture_rectangle);
+
+		this->has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
+		logMsg(2, "GL_EXT_paletted_texture: %d\n", this->has_gl_ext_paletted_texture);
+
+		this->has_gl_ext_texture_rectangle = (strstr(extensions, "GL_EXT_texture_rectangle") != NULL);
+		logMsg(2, "GL_EXT_texture_rectangle: %d\n", this->has_gl_ext_texture_rectangle);
+
+		this->has_gl_nv_texture_rectangle = (strstr(extensions, "GL_NV_texture_rectangle") != NULL);
+		logMsg(2, "GL_NV_texture_rectangle: %d\n", this->has_gl_nv_texture_rectangle);
+
+		first_time = 0;
+	}
 
 	video.initViewport(&video);
 
