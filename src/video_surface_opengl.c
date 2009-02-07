@@ -255,7 +255,7 @@ static void findTextureSize(video_surface_gl_t *this, int *width, int *height)
 	}
 
 	/* FIXME: what to do if hw do not support asked size ? */
-	/*logMsg(3,"ogl_surf: needed %dx%d, got %dx%d\n", *width, *height, w,h);*/
+	logMsg(3,"ogl_surf: needed %dx%d, got %dx%d\n", *width, *height, w,h);
 
 	*width = w;
 	*height = h;
@@ -273,8 +273,8 @@ static void uploadTexture(video_surface_gl_t *this)
 
 	gl.BindTexture(this->textureTarget, this->textureObject);
 
-	logMsg(3,"ogl_surf: %dx%d, %d, 0x%08x\n", surface->w, surface->h,
-		surface->format->BitsPerPixel, surface->pixels);
+	logMsg(3,"ogl_surf: %dx%d (%dx%d), %d (%d), 0x%08x\n", surface->w, surface->h,
+		surface->format->BitsPerPixel, surface->format->BytesPerPixel, surface->pixels);
 
 	switch (surface->format->BytesPerPixel) {
 		case 1:
@@ -362,7 +362,8 @@ static void resize(video_surface_t *this, int w, int h)
 {
 	video_surface_gl_t *gl_this = (video_surface_gl_t *) this;
 
-	/*printf("ogl_surf: resize to %dx%d\n", w,h);*/
+	logMsg(3, "ogl_surf: resize to %dx%d\n", w,h);
+
 	findTextureSize(gl_this, &w, &h);
 	this->resize(this, w, h);
 	gl_this->need_upload = 1;
