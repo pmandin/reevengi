@@ -92,6 +92,8 @@ void render_background_opengl(video_t *this)
 		gl.Scalef(backgroundSurf->width, backgroundSurf->height, 1.0f);
 	} else {
 		/* Rescale to 0-1 range */
+		gl.Scalef((float) backgroundSurf->width / sdl_surf->w,
+			(float) backgroundSurf->height / sdl_surf->h, 1.0f);
 	}
 
 	gl.MatrixMode(GL_MODELVIEW);
