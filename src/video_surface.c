@@ -210,8 +210,8 @@ static void resize(video_surface_t *this, int w, int h)
 		if ((surface->w > w) && (surface->h > h)) {
 			recreate_surface = SDL_FALSE;
 		}
-		this->width = w;
-		this->height = h;
+		/*this->width = w;
+		this->height = h;*/
 	}
 
 	if (!recreate_surface) {
