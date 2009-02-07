@@ -109,7 +109,7 @@ void render_background_opengl(video_t *this)
 	gl.End();
 
 	/*gl.Disable(GL_DITHER);*/
-	gl.Disable(GL_TEXTURE_RECTANGLE_ARB);
+	gl.Disable(textureTarget);
 }
 
 #endif /* ENABLE_OPENGL */
