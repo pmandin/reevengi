@@ -26,6 +26,7 @@
 
 static int zoomw = 0, zoomh = 0;
 static int *zoomx = NULL, *zoomy = NULL;
+static int srcw = 0, srch = 0;
 static SDL_Surface *zoom_surf = NULL;
 static video_surface_t *backgroundSurf = NULL;
 
@@ -51,18 +52,20 @@ void render_background_init(video_t *this, video_surface_t *source)
 
 	src_surf = source->getSurface(source);
 
-	if (this->viewport.w != zoomw) {
+	if ((this->viewport.w != zoomw) || (src_surf->w != srcw)) {
 		zoomw = this->viewport.w;
 		zoomx = realloc(zoomx, sizeof(int) * zoomw);
+		srcw = src_surf->w;
 		for (i=0; i<zoomw; i++) {
 			zoomx[i] = (i * src_surf->w) / zoomw;
 		}
 		recreate_surface = 1;
 	}
 
-	if (this->viewport.h != zoomh) {
+	if ((this->viewport.h != zoomh) || (src_surf->h != srch)) {
 		zoomh = this->viewport.h;
 		zoomy = realloc(zoomy, sizeof(int) * zoomh);
+		srch = src_surf->h;
 		for (i=0; i<zoomh; i++) {
 			zoomy[i] = (i * src_surf->h) / zoomh;
 		}
