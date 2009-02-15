@@ -40,11 +40,11 @@
 
 /*--- Constant ---*/
 
-static const char *re1ps1_bg = "psx/stage%d/room%d%02x.bss";
-static const char *re1ps1_room = "psx/stage%d/room%d%02x0.rdt";
-static const char *re1ps1_model1 = "psx/enemy/char1%d.emd";
-static const char *re1ps1_model2 = "psx/enemy/em10%02x.emd";
-static const char *re1ps1_model3 = "psx/enemy/em11%02x.emd";
+static const char *re1ps1_bg = "psx%s/stage%d/room%d%02x.bss";
+static const char *re1ps1_room = "psx%s/stage%d/room%d%02x0.rdt";
+static const char *re1ps1_model1 = "psx%s/enemy/char1%d.emd";
+static const char *re1ps1_model2 = "psx%s/enemy/em10%02x.emd";
+static const char *re1ps1_model3 = "psx%s/enemy/em11%02x.emd";
 
 static const char *re1ps1demo_movies[] = {
 	"psx/movie/capcom.str",
@@ -122,13 +122,14 @@ static void re1ps1_shutdown(void)
 static void re1ps1_loadbackground(void)
 {
 	char *filepath;
+	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 
-	filepath = malloc(strlen(re1ps1_bg)+8);
+	filepath = malloc(strlen(re1ps1_bg)+16);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1ps1_bg, game_state.stage, game_state.stage, game_state.room);
+	sprintf(filepath, re1ps1_bg, is_shock, game_state.stage, game_state.stage, game_state.room);
 
 	logMsg(1, "bss: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed");
@@ -139,13 +140,14 @@ static void re1ps1_loadbackground(void)
 static void re1ps1_loadroom(void)
 {
 	char *filepath;
+	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 
-	filepath = malloc(strlen(re1ps1_room)+8);
+	filepath = malloc(strlen(re1ps1_room)+16);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1ps1_room, game_state.stage, game_state.stage, game_state.room);
+	sprintf(filepath, re1ps1_room, is_shock, game_state.stage, game_state.stage, game_state.room);
 
 	logMsg(1, "rdt: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re1ps1_loadroom_rdt(filepath) ? "done" : "failed");
@@ -174,6 +176,7 @@ static int re1ps1_loadroom_rdt(const char *filename)
 model_t *re1ps1_load_model(int num_model)
 {
 	char *filepath;
+	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	const char *filename = re1ps1_model1;
 	model_t *model = NULL;
 	void *emd;
@@ -197,12 +200,12 @@ model_t *re1ps1_load_model(int num_model)
 		num_model = 0x15;
 	}
 
-	filepath = malloc(strlen(filename)+8);
+	filepath = malloc(strlen(filename)+16);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, filename, num_model);
+	sprintf(filepath, filename, is_shock, num_model);
 
 	logMsg(1, "Loading model %s...", filepath);
 	emd = FS_Load(filepath, &emd_length);

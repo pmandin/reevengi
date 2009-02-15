@@ -165,6 +165,7 @@ static void check_emul_cd(void)
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
+		case GAME_RE1_PS1_SHOCK:
 		case GAME_RE2_PS1_DEMO:
 		case GAME_RE2_PS1_GAME_LEON:
 		case GAME_RE2_PS1_GAME_CLAIRE:

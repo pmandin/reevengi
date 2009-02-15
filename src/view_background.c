@@ -350,6 +350,7 @@ void view_background_draw(void)
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
+		case GAME_RE1_PS1_SHOCK:
 			re1ps1_get_camera(cam_pos);
 			break;
 		case GAME_RE1_PC_GAME:
