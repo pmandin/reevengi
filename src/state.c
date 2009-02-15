@@ -100,7 +100,7 @@ void state_shutdown(void)
 
 const char *state_getGameName(void)
 {
-	int i;
+	int i=0;
 
 	while (game_detect[i].version != -1) {
 		if (game_detect[i].version == game_state.version) {
