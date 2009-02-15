@@ -27,6 +27,36 @@
 #include "parameters.h"
 #include "video.h"
 
+/*--- Types ---*/
+
+typedef struct {
+	int version;	/* Num of version */
+	char *filename;	/* Filename to detect it */
+	char *name;	/* Name of version */
+} game_detect_t;
+
+/*--- Constants ---*/
+
+const game_detect_t game_detect[]={
+	{GAME_RE3_PC_GAME, "rofs2.dat", "Resident Evil 3, PC, Game"},
+	{GAME_RE3_PC_DEMO, "rofs1.dat", "Resident Evil 3, PC, Demo"},
+	{GAME_RE2_PC_GAME_LEON, "REGIST/LEONF.EXE", "Resident Evil 2, PC, Game Leon"},
+	{GAME_RE2_PC_GAME_CLAIRE, "REGIST/CLAIREF.EXE", "Resident Evil 2, PC, Game Claire"},
+	{GAME_RE2_PC_DEMO_P, "Regist/LeonP.exe", "Resident Evil 2, PC, Demo"},
+	{GAME_RE2_PC_DEMO_U, "regist/leonu.exe", "Resident Evil 2, PC, Demo"},
+	{GAME_RE1_PC_GAME, "horr/usa/data/capcom.ptc", "Resident Evil, PC, Game"},
+	{GAME_RE3_PS1_GAME, "sles_025.30", "Resident Evil 3, PS1, Game"},
+	{GAME_RE3_PS1_GAME, "slus_009.23", "Resident Evil 3, PS1, Game"},
+	{GAME_RE2_PS1_GAME_LEON, "sles_009.73", "Resident Evil 2, PS1, Game Leon"},
+	{GAME_RE2_PS1_GAME_CLAIRE, "sles_109.73", "Resident Evil 2, PS1, Game Claire"},
+	{GAME_RE2_PS1_DEMO, "slps_009.99", "Resident Evil 2, PS1, Demo"},
+	{GAME_RE2_PS1_DEMO, "sled_009.77", "Resident Evil 2, PS1, Demo"},
+	{GAME_RE2_PS1_DEMO2, "sced_011.14", "Resident Evil 2, PS1, Demo"},
+	{GAME_RE1_PS1_GAME, "sles_002.27", "Resident Evil, PS1, Game"},
+	{GAME_RE1_PS1_DEMO, "slpm_800.27", "Resident Evil, PS1, Demo"},
+	{-1, "", ""}
+};
+
 /*--- Variables ---*/
 
 state_t game_state;
@@ -70,33 +100,14 @@ void state_shutdown(void)
 
 const char *state_getGameName(void)
 {
-	switch(game_state.version) {
-		case GAME_RE1_PS1_DEMO:
-			return "Resident Evil, PS1, Demo";
-		case GAME_RE1_PS1_GAME:
-			return "Resident Evil, PS1, Game";
-		case GAME_RE2_PS1_DEMO:
-		case GAME_RE2_PS1_DEMO2:
-			return "Resident Evil 2, PS1, Demo";
-		case GAME_RE2_PS1_GAME_LEON:
-			return "Resident Evil 2, PS1, Game Leon";
-		case GAME_RE2_PS1_GAME_CLAIRE:
-			return "Resident Evil 2, PS1, Game Claire";
-		case GAME_RE3_PS1_GAME:
-			return "Resident Evil 3, PS1, Game";
-		case GAME_RE1_PC_GAME:
-			return "Resident Evil, PC, Game";
-		case GAME_RE2_PC_DEMO_U:
-		case GAME_RE2_PC_DEMO_P:
-			return "Resident Evil 2, PC, Demo";
-		case GAME_RE2_PC_GAME_LEON:
-			return "Resident Evil 2, PC, Game Leon";
-		case GAME_RE2_PC_GAME_CLAIRE:
-			return "Resident Evil 2, PC, Game Claire";
-		case GAME_RE3_PC_DEMO:
-			return "Resident Evil 3, PC, Demo";
-		case GAME_RE3_PC_GAME:
-			return "Resident Evil 3, PC, Game";
+	int i;
+
+	while (game_detect[i].version != -1) {
+		if (game_detect[i].version == game_state.version) {
+			return game_detect[i].name;
+		}
+
+		i++;
 	}
 
 	return "Unknown version";
@@ -222,35 +233,15 @@ static int game_file_exists(char *filename)
 
 static void state_detect(void)
 {
+	int i=0;
+
 	game_state.version = GAME_UNKNOWN;
 
-	if (game_file_exists("rofs2.dat")) {
-		game_state.version = GAME_RE3_PC_GAME;
-	} else if (game_file_exists("rofs1.dat")) {
-		game_state.version = GAME_RE3_PC_DEMO;
-	} else if (game_file_exists("REGIST/LEONF.EXE")) {
-		game_state.version = GAME_RE2_PC_GAME_LEON;
-	} else if (game_file_exists("REGIST/CLAIREF.EXE")) {
-		game_state.version = GAME_RE2_PC_GAME_CLAIRE;
-	} else if (game_file_exists("Regist/LeonP.exe")) {
-		game_state.version = GAME_RE2_PC_DEMO_P;
-	} else if (game_file_exists("regist/leonu.exe")) {
-		game_state.version = GAME_RE2_PC_DEMO_U;
-	} else if (game_file_exists("horr/usa/data/capcom.ptc")) {
-		game_state.version = GAME_RE1_PC_GAME;
-	} else if (game_file_exists("sles_025.30") || game_file_exists("slus_009.23")) {
-		game_state.version = GAME_RE3_PS1_GAME;
-	} else if (game_file_exists("sles_009.73")) {
-		game_state.version = GAME_RE2_PS1_GAME_LEON;
-	} else if (game_file_exists("sles_109.73")) {
-		game_state.version = GAME_RE2_PS1_GAME_CLAIRE;
-	} else if (game_file_exists("slps_009.99") || game_file_exists("sled_009.77")) {
-		game_state.version = GAME_RE2_PS1_DEMO;
-	} else if (game_file_exists("sced_011.14")) {
-		game_state.version = GAME_RE2_PS1_DEMO2;
-	} else if (game_file_exists("sles_002.27")) {
-		game_state.version = GAME_RE1_PS1_GAME;
-	} else if (game_file_exists("slpm_800.27")) {
-		game_state.version = GAME_RE1_PS1_DEMO;
+	while (game_detect[i].version != -1) {
+		if (game_file_exists(game_detect[i].filename)) {
+			game_state.version = game_detect[i].version;
+			break;
+		}
+		i++;
 	}
 }
