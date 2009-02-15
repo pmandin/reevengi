@@ -42,6 +42,7 @@
 
 #include "video.h"
 #include "render.h"
+#include "draw.h"
 
 /*--- Defines ---*/
 
