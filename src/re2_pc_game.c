@@ -47,7 +47,7 @@ typedef struct {
 /*--- Constant ---*/
 
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
-static const char *re2pcgame_room = "PL%d/RDF/ROOM%d%02x0.RDT";
+static const char *re2pcgame_room = "PL%d/RD%c/ROOM%d%02x0.RDT";
 static const char *re2pcgame_model = "PL%d/EMD%d/EM%d%02x.%s";
 
 static const int map_models[MAX_MODELS]={
@@ -96,6 +96,8 @@ static int num_re2_images = 0;
 
 static int game_player = 0;
 
+static int game_lang = 'F';
+
 /*--- Functions prototypes ---*/
 
 static void re2pcgame_shutdown(void);
@@ -122,11 +124,20 @@ void re2pcgame_init(state_t *game_state)
 	game_state->load_room = re2pcgame_loadroom;
 	game_state->shutdown = re2pcgame_shutdown;
 
-	if (game_state->version == GAME_RE2_PC_GAME_LEON) {
-		game_state->movies_list = (char **) re2pcgame_leon_movies;
-	} else {
-		game_state->movies_list = (char **) re2pcgame_claire_movies;
-		game_player = 1;
+	switch(game_state->version) {
+		case GAME_RE2_PC_GAME_LEON:
+			game_state->movies_list = (char **) re2pcgame_leon_movies;
+			if (state_game_file_exists("PL0/RDP/ROOM1000.RDT")) {
+				game_lang = 'P';
+			}
+			break;
+		case GAME_RE2_PC_GAME_CLAIRE:
+			game_state->movies_list = (char **) re2pcgame_claire_movies;
+			game_player = 1;
+			if (state_game_file_exists("PL1/RDP/ROOM1001.RDT")) {
+				game_lang = 'P';
+			}
+			break;
 	}
 
 	game_state->load_model = re2pcgame_load_model;
@@ -249,7 +260,7 @@ static void re2pcgame_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcgame_room, game_player, game_state.stage, game_state.room);
+	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.stage, game_state.room);
 
 	logMsg(1, "rdt: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re2pcgame_loadroom_rdt(filepath) ? "done" : "failed");
