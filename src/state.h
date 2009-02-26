@@ -104,6 +104,7 @@ void state_init(void);
 void state_shutdown(void);
 
 const char *state_getGameName(void);
+int state_game_file_exists(char *filename);
 
 void state_setstage(int new_stage);
 void state_setroom(int new_room);

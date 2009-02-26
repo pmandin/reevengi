@@ -108,7 +108,6 @@ state_t game_state;
 /*--- Functions prototypes ---*/
 
 static void state_detect(void);
-static int game_file_exists(char *filename);
 
 /*--- Functions ---*/
 
@@ -247,7 +246,7 @@ int state_getnummovies(void)
 
 /* Detect some game version */
 
-static int game_file_exists(char *filename)
+int state_game_file_exists(char *filename)
 {
 	char *filenamedir;
 	int detected = 0;
@@ -282,7 +281,7 @@ static void state_detect(void)
 	game_state.version = GAME_UNKNOWN;
 
 	while (game_detect[i].version != -1) {
-		if (game_file_exists(game_detect[i].filename)) {
+		if (state_game_file_exists(game_detect[i].filename)) {
 			game_state.version = game_detect[i].version;
 			break;
 		}
