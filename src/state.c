@@ -41,8 +41,8 @@ const game_detect_t game_detect[]={
 	{GAME_RE3_PC_GAME, "rofs2.dat", "Resident Evil 3: Nemesis, PC"},
 	{GAME_RE3_PC_DEMO, "rofs1.dat", "Resident Evil 3: Nemesis Preview, PC"},
 
-	{GAME_RE2_PC_GAME_LEON, "REGIST/LEONF.EXE", "Resident Evil 2 [LEON], PC"},
-	{GAME_RE2_PC_GAME_CLAIRE, "REGIST/CLAIREF.EXE", "Resident Evil 2 [CLAIRE], PC"},
+	{GAME_RE2_PC_GAME_LEON, "PL0/ZMOVIE/R108L.BIN", "Resident Evil 2 [LEON], PC"},
+	{GAME_RE2_PC_GAME_CLAIRE, "PL1/ZMOVIE/R108C.BIN", "Resident Evil 2 [CLAIRE], PC"},
 	{GAME_RE2_PC_DEMO_P, "Regist/LeonP.exe", "Resident Evil 2 Preview, PC"},
 	{GAME_RE2_PC_DEMO_U, "regist/leonu.exe", "Resident Evil 2 Preview, PC"},
 
