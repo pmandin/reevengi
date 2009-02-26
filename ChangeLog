@@ -1,3 +1,9 @@
+v 0.11
+
+- Received contribution to add more PS1 versions.
+- Reworked detection of game/demo versions.
+- Preliminary S-Buffer implementation for software renderer.
+
 v 0.10
 
 - Switchable wireframe/filled/gouraud-ed/textured for model drawing, for
