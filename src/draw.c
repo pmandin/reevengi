@@ -268,10 +268,27 @@ static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer
 	clipped->x = x;
 }
 
+/* Insert and clip a segment */
+static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_point_t *end,
+	int y, int pos, int x1, int x2)
+{
+	sbuffer_point_t *p;
+
+	p = &(sbuffer_rows[y].segment[pos].start);
+	memcpy(p, start, sizeof(sbuffer_point_t));
+	draw_clip_segment(x1, start, end, p);
+	
+	p = &(sbuffer_rows[y].segment[pos].end);
+	memcpy(p, end, sizeof(sbuffer_point_t));
+	draw_clip_segment(x2, start, end, p);
+}
+
 static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end)
 {
-	int insert_pos, i;
-	int x1, x2;
+	int x1,x2, i;
+	int last_seg, need_clip, insert_pos;
+	int num_segs = sbuffer_rows[y].num_segs;
+	sbuffer_point_t *p,p1,p2;
 
 	/* Clip if outside */
 	if ((end->x<0) || (start->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
@@ -288,26 +305,56 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		x2 = video.viewport.w-1;
 	}
 
-	/* Empty line? simple insertion */
-	if (sbuffer_rows[y].num_segs==0) {
-		sbuffer_point_t *p;
+	insert_pos = 0;
+	need_clip = 0;
 
-		/* Simple insertion */
-		p = &(sbuffer_rows[y].segment[0].start);
-		memcpy(p, start, sizeof(sbuffer_point_t));
-		draw_clip_segment(x1, start, end, p);
+	for (i=0; i<num_segs; i++) {
+		if (i==0) {
+			/* Before first ? */
+			if (x2 < sbuffer_rows[y].segment[i].start.x) {
+				insert_pos = 0;
+				break;
+			}
+		} else if (i==num_segs-1) {
+			/* After last ? */
+			if (sbuffer_rows[y].segment[i].end.x < x1) {
+				insert_pos = i+1;
+				break;
+			}
+		} else {
+			/* Segment insertable between i-1 and i ? */
+			if ((sbuffer_rows[y].segment[i-1].end.x < x1) &&
+			    (x2 < sbuffer_rows[y].segment[i].start.x))
+			{
+				insert_pos = i;
+				break;
+			}
+		}
 
-		p = &(sbuffer_rows[y].segment[0].end);
-		memcpy(p, end, sizeof(sbuffer_point_t));
-		draw_clip_segment(x2, start, end, p);
-		
-		sbuffer_rows[y].num_segs = 1;
+		/* Non trivial case, where clipping may be needed */
+		need_clip = 1;
+	}
+
+	if (need_clip) {
 		return;
 	}
 
-	insert_pos = -1;
-	for (i=0; i<sbuffer_rows[y].num_segs; i++) {
+	/* Trivial insertion, move insert_pos segment and following ones further */
+	last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS : num_segs);
+
+	/* Move all segments to the right */
+	printf("%d segs\n", last_seg);
+
+	for (i=last_seg-1; i>=insert_pos; i--) {
+		memcpy(&(sbuffer_rows[y].segment[i+1].start), &(sbuffer_rows[y].segment[i].start), sizeof(sbuffer_point_t));
+		memcpy(&(sbuffer_rows[y].segment[i+1].end), &(sbuffer_rows[y].segment[i].end), sizeof(sbuffer_point_t));
+		printf(" copy seg %d to %d\n", i,i+1);
 	}
+
+	printf("insert at %d\n", insert_pos);
+	draw_insert_segment(start,end, y,insert_pos, x1,x2);
+
+	++sbuffer_rows[y].num_segs;
 }
 
 /* Drawing functions */
