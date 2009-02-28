@@ -307,12 +307,13 @@ static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_poin
 static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end)
 {
 	int x1,x2, i;
-	int last_seg, need_clip, insert_pos;
 	int num_segs = sbuffer_rows[y].num_segs;
-	sbuffer_point_t *p,p1,p2;
+
+	x1 = start->x;
+	x2 = end->x;
 
 	/* Clip if outside */
-	if ((end->x<0) || (start->x>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
+	if ((x2<0) || (x1>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
 		return;
 	}
 
@@ -351,46 +352,61 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	}
 
 	/*--- Need to check against current list ---*/
+	for (i=0; i<num_segs; i++) {
+		/* Out of screen ? */
+		if ((x2<0) || (x1>=video.viewport.w) || (x1>x2)) {
+			return;
+		}	
 
-#if 0
-	insert_pos = 0;
-
-	if (num_segs>0) {
-		/* Start after last ? */
-		if (sbuffer_rows[y].segment[num_segs-1].end.x < x1) {
-			/* No more room ? */
-			if (num_segs >= NUM_SEGMENTS) {
-				return;
-			}
-			insert_pos = num_segs;
+		/* Start after current? Will process against next one
+		ccccccc
+			nnnnn
+		*/
+		if (sbuffer_rows[y].segment[i].end.x < x1) {
+			continue;
 		}
-		/* Don't finish before first? find and clip */
-		else if (x2 >= sbuffer_rows[y].segment[0].start.x) {
-			insert_pos = 0;
-			for (i=0; i<num_segs; i++) {
-			}
 
+		/* Finish before current ? Insert before it
+			ccccc
+		nnnnnn
+		*/
+		if (x2 < sbuffer_rows[y].segment[i].start.x) {
+			draw_insert_segment(start,end, y,i, x1,x2);
 			return;
 		}
+
+		/* Start before current, may finish after or in middle of it
+		   Insert only non conflicting left part
+			ccccccccc
+		1 nnnnnnnnnnn
+		2 nnnnnnnnnnnnnnnnn
+		remains (to insert)
+		1       nnnnn
+		2       nnnnnnnnnnn
+		*/
+		if (x1 < sbuffer_rows[y].segment[i].start.x) {
+			int next_x1 = sbuffer_rows[y].segment[i].start.x;
+			draw_insert_segment(start,end, y,i, x1,next_x1-1);
+			x1 = next_x1;
+		}
+
+		/* Start after current, or in the middle of it
+		   Insert only conflicting right part
+			cccccccc
+		1	    nnnnnnnnn
+		2	     nn
+		remains (to insert)
+		1	    nnnn
+		2	     nn	    
+		*/
+		if (sbuffer_rows[y].segment[i].end.x < x2) {
+			int next_x2 = sbuffer_rows[y].segment[i].end.x;
+			draw_insert_segment(start,end, y,i+1, next_x2+1,x2);
+			x2 = next_x2;
+		}
+
+		/* Now Zcheck both current and new segment */
 	}
-
-	/* Trivial insertion, move insert_pos segment and following ones further */
-	last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS : num_segs);
-
-	/* Move all segments to the right */
-	printf("%d segs\n", last_seg);
-
-	for (i=last_seg-1; i>=insert_pos; i--) {
-		memcpy(&(sbuffer_rows[y].segment[i+1].start), &(sbuffer_rows[y].segment[i].start), sizeof(sbuffer_point_t));
-		memcpy(&(sbuffer_rows[y].segment[i+1].end), &(sbuffer_rows[y].segment[i].end), sizeof(sbuffer_point_t));
-		printf(" copy seg %d to %d\n", i,i+1);
-	}
-
-	printf("insert at %d\n", insert_pos);
-	draw_insert_segment(start,end, y,insert_pos, x1,x2);
-
-	++sbuffer_rows[y].num_segs;
-#endif
 }
 
 /* Drawing functions */
