@@ -242,7 +242,7 @@ static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer
 	int dx,nx, r,dr, g,dg, b,db;
 	float du,dv, dw;
 
-	dx = end->x - start->x;
+	dx = end->x - start->x + 1;
 	nx = x - start->x;
 
 	r = (start->c >> 16) & 0xff;
@@ -302,6 +302,20 @@ static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_poin
 	draw_push_segment(start,end, y,pos, x1,x2);
 
 	++sbuffer_rows[y].num_segs;
+}
+
+/* Calc w coordinate for a given x */
+static float calc_w(const sbuffer_point_t *start, const sbuffer_point_t *end, int x)
+{
+	int dx,nx;
+	float dw;
+
+	dx = end->x - start->x + 1;
+	nx = x - start->x;
+
+	dw = end->w - start->w;
+
+	return (start->w + ((dw * nx)/dx));
 }
 
 static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end)
@@ -406,6 +420,25 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		}
 
 		/* Now Zcheck both current and new segment */
+
+		/* Single pixel for current ? (because new previously clipped against current)
+			c
+			n
+		*/
+		if (sbuffer_rows[y].segment[i].start.x == sbuffer_rows[y].segment[i].end.x) {
+			/* Replace current with new if current behind */
+			if (calc_w(start, end, x1) > sbuffer_rows[y].segment[i].start.w) {
+			}
+			return;
+		}
+
+		/* Single pixel for new ?
+			cccccccccc
+			    n
+		*/
+		if (x1 == x2) {
+			/* Skip if new behind current */
+		}
 	}
 }
 
