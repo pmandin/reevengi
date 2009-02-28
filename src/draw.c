@@ -38,6 +38,16 @@
 
 #define NUM_SEGMENTS 64
 
+#define SEG1_FRONT 0
+#define SEG1_BEHIND 1
+#define SEG1_CLIP_LEFT 2
+#define SEG1_CLIP_RIGHT 3
+
+#define SEG_MIN(x1, x2) \
+	( x1 < x2 ? x1 : x2)
+#define SEG_MAX(x1, x2) \
+	( x1 > x2 ? x1 : x2)
+
 /*--- Types ---*/
 
 typedef struct {
@@ -318,10 +328,52 @@ static float calc_w(const sbuffer_point_t *start, const sbuffer_point_t *end, in
 	return (start->w + ((dw * nx)/dx));
 }
 
+/* Check if a segment is in front or behind another */
+static int check_behind(const sbuffer_point_t *seg1start, const sbuffer_point_t *seg1end,
+	const sbuffer_point_t *seg2start, const sbuffer_point_t *seg2end,
+	int x1, int x2, int *cx)
+{
+	float s1w1, s1w2, s2w1, s2w2;
+	float dw1, dw2;
+	int dx;
+
+	s1w1 = calc_w(seg1start, seg1end, x1);
+	s1w2 = calc_w(seg1start, seg1end, x2);
+	s2w1 = calc_w(seg2start, seg2end, x1);
+	s2w2 = calc_w(seg2start, seg2end, x2);
+
+	/* Do we have an intersection ? */
+	if (s1w1>s2w1) {
+		if (s1w2>s2w2) {
+			return SEG1_FRONT;
+		}
+	} else {
+		if (s1w2<s2w2) {
+			return SEG1_BEHIND;
+		}
+	}
+
+	/* Calc X coordinate of intersection where W is the same for both segments */
+	dx = x2 - x1 + 1;
+	dw1 = s1w2 - s1w1;
+	dw2 = s2w2 - s2w1;
+
+	*cx = ((s1w1-s2w1)*dx)/(dw2-dw1);
+
+	if (*cx == x1) {
+		return (s1w2>s2w2 ? SEG1_FRONT : SEG1_BEHIND);
+	} else if (*cx == x2) {
+		return (s1w1>s2w1 ? SEG1_FRONT : SEG1_BEHIND);
+	}
+
+	return (s1w1>s2w1 ? SEG1_CLIP_LEFT : SEG1_CLIP_RIGHT);
+}
+
 static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end)
 {
 	int x1,x2, i;
 	int num_segs = sbuffer_rows[y].num_segs;
+	int clip_seg, clip_pos;
 
 	x1 = start->x;
 	x2 = end->x;
@@ -491,6 +543,24 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			ccccccccc
 			   nnnnn
 		*/
+		clip_seg = check_behind(&sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end,
+			start,end, x1,x2, &clip_pos);
+		switch(clip_seg) {
+			case SEG1_BEHIND:
+				/* Clip current before x1 */
+				/* Insert new */
+				/* Insert current after x2 */
+				break;
+			case SEG1_FRONT:
+				return;
+			case SEG1_CLIP_LEFT:
+				/* Clip current before clip_pos */
+				/* Insert new after clip_pos */
+				break;
+			case SEG1_CLIP_RIGHT:
+				/* Insert new after clip_pos */
+				break;
+		}
 	}
 }
 
