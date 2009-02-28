@@ -438,29 +438,31 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			    n
 		*/
 		if (x1 == x2) {
+			sbuffer_point_t *p;
+		
 			/* Skip if new behind current */
 			if (calc_w(&sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end, x1) > calc_w(start,end, x1)) {
 				return;
 			}
 
-			/* Insert new before current, clip current
+			/* Insert new before current, clip current ?
 				cccccccc
 				n
 			*/
 			if (x1 == sbuffer_rows[y].segment[i].start.x) {
-				sbuffer_point_t *p = &sbuffer_rows[y].segment[i].start;
+				p = &sbuffer_rows[y].segment[i].start;
 				draw_clip_segment(x1+1, &sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end, p);
 
 				draw_insert_segment(start,end, y,i, x1,x2);
 				return;
 			}
 
-			/* Clip current, insert new after current
+			/* Clip current, insert new after current ?
 				cccccccc
 				       n
 			*/
 			if (x2 == sbuffer_rows[y].segment[i].end.x) {
-				sbuffer_point_t *p = &sbuffer_rows[y].segment[i].start;
+				p = &sbuffer_rows[y].segment[i].end;
 				draw_clip_segment(x2-1, &sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end, p);
 
 				draw_insert_segment(start,end, y,i+1, x1,x2);
@@ -477,7 +479,10 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			*/
 			draw_insert_segment(&sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end,
 				y,i+1, x1+1, sbuffer_rows[y].segment[i].end.x);
-			sbuffer_rows[y].segment[i].end.x = x1-1;
+
+			p = &sbuffer_rows[y].segment[i].end;
+			draw_clip_segment(x1-1, &sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end, p);
+
 			draw_insert_segment(start,end, y,i+1, x1,x2);
 			return;
 		}
