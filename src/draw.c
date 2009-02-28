@@ -428,6 +428,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		if (sbuffer_rows[y].segment[i].start.x == sbuffer_rows[y].segment[i].end.x) {
 			/* Replace current with new if current behind */
 			if (calc_w(start, end, x1) > sbuffer_rows[y].segment[i].start.w) {
+				draw_push_segment(start,end, y,i, x1,x2);
 			}
 			return;
 		}
@@ -438,7 +439,18 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		*/
 		if (x1 == x2) {
 			/* Skip if new behind current */
+			if (calc_w(&sbuffer_rows[y].segment[i].start, &sbuffer_rows[y].segment[i].end, x1) > calc_w(start,end, x1)) {
+				return;
+			}
+			/* Split current to insert new between both halves */
+
+			continue;
 		}
+
+		/* Last non trivial case, Z check
+			ccccccccc
+			   nnnnn
+		*/
 	}
 }
 
