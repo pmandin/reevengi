@@ -366,7 +366,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	}
 
 	/*--- Need to check against current list ---*/
-	for (i=0; i<num_segs; i++) {
+	for (i=0; i<sbuffer_rows[y].num_segs; i++) {
 		/* Out of screen ? */
 		if ((x2<0) || (x1>=video.viewport.w) || (x1>x2)) {
 			return;
