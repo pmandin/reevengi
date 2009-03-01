@@ -91,6 +91,8 @@ static poly_hline_t *poly_hlines = NULL;
 static int sbuffer_numrows = 0;
 static sbuffer_row_t *sbuffer_rows = NULL;
 
+static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pixels */
+
 /*--- Functions prototypes ---*/
 
 static void draw_render8_fill(void);
@@ -878,7 +880,7 @@ static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu
 					for (x=0; x<dx; x++) {
 						int u = (int) (tu1 + ((du*x)/dx));
 						int v = (int) (tv1 + ((dv*x)/dx));
-						*src_line++ = texture->pixels[v*texture->pitchw + u];
+						*src_line++ = tex_pixels[v*texture->pitchw + u];
 					}
 				}
 			}
@@ -903,7 +905,7 @@ static void draw_hline_tex(int x1, int x2, int y, float tu1, float tv1, float tu
 					for (x=0; x<dx; x++) {
 						int u = (int) (tu1 + ((du*x)/dx));
 						int v = (int) (tv1 + ((dv*x)/dx));
-						*src_line++ = texture->pixels[v*texture->pitchw + u];
+						*src_line++ = tex_pixels[v*texture->pitchw + u];
 					}
 				}
 			}
@@ -1073,6 +1075,13 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 			float tv1 = vtx[v1].tx[1];
 			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
 			float dw = w2 - w1;
+			if (drawCorrectPerspective>0) {
+				/* TODO: do the same for r,g,b */
+				tu1 *= w1;
+				tv1 *= w1;
+				du = vtx[v2].tx[0]*w2 - tu1;
+				dv = vtx[v2].tx[1]*w2 - tv1;
+			}
 			for (y=0; y<dy; y++) {
 				int r,g,b;
 
@@ -1429,7 +1438,7 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 				/* TODO: calc uv if px<>x1 */
 				poly_hlines[y1].tu[num_array] = tu1 + ((du*y)/dy);
 				poly_hlines[y1].tv[num_array] = tv1 + ((dv*y)/dy);
-				poly_hlines[y1].w[num_array] = w1 + ((w2*y)/dy);
+				poly_hlines[y1].w[num_array] = w1 + ((dw*y)/dy);
 				poly_hlines[y1++].x[num_array] = px;
 			}
 		}
