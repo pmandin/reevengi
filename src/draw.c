@@ -51,9 +51,10 @@
 /*--- Types ---*/
 
 typedef struct {
-	int x, w;	/* x on screen, w=1/z */
+	int x;		/* x on screen*/
 	float r,g,b;	/* color */
 	float u,v;	/* u,v coords */
+	float w;	/* w=1/z */
 } sbuffer_point_t;
 
 typedef struct {
@@ -206,10 +207,14 @@ static void draw_render16_fill(void)
 	for (i=0; i<sbuffer_numrows; i++) {
 		Uint16 *dst_line = dst;
 		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+		/*if (sbuffer_rows[i].num_segs) {
+			printf("draw line %d (%d segments)\n", i, sbuffer_rows[i].num_segs);
+		}*/
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
+			/*printf(" segment %d: %d->%d\n",j,segments[j].start.x,segments[j].end.x);*/
 			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
 				*dst_col++ = draw_color;
 			}
@@ -278,7 +283,9 @@ static void draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_
 {
 	sbuffer_point_t *p;
 
-	printf("insert at %d\n", pos);
+	/*if (y==97) {
+		printf("insert at %d (%d->%d)\n", pos, x1,x2);
+	}*/
 
 	p = &(sbuffer_rows[y].segment[pos].start);
 	memcpy(p, start, sizeof(sbuffer_point_t));
@@ -300,7 +307,9 @@ static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_poin
 	for (i=last_seg-1; i>=pos; i--) {
 		memcpy(&(sbuffer_rows[y].segment[i+1].start), &(sbuffer_rows[y].segment[i].start), sizeof(sbuffer_point_t));
 		memcpy(&(sbuffer_rows[y].segment[i+1].end), &(sbuffer_rows[y].segment[i].end), sizeof(sbuffer_point_t));
-		printf("copy seg %d to %d\n", i,i+1);
+		/*if (y==97) {
+			printf("copy seg %d to %d\n", i,i+1);
+		}*/
 	}
 
 	draw_push_segment(start,end, y,pos, x1,x2);
@@ -352,6 +361,7 @@ static int check_behind(const sbuffer_point_t *seg1start, const sbuffer_point_t 
 	dw1 = s1w2 - s1w1;
 	dw2 = s2w2 - s2w1;
 
+	/*printf("%.3f->%.3f, %.3f->%.3f, %d\n", s1w1,s1w2, s2w1,s2w2, dx);*/
 	*cx = ((s1w1-s2w1)*dx)/(dw2-dw1);
 
 	if (*cx == x1) {
@@ -387,10 +397,17 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		x2 = video.viewport.w-1;
 	}
 
+	/*if (y==97) {
+		printf("add segment %d,%d\n", x1,x2);
+	}*/
+
 	/*--- Trivial cases ---*/
 
 	/* Empty row ? */
 	if (num_segs == 0) {
+		/*if (y==97) {
+			printf("-empty list\n");
+		}*/
 		draw_push_segment(start,end, y,0, x1,x2);
 		++sbuffer_rows[y].num_segs;
 		return;
@@ -398,6 +415,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 
 	/* Finish before first ? */
 	if (x2 < sbuffer_rows[y].segment[0].end.x) {
+		/*if (y==97) {
+			printf("-finish before first\n");
+		}*/
 		draw_insert_segment(start,end, y,0, x1,x2);
 		return;
 	}
@@ -405,6 +425,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	/* Start after last ? */
 	if (sbuffer_rows[y].segment[num_segs-1].end.x < x1) {
 		if (num_segs<NUM_SEGMENTS) {
+			/*if (y==97) {
+				printf("-start after last\n");
+			}*/
 			draw_push_segment(start,end, y,num_segs, x1,x2);
 			++sbuffer_rows[y].num_segs;
 		}
@@ -426,6 +449,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			nnnnn
 		*/
 		if (current->end.x < x1) {
+			/*if (y==97) {
+				printf("-start after %d\n", i);
+			}*/
 			continue;
 		}
 
@@ -434,6 +460,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		nnnnnn
 		*/
 		if (x2 < current->start.x) {
+			/*if (y==97) {
+				printf("-finish before %d\n", i);
+			}*/
 			draw_insert_segment(start,end, y,i, x1,x2);
 			return;
 		}
@@ -453,6 +482,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		*/
 		if (x1 < current->start.x) {
 			int next_x1 = current->start.x;
+			/*if (y==97) {
+				printf("-start before %d, will continue from pos %d\n", i, next_x1);
+			}*/
 			draw_insert_segment(start,end, y,i, x1,next_x1-1);
 			x1 = next_x1;
 
@@ -473,7 +505,13 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			/* Replace current with new if current behind */
 			int cur_x = current->start.x;
 			int next_x1 = current->end.x+1;
+			/*if (y==97) {
+				printf("- %d is single pixel, will continue from pos %d\n", i, next_x1);
+			}*/
 			if (calc_w(start, end, x1) > current->start.w) {
+				/*if (y==97) {
+					printf("- replace %d by new\n", i);
+				}*/
 				draw_push_segment(start,end, y,i, cur_x,cur_x);
 			}
 			x1 = next_x1;
@@ -536,10 +574,19 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		clip_x1 = SEG_MAX(x1, current->start.x);
 		clip_x2 = SEG_MIN(x2, current->end.x);
 
+		/*if (y==97) {
+			printf("- check Z for %d:%d->%d against %d->%d (%d->%d)\n",i,
+				current->start.x,current->end.x, x1,x2, clip_x1,clip_x2
+			);
+		}*/
+
 		clip_seg = check_behind(&current->start, &current->end,
 			start,end, clip_x1,clip_x2, &clip_pos);
 		switch(clip_seg) {
 			case SEG1_BEHIND:
+				/*if (y==97) {
+					printf("- %d behind new\n", i);
+				}*/
 				current_end = current->end.x;
 
 				if (clip_x1 == current->start.x) {
@@ -571,16 +618,26 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				x1 = current_end+1;
 				break;
 			case SEG1_FRONT:
+				/*if (y==97) {
+					printf("- %d in fron of new\n", i);
+				}*/
 				/* Continue with remaining part */
 				x1 = current->end.x+1;
 				break;
 			case SEG1_CLIP_LEFT:
+				/*if (y==97) {
+					printf("- keep left of %d against new at pos %d\n", i, clip_pos);
+				}*/
 				/* Clip current before clip_pos */
 				draw_clip_segment(clip_pos-1, &current->start, &current->end, &current->end);
 				/* Continue with remaining part */
 				x1 = clip_pos;
 				break;
 			case SEG1_CLIP_RIGHT:
+				/*if (y==97) {
+					printf("- keep right of %d against new at pos %d\n", i, clip_pos);
+				}*/
+
 				current_end = current->end.x;
 
 				/* Insert from current after new */
@@ -1089,6 +1146,9 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 				poly_hlines[y1].sbp[num_array].u = tu1 + ((du*y)/dy);
 				poly_hlines[y1].sbp[num_array].v = tv1 + ((dv*y)/dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + ((dw*y)/dy);
+				/*if (y1==97) {
+					printf("w=%.3f\n", poly_hlines[y1].sbp[num_array].w);
+				}*/
 				poly_hlines[y1++].sbp[num_array].x = x1 + ((dx*y)/dy);
 			}
 		}
