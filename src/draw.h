@@ -46,6 +46,8 @@ void draw_triangle(draw_vertex_t v[3]);
 
 void draw_quad(draw_vertex_t v[4]);
 
+void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx);
+
 void draw_poly_fill(vertexf_t *vtx, int num_vtx);
 
 void draw_poly_gouraud(vertexf_t *vtx, int num_vtx);
