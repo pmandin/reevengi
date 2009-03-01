@@ -51,9 +51,9 @@
 /*--- Types ---*/
 
 typedef struct {
-	int x;		/* x on screen */
-	Uint32 c;	/* color */
-	float u,v, w;	/* u,v coords, w=1/z */
+	int x, w;	/* x on screen, w=1/z */
+	float r,g,b;	/* color */
+	float u,v;	/* u,v coords */
 } sbuffer_point_t;
 
 typedef struct {
@@ -253,27 +253,22 @@ static void draw_render32_fill(void)
 static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
 	sbuffer_point_t *clipped)
 {
-	int dx,nx, r,dr, g,dg, b,db;
-	float du,dv, dw;
+	int dx,nx;
+	float dr,dg,db, du,dv, dw;
 
 	dx = end->x - start->x + 1;
 	nx = x - start->x;
 
-	r = (start->c >> 16) & 0xff;
-	dr = ((end->c >> 16) & 0xff) - r;
-	g = (start->c >> 8) & 0xff;
-	dg = ((end->c >> 8) & 0xff) - g;
-	b = start->c & 0xff;
-	db = (end->c & 0xff) - b;
-	r += (dr * nx)/dx;
-	g += (dg * nx)/dx;
-	b += (db * nx)/dx;
-
-	clipped->c = (r<<16)|(g<<8)|b;
+	dr = end->r - start->r;
+	clipped->r = start->r + ((dr * nx)/dx);
+	dg = end->g - start->g;
+	clipped->g = start->g + ((dg * nx)/dx);
+	db = end->b - start->b;
+	clipped->b = start->b + ((db * nx)/dx);
 
 	du = end->u - start->u;
-	dv = end->v - start->v;
 	clipped->u = start->u + ((du * nx)/dx);
+	dv = end->v - start->v;
 	clipped->v = start->v + ((dv * nx)/dx);
 
 	dw = end->w - start->w;
@@ -1089,17 +1084,13 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 				dv = vtx[v2].tx[1]*w2 - tv1;
 			}
 			for (y=0; y<dy; y++) {
-				int r,g,b;
-
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
 
-				r = (r1 + ((dr*y)/dy)) & 0xff;
-				g = (g1 + ((dg*y)/dy)) & 0xff;
-				b = (b1 + ((db*y)/dy)) & 0xff;
-
-				poly_hlines[y1].sbp[num_array].c = (r<<16)|(g<<8)|b;
+				poly_hlines[y1].sbp[num_array].r = r1 + ((dr*y)/dy);
+				poly_hlines[y1].sbp[num_array].g = g1 + ((dg*y)/dy);
+				poly_hlines[y1].sbp[num_array].b = b1 + ((db*y)/dy);
 				poly_hlines[y1].sbp[num_array].u = tu1 + ((du*y)/dy);
 				poly_hlines[y1].sbp[num_array].v = tv1 + ((dv*y)/dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + ((dw*y)/dy);
