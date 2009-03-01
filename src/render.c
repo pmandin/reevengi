@@ -73,7 +73,6 @@ static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-static void render_poly_fill(int num_vtx, vertexf_t *poly2);
 static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
@@ -289,7 +288,7 @@ static Uint32 get_color_from_texture(vertex_t *v1)
 	Uint32 color = 0xffffffff;
 
 	if (!texture || !video.screen) {
-		return;
+		return color;
 	}
 
 	if (texture->paletted) {
@@ -597,6 +596,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 		draw_poly_gouraud(poly, num_vtx);
 	} else {
 		draw_poly_fill(poly, num_vtx);
+		/*draw_poly_sbuffer(poly, num_vtx);*/
 	}
 }
 
