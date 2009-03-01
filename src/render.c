@@ -595,8 +595,8 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	if (gouraud) {
 		draw_poly_gouraud(poly, num_vtx);
 	} else {
-		draw_poly_fill(poly, num_vtx);
-		/*draw_poly_sbuffer(poly, num_vtx);*/
+		/*draw_poly_fill(poly, num_vtx);*/
+		draw_poly_sbuffer(poly, num_vtx);
 	}
 }
 
@@ -696,7 +696,8 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	if (gouraud) {
 		draw_poly_gouraud(poly, num_vtx);
 	} else {
-		draw_poly_fill(poly, num_vtx);
+		/*draw_poly_fill(poly, num_vtx);*/
+		draw_poly_sbuffer(poly, num_vtx);
 	}
 }
 
