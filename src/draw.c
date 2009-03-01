@@ -1076,10 +1076,16 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
 			float dw = w2 - w1;
 			if (drawCorrectPerspective>0) {
-				/* TODO: do the same for r,g,b */
+				r1 *= w1;
+				dr = vtx[v2].col[0]*w2 - r1;
+				g1 *= w1;
+				dg = vtx[v2].col[1]*w2 - g1;
+				b1 *= w1;
+				db = vtx[v2].col[2]*w2 - b1;
+
 				tu1 *= w1;
-				tv1 *= w1;
 				du = vtx[v2].tx[0]*w2 - tu1;
+				tv1 *= w1;
 				dv = vtx[v2].tx[1]*w2 - tv1;
 			}
 			for (y=0; y<dy; y++) {
