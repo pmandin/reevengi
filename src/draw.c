@@ -1030,7 +1030,7 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		int v1 = p1;
 		int v2 = p2;
 		int x1,y1, x2,y2;
-		int dx,dy, tmp;
+		int dy;
 		int num_array = 1; /* max */
 		float w1, w2;
 
@@ -1043,6 +1043,7 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
+			int tmp;
 			float tmpz;
 			tmp = x1; x1 = x2; x2 = tmp;
 			tmp = y1; y1 = y2; y2 = tmp;
@@ -1058,15 +1059,34 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 			maxy = y2;
 		}
 
-		dx = x2 - x1;
 		dy = y2 - y1;
 		if (dy>0) {
+			int dx = x2 - x1;
+			int r1 = vtx[v1].col[0];
+			int dr = vtx[v2].col[0] - vtx[v1].col[0];
+			int g1 = vtx[v1].col[1];
+			int dg = vtx[v2].col[1] - vtx[v1].col[1];
+			int b1 = vtx[v1].col[2];
+			int db = vtx[v2].col[2] - vtx[v1].col[2];
+			float tu1 = vtx[v1].tx[0];
+			float du = vtx[v2].tx[0] - vtx[v1].tx[0];
+			float tv1 = vtx[v1].tx[1];
+			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
 			float dw = w2 - w1;
 			for (y=0; y<dy; y++) {
+				int r,g,b;
+
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
 
+				r = (r1 + ((dr*y)/dy)) & 0xff;
+				g = (g1 + ((dg*y)/dy)) & 0xff;
+				b = (b1 + ((db*y)/dy)) & 0xff;
+
+				poly_hlines[y1].sbp[num_array].c = (r<<16)|(g<<8)|b;
+				poly_hlines[y1].sbp[num_array].u = tu1 + ((du*y)/dy);
+				poly_hlines[y1].sbp[num_array].v = tv1 + ((dv*y)/dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + ((dw*y)/dy);
 				poly_hlines[y1++].sbp[num_array].x = x1 + ((dx*y)/dy);
 			}
@@ -1132,7 +1152,7 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 		int v1 = p1;
 		int v2 = p2;
 		int x1,y1, x2,y2;
-		int dx,dy, tmp;
+		int dy, tmp;
 		int num_array = 1; /* max */
 		float w1, w2;
 
@@ -1160,9 +1180,9 @@ void draw_poly_fill(vertexf_t *vtx, int num_vtx)
 			maxy = y2;
 		}
 
-		dx = x2 - x1;
 		dy = y2 - y1;
 		if (dy>0) {
+			int dx = x2 - x1;
 			float dw = w2 - w1;
 			for (y=0; y<dy; y++) {
 				int px;
