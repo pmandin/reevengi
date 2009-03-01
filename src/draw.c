@@ -188,7 +188,19 @@ static void draw_render8_fill(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
-			memset(dst_col, draw_color, segments[j].end.x - segments[j].start.x + 1);
+			Uint8 color;
+			int r = segments[j].start.r;
+			int g = segments[j].start.g;
+			int b = segments[j].start.b;
+
+			if (drawCorrectPerspective>0) {
+				r = segments[j].start.r / segments[j].start.w;
+				g = segments[j].start.g / segments[j].start.w;
+				b = segments[j].start.b / segments[j].start.w;
+			}
+ 			color = dither_nearest_index(r,g,b)
+ 
+			memset(dst_col, color, segments[j].end.x - segments[j].start.x + 1);
 		}
 
 		dst += surf->pitch;
@@ -214,9 +226,22 @@ static void draw_render16_fill(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
+			Uint32 color;
+			int r = segments[j].start.r;
+			int g = segments[j].start.g;
+			int b = segments[j].start.b;
+
+			if (drawCorrectPerspective>0) {
+				r = segments[j].start.r / segments[j].start.w;
+				g = segments[j].start.g / segments[j].start.w;
+				b = segments[j].start.b / segments[j].start.w;
+			}
+			color = SDL_MapRGB(surf->format, r,g,b);
+
 			/*printf(" segment %d: %d->%d\n",j,segments[j].start.x,segments[j].end.x);*/
+
 			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
-				*dst_col++ = draw_color;
+				*dst_col++ = color;
 			}
 		}
 
@@ -240,8 +265,20 @@ static void draw_render32_fill(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
+			Uint32 color;
+			int r = segments[j].start.r;
+			int g = segments[j].start.g;
+			int b = segments[j].start.b;
+
+			if (drawCorrectPerspective>0) {
+				r = segments[j].start.r / segments[j].start.w;
+				g = segments[j].start.g / segments[j].start.w;
+				b = segments[j].start.b / segments[j].start.w;
+			}
+			color = SDL_MapRGB(surf->format, r,g,b);
+
 			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
-				*dst_col++ = draw_color;
+				*dst_col++ = color;
 			}
 		}
 
