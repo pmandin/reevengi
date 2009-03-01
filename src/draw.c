@@ -548,16 +548,33 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			case SEG1_BEHIND:
 				current_end = current->end.x;
 
-				if ((x1 == current->start.x) && (x2 >= current->end.x)) {
-					/* Replace current by new */
-					draw_push_segment(start,end, y,i, current->start.x,current_end);				
-					/* Continue with remaining */
-					x1 = current_end+1;
+				if (clip_x1 == current->start.x) {
+					if (current_end <= clip_x2) {
+						/* Replace current by new */
+						draw_push_segment(start,end, y,i, current->start.x,current_end);				
+					} else {
+						/* Clip current on the right */
+						draw_clip_segment(clip_x2+1, &current->start, &current->end, &current->start);
+
+						/* Insert new before current */
+						draw_insert_segment(start,end, y,i, clip_x1,clip_x2);
+					}
 				} else {
-					/* Clip current before clip_x1 */
+					/* Insert current after clip_x2 ? */
+					if (clip_x2 < current_end) {
+						draw_insert_segment(&current->start, &current->end,
+							y,i+1, clip_x2+1, current->end.x);
+					}
+
 					/* Insert new */
-					/* Insert current after clip_x2 */
+					draw_insert_segment(start,end, y,i+1, clip_x1,clip_x2);
+
+					/* Clip current before clip_x1 */
+					draw_clip_segment(clip_x1-1, &current->start, &current->end, &current->end);
 				}
+
+				/* Continue with remaining */
+				x1 = current_end+1;
 				break;
 			case SEG1_FRONT:
 				/* Continue with remaining part */
