@@ -215,7 +215,7 @@ static void model_emd2_draw(model_t *this)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
-#if 0
+#if 1
 	emd_draw_skel(this, 0, emd_skel_relpos, emd_skel_data);
 #else
 	count = 0;
