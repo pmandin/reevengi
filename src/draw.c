@@ -198,7 +198,7 @@ static void draw_render8_fill(void)
 				g = segments[j].start.g / segments[j].start.w;
 				b = segments[j].start.b / segments[j].start.w;
 			}
- 			color = dither_nearest_index(r,g,b)
+ 			color = dither_nearest_index(r,g,b);
  
 			memset(dst_col, color, segments[j].end.x - segments[j].start.x + 1);
 		}
@@ -398,8 +398,10 @@ static int check_behind(const sbuffer_point_t *seg1start, const sbuffer_point_t 
 	dw1 = s1w2 - s1w1;
 	dw2 = s2w2 - s2w1;
 
-	/*printf("%.3f->%.3f, %.3f->%.3f, %d\n", s1w1,s1w2, s2w1,s2w2, dx);*/
 	*cx = ((s1w1-s2w1)*dx)/(dw2-dw1);
+	/*if ((*cx < x1) || (*cx > x2)) {
+		printf("%d: %d->%d: %.3f->%.3f, %.3f->%.3f, %d\n", *cx, x1,x2, s1w1,s1w2, s2w1,s2w2, dx);
+	}*/
 
 	if (*cx == x1) {
 		return (s1w2>s2w2 ? SEG1_FRONT : SEG1_BEHIND);
@@ -607,15 +609,27 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		1       nnnnn
 		2	   nnnnn
 		3	    nnnnnnnnnn
+		4	        nnnnnn
 		*/
 		clip_x1 = SEG_MAX(x1, current->start.x);
 		clip_x2 = SEG_MIN(x2, current->end.x);
 
-		/*if (y==97) {
-			printf("- check Z for %d:%d->%d against %d->%d (%d->%d)\n",i,
+		if (clip_x1==clip_x2) {
+			/*printf("- check Z for %d:%d->%d against %d->%d (%d->%d)\n",i,
 				current->start.x,current->end.x, x1,x2, clip_x1,clip_x2
-			);
-		}*/
+			);*/
+
+			/* Skip if new behind current */
+			if (calc_w(&current->start, &current->end, clip_x1) <= calc_w(start,end, clip_x1)) {
+				x1 = clip_x1+1;
+				continue;
+			}
+
+			/* Clip current if behind new */
+			draw_clip_segment(clip_x1-1, &current->start, &current->end, &current->end);
+			x1 = clip_x1;
+			continue;
+		}
 
 		clip_seg = check_behind(&current->start, &current->end,
 			start,end, clip_x1,clip_x2, &clip_pos);
@@ -1122,10 +1136,13 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
-		w1 = vtx[p1].pos[3] / vtx[p1].pos[2];
+		w1 = 1000.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
-		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
+		w2 = 1000.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
+
+		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
+			x1,y1,w1, x2,y2,w2);*/
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
