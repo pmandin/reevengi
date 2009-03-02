@@ -523,9 +523,9 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	color = get_color_from_texture(v1);
 	if (!gouraud) {
 		draw_setColor(color);
-	} else {
-		color = get_rgbaColor_from_drawColor(color);
 	}
+
+	color = get_rgbaColor_from_drawColor(color);
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -538,9 +538,8 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[0].col[2] = color & 0xff;
 	tri1[0].col[3] = (color>>24) & 0xff;
 
-	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v2));
-	}
+	color = get_rgbaColor_from_drawColor(get_color_from_texture(v2));
+
 	tri1[1].pos[0] = v2->x;
 	tri1[1].pos[1] = v2->y;
 	tri1[1].pos[2] = v2->z;
@@ -552,9 +551,8 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[1].col[2] = color & 0xff;
 	tri1[1].col[3] = (color>>24) & 0xff;
 
-	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v3));
-	}
+	color = get_rgbaColor_from_drawColor(get_color_from_texture(v3));
+
 	tri1[2].pos[0] = v3->x;
 	tri1[2].pos[1] = v3->y;
 	tri1[2].pos[2] = v3->z;
@@ -610,9 +608,9 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	color = get_color_from_texture(v1);
 	if (!gouraud) {
 		draw_setColor(color);
-	} else {
-		color = get_rgbaColor_from_drawColor(color);
 	}
+
+	color = get_rgbaColor_from_drawColor(color);
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -625,9 +623,8 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[0].col[2] = color & 0xff;
 	tri1[0].col[3] = (color>>24) & 0xff;
 
-	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v2));
-	}
+	color = get_rgbaColor_from_drawColor(get_color_from_texture(v2));
+
 	tri1[1].pos[0] = v2->x;
 	tri1[1].pos[1] = v2->y;
 	tri1[1].pos[2] = v2->z;
@@ -639,9 +636,8 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[1].col[2] = color & 0xff;
 	tri1[1].col[3] = (color>>24) & 0xff;
 
-	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v3));
-	}
+	color = get_rgbaColor_from_drawColor(get_color_from_texture(v3));
+
 	tri1[2].pos[0] = v3->x;
 	tri1[2].pos[1] = v3->y;
 	tri1[2].pos[2] = v3->z;
@@ -653,9 +649,8 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[2].col[2] = color & 0xff;
 	tri1[2].col[3] = (color>>24) & 0xff;
 
-	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v4));
-	}
+	color = get_rgbaColor_from_drawColor(get_color_from_texture(v4));
+
 	tri1[3].pos[0] = v4->x;
 	tri1[3].pos[1] = v4->y;
 	tri1[3].pos[2] = v4->z;
