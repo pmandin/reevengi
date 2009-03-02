@@ -437,9 +437,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		x2 = video.viewport.w-1;
 	}
 
-	/*if (y==97) {
-		printf("add segment %d,%d\n", x1,x2);
-	}*/
+	/*printf("add segment %d %d,%d\n", y, x1,x2);*/
 
 	/*--- Trivial cases ---*/
 
@@ -479,8 +477,11 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		int clip_x1, clip_x2, current_end;
 		sbuffer_segment_t *current = &sbuffer_rows[y].segment[i];
 
+		/*printf(" new %d,%d\n",x1,x2);*/
+
 		/* Out of screen ? */
 		if ((x2<0) || (x1>=video.viewport.w) || (x1>x2)) {
+			/*printf("  stop\n");*/
 			return;
 		}	
 
@@ -489,9 +490,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			nnnnn
 		*/
 		if (current->end.x < x1) {
-			/*if (y==97) {
-				printf("-start after %d\n", i);
-			}*/
+			/*printf("  start after %d\n",i);*/
 			continue;
 		}
 
@@ -500,9 +499,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		nnnnnn
 		*/
 		if (x2 < current->start.x) {
-			/*if (y==97) {
-				printf("-finish before %d\n", i);
-			}*/
+			/*printf("  finish before %d\n",i);*/
 			draw_insert_segment(start,end, y,i, x1,x2);
 			return;
 		}
@@ -522,9 +519,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		*/
 		if (x1 < current->start.x) {
 			int next_x1 = current->start.x;
-			/*if (y==97) {
-				printf("-start before %d, will continue from pos %d\n", i, next_x1);
-			}*/
+			/*printf("  start before %d, will continue from pos %d\n", i, next_x1);*/
 			draw_insert_segment(start,end, y,i, x1,next_x1-1);
 			x1 = next_x1;
 
@@ -545,13 +540,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			/* Replace current with new if current behind */
 			int cur_x = current->start.x;
 			int next_x1 = current->end.x+1;
-			/*if (y==97) {
-				printf("- %d is single pixel, will continue from pos %d\n", i, next_x1);
-			}*/
+			/*printf("  %d is single pixel, will continue from pos %d\n", i, next_x1);*/
 			if (calc_w(start, end, x1) > current->start.w) {
-				/*if (y==97) {
-					printf("- replace %d by new\n", i);
-				}*/
+				/*printf("   replace %d by new\n", i);*/
 				draw_push_segment(start,end, y,i, cur_x,cur_x);
 			}
 			x1 = next_x1;
@@ -713,6 +704,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				break;
 		}
 	}
+
+	/* Insert last */
+	draw_insert_segment(start,end, y,sbuffer_rows[y].num_segs, x1,x2);
 }
 
 /* Drawing functions */
@@ -1133,6 +1127,8 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
 		return;
 	}
+
+	/*printf("triangle\n");*/
 
 	/* Fill poly min/max array with segments */
 	p1 = num_vtx-1;
@@ -1592,3 +1588,19 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
+
+/*
+triangle
+add segment 118 154,155
+add segment 119 156,156
+add segment 120 158,158
+triangle
+add segment 106 154,154
+add segment 107 154,155
+add segment 108 154,156
+add segment 109 154,158
+triangle
+add segment 118 155,158
+add segment 119 156,158
+add segment 120 158,159
+*/
