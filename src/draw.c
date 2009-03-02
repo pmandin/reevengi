@@ -236,6 +236,7 @@ static void draw_render16_fill(void)
 				g = segments[j].start.g / segments[j].start.w;
 				b = segments[j].start.b / segments[j].start.w;
 			}
+			/*printf("%d,%d,%d\n",r,g,b);*/
 			color = SDL_MapRGB(surf->format, r,g,b);
 
 			/*printf(" segment %d: %d->%d\n",j,segments[j].start.x,segments[j].end.x);*/
