@@ -399,7 +399,7 @@ static int check_behind(const sbuffer_point_t *seg1start, const sbuffer_point_t 
 	dw1 = s1w2 - s1w1;
 	dw2 = s2w2 - s2w1;
 
-	*cx = ((s1w1-s2w1)*dx)/(dw2-dw1);
+	*cx = x1 + (((s1w1-s2w1)*dx)/(dw2-dw1));
 	/*if ((*cx < x1) || (*cx > x2)) {
 		printf("%d: %d->%d: %.3f->%.3f, %.3f->%.3f, %d\n", *cx, x1,x2, s1w1,s1w2, s2w1,s2w2, dx);
 	}*/
@@ -616,10 +616,6 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		clip_x2 = SEG_MIN(x2, current->end.x);
 
 		if (clip_x1==clip_x2) {
-			/*printf("- check Z for %d:%d->%d against %d->%d (%d->%d)\n",i,
-				current->start.x,current->end.x, x1,x2, clip_x1,clip_x2
-			);*/
-
 			/* Skip if new behind current */
 			if (calc_w(&current->start, &current->end, clip_x1) <= calc_w(start,end, clip_x1)) {
 				x1 = clip_x1+1;
@@ -634,6 +630,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 
 		clip_seg = check_behind(&current->start, &current->end,
 			start,end, clip_x1,clip_x2, &clip_pos);
+
 		switch(clip_seg) {
 			case SEG1_BEHIND:
 				/*if (y==97) {
@@ -677,6 +674,12 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				x1 = current->end.x+1;
 				break;
 			case SEG1_CLIP_LEFT:
+				/*if ((clip_pos<clip_x1) || (clip_pos>clip_x2)) {
+					printf("- check Z for %d:%d->%d against %d->%d (%d->%d at %d)\n",i,
+						current->start.x,current->end.x, x1,x2, clip_x1,clip_x2, clip_pos
+					);
+				}*/
+
 				/*if (y==97) {
 					printf("- keep left of %d against new at pos %d\n", i, clip_pos);
 				}*/
@@ -686,6 +689,12 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				x1 = clip_pos;
 				break;
 			case SEG1_CLIP_RIGHT:
+				/*if ((clip_pos<clip_x1) || (clip_pos>clip_x2)) {
+					printf("- check Z for %d:%d->%d against %d->%d (%d->%d at %d)\n",i,
+						current->start.x,current->end.x, x1,x2, clip_x1,clip_x2, clip_pos
+					);
+				}*/
+
 				/*if (y==97) {
 					printf("- keep right of %d against new at pos %d\n", i, clip_pos);
 				}*/
@@ -1137,10 +1146,10 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
-		w1 = 1000.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
+		w1 = 4096.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
-		w2 = 1000.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
+		w2 = 4096.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
