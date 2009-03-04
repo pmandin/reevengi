@@ -382,6 +382,9 @@ static int check_behind(const sbuffer_point_t *seg1start, const sbuffer_point_t 
 	s2w1 = calc_w(seg2start, seg2end, x1);
 	s2w2 = calc_w(seg2start, seg2end, x2);
 
+	printf("%d->%d: seg1: %.3f->%.3f, seg2:%.3f->%.3f\n",
+		x1,x2, s1w1,s1w2, s2w1,s2w2);
+
 	/* Do we have an intersection ? */
 	if (s1w1>s2w1) {
 		if (s1w2>s2w2) {
@@ -440,17 +443,17 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		return;
 	}
 
-	/*if ((y<(video.viewport.h/2)-5) || (y>(video.viewport.h/2)+5)) {
+	/*if ((y<(video.viewport.h/2)+8) || (y>(video.viewport.h/2)+10)) {
 		return;
 	}*/
 
-	/*printf("-------add segment %d %d,%d\n", y, x1,x2);*/
+	printf("-------add segment %d %d,%d\n", y, x1,x2);
 
 	/*--- Trivial cases ---*/
 
 	/* Empty row ? */
 	if (num_segs == 0) {
-		/*printf("----empty list\n");*/
+		printf("----empty list\n");
 		draw_push_segment(start,end, y,0, x1,x2);
 		++sbuffer_rows[y].num_segs;
 		return;
@@ -458,7 +461,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 
 	/* Finish before first ? */
 	if (x2 < sbuffer_rows[y].segment[0].start.x) {
-		/*printf("----finish before first (%d<%d)\n",x2,sbuffer_rows[y].segment[0].start.x);*/
+		printf("----finish before first (%d<%d)\n",x2,sbuffer_rows[y].segment[0].start.x);
 		draw_insert_segment(start,end, y,0, x1,x2);
 		return;
 	}
@@ -466,7 +469,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	/* Start after last ? */
 	if (sbuffer_rows[y].segment[num_segs-1].end.x < x1) {
 		if (num_segs<NUM_SEGMENTS) {
-			/*printf("----start after last (%d<%d)\n", sbuffer_rows[y].segment[num_segs-1].end.x, x1);*/
+			printf("----start after last (%d<%d)\n", sbuffer_rows[y].segment[num_segs-1].end.x, x1);
 			draw_push_segment(start,end, y,num_segs, x1,x2);
 			++sbuffer_rows[y].num_segs;
 		}
@@ -478,11 +481,11 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		int clip_x1, clip_x2, current_end, ic = i;
 		sbuffer_segment_t *current = &sbuffer_rows[y].segment[ic];
 
-		/*printf("--new %d,%d against %d,%d\n",x1,x2, current->start.x, current->end.x);*/
+		printf("--new %d,%d against %d,%d\n",x1,x2, current->start.x, current->end.x);
 
 		/* Out of screen ? */
 		if ((x2<0) || (x1>=video.viewport.w) || (x1>x2)) {
-			/*printf("  stop\n");*/
+			printf("  stop\n");
 			return;
 		}	
 
@@ -491,7 +494,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			nnnnn
 		*/
 		if (current->end.x < x1) {
-			/*printf("  start after %d\n",ic);*/
+			printf("  start after %d\n",ic);
 			continue;
 		}
 
@@ -500,7 +503,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		nnnnnn
 		*/
 		if (x2 < current->start.x) {
-			/*printf("  finish before %d\n",ic);*/
+			printf("  finish before %d\n",ic);
 			draw_insert_segment(start,end, y,ic, x1,x2);
 			return;
 		}
@@ -520,8 +523,8 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		*/
 		if (x1 < current->start.x) {
 			int next_x1 = current->start.x;
-			/*printf("  new start before %d, insert %d,%d, will continue from pos %d\n", ic, x1,next_x1-1, next_x1);
-			printf("   current before: %d,%d\n", current->start.x, current->end.x);*/
+			printf("  new start before %d, insert %d,%d, will continue from pos %d\n", ic, x1,next_x1-1, next_x1);
+			/*printf("   current before: %d,%d\n", current->start.x, current->end.x);**/
 			draw_insert_segment(start,end, y,ic, x1,next_x1-1);
 			x1 = next_x1;
 
@@ -543,10 +546,10 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			/* Replace current with new if current behind */
 			int cur_x = current->start.x;
 			int next_x1 = current->end.x+1;
-			/*printf("  current is single pixel, will continue from pos %d\n", next_x1);*/
+			printf("  current is single pixel, will continue from pos %d\n", next_x1);
 			/*printf("   new w=%.3f, cur w=%.3f\n", calc_w(start, end, x1), current->start.w);*/
 			if (calc_w(start, end, x1) > current->start.w) {
-				/*printf("   replace current by new\n");*/
+				printf("   replace current by new\n");
 				draw_push_segment(start,end, y,ic, cur_x,cur_x);
 			}
 			x1 = next_x1;
@@ -558,10 +561,11 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			    n
 		*/
 		if (x1 == x2) {
-			/*printf(" new single pixel at %d\n", x1);*/
+			printf(" new single pixel at %d\n", x1);
 
 			/* Skip if new behind current */
 			if (calc_w(&current->start, &current->end, x1) > calc_w(start,end, x1)) {
+				printf("  new behind current, stop\n");
 				return;
 			}
 
@@ -572,9 +576,9 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				n
 			*/
 			if (x1 == current->start.x) {
-				/*printf("  clip current from %d,%d at %d\n", current->start.x,current->end.x, x1+1);*/
+				printf("  clip current start from %d,%d at %d\n", current->start.x,current->end.x, x1+1);
 				draw_clip_segment(x1+1, &current->start, &current->end, &current->start);
-				/*printf("  insert new %d,%d at %d\n", x1,x2, ic);*/
+				printf("  insert new %d,%d at %d\n", x1,x2, ic);
 				draw_insert_segment(start,end, y,ic, x1,x2);
 				return;
 			}
@@ -584,10 +588,10 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				       n
 			*/
 			if (x2 == current->end.x) {
-				/*printf("  clip current from %d,%d at %d\n", current->start.x,current->end.x, x2-1);*/
+				printf("  clip current end from %d,%d at %d\n", current->start.x,current->end.x, x2-1);
 				draw_clip_segment(x2-1, &current->start, &current->end, &current->end);
 
-				/*printf("  insert new %d,%d at %d\n", x1,x2, ic+1);*/
+				printf("  insert new %d,%d at %d\n", x1,x2, ic+1);
 				draw_insert_segment(start,end, y,ic+1, x1,x2);
 				return;
 			}
@@ -600,7 +604,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				   n
 				    cccc
 			*/
-			/*printf("  split current, insert new\n");*/
+			printf("  split current, insert new\n");
 			draw_insert_segment(&current->start, &current->end,
 				y,ic+1, x1+1, current->end.x);
 
@@ -621,14 +625,15 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		clip_x2 = SEG_MIN(x2, current->end.x);
 
 		if (clip_x1==clip_x2) {
-			/*printf(" Zcheck multiple pixels, single pixel common zone\n");*/
+			printf(" Zcheck multiple pixels, single pixel common zone\n");
 			/* Skip if new behind current */
 			if (calc_w(&current->start, &current->end, clip_x1) > calc_w(start,end, clip_x1)) {
+				printf("  new behind current, continue from %d\n", clip_x1+1);
 				x1 = clip_x1+1;
 				continue;
 			}
 
-			/*printf("  clip current from %d,%d at %d\n", current->start.x,current->end.x, clip_x1-1);*/
+			printf("  clip current end from %d,%d at %d\n", current->start.x,current->end.x, clip_x1-1);
 
 			/* Clip current if behind new */
 			draw_clip_segment(clip_x1-1, &current->start, &current->end, &current->end);
@@ -641,7 +646,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 
 		switch(clip_seg) {
 			case SEG1_BEHIND:
-				/*printf("- %d behind new (common from %d->%d)\n", ic,clip_x1,clip_x2);*/
+				printf("- %d behind new (common from %d->%d)\n", ic,clip_x1,clip_x2);
 				current_end = current->end.x;
 
 				if (clip_x1 == current->start.x) {
@@ -679,7 +684,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				x1 = current_end+1;
 				break;
 			case SEG1_FRONT:
-				/*printf("- %d in front of new\n", ic);*/
+				printf("- %d in front of new\n", ic);
 				/* Continue with remaining part */
 				x1 = current->end.x+1;
 				break;
@@ -690,39 +695,60 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 					);
 				}*/
 
-				/*printf("- keep left of %d against new at pos %d\n", ic, clip_pos);*/
-
-				/* Clip current before clip_pos */
-				draw_clip_segment(clip_pos-1, &current->start, &current->end, &current->end);
-				/* Continue with remaining part */
-				x1 = clip_pos;
-				break;
-			case SEG1_CLIP_RIGHT:
-				/*if ((clip_pos<clip_x1) || (clip_pos>clip_x2)) {
-					printf("- check Z for %d:%d->%d against %d->%d (%d->%d at %d)\n",ic,
-						current->start.x,current->end.x, x1,x2, clip_x1,clip_x2, clip_pos
-					);
-				}*/
-
-				/*printf("- keep right of %d against new at pos %d\n", ic, clip_pos);*/
+				printf("- keep left of %d against new at pos %d\n", ic, clip_pos);
 
 				current_end = current->end.x;
 
+				/* Insert right part of current, after common zone */
+				if (x2 < current->end.x) {
+					printf("  insert right part of current %d (%d,%d)\n", ic, x2+1,current->end.x);
+					draw_insert_segment(&current->start, &current->end, y,ic+1, x2+1,current->end.x);
+				}
+
+				/* Clip current before clip_pos */
+				printf("  clip end of %d (%d,%d) at %d\n", ic, current->start.x,current->end.x, clip_pos-1);
+				draw_clip_segment(clip_pos-1, &current->start, &current->end, &current->end);
+
+				/* Insert new */
+				printf("  insert %d,%d at %d\n", clip_pos,x2, ic+1);
+				draw_insert_segment(start,end, y,ic+1, clip_pos,x2);
+
+				/* Continue with remaining part */
+				x1 = current_end+1;
+				break;
+			case SEG1_CLIP_RIGHT:
+				/*if ((clip_pos<clip_x1) || (clip_pos>clip_x2))*/ {
+					printf("- check Z for %d:%d->%d against %d->%d (%d->%d at %d)\n",ic,
+						current->start.x,current->end.x, x1,x2, clip_x1,clip_x2, clip_pos
+					);
+				}
+
+				printf("- keep right of %d against new at pos %d\n", ic, clip_pos);
+
+				current_end = current->end.x;
+
+				/* Insert left part of current, before common zone */
+				if (current->start.x < x1) {
+					printf("  insert left part of current %d (%d,%d)\n", ic, current->start.x,x1-1);
+					draw_insert_segment(&current->start, &current->end, y,ic, current->start.x,x1-1);
+
+					current = &sbuffer_rows[y].segment[++ic];
+				}
 				/* Clip current */
-				/*printf("  clip start of %d (%d,%d) at %d\n", ic, current->start.x,current->end.x, clip_pos+1);*/
+				printf("  clip start of %d (%d,%d) at %d\n", ic, current->start.x,current->end.x, clip_pos+1);
 				draw_clip_segment(clip_pos+1, &current->start, &current->end, &current->start);
 				/* Insert new */
-				/*printf("  insert %d,%d at %d\n", clip_x1,clip_pos, ic+1);*/
-				draw_insert_segment(start,end, y,ic, clip_x1,clip_pos);
+				printf("  insert %d,%d at %d\n", x1,clip_pos, ic+1);
+				draw_insert_segment(start,end, y,ic, x1,clip_pos);
 				/* Continue with remaining part */
 				x1 = current_end+1;
 				break;
 		}
 	}
 
-	/*printf("--remain %d,%d\n",x1,x2);*/
+	printf("--remain %d,%d\n",x1,x2);
 	if (x1>x2) {
-		/*printf(" stop\n");*/
+		printf(" stop\n");
 		return;
 	}
 
@@ -1609,19 +1635,3 @@ void draw_poly_tex(vertexf_t *vtx, int num_vtx)
 	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
-
-/*
-triangle
-add segment 118 154,155
-add segment 119 156,156
-add segment 120 158,158
-triangle
-add segment 106 154,154
-add segment 107 154,155
-add segment 108 154,156
-add segment 109 154,158
-triangle
-add segment 118 155,158
-add segment 119 156,158
-add segment 120 158,159
-*/
