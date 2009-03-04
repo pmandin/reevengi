@@ -87,9 +87,8 @@ static int render_grid = 0;
 static int render_restore = 0;
 
 static int refresh_player_pos = 0;
-static float player_x = 0, player_y = 0, player_z = 0;
-static float player_a = 0;
-
+static float player_x = 0 /*11849.257*/, player_y = 0 /*-1872.000*/, player_z = 0 /*-3148.747*/;
+static float player_a = 0 /*-102.700*/;
 static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_moveup = 0;
@@ -329,6 +328,8 @@ void view_background_update(void)
 	if (player_turnright) {
 		player_a = playerstart_a + 0.1f*(tick_current-tick_turnright);
 	}
+
+	/*printf("pos:%.3f,%.3f,%.3f angle:%.3f\n", player_x,player_y,player_z,player_a);*/
 }
 
 void view_background_draw(void)
