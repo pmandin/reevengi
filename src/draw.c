@@ -443,7 +443,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		return;
 	}
 
-	/*if ((y<(video.viewport.h/2)+8) || (y>(video.viewport.h/2)+10)) {
+	/*if ((y<(video.viewport.h/2)-10) || (y>(video.viewport.h/2)-10)) {
 		return;
 	}*/
 
@@ -710,8 +710,8 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				draw_clip_segment(clip_pos-1, &current->start, &current->end, &current->end);
 
 				/* Insert new */
-				printf("  insert %d,%d at %d\n", clip_pos,x2, ic+1);
-				draw_insert_segment(start,end, y,ic+1, clip_pos,x2);
+				printf("  insert %d,%d at %d\n", clip_pos,current_end, ic+1);
+				draw_insert_segment(start,end, y,ic+1, clip_pos,current_end);
 
 				/* Continue with remaining part */
 				x1 = current_end+1;
