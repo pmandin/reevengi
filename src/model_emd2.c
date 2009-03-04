@@ -220,7 +220,7 @@ static void model_emd2_draw(model_t *this)
 #else
 	count = 0;
 	emd_add_mesh(this, 0, &count, idx_mesh,pos_mesh, 0,0,0, emd_skel_relpos, emd_skel_data);
-	render.sortBackToFront(count, idx_mesh,pos_mesh);
+	/*render.sortBackToFront(count, idx_mesh,pos_mesh);*/
 
 	for (i=0; i<count; i++) {
 		render.push_matrix();
