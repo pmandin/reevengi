@@ -78,6 +78,7 @@ typedef struct {
 } poly_hline_t;
 
 typedef struct {
+	Uint32	id;	/* ID to merge segments */
 	sbuffer_point_t start, end;
 } sbuffer_segment_t;
 
@@ -101,6 +102,7 @@ static poly_hline_t *poly_hlines = NULL;
 /* Sbuffer */
 static int sbuffer_numrows = 0;
 static sbuffer_row_t *sbuffer_rows = NULL;
+static Uint32 sbuffer_seg_id;
 
 static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pixels */
 
@@ -150,6 +152,7 @@ void draw_clear(void)
 	for (i=0; i<sbuffer_numrows; i++) {
 		sbuffer_rows[i].num_segs = 0;
 	}
+	sbuffer_seg_id = 0;
 }
 
 void draw_resize(int w, int h)
@@ -342,6 +345,8 @@ static void draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_
 	p = &(sbuffer_rows[y].segment[pos].end);
 	memcpy(p, end, sizeof(sbuffer_point_t));
 	draw_clip_segment(x2, start, end, p);
+
+	sbuffer_rows[y].segment[pos].id = sbuffer_seg_id;
 }
 
 /* Move all remaining segments further, then push */
@@ -351,6 +356,18 @@ static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_poin
 	int num_segs = sbuffer_rows[y].num_segs;
 	int last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS : num_segs);
 	int i;
+
+#if 0
+	/* Merge similar segments ? does not work, need to return 'merged' or 'inserted' */
+	if ((sbuffer_rows[y].segment[pos].id == sbuffer_seg_id)
+	   && (x2+1 == sbuffer_rows[y].segment[pos].start.x))
+	{
+		sbuffer_point_t *p = &(sbuffer_rows[y].segment[pos].start);
+		memcpy(p, start, sizeof(sbuffer_point_t));
+		draw_clip_segment(x1, start, end, p);
+		return;
+	}
+#endif
 
 	/*printf("%d: copy segs %d to %d\n", y,pos, last_seg);*/
 	for (i=last_seg-1; i>=pos; i--) {
@@ -468,6 +485,8 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		++sbuffer_rows[y].num_segs;
 		return;
 	}
+
+	++sbuffer_seg_id;
 
 	/* Finish before first ? */
 	if (x2 < sbuffer_rows[y].segment[0].start.x) {
