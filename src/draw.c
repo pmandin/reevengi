@@ -1218,10 +1218,10 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
-		w1 = 4096.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
+		w1 = 1.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
-		w2 = 4096.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
+		w2 = 1.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
