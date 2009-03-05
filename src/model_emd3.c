@@ -182,7 +182,7 @@ static void model_emd3_draw(model_t *this)
 	emd_skel_data_t *emd_skel_data;
 	Uint32 *hdr_offsets;
 	void *emd_file;
-#if 1
+#if 0
 	int idx_mesh[32];
 	vertex_t pos_mesh[32];
 	int count, i;
@@ -208,7 +208,7 @@ static void model_emd3_draw(model_t *this)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[hdr_offsets[EMD_SKELETON]+emd_skel_header->relpos_offset]);
 
-#if 0
+#if 1
 	emd_draw_skel(this, 0, emd_skel_relpos, emd_skel_data);
 #else
 	count = 0;

@@ -189,7 +189,7 @@ static void model_emd2_draw(model_t *this)
 	Uint32 *hdr_offsets;
 	void *emd_file;
 
-#if 1
+#if 0
 	int idx_mesh[32];
 	vertex_t pos_mesh[32];
 	int count, i;
