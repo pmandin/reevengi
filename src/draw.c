@@ -79,6 +79,8 @@ typedef struct {
 
 typedef struct {
 	Uint32	id;	/* ID to merge segments */
+	int tex_num_pal;
+	render_texture_t *texture;
 	sbuffer_point_t start, end;
 } sbuffer_segment_t;
 
@@ -115,6 +117,10 @@ static void draw_render32_fill(void);
 static void draw_render8_gouraud(void);
 static void draw_render16_gouraud(void);
 static void draw_render32_gouraud(void);
+
+static void draw_render8_tex(void);
+static void draw_render16_tex(void);
+static void draw_render32_tex(void);
 
 static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
 	sbuffer_point_t *clipped);
@@ -190,6 +196,7 @@ void draw_render(void)
 	}
 #endif
 
+#if 0
 	switch(surf->format->BytesPerPixel) {
 		case 1:
 			draw_render8_gouraud();
@@ -202,6 +209,22 @@ void draw_render(void)
 			break;
 		case 4:
 			draw_render32_gouraud();
+			break;
+	}
+#endif
+
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			draw_render8_tex();
+			break;
+		case 2:
+			draw_render16_tex();
+			break;
+		case 3:
+			/* TODO */
+			break;
+		case 4:
+			draw_render32_tex();
 			break;
 	}
 }
@@ -466,6 +489,186 @@ static void draw_render32_gouraud(void)
 	}
 }
 
+static void draw_render8_tex(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint8 *dst = (Uint8 *) surf->pixels;
+	dst += video.viewport.y * surf->pitch;
+	dst += video.viewport.x;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint8 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint8 *dst_col = &dst_line[segments[j].start.x];
+			int dx = segments[j].end.x - segments[j].start.x + 1;
+			int u1 = segments[j].start.u;
+			int v1 = segments[j].start.v;
+			int u2 = segments[j].end.u;
+			int v2 = segments[j].end.v;
+			int du,dv;
+			render_texture_t *tex = segments[j].texture;
+
+			if (!tex) {
+				continue;
+			}
+
+			if (drawCorrectPerspective>0) {
+				u1 = segments[j].start.u / segments[j].start.w;
+				v1 = segments[j].start.v / segments[j].start.w;
+				u2 = segments[j].end.u / segments[j].end.w;
+				v2 = segments[j].end.v / segments[j].end.w;
+			}
+
+			du = v2-u1;
+			dv = v2-u1;
+ 
+			if (tex->paletted) {
+				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
+				}
+			}/* else {
+				Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+			
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					*dst_col++ = tex_pixels[v*tex->pitchw + u];
+				}
+			}*/
+		}
+
+		dst += surf->pitch;
+	}
+}
+
+static void draw_render16_tex(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint16 *dst = (Uint16 *) surf->pixels;
+	dst += video.viewport.y * (surf->pitch>>1);
+	dst += video.viewport.x;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint16 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint16 *dst_col = &dst_line[segments[j].start.x];
+			int dx = segments[j].end.x - segments[j].start.x + 1;
+			int u1 = segments[j].start.u;
+			int v1 = segments[j].start.v;
+			int u2 = segments[j].end.u;
+			int v2 = segments[j].end.v;
+			int du,dv;
+			render_texture_t *tex = segments[j].texture;
+
+			if (!tex) {
+				continue;
+			}
+
+			if (drawCorrectPerspective>0) {
+				u1 = segments[j].start.u / segments[j].start.w;
+				v1 = segments[j].start.v / segments[j].start.w;
+				u2 = segments[j].end.u / segments[j].end.w;
+				v2 = segments[j].end.v / segments[j].end.w;
+			}
+
+			du = v2-u1;
+			dv = v2-u1;
+ 
+			if (tex->paletted) {
+				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
+				}
+			} else {
+				Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+			
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					*dst_col++ = tex_pixels[v*tex->pitchw + u];
+				}
+			}
+		}
+
+		dst += surf->pitch>>1;
+	}
+}
+
+static void draw_render32_tex(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint32 *dst = (Uint32 *) surf->pixels;
+	dst += video.viewport.y * (surf->pitch>>2);
+	dst += video.viewport.x;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint32 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint32 *dst_col = &dst_line[segments[j].start.x];
+			int dx = segments[j].end.x - segments[j].start.x + 1;
+			int u1 = segments[j].start.u;
+			int v1 = segments[j].start.v;
+			int u2 = segments[j].end.u;
+			int v2 = segments[j].end.v;
+			int du,dv;
+			render_texture_t *tex = segments[j].texture;
+
+			if (!tex) {
+				continue;
+			}
+
+			if (drawCorrectPerspective>0) {
+				u1 = segments[j].start.u / segments[j].start.w;
+				v1 = segments[j].start.v / segments[j].start.w;
+				u2 = segments[j].end.u / segments[j].end.w;
+				v2 = segments[j].end.v / segments[j].end.w;
+			}
+
+			du = v2-u1;
+			dv = v2-u1;
+ 
+			if (tex->paletted) {
+				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
+				}
+			} else {
+				Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+			
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					*dst_col++ = tex_pixels[v*tex->pitchw + u];
+				}
+			}
+		}
+
+		dst += surf->pitch>>2;
+	}
+}
+
 /* clipped can be start or end */
 static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
 	sbuffer_point_t *clipped)
@@ -500,10 +703,6 @@ static void draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_
 {
 	sbuffer_point_t *p;
 
-	/*if (y==97) {
-		printf("insert at %d (%d->%d)\n", pos, x1,x2);
-	}*/
-
 	p = &(sbuffer_rows[y].segment[pos].start);
 	memcpy(p, start, sizeof(sbuffer_point_t));
 	draw_clip_segment(x1, start, end, p);
@@ -513,6 +712,8 @@ static void draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_
 	draw_clip_segment(x2, start, end, p);
 
 	sbuffer_rows[y].segment[pos].id = sbuffer_seg_id;
+	sbuffer_rows[y].segment[pos].tex_num_pal = tex_num_pal;
+	sbuffer_rows[y].segment[pos].texture = texture;
 }
 
 /* Move all remaining segments further, then push */
