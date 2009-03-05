@@ -112,6 +112,10 @@ static void draw_render8_fill(void);
 static void draw_render16_fill(void);
 static void draw_render32_fill(void);
 
+static void draw_render8_gouraud(void);
+static void draw_render16_gouraud(void);
+static void draw_render32_gouraud(void);
+
 static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
 	sbuffer_point_t *clipped);
 static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_point_t *end);
@@ -169,6 +173,7 @@ void draw_render(void)
 {
 	SDL_Surface *surf = video.screen;
 
+#if 0
 	switch(surf->format->BytesPerPixel) {
 		case 1:
 			draw_render8_fill();
@@ -181,6 +186,22 @@ void draw_render(void)
 			break;
 		case 4:
 			draw_render32_fill();
+			break;
+	}
+#endif
+
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			draw_render8_gouraud();
+			break;
+		case 2:
+			draw_render16_gouraud();
+			break;
+		case 3:
+			/* TODO */
+			break;
+		case 4:
+			draw_render32_gouraud();
 			break;
 	}
 }
@@ -232,9 +253,6 @@ static void draw_render16_fill(void)
 	for (i=0; i<sbuffer_numrows; i++) {
 		Uint16 *dst_line = dst;
 		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
-		/*if (sbuffer_rows[i].num_segs) {
-			printf("draw line %d (%d segments)\n", i, sbuffer_rows[i].num_segs);
-		}*/
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
@@ -249,10 +267,7 @@ static void draw_render16_fill(void)
 				g = segments[j].start.g / segments[j].start.w;
 				b = segments[j].start.b / segments[j].start.w;
 			}
-			/*printf("%d,%d,%d\n",r,g,b);*/
 			color = SDL_MapRGB(surf->format, r,g,b);
-
-			/*printf(" segment %d: %d->%d\n",j,segments[j].start.x,segments[j].end.x);*/
 
 			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
 				*dst_col++ = color;
@@ -293,6 +308,157 @@ static void draw_render32_fill(void)
 
 			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
 				*dst_col++ = color;
+			}
+		}
+
+		dst += surf->pitch>>2;
+	}
+}
+
+static void draw_render8_gouraud(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint8 *dst = (Uint8 *) surf->pixels;
+	dst += video.viewport.y * surf->pitch;
+	dst += video.viewport.x;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint8 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint8 *dst_col = &dst_line[segments[j].start.x];
+			int dx = segments[j].end.x - segments[j].start.x + 1;
+			int r1 = segments[j].start.r;
+			int g1 = segments[j].start.g;
+			int b1 = segments[j].start.b;
+			int r2 = segments[j].end.r;
+			int g2 = segments[j].end.g;
+			int b2 = segments[j].end.b;
+			int dr,dg,db;
+
+			if (drawCorrectPerspective>0) {
+				r1 = segments[j].start.r / segments[j].start.w;
+				g1 = segments[j].start.g / segments[j].start.w;
+				b1 = segments[j].start.b / segments[j].start.w;
+				r2 = segments[j].end.r / segments[j].end.w;
+				g2 = segments[j].end.g / segments[j].end.w;
+				b2 = segments[j].end.b / segments[j].end.w;
+			}
+
+			dr = r2-r1;
+			dg = g2-g1;
+			db = b2-b1;
+ 
+			for (k=0; k<dx; k++) {
+				int r = r1 + ((dr*k)/dx);
+				int g = g1 + ((dg*k)/dx);
+				int b = b1 + ((db*k)/dx);
+				*dst_col++ = dither_nearest_index(r,g,b);
+			}
+		}
+
+		dst += surf->pitch;
+	}
+}
+
+static void draw_render16_gouraud(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint16 *dst = (Uint16 *) surf->pixels;
+	dst += video.viewport.y * (surf->pitch>>1);
+	dst += video.viewport.x;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint16 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint16 *dst_col = &dst_line[segments[j].start.x];
+			int dx = segments[j].end.x - segments[j].start.x + 1;
+			int r1 = segments[j].start.r;
+			int g1 = segments[j].start.g;
+			int b1 = segments[j].start.b;
+			int r2 = segments[j].end.r;
+			int g2 = segments[j].end.g;
+			int b2 = segments[j].end.b;
+			int dr,dg,db;
+
+			if (drawCorrectPerspective>0) {
+				r1 = segments[j].start.r / segments[j].start.w;
+				g1 = segments[j].start.g / segments[j].start.w;
+				b1 = segments[j].start.b / segments[j].start.w;
+				r2 = segments[j].end.r / segments[j].end.w;
+				g2 = segments[j].end.g / segments[j].end.w;
+				b2 = segments[j].end.b / segments[j].end.w;
+			}
+
+			dr = r2-r1;
+			dg = g2-g1;
+			db = b2-b1;
+ 
+			for (k=0; k<dx; k++) {
+				int r = r1 + ((dr*k)/dx);
+				int g = g1 + ((dg*k)/dx);
+				int b = b1 + ((db*k)/dx);
+				*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+			}
+		}
+
+		dst += surf->pitch>>1;
+	}
+}
+
+static void draw_render32_gouraud(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint32 *dst = (Uint32 *) surf->pixels;
+	dst += video.viewport.y * (surf->pitch>>2);
+	dst += video.viewport.x;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint32 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint32 *dst_col = &dst_line[segments[j].start.x];
+			int dx = segments[j].end.x - segments[j].start.x + 1;
+			int r1 = segments[j].start.r;
+			int g1 = segments[j].start.g;
+			int b1 = segments[j].start.b;
+			int r2 = segments[j].end.r;
+			int g2 = segments[j].end.g;
+			int b2 = segments[j].end.b;
+			int dr,dg,db;
+
+			if (drawCorrectPerspective>0) {
+				r1 = segments[j].start.r / segments[j].start.w;
+				g1 = segments[j].start.g / segments[j].start.w;
+				b1 = segments[j].start.b / segments[j].start.w;
+				r2 = segments[j].end.r / segments[j].end.w;
+				g2 = segments[j].end.g / segments[j].end.w;
+				b2 = segments[j].end.b / segments[j].end.w;
+			}
+
+			dr = r2-r1;
+			dg = g2-g1;
+			db = b2-b1;
+ 
+			for (k=0; k<dx; k++) {
+				int r = r1 + ((dr*k)/dx);
+				int g = g1 + ((dg*k)/dx);
+				int b = b1 + ((db*k)/dx);
+
+				*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
 			}
 		}
 
@@ -1247,12 +1413,12 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		dy = y2 - y1;
 		if (dy>0) {
 			int dx = x2 - x1;
-			int r1 = vtx[v1].col[0];
-			int dr = vtx[v2].col[0] - vtx[v1].col[0];
-			int g1 = vtx[v1].col[1];
-			int dg = vtx[v2].col[1] - vtx[v1].col[1];
-			int b1 = vtx[v1].col[2];
-			int db = vtx[v2].col[2] - vtx[v1].col[2];
+			float r1 = vtx[v1].col[0];
+			float dr = vtx[v2].col[0] - vtx[v1].col[0];
+			float g1 = vtx[v1].col[1];
+			float dg = vtx[v2].col[1] - vtx[v1].col[1];
+			float b1 = vtx[v1].col[2];
+			float db = vtx[v2].col[2] - vtx[v1].col[2];
 			float tu1 = vtx[v1].tx[0];
 			float du = vtx[v2].tx[0] - vtx[v1].tx[0];
 			float tv1 = vtx[v1].tx[1];
@@ -1282,9 +1448,6 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 				poly_hlines[y1].sbp[num_array].u = tu1 + ((du*y)/dy);
 				poly_hlines[y1].sbp[num_array].v = tv1 + ((dv*y)/dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + ((dw*y)/dy);
-				/*if (y1==97) {
-					printf("w=%.3f\n", poly_hlines[y1].sbp[num_array].w);
-				}*/
 				poly_hlines[y1++].sbp[num_array].x = x1 + ((dx*y)/dy);
 			}
 		}
