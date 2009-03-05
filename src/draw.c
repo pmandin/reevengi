@@ -524,8 +524,8 @@ static void draw_render8_tex(void)
 				v2 = segments[j].end.v / segments[j].end.w;
 			}
 
-			du = v2-u1;
-			dv = v2-u1;
+			du = u2-u1;
+			dv = v2-v1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
@@ -577,6 +577,8 @@ static void draw_render16_tex(void)
 				continue;
 			}
 
+			/*printf("line %d, segment %d, from %d,%d to %d,%d\n",i,j,u1,v1,u2,v2);*/
+
 			if (drawCorrectPerspective>0) {
 				u1 = segments[j].start.u / segments[j].start.w;
 				v1 = segments[j].start.v / segments[j].start.w;
@@ -584,14 +586,21 @@ static void draw_render16_tex(void)
 				v2 = segments[j].end.v / segments[j].end.w;
 			}
 
-			du = v2-u1;
-			dv = v2-u1;
+			du = u2-u1;
+			dv = v2-v1;
  
+			/*if (firstseg) {
+				printf("line %d, segment %d, from %d,%d to %d,%d: %d,%d\n",i,j,u1,v1,u2,v2,du,dv);
+			}*/
+
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
 				for (k=0; k<dx; k++) {
 					int u = u1 + ((du*k)/dx);
 					int v = v1 + ((dv*k)/dx);
+					/*if (firstseg) {
+						printf("%d: %d,%d->%d,%d: %d,%d\n",k,u1,v1,u2,v2,u,v);
+					}*/
 					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
 				}
 			} else {
@@ -644,8 +653,8 @@ static void draw_render32_tex(void)
 				v2 = segments[j].end.v / segments[j].end.w;
 			}
 
-			du = v2-u1;
-			dv = v2-u1;
+			du = u2-u1;
+			dv = v2-v1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
@@ -1590,6 +1599,8 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
 		w2 = 1.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
 
+		/*printf("p[%d]: u=%.3f, v=%.3f\n", p2, vtx[p2].tx[0], vtx[p2].tx[1]);*/
+
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
 
@@ -1615,15 +1626,15 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		if (dy>0) {
 			int dx = x2 - x1;
 			float r1 = vtx[v1].col[0];
-			float dr = vtx[v2].col[0] - vtx[v1].col[0];
+			float dr = vtx[v2].col[0] - r1;
 			float g1 = vtx[v1].col[1];
-			float dg = vtx[v2].col[1] - vtx[v1].col[1];
+			float dg = vtx[v2].col[1] - g1;
 			float b1 = vtx[v1].col[2];
-			float db = vtx[v2].col[2] - vtx[v1].col[2];
+			float db = vtx[v2].col[2] - b1;
 			float tu1 = vtx[v1].tx[0];
-			float du = vtx[v2].tx[0] - vtx[v1].tx[0];
+			float du = vtx[v2].tx[0] - tu1;
 			float tv1 = vtx[v1].tx[1];
-			float dv = vtx[v2].tx[1] - vtx[v1].tx[1];
+			float dv = vtx[v2].tx[1] - tv1;
 			float dw = w2 - w1;
 			if (drawCorrectPerspective>0) {
 				r1 *= w1;
