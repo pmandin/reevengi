@@ -87,8 +87,10 @@ static int render_grid = 0;
 static int render_restore = 0;
 
 static int refresh_player_pos = 0;
-static float player_x = 0/*11516.586*/, player_y = 0/*-1986.000*/, player_z = 0/*-2866.954*/;
-static float player_a = 0/*-23.4*/;
+static float player_x = 0, player_y = 0, player_z = 0;
+static float player_a = 0;
+/*static float player_x = 12348.144, player_y = -3191, player_z = -3259.794;
+static float player_a = -88.70;*/
 static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_moveup = 0;
