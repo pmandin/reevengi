@@ -713,8 +713,11 @@ static int draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_t
 	/* Merge against previous segment ? */
 	if (pos>0) {
 		if ((sbuffer_rows[y].segment[pos-1].id == sbuffer_seg_id)
+		   && (sbuffer_rows[y].segment[pos-1].tex_num_pal == num_pal)
 		   && (x1-1 == sbuffer_rows[y].segment[pos-1].end.x))
 		{
+			DEBUG_PRINT(("merge %d and %d\n", pos-1, pos));
+
 			p = &(sbuffer_rows[y].segment[pos-1].end);
 			memcpy(p, end, sizeof(sbuffer_point_t));
 			draw_clip_segment(x2, start, end, p);
@@ -748,13 +751,35 @@ static int draw_insert_segment(const sbuffer_point_t *start, const sbuffer_point
 	int num_segs = sbuffer_rows[y].num_segs;
 	int last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS : num_segs);
 	int i;
+	/*sbuffer_point_t *p;*/
+
+#if 0
+	/* Merge against previous segment ? */
+	if (pos>0) {
+		if ((sbuffer_rows[y].segment[pos-1].id == sbuffer_seg_id)
+		   && (sbuffer_rows[y].segment[pos-1].tex_num_pal == num_pal)
+		   && (x1-1 == sbuffer_rows[y].segment[pos-1].end.x))
+		{
+			DEBUG_PRINT(("merge %d and %d\n", pos-1, pos));
+
+			p = &(sbuffer_rows[y].segment[pos-1].end);
+			memcpy(p, end, sizeof(sbuffer_point_t));
+			draw_clip_segment(x2, start, end, p);
+
+			return 0;
+		}		   
+	}
+#endif
 
 #if 0
 	/* Merge against current segment ? does not work, need to return 'merged' or 'inserted' */
 	if ((sbuffer_rows[y].segment[pos].id == sbuffer_seg_id)
+	   && (sbuffer_rows[y].segment[pos].tex_num_pal == num_pal)
 	   && (x2+1 == sbuffer_rows[y].segment[pos].start.x))
 	{
-		sbuffer_point_t *p = &(sbuffer_rows[y].segment[pos].start);
+		DEBUG_PRINT(("merge new and %d\n", pos));
+
+		p = &(sbuffer_rows[y].segment[pos].start);
 		memcpy(p, start, sizeof(sbuffer_point_t));
 		draw_clip_segment(x1, start, end, p);
 		return 0;
@@ -868,11 +893,13 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		return;
 	}*/
 
+	++sbuffer_seg_id;
+
 	DEBUG_PRINT(("-------add segment %d %d,%d (%.3f,%.3f %.3f,%.3f)\n", y, x1,x2,
 		start->u,start->v, end->u,end->v));
 
 	for (i=0; i<sbuffer_rows[y].num_segs; i++) {
-		DEBUG_PRINT((" [%d] %d->%d %d %p\n", i,
+		DEBUG_PRINT((" [%d:0x%08x] %d->%d %d %p\n", i, sbuffer_rows[y].segment[i].id,
 			sbuffer_rows[y].segment[i].start.x, sbuffer_rows[y].segment[i].end.x,
 			sbuffer_rows[y].segment[i].tex_num_pal, sbuffer_rows[y].segment[i].texture
 		));
@@ -887,8 +914,6 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		++sbuffer_rows[y].num_segs;
 		return;
 	}
-
-	++sbuffer_seg_id;
 
 	/* Finish before first ? */
 	if (x2 < sbuffer_rows[y].segment[0].start.x) {
