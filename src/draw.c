@@ -513,9 +513,9 @@ static void draw_render8_tex(void)
 			int du,dv;
 			render_texture_t *tex = segments[j].texture;
 
-			if (!tex) {
+			/*if (!tex) {
 				continue;
-			}
+			}*/
 
 			if (drawCorrectPerspective>0) {
 				u1 = segments[j].start.u / segments[j].start.w;
@@ -577,8 +577,6 @@ static void draw_render16_tex(void)
 				continue;
 			}
 
-			/*printf("line %d, segment %d, from %d,%d to %d,%d\n",i,j,u1,v1,u2,v2);*/
-
 			if (drawCorrectPerspective>0) {
 				u1 = segments[j].start.u / segments[j].start.w;
 				v1 = segments[j].start.v / segments[j].start.w;
@@ -589,18 +587,17 @@ static void draw_render16_tex(void)
 			du = u2-u1;
 			dv = v2-v1;
  
-			/*if (firstseg) {
-				printf("line %d, segment %d, from %d,%d to %d,%d: %d,%d\n",i,j,u1,v1,u2,v2,du,dv);
-			}*/
+			DEBUG_PRINT(("line %d, segment %d (%d,%d), from %d,%d to %d,%d, %d %p\n",
+				i,j, segments[j].start.x,segments[j].end.x, u1,v1,u2,v2,
+				segments[j].tex_num_pal,tex
+			));
 
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
 				for (k=0; k<dx; k++) {
 					int u = u1 + ((du*k)/dx);
 					int v = v1 + ((dv*k)/dx);
-					/*if (firstseg) {
-						printf("%d: %d,%d->%d,%d: %d,%d\n",k,u1,v1,u2,v2,u,v);
-					}*/
+					/*DEBUG_PRINT(("%d: %d,%d->%d,%d: %d,%d\n",k,u1,v1,u2,v2,u,v));*/
 					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
 				}
 			} else {
@@ -707,10 +704,25 @@ static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer
 }
 
 /* Push a segment at a given pos, overwriting previous */
-static void draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_t *end,
-	int y, int pos, int x1, int x2)
+static int draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_t *end,
+	int y,int pos, int x1,int x2, int num_pal, render_texture_t *tex)
 {
 	sbuffer_point_t *p;
+
+#if 0
+	/* Merge against previous segment ? */
+	if (pos>0) {
+		if ((sbuffer_rows[y].segment[pos-1].id == sbuffer_seg_id)
+		   && (x1-1 == sbuffer_rows[y].segment[pos-1].end.x))
+		{
+			p = &(sbuffer_rows[y].segment[pos-1].end);
+			memcpy(p, end, sizeof(sbuffer_point_t));
+			draw_clip_segment(x2, start, end, p);
+
+			return 0;
+		}		   
+	}
+#endif
 
 	p = &(sbuffer_rows[y].segment[pos].start);
 	memcpy(p, start, sizeof(sbuffer_point_t));
@@ -721,41 +733,46 @@ static void draw_push_segment(const sbuffer_point_t *start, const sbuffer_point_
 	draw_clip_segment(x2, start, end, p);
 
 	sbuffer_rows[y].segment[pos].id = sbuffer_seg_id;
-	sbuffer_rows[y].segment[pos].tex_num_pal = tex_num_pal;
-	sbuffer_rows[y].segment[pos].texture = texture;
+	sbuffer_rows[y].segment[pos].tex_num_pal = num_pal;
+	sbuffer_rows[y].segment[pos].texture = tex;
+
+	DEBUG_PRINT(("pal %d, texture %p\n",tex_num_pal,texture));
+
+	return 1;
 }
 
 /* Move all remaining segments further, then push */
-static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_point_t *end,
-	int y, int pos, int x1, int x2)
+static int draw_insert_segment(const sbuffer_point_t *start, const sbuffer_point_t *end,
+	int y,int pos, int x1,int x2, int num_pal, render_texture_t *tex)
 {
 	int num_segs = sbuffer_rows[y].num_segs;
 	int last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS : num_segs);
 	int i;
 
 #if 0
-	/* Merge similar segments ? does not work, need to return 'merged' or 'inserted' */
+	/* Merge against current segment ? does not work, need to return 'merged' or 'inserted' */
 	if ((sbuffer_rows[y].segment[pos].id == sbuffer_seg_id)
 	   && (x2+1 == sbuffer_rows[y].segment[pos].start.x))
 	{
 		sbuffer_point_t *p = &(sbuffer_rows[y].segment[pos].start);
 		memcpy(p, start, sizeof(sbuffer_point_t));
 		draw_clip_segment(x1, start, end, p);
-		return;
+		return 0;
 	}
 #endif
 
 	/*printf("%d: copy segs %d to %d\n", y,pos, last_seg);*/
 	for (i=last_seg-1; i>=pos; i--) {
 		memcpy(&(sbuffer_rows[y].segment[i+1]), &(sbuffer_rows[y].segment[i]), sizeof(sbuffer_segment_t));
-		/*memcpy(&(sbuffer_rows[y].segment[i+1].start), &(sbuffer_rows[y].segment[i].start), sizeof(sbuffer_point_t));
-		memcpy(&(sbuffer_rows[y].segment[i+1].end), &(sbuffer_rows[y].segment[i].end), sizeof(sbuffer_point_t));*/
 		/*printf("%d: copy seg %d to %d\n", y,i,i+1);*/
 	}
 
-	draw_push_segment(start,end, y,pos, x1,x2);
+	/* Increment only if not merged against previous */
+	if (draw_push_segment(start,end, y,pos, x1,x2, num_pal,tex)) {
+		++sbuffer_rows[y].num_segs;
+	}
 
-	++sbuffer_rows[y].num_segs;
+	return 1;
 }
 
 /* Calc w coordinate for a given x */
@@ -787,7 +804,7 @@ static int check_behind(const sbuffer_point_t *seg1start, const sbuffer_point_t 
 	s2w2 = calc_w(seg2start, seg2end, x2);
 
 	DEBUG_PRINT(("%d->%d: seg1: %.3f->%.3f, seg2:%.3f->%.3f\n",
-		x1,x2, s1w1,s1w2, s2w1,s2w2));
+		x1,x2, s1w1*4096.0f,s1w2*4096.0f, s2w1*4096.0f,s2w2*4096.0f));
 
 	/* Do we have an intersection ? */
 	if (s1w1>s2w1) {
@@ -847,18 +864,26 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		return;
 	}
 
-	/*if ((y<(video.viewport.h/2)+8) || (y>(video.viewport.h/2)+8)) {
+	/*if ((y<(video.viewport.h/2)-4) || (y>(video.viewport.h/2)-4)) {
 		return;
 	}*/
 
-	DEBUG_PRINT(("-------add segment %d %d,%d\n", y, x1,x2));
+	DEBUG_PRINT(("-------add segment %d %d,%d (%.3f,%.3f %.3f,%.3f)\n", y, x1,x2,
+		start->u,start->v, end->u,end->v));
+
+	for (i=0; i<sbuffer_rows[y].num_segs; i++) {
+		DEBUG_PRINT((" [%d] %d->%d %d %p\n", i,
+			sbuffer_rows[y].segment[i].start.x, sbuffer_rows[y].segment[i].end.x,
+			sbuffer_rows[y].segment[i].tex_num_pal, sbuffer_rows[y].segment[i].texture
+		));
+	}
 
 	/*--- Trivial cases ---*/
 
 	/* Empty row ? */
 	if (num_segs == 0) {
 		DEBUG_PRINT(("----empty list\n"));
-		draw_push_segment(start,end, y,0, x1,x2);
+		draw_push_segment(start,end, y,0, x1,x2, tex_num_pal,texture);
 		++sbuffer_rows[y].num_segs;
 		return;
 	}
@@ -868,7 +893,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	/* Finish before first ? */
 	if (x2 < sbuffer_rows[y].segment[0].start.x) {
 		DEBUG_PRINT(("----finish before first (%d<%d)\n",x2,sbuffer_rows[y].segment[0].start.x));
-		draw_insert_segment(start,end, y,0, x1,x2);
+		draw_insert_segment(start,end, y,0, x1,x2, tex_num_pal,texture);
 		return;
 	}
 
@@ -876,7 +901,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	if (sbuffer_rows[y].segment[num_segs-1].end.x < x1) {
 		if (num_segs<NUM_SEGMENTS) {
 			DEBUG_PRINT(("----start after last (%d<%d)\n", sbuffer_rows[y].segment[num_segs-1].end.x, x1));
-			draw_push_segment(start,end, y,num_segs, x1,x2);
+			draw_push_segment(start,end, y,num_segs, x1,x2, tex_num_pal,texture);
 			++sbuffer_rows[y].num_segs;
 		}
 		return;
@@ -910,7 +935,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 		*/
 		if (x2 < current->start.x) {
 			DEBUG_PRINT(("  finish before %d\n",ic));
-			draw_insert_segment(start,end, y,ic, x1,x2);
+			draw_insert_segment(start,end, y,ic, x1,x2, tex_num_pal,texture);
 			return;
 		}
 
@@ -931,10 +956,13 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			int next_x1 = current->start.x;
 			DEBUG_PRINT(("  new start before %d, insert %d,%d, will continue from pos %d\n", ic, x1,next_x1-1, next_x1));
 			/*printf("   current before: %d,%d\n", current->start.x, current->end.x);**/
-			draw_insert_segment(start,end, y,ic, x1,next_x1-1);
+			if (draw_insert_segment(start,end, y,ic, x1,next_x1-1, tex_num_pal,texture)) {
+				++ic;
+			}
+
 			x1 = next_x1;
 
-			current = &sbuffer_rows[y].segment[++ic];
+			current = &sbuffer_rows[y].segment[ic];
 			/*printf("   current after: %d,%d\n", current->start.x, current->end.x);*/
 		}
 
@@ -956,7 +984,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			/*printf("   new w=%.3f, cur w=%.3f\n", calc_w(start, end, x1), current->start.w);*/
 			if (calc_w(start, end, x1) > current->start.w) {
 				DEBUG_PRINT(("   replace current by new\n"));
-				draw_push_segment(start,end, y,ic, cur_x,cur_x);
+				draw_push_segment(start,end, y,ic, cur_x,cur_x, tex_num_pal,texture);
 			}
 			x1 = next_x1;
 			continue;
@@ -985,7 +1013,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				DEBUG_PRINT(("  clip current start from %d,%d at %d\n", current->start.x,current->end.x, x1+1));
 				draw_clip_segment(x1+1, &current->start, &current->end, &current->start);
 				DEBUG_PRINT(("  insert new %d,%d at %d\n", x1,x2, ic));
-				draw_insert_segment(start,end, y,ic, x1,x2);
+				draw_insert_segment(start,end, y,ic, x1,x2, tex_num_pal,texture);
 				return;
 			}
 
@@ -998,7 +1026,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				draw_clip_segment(x2-1, &current->start, &current->end, &current->end);
 
 				DEBUG_PRINT(("  insert new %d,%d at %d\n", x1,x2, ic+1));
-				draw_insert_segment(start,end, y,ic+1, x1,x2);
+				draw_insert_segment(start,end, y,ic+1, x1,x2, tex_num_pal,texture);
 				return;
 			}
 
@@ -1012,11 +1040,11 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 			*/
 			DEBUG_PRINT(("  split current, insert new\n"));
 			draw_insert_segment(&current->start, &current->end,
-				y,ic+1, x1+1, current->end.x);
+				y,ic+1, x1+1,current->end.x, current->tex_num_pal,current->texture);
 
 			draw_clip_segment(x1-1, &current->start, &current->end, &current->end);
 
-			draw_insert_segment(start,end, y,ic+1, x1,x2);
+			draw_insert_segment(start,end, y,ic+1, x1,x2, tex_num_pal,texture);
 			return;
 		}
 
@@ -1057,31 +1085,31 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 
 				if (clip_x1 == current->start.x) {
 					if (current_end <= clip_x2) {
-						/*printf(" new replace current from %d->%d\n", current->start.x,current_end);*/
+						DEBUG_PRINT((" new replace current from %d->%d\n", current->start.x,current_end));
 						/* Replace current by new */
-						draw_push_segment(start,end, y,ic, current->start.x,current_end);				
+						draw_push_segment(start,end, y,ic, current->start.x,current_end, tex_num_pal,texture);				
 					} else {
-						/*printf(" clip current start from %d to %d\n", current->start.x,clip_x2+1);*/
+						DEBUG_PRINT((" clip current start from %d to %d\n", current->start.x,clip_x2+1));
 						/* Clip current on the right */
 						draw_clip_segment(clip_x2+1, &current->start, &current->end, &current->start);
 
-						/*printf(" insert new from %d->%d\n", clip_x1,clip_x2);*/
+						DEBUG_PRINT((" insert new from %d->%d\n", clip_x1,clip_x2));
 						/* Insert new before current */
-						draw_insert_segment(start,end, y,ic, clip_x1,clip_x2);
+						draw_insert_segment(start,end, y,ic, clip_x1,clip_x2, tex_num_pal,texture);
 					}
 				} else {
 					/* Insert current after clip_x2 ? */
 					if (clip_x2 < current_end) {
-						/*printf(" split current from %d->%d\n", clip_x2+1, current->end.x);*/
+						DEBUG_PRINT((" split current from %d->%d\n", clip_x2+1, current->end.x));
 						draw_insert_segment(&current->start, &current->end,
-							y,ic+1, clip_x2+1, current->end.x);
+							y,ic+1, clip_x2+1,current->end.x, current->tex_num_pal,current->texture);
 					}
 
-					/*printf(" insert new from %d->%d\n", clip_x1,clip_x2);*/
+					DEBUG_PRINT((" insert new from %d->%d\n", clip_x1,clip_x2));
 					/* Insert new */
-					draw_insert_segment(start,end, y,ic+1, clip_x1,clip_x2);
+					draw_insert_segment(start,end, y,ic+1, clip_x1,clip_x2, tex_num_pal,texture);
 
-					/*printf(" clip current end from %d to %d\n", current_end, clip_x1-1);*/
+					DEBUG_PRINT((" clip current end from %d to %d\n", current_end, clip_x1-1));
 					/* Clip current before clip_x1 */
 					draw_clip_segment(clip_x1-1, &current->start, &current->end, &current->end);
 				}
@@ -1108,7 +1136,8 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				/* Insert right part of current, after common zone */
 				if (x2 < current->end.x) {
 					DEBUG_PRINT(("  insert right part of current %d (%d,%d)\n", ic, x2+1,current->end.x));
-					draw_insert_segment(&current->start, &current->end, y,ic+1, x2+1,current->end.x);
+					draw_insert_segment(&current->start, &current->end, y,ic+1,
+						x2+1,current->end.x, current->tex_num_pal,current->texture);
 				}
 
 				/* Clip current before clip_pos */
@@ -1136,16 +1165,20 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 				/* Insert left part of current, before common zone */
 				if (current->start.x < x1) {
 					DEBUG_PRINT(("  insert left part of current %d (%d,%d)\n", ic, current->start.x,x1-1));
-					draw_insert_segment(&current->start, &current->end, y,ic, current->start.x,x1-1);
+					if (draw_insert_segment(&current->start, &current->end, y,ic,
+						current->start.x,x1-1, current->tex_num_pal,current->texture))
+					{
+						++ic;
+					}
 
-					current = &sbuffer_rows[y].segment[++ic];
+					current = &sbuffer_rows[y].segment[ic];
 				}
 				/* Clip current */
 				DEBUG_PRINT(("  clip start of %d (%d,%d) at %d\n", ic, current->start.x,current->end.x, clip_pos+1));
 				draw_clip_segment(clip_pos+1, &current->start, &current->end, &current->start);
 				/* Insert new */
 				DEBUG_PRINT(("  insert %d,%d at %d\n", x1,clip_pos, ic+1));
-				draw_insert_segment(start,end, y,ic, x1,clip_pos);
+				draw_insert_segment(start,end, y,ic, x1,clip_pos, tex_num_pal,texture);
 				/* Continue with remaining part */
 				x1 = current_end+1;
 				break;
@@ -1159,7 +1192,7 @@ static void draw_add_segment(int y, const sbuffer_point_t *start, const sbuffer_
 	}
 
 	/* Insert last */
-	draw_insert_segment(start,end, y,sbuffer_rows[y].num_segs, x1,x2);
+	draw_insert_segment(start,end, y,sbuffer_rows[y].num_segs, x1,x2, tex_num_pal,texture);
 }
 
 /* Drawing functions */
@@ -1600,8 +1633,6 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
 		w2 = 1.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
 
-		/*printf("p[%d]: u=%.3f, v=%.3f\n", p2, vtx[p2].tx[0], vtx[p2].tx[1]);*/
-
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
 
@@ -1622,6 +1653,11 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 		if (y2 > maxy) {
 			maxy = y2;
 		}
+
+		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
+			v1, vtx[v1].tx[0], vtx[v1].tx[1],
+			v2, vtx[v2].tx[0], vtx[v2].tx[1]
+		));*/
 
 		dy = y2 - y1;
 		if (dy>0) {
@@ -1662,6 +1698,12 @@ void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx)
 				poly_hlines[y1].sbp[num_array].v = tv1 + ((dv*y)/dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + ((dw*y)/dy);
 				poly_hlines[y1++].sbp[num_array].x = x1 + ((dx*y)/dy);
+
+				/*DEBUG_PRINT(("line %d, side %d, %.3f,%.3f tu1=%.3f,tv1=%.3f,du=%.3f,dv=%.3f,dy=%d %.3f,%.3f\n",
+					y1-1,num_array,
+					poly_hlines[y1-1].sbp[num_array].u,poly_hlines[y1-1].sbp[num_array].v,
+					tu1,tv1,du,dv,dy,(du*y)/dy,tu1 + ((du*y)/dy)
+				));*/
 			}
 		}
 
