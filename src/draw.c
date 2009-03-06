@@ -747,8 +747,9 @@ static void draw_insert_segment(const sbuffer_point_t *start, const sbuffer_poin
 
 	/*printf("%d: copy segs %d to %d\n", y,pos, last_seg);*/
 	for (i=last_seg-1; i>=pos; i--) {
-		memcpy(&(sbuffer_rows[y].segment[i+1].start), &(sbuffer_rows[y].segment[i].start), sizeof(sbuffer_point_t));
-		memcpy(&(sbuffer_rows[y].segment[i+1].end), &(sbuffer_rows[y].segment[i].end), sizeof(sbuffer_point_t));
+		memcpy(&(sbuffer_rows[y].segment[i+1]), &(sbuffer_rows[y].segment[i]), sizeof(sbuffer_segment_t));
+		/*memcpy(&(sbuffer_rows[y].segment[i+1].start), &(sbuffer_rows[y].segment[i].start), sizeof(sbuffer_point_t));
+		memcpy(&(sbuffer_rows[y].segment[i+1].end), &(sbuffer_rows[y].segment[i].end), sizeof(sbuffer_point_t));*/
 		/*printf("%d: copy seg %d to %d\n", y,i,i+1);*/
 	}
 
