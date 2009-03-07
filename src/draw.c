@@ -505,23 +505,28 @@ static void draw_render8_tex(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
-			int dx = segments[j].end.x - segments[j].start.x + 1;
-			int u1 = segments[j].start.u;
-			int v1 = segments[j].start.v;
-			int u2 = segments[j].end.u;
-			int v2 = segments[j].end.v;
-			int du,dv;
+			int dx, u1,v1, u2,v2, du,dv, last;
+
 			render_texture_t *tex = segments[j].texture;
 
-			/*if (!tex) {
-				continue;
-			}*/
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			dx = segments[last].end.x - segments[j].start.x + 1;
+			u1 = segments[j].start.u;
+			v1 = segments[j].start.v;
+			u2 = segments[last].end.u;
+			v2 = segments[last].end.v;
 
 			if (drawCorrectPerspective>0) {
 				u1 = segments[j].start.u / segments[j].start.w;
 				v1 = segments[j].start.v / segments[j].start.w;
-				u2 = segments[j].end.u / segments[j].end.w;
-				v2 = segments[j].end.v / segments[j].end.w;
+				u2 = segments[last].end.u / segments[last].end.w;
+				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
 			du = u2-u1;
@@ -543,6 +548,8 @@ static void draw_render8_tex(void)
 					*dst_col++ = tex_pixels[v*tex->pitchw + u];
 				}
 			}*/
+
+			j = last;
 		}
 
 		dst += surf->pitch;
@@ -562,33 +569,44 @@ static void draw_render16_tex(void)
 		Uint16 *dst_line = dst;
 		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
 
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			DEBUG_PRINT((" [%d:0x%08x] %d->%d %d %p\n", j, sbuffer_rows[i].segment[j].id,
+				sbuffer_rows[i].segment[j].start.x, sbuffer_rows[i].segment[j].end.x,
+				sbuffer_rows[i].segment[j].tex_num_pal, sbuffer_rows[i].segment[j].texture
+			));
+		}
+
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
-			int dx = segments[j].end.x - segments[j].start.x + 1;
-			int u1 = segments[j].start.u;
-			int v1 = segments[j].start.v;
-			int u2 = segments[j].end.u;
-			int v2 = segments[j].end.v;
-			int du,dv;
+			int dx, u1,v1, u2,v2, du,dv, last;
+
 			render_texture_t *tex = segments[j].texture;
 
-			if (!tex) {
-				continue;
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
 			}
 
+			dx = segments[last].end.x - segments[j].start.x + 1;
+			u1 = segments[j].start.u;
+			v1 = segments[j].start.v;
+			u2 = segments[last].end.u;
+			v2 = segments[last].end.v;
 			if (drawCorrectPerspective>0) {
 				u1 = segments[j].start.u / segments[j].start.w;
 				v1 = segments[j].start.v / segments[j].start.w;
-				u2 = segments[j].end.u / segments[j].end.w;
-				v2 = segments[j].end.v / segments[j].end.w;
+				u2 = segments[last].end.u / segments[last].end.w;
+				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
 			du = u2-u1;
 			dv = v2-v1;
  
-			DEBUG_PRINT(("line %d, segment %d (%d,%d), from %d,%d to %d,%d, %d %p\n",
-				i,j, segments[j].start.x,segments[j].end.x, u1,v1,u2,v2,
+			DEBUG_PRINT(("line %d, segment %d->%d (%d,%d), from %d,%d to %d,%d, %d %p\n",
+				i,j,last, segments[j].start.x,segments[last].end.x, u1,v1,u2,v2,
 				segments[j].tex_num_pal,tex
 			));
 
@@ -609,6 +627,8 @@ static void draw_render16_tex(void)
 					*dst_col++ = tex_pixels[v*tex->pitchw + u];
 				}
 			}
+
+			j = last;
 		}
 
 		dst += surf->pitch>>1;
@@ -631,23 +651,28 @@ static void draw_render32_tex(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
-			int dx = segments[j].end.x - segments[j].start.x + 1;
-			int u1 = segments[j].start.u;
-			int v1 = segments[j].start.v;
-			int u2 = segments[j].end.u;
-			int v2 = segments[j].end.v;
-			int du,dv;
+			int dx, u1,v1, u2,v2, du,dv, last;
+
 			render_texture_t *tex = segments[j].texture;
 
-			if (!tex) {
-				continue;
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
 			}
+
+			dx = segments[last].end.x - segments[j].start.x + 1;
+			u1 = segments[j].start.u;
+			v1 = segments[j].start.v;
+			u2 = segments[last].end.u;
+			v2 = segments[last].end.v;
 
 			if (drawCorrectPerspective>0) {
 				u1 = segments[j].start.u / segments[j].start.w;
 				v1 = segments[j].start.v / segments[j].start.w;
-				u2 = segments[j].end.u / segments[j].end.w;
-				v2 = segments[j].end.v / segments[j].end.w;
+				u2 = segments[last].end.u / segments[last].end.w;
+				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
 			du = u2-u1;
@@ -669,6 +694,8 @@ static void draw_render32_tex(void)
 					*dst_col++ = tex_pixels[v*tex->pitchw + u];
 				}
 			}
+
+			j = last;
 		}
 
 		dst += surf->pitch>>2;
