@@ -1,9 +1,8 @@
-v 0.10
+v 0.11
 
-- Switchable wireframe/filled/gouraud-ed/textured for model drawing, for
-  both OpenGL and software renderers.
-- 64 bits fixes for camera position.
-- Win32: Disable gamma, due to some buggy SDL versions.
+- Received contribution to add more PS1 versions, thanks to Mark Grass.
+- Reworked detection of game/demo versions.
+- S-Buffer implementation for software renderer.
 
 
 See ChangeLog for older changes.
