@@ -39,6 +39,8 @@
 
 /*--- Defines ---*/
 
+#define DEBUG_POSITION 0
+
 #define KEY_RENDER_WIREFRAME	SDLK_F2
 #define KEY_RENDER_FILLED	SDLK_F3
 #define KEY_RENDER_GOURAUD	SDLK_F4
@@ -87,10 +89,13 @@ static int render_grid = 0;
 static int render_restore = 0;
 
 static int refresh_player_pos = 0;
+#if DEBUG_POSIITION
+static float player_x = 12348.144, player_y = -3191, player_z = -3259.794;
+static float player_a = -88.70;
+#else
 static float player_x = 0, player_y = 0, player_z = 0;
 static float player_a = 0;
-/*static float player_x = 12348.144, player_y = -3191, player_z = -3259.794;
-static float player_a = -88.70;*/
+#endif
 static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_moveup = 0;
@@ -384,12 +389,15 @@ void view_background_draw(void)
 			return;
 	}
 
+#if DEBUG_POSITION
+#else
 	if (refresh_player_pos) {
 		player_x = cam_pos[3];
 		player_y = cam_pos[4];
 		player_z = cam_pos[5];
 		refresh_player_pos = 0;
 	}
+#endif
 
 	render.set_projection(60.0f, 4.0f/3.0f, 1.0f, 100000.0f);
 	render.set_modelview(
