@@ -711,15 +711,16 @@ static int draw_push_segment(const sbuffer_segment_t *segment,
 #if 0
 	/* Merge against previous segment ? */
 	if (pos>0) {
-		if ((sbuffer_rows[y].segment[pos-1].id == sbuffer_seg_id)
-		   && (sbuffer_rows[y].segment[pos-1].tex_num_pal == num_pal)
+		if ((sbuffer_rows[y].segment[pos-1].id == segment->id)
 		   && (x1-1 == sbuffer_rows[y].segment[pos-1].end.x))
 		{
-			DEBUG_PRINT(("merge %d and %d\n", pos-1, pos));
+			DEBUG_PRINT(("merge %d(%d,%d) and %d(%d,%d)\n",
+				pos-1, sbuffer_rows[y].segment[pos-1].start.x, sbuffer_rows[y].segment[pos-1].end.x,
+				pos, x1,x2));
 
 			p = &(sbuffer_rows[y].segment[pos-1].end);
-			memcpy(p, end, sizeof(sbuffer_point_t));
-			draw_clip_segment(x2, start, end, p);
+			memcpy(p, &(segment->end), sizeof(sbuffer_point_t));
+			draw_clip_segment(segment, x2, p);
 
 			return 0;
 		}		   
@@ -753,15 +754,14 @@ static int draw_insert_segment(const sbuffer_segment_t *segment,
 #if 0
 	/* Merge against previous segment ? */
 	if (pos>0) {
-		if ((sbuffer_rows[y].segment[pos-1].id == sbuffer_seg_id)
-		   && (sbuffer_rows[y].segment[pos-1].tex_num_pal == num_pal)
+		if ((sbuffer_rows[y].segment[pos-1].id == segment->id)
 		   && (x1-1 == sbuffer_rows[y].segment[pos-1].end.x))
 		{
 			DEBUG_PRINT(("merge %d and %d\n", pos-1, pos));
 
 			p = &(sbuffer_rows[y].segment[pos-1].end);
-			memcpy(p, end, sizeof(sbuffer_point_t));
-			draw_clip_segment(x2, start, end, p);
+			memcpy(p, (&current->end), sizeof(sbuffer_point_t));
+			draw_clip_segment(segment, x2, p);
 
 			return 0;
 		}		   
@@ -770,15 +770,14 @@ static int draw_insert_segment(const sbuffer_segment_t *segment,
 
 #if 0
 	/* Merge against current segment ? does not work, need to return 'merged' or 'inserted' */
-	if ((sbuffer_rows[y].segment[pos].id == sbuffer_seg_id)
-	   && (sbuffer_rows[y].segment[pos].tex_num_pal == num_pal)
+	if ((sbuffer_rows[y].segment[pos].id == segment->id)
 	   && (x2+1 == sbuffer_rows[y].segment[pos].start.x))
 	{
 		DEBUG_PRINT(("merge new and %d\n", pos));
 
 		p = &(sbuffer_rows[y].segment[pos].start);
-		memcpy(p, start, sizeof(sbuffer_point_t));
-		draw_clip_segment(x1, start, end, p);
+		memcpy(p, &(current->start), sizeof(sbuffer_point_t));
+		draw_clip_segment(segment, x1, p);
 		return 0;
 	}
 #endif
