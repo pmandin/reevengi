@@ -27,7 +27,7 @@ AC_CHECK_FUNCS([memset pow])
 
 SYS_SDLIMAGE_ADDLIBS=""
 WANT_GAMMA="yes"
-case "$target" in
+case "$host" in
 	*-*-mingw* | *-*-cygwin*)
 		WANT_GAMMA="no"
 		;;
