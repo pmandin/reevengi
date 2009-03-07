@@ -71,6 +71,8 @@ struct render_s {
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 	void (*set_blending)(int enable);
 
+	int render_mode;
+
 	/* Misc functions */
 	void (*sortBackToFront)(int num_vtx, int *num_idx, vertex_t *vtx);
 

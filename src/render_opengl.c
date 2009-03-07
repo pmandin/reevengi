@@ -197,6 +197,8 @@ static void set_render(render_t *this, int num_render)
 	this->triangle_wf = triangle;
 	this->quad_wf = quad;
 
+	this->render_mode = num_render;
+
 	switch(num_render) {
 		case RENDER_WIREFRAME:
 			this->triangle = triangle;
