@@ -34,4 +34,7 @@ int dither_nearest_index(int r, int g, int b);
 /* Dither image */
 void dither(SDL_Surface *src, SDL_Surface *dest);
 
+/* Copy image, no dithering */
+void dither_copy(SDL_Surface *src, SDL_Surface *dest);
+
 #endif /* DITHER_H */

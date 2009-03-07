@@ -332,3 +332,106 @@ static void dither_init(void)
 		sat[i+512] = 255;
 	}
 }
+
+void dither_copy(SDL_Surface *src, SDL_Surface *dest)
+{
+	int x,y;
+	Uint8 r,g,b;
+	Uint8 *dst_line;
+
+	if (!src || !dest) {
+		return;
+	}
+	if ((src->format->BytesPerPixel==1) || (dest->format->BytesPerPixel!=1)) {
+		return;
+	}
+
+	if (!inited) {
+		dither_init();
+		inited = 1;
+	}
+
+	dst_line = dest->pixels;
+
+	switch(src->format->BytesPerPixel) {
+		case 1:
+			{
+				Uint8 *src_line = (Uint8 *) src->pixels;
+				for (y=0; y<dest->h; y++) {
+					Uint8 *src_col = src_line;
+					Uint8 *dst_col = dst_line;
+					for (x=0; x<dest->w; x++) {
+						SDL_GetRGB(*src_col++, src->format, &r, &g, &b);
+
+						*dst_col++ = dither_nearest_index(r,g,b);
+					}
+
+					/* Next line */
+					src_line += src->pitch;
+					dst_line += dest->pitch;
+				}
+			}
+			break;
+		case 2:
+			{
+				Uint16 *src_line = (Uint16 *) src->pixels;
+				for (y=0; y<dest->h; y++) {
+					Uint16 *src_col = src_line;
+					Uint8 *dst_col = dst_line;
+					for (x=0; x<dest->w; x++) {
+						SDL_GetRGB(*src_col++, src->format, &r, &g, &b);
+
+						*dst_col++ = dither_nearest_index(r,g,b);
+					}
+
+					/* Next line */
+					src_line += src->pitch>>1;
+					dst_line += dest->pitch;
+				}
+			}
+			break;
+		case 3:
+			{
+				Uint8 *src_line = (Uint8 *) src->pixels;
+				for (y=0; y<dest->h; y++) {
+					Uint8 *src_col = src_line;
+					Uint8 *dst_col = dst_line;
+					for (x=0; x<dest->w; x++) {
+						Uint32 color;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+						color = (src_col[0]<<16)|(src_col[1]<<8)|src_col[2];
+#else
+						color = (src_col[2]<<16)|(src_col[1]<<8)|src_col[0];
+#endif
+						SDL_GetRGB(color, src->format, &r, &g, &b);
+						src_col+=3;
+
+						*dst_col++ = dither_nearest_index(r,g,b);
+					}
+
+					/* Next line */
+					src_line += src->pitch;
+					dst_line += dest->pitch;
+				}
+			}
+			break;
+		case 4:
+			{
+				Uint32 *src_line = (Uint32 *) src->pixels;
+				for (y=0; y<dest->h; y++) {
+					Uint32 *src_col = src_line;
+					Uint8 *dst_col = dst_line;
+					for (x=0; x<dest->w; x++) {
+						SDL_GetRGB(*src_col++, src->format, &r, &g, &b);
+
+						*dst_col++ = dither_nearest_index(r,g,b);
+					}
+
+					/* Next line */
+					src_line += src->pitch>>2;
+					dst_line += dest->pitch;
+				}
+			}
+			break;
+	}
+}

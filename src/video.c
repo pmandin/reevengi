@@ -223,7 +223,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	this->flags = this->screen->flags;
 
 	/* Set 216 color palette */
-	if ((this->bpp==8) && params.dithering) {
+	if (this->bpp==8) {
 		dither_setpalette(this->screen);
 	}
 

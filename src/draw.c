@@ -1234,7 +1234,7 @@ void draw_setColor(Uint32 color)
 {
 	SDL_Surface *surf = video.screen;
 
-	if ((video.bpp==8) && params.dithering) {
+	if (video.bpp==8) {
 		Uint8 r,g,b,a;
 		
 		SDL_GetRGBA(color, surf->format, &r,&g,&b,&a);

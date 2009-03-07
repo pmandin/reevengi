@@ -172,7 +172,7 @@ void video_surface_convert(video_surface_t *this)
 {
 	SDL_Surface *scr_surf = NULL;
 
-	if ((video.bpp==8) && params.dithering) {
+	if (video.bpp==8) {
 		video_surface_t *new_surf;
 
 		new_surf = video_surface_create(this->sdl_surf->w, this->sdl_surf->h, 8);
@@ -180,7 +180,13 @@ void video_surface_convert(video_surface_t *this)
 			scr_surf = new_surf->sdl_surf;
 
 			dither_setpalette(scr_surf);
-			dither(this->sdl_surf, scr_surf);
+			if (params.dithering) {
+				/* Dither to new surface */
+				dither(this->sdl_surf, scr_surf);
+			} else {
+				/* Copy to new surface */
+				dither_copy(this->sdl_surf, scr_surf);
+			}
 		}
 	} else {
 		scr_surf = SDL_DisplayFormat(this->sdl_surf);
