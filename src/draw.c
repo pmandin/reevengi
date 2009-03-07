@@ -179,52 +179,54 @@ void draw_render(void)
 {
 	SDL_Surface *surf = video.screen;
 
-#if 0
-	switch(surf->format->BytesPerPixel) {
-		case 1:
-			draw_render8_fill();
+	switch(render.render_mode) {
+		case RENDER_FILLED:
+			switch(surf->format->BytesPerPixel) {
+				case 1:
+					draw_render8_fill();
+					break;
+				case 2:
+					draw_render16_fill();
+					break;
+				case 3:
+					/* TODO */
+					break;
+				case 4:
+					draw_render32_fill();
+					break;
+			}
 			break;
-		case 2:
-			draw_render16_fill();
+		case RENDER_GOURAUD:
+			switch(surf->format->BytesPerPixel) {
+				case 1:
+					draw_render8_gouraud();
+					break;
+				case 2:
+					draw_render16_gouraud();
+					break;
+				case 3:
+					/* TODO */
+					break;
+				case 4:
+					draw_render32_gouraud();
+					break;
+			}
 			break;
-		case 3:
-			/* TODO */
-			break;
-		case 4:
-			draw_render32_fill();
-			break;
-	}
-#endif
-
-#if 0
-	switch(surf->format->BytesPerPixel) {
-		case 1:
-			draw_render8_gouraud();
-			break;
-		case 2:
-			draw_render16_gouraud();
-			break;
-		case 3:
-			/* TODO */
-			break;
-		case 4:
-			draw_render32_gouraud();
-			break;
-	}
-#endif
-
-	switch(surf->format->BytesPerPixel) {
-		case 1:
-			draw_render8_tex();
-			break;
-		case 2:
-			draw_render16_tex();
-			break;
-		case 3:
-			/* TODO */
-			break;
-		case 4:
-			draw_render32_tex();
+		case RENDER_TEXTURED:
+			switch(surf->format->BytesPerPixel) {
+				case 1:
+					draw_render8_tex();
+					break;
+				case 2:
+					draw_render16_tex();
+					break;
+				case 3:
+					/* TODO */
+					break;
+				case 4:
+					draw_render32_tex();
+					break;
+			}
 			break;
 	}
 }
