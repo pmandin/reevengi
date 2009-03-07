@@ -66,7 +66,6 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format;
 	int bytes_per_pixel;
-	int r,g,b,a;
 
 	/* Read dimensions */
 	tim_header = (tim_header_t *) tim_ptr;
@@ -157,11 +156,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 				if (params.use_opengl) {
 					tex->palettes[i][j] = (a<<24)|(r<<16)|(g<<8)|b;
 				} else {
-					if ((fmt->BytesPerPixel==1) && params.dithering) {
-						tex->palettes[i][j] = dither_nearest_index(r,g,b);
-					} else {
-						tex->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
-					}
+					tex->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
 				}
 			}
 		}
