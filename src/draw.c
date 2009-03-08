@@ -112,14 +112,17 @@ static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pix
 
 static void draw_render8_fill(void);
 static void draw_render16_fill(void);
+static void draw_render24_fill(void);
 static void draw_render32_fill(void);
 
 static void draw_render8_gouraud(void);
 static void draw_render16_gouraud(void);
+static void draw_render24_gouraud(void);
 static void draw_render32_gouraud(void);
 
 static void draw_render8_tex(void);
 static void draw_render16_tex(void);
+static void draw_render24_tex(void);
 static void draw_render32_tex(void);
 
 /*static void draw_clip_segment(int x, const sbuffer_point_t *start, const sbuffer_point_t *end,
@@ -189,7 +192,7 @@ void draw_render(void)
 					draw_render16_fill();
 					break;
 				case 3:
-					/* TODO */
+					draw_render24_fill();
 					break;
 				case 4:
 					draw_render32_fill();
@@ -205,7 +208,7 @@ void draw_render(void)
 					draw_render16_gouraud();
 					break;
 				case 3:
-					/* TODO */
+					draw_render24_gouraud();
 					break;
 				case 4:
 					draw_render32_gouraud();
@@ -221,7 +224,7 @@ void draw_render(void)
 					draw_render16_tex();
 					break;
 				case 3:
-					/* TODO */
+					draw_render24_tex();
 					break;
 				case 4:
 					draw_render32_tex();
@@ -318,6 +321,60 @@ static void draw_render16_fill(void)
 		}
 
 		dst += surf->pitch>>1;
+	}
+}
+
+static void draw_render24_fill(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint8 *dst = (Uint8 *) surf->pixels;
+	dst += video.viewport.y * surf->pitch;
+	dst += video.viewport.x*3;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint8 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint8 *dst_col = &dst_line[segments[j].start.x*3];
+			Uint32 color;
+			int last;
+			int r = segments[j].start.r;
+			int g = segments[j].start.g;
+			int b = segments[j].start.b;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			if (drawCorrectPerspective>0) {
+				r = segments[j].start.r / segments[j].start.w;
+				g = segments[j].start.g / segments[j].start.w;
+				b = segments[j].start.b / segments[j].start.w;
+			}
+			color = SDL_MapRGB(surf->format, r,g,b);
+ 
+			for (k=segments[j].start.x; k<=segments[last].end.x; k++) {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+				*dst_col++ = color>>16;
+				*dst_col++ = color>>8;
+				*dst_col++ = color;
+#else
+				*dst_col++ = color;
+				*dst_col++ = color>>8;
+				*dst_col++ = color>>16;
+#endif
+			}
+			j = last;
+		}
+
+		dst += surf->pitch;
 	}
 }
 
@@ -482,6 +539,75 @@ static void draw_render16_gouraud(void)
 		}
 
 		dst += surf->pitch>>1;
+	}
+}
+
+static void draw_render24_gouraud(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint8 *dst = (Uint8 *) surf->pixels;
+	dst += video.viewport.y * surf->pitch;
+	dst += video.viewport.x*3;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint8 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint8 *dst_col = &dst_line[segments[j].start.x*3];
+			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			r1 = segments[j].start.r;
+			g1 = segments[j].start.g;
+			b1 = segments[j].start.b;
+			r2 = segments[last].end.r;
+			g2 = segments[last].end.g;
+			b2 = segments[last].end.b;
+
+			if (drawCorrectPerspective>0) {
+				r1 = segments[j].start.r / segments[j].start.w;
+				g1 = segments[j].start.g / segments[j].start.w;
+				b1 = segments[j].start.b / segments[j].start.w;
+				r2 = segments[last].end.r / segments[last].end.w;
+				g2 = segments[last].end.g / segments[last].end.w;
+				b2 = segments[last].end.b / segments[last].end.w;
+			}
+
+			dr = r2-r1;
+			dg = g2-g1;
+			db = b2-b1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
+ 
+			for (k=0; k<dx; k++) {
+				int r = r1 + ((dr*k)/dx);
+				int g = g1 + ((dg*k)/dx);
+				int b = b1 + ((db*k)/dx);
+				Uint32 color = SDL_MapRGB(surf->format, r,g,b);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+				*dst_col++ = color>>16;
+				*dst_col++ = color>>8;
+				*dst_col++ = color;
+#else
+				*dst_col++ = color;
+				*dst_col++ = color>>8;
+				*dst_col++ = color>>16;
+#endif
+			}
+			j = last;
+		}
+
+		dst += surf->pitch;
 	}
 }
 
@@ -688,6 +814,91 @@ static void draw_render16_tex(void)
 		}
 
 		dst += surf->pitch>>1;
+	}
+}
+
+static void draw_render24_tex(void)
+{
+	int i,j,k;
+	SDL_Surface *surf = video.screen;
+	Uint8 *dst = (Uint8 *) surf->pixels;
+	dst += video.viewport.y * surf->pitch;
+	dst += video.viewport.x*3;
+
+	/* For each row */
+	for (i=0; i<sbuffer_numrows; i++) {
+		Uint8 *dst_line = dst;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		/* Render list of segment */
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			Uint8 *dst_col = &dst_line[segments[j].start.x*3];
+			int dx, u1,v1, u2,v2, du,dv, last;
+
+			render_texture_t *tex = segments[j].texture;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			u1 = segments[j].start.u;
+			v1 = segments[j].start.v;
+			u2 = segments[last].end.u;
+			v2 = segments[last].end.v;
+
+			if (drawCorrectPerspective>0) {
+				u1 = segments[j].start.u / segments[j].start.w;
+				v1 = segments[j].start.v / segments[j].start.w;
+				u2 = segments[last].end.u / segments[last].end.w;
+				v2 = segments[last].end.v / segments[last].end.w;
+			}
+
+			du = u2-u1;
+			dv = v2-v1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
+ 
+			if (tex->paletted) {
+				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					Uint32 color = palette[tex->pixels[v*tex->pitchw + u]];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+					*dst_col++ = color>>16;
+					*dst_col++ = color>>8;
+					*dst_col++ = color;
+#else
+					*dst_col++ = color;
+					*dst_col++ = color>>8;
+					*dst_col++ = color>>16;
+#endif
+				}
+			} else {
+				Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+			
+				for (k=0; k<dx; k++) {
+					int u = u1 + ((du*k)/dx);
+					int v = v1 + ((dv*k)/dx);
+					Uint32 color = tex_pixels[v*tex->pitchw + u];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+					*dst_col++ = color>>16;
+					*dst_col++ = color>>8;
+					*dst_col++ = color;
+#else
+					*dst_col++ = color;
+					*dst_col++ = color>>8;
+					*dst_col++ = color>>16;
+#endif
+				}
+			}
+
+			j = last;
+		}
+
+		dst += surf->pitch;
 	}
 }
 
@@ -1396,7 +1607,25 @@ void draw_line(draw_vertex_t *v1, draw_vertex_t *v2)
 			}
 			break;
 		case 3:
-			/* FIXME */
+			for (; x < dx; x++, pixel += pixx) {
+				Uint8 *dst = pixel;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+				*dst++ = draw_color>>16;
+				*dst++ = draw_color>>8;
+				*dst++ = draw_color;
+#else
+				*dst++ = draw_color;
+				*dst++ = draw_color>>8;
+				*dst++ = draw_color>>16;
+#endif
+
+				y += dy;
+				if (y >= dx) {
+					y -= dx;
+					pixel += pixy;
+				}
+			}
 			break;
 		case 4:
 			for (; x < dx; x++, pixel += pixx) {
