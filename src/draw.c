@@ -838,6 +838,10 @@ static int draw_insert_segment(const sbuffer_segment_t *segment,
 	int i;
 	/*sbuffer_point_t *p;*/
 
+	if (pos>=NUM_SEGMENTS) {
+		return;
+	}
+
 #if 0
 	/* Merge against previous segment ? */
 	if (pos>0) {
@@ -1065,6 +1069,11 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 
 			x1 = next_x1;
 
+			/* End of list ? */
+			if (ic>=NUM_SEGMENTS) {
+				break;
+			}
+
 			current = &sbuffer_rows[y].segment[ic];
 			/*printf("   current after: %d,%d\n", current->start.x, current->end.x);*/
 		}
@@ -1263,6 +1272,10 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 					if (draw_insert_segment(current, y,ic, current->start.x,x1-1))
 					{
 						++ic;
+					}
+
+					if (ic>=NUM_SEGMENTS) {
+						break;
 					}
 
 					current = &sbuffer_rows[y].segment[ic];
