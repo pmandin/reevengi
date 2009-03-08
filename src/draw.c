@@ -791,6 +791,10 @@ static int draw_push_segment(const sbuffer_segment_t *segment,
 {
 	sbuffer_point_t *p;
 
+	if (pos>=NUM_SEGMENTS) {
+		return;
+	}
+
 #if 0
 	/* Merge against previous segment ? */
 	if (pos>0) {
