@@ -830,7 +830,7 @@ static int draw_insert_segment(const sbuffer_segment_t *segment,
 	int y,int pos, int x1,int x2)
 {
 	int num_segs = sbuffer_rows[y].num_segs;
-	int last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS : num_segs);
+	int last_seg = (num_segs>= NUM_SEGMENTS ? NUM_SEGMENTS-1 : num_segs);
 	int i;
 	/*sbuffer_point_t *p;*/
 
@@ -872,7 +872,9 @@ static int draw_insert_segment(const sbuffer_segment_t *segment,
 
 	/* Increment only if not merged against previous */
 	if (draw_push_segment(segment, y,pos, x1,x2)) {
-		++sbuffer_rows[y].num_segs;
+		if (num_segs < NUM_SEGMENTS) {
+			++sbuffer_rows[y].num_segs;
+		}
 	}
 
 	return 1;
