@@ -1,3 +1,8 @@
+v 0.12
+
+- Fixed some bugs in S-Buffer.
+- Added 24 bits rendering to software renderer.
+
 v 0.11
 
 - Received contribution to add more PS1 versions, thanks to Mark Grass.
