@@ -248,9 +248,17 @@ static void draw_render8_fill(void)
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
 			Uint8 color;
+			int last;
 			int r = segments[j].start.r;
 			int g = segments[j].start.g;
 			int b = segments[j].start.b;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
 
 			if (drawCorrectPerspective>0) {
 				r = segments[j].start.r / segments[j].start.w;
@@ -259,7 +267,8 @@ static void draw_render8_fill(void)
 			}
  			color = dither_nearest_index(r,g,b);
  
-			memset(dst_col, color, segments[j].end.x - segments[j].start.x + 1);
+			memset(dst_col, color, segments[last].end.x - segments[j].start.x + 1);
+			j = last;
 		}
 
 		dst += surf->pitch;
@@ -283,9 +292,17 @@ static void draw_render16_fill(void)
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
 			Uint32 color;
+			int last;
 			int r = segments[j].start.r;
 			int g = segments[j].start.g;
 			int b = segments[j].start.b;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
 
 			if (drawCorrectPerspective>0) {
 				r = segments[j].start.r / segments[j].start.w;
@@ -294,9 +311,10 @@ static void draw_render16_fill(void)
 			}
 			color = SDL_MapRGB(surf->format, r,g,b);
 
-			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
+			for (k=segments[j].start.x; k<=segments[last].end.x; k++) {
 				*dst_col++ = color;
 			}
+			j = last;
 		}
 
 		dst += surf->pitch>>1;
@@ -320,9 +338,17 @@ static void draw_render32_fill(void)
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
 			Uint32 color;
+			int last;
 			int r = segments[j].start.r;
 			int g = segments[j].start.g;
 			int b = segments[j].start.b;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
 
 			if (drawCorrectPerspective>0) {
 				r = segments[j].start.r / segments[j].start.w;
@@ -331,9 +357,10 @@ static void draw_render32_fill(void)
 			}
 			color = SDL_MapRGB(surf->format, r,g,b);
 
-			for (k=segments[j].start.x; k<=segments[j].end.x; k++) {
+			for (k=segments[j].start.x; k<=segments[last].end.x; k++) {
 				*dst_col++ = color;
 			}
+			j = last;
 		}
 
 		dst += surf->pitch>>2;
@@ -356,27 +383,35 @@ static void draw_render8_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
-			int dx = segments[j].end.x - segments[j].start.x + 1;
-			int r1 = segments[j].start.r;
-			int g1 = segments[j].start.g;
-			int b1 = segments[j].start.b;
-			int r2 = segments[j].end.r;
-			int g2 = segments[j].end.g;
-			int b2 = segments[j].end.b;
-			int dr,dg,db;
+			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			r1 = segments[j].start.r;
+			g1 = segments[j].start.g;
+			b1 = segments[j].start.b;
+			r2 = segments[last].end.r;
+			g2 = segments[last].end.g;
+			b2 = segments[last].end.b;
 
 			if (drawCorrectPerspective>0) {
 				r1 = segments[j].start.r / segments[j].start.w;
 				g1 = segments[j].start.g / segments[j].start.w;
 				b1 = segments[j].start.b / segments[j].start.w;
-				r2 = segments[j].end.r / segments[j].end.w;
-				g2 = segments[j].end.g / segments[j].end.w;
-				b2 = segments[j].end.b / segments[j].end.w;
+				r2 = segments[last].end.r / segments[last].end.w;
+				g2 = segments[last].end.g / segments[last].end.w;
+				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
 			dr = r2-r1;
 			dg = g2-g1;
 			db = b2-b1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
  
 			for (k=0; k<dx; k++) {
 				int r = r1 + ((dr*k)/dx);
@@ -384,6 +419,7 @@ static void draw_render8_gouraud(void)
 				int b = b1 + ((db*k)/dx);
 				*dst_col++ = dither_nearest_index(r,g,b);
 			}
+			j = last;
 		}
 
 		dst += surf->pitch;
@@ -406,27 +442,35 @@ static void draw_render16_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
-			int dx = segments[j].end.x - segments[j].start.x + 1;
-			int r1 = segments[j].start.r;
-			int g1 = segments[j].start.g;
-			int b1 = segments[j].start.b;
-			int r2 = segments[j].end.r;
-			int g2 = segments[j].end.g;
-			int b2 = segments[j].end.b;
-			int dr,dg,db;
+			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			r1 = segments[j].start.r;
+			g1 = segments[j].start.g;
+			b1 = segments[j].start.b;
+			r2 = segments[last].end.r;
+			g2 = segments[last].end.g;
+			b2 = segments[last].end.b;
 
 			if (drawCorrectPerspective>0) {
 				r1 = segments[j].start.r / segments[j].start.w;
 				g1 = segments[j].start.g / segments[j].start.w;
 				b1 = segments[j].start.b / segments[j].start.w;
-				r2 = segments[j].end.r / segments[j].end.w;
-				g2 = segments[j].end.g / segments[j].end.w;
-				b2 = segments[j].end.b / segments[j].end.w;
+				r2 = segments[last].end.r / segments[last].end.w;
+				g2 = segments[last].end.g / segments[last].end.w;
+				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
 			dr = r2-r1;
 			dg = g2-g1;
 			db = b2-b1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
  
 			for (k=0; k<dx; k++) {
 				int r = r1 + ((dr*k)/dx);
@@ -434,6 +478,7 @@ static void draw_render16_gouraud(void)
 				int b = b1 + ((db*k)/dx);
 				*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
 			}
+			j = last;
 		}
 
 		dst += surf->pitch>>1;
@@ -456,27 +501,35 @@ static void draw_render32_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
-			int dx = segments[j].end.x - segments[j].start.x + 1;
-			int r1 = segments[j].start.r;
-			int g1 = segments[j].start.g;
-			int b1 = segments[j].start.b;
-			int r2 = segments[j].end.r;
-			int g2 = segments[j].end.g;
-			int b2 = segments[j].end.b;
-			int dr,dg,db;
+			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+
+			/* Find last segment to merge */
+			for (last=j;
+				(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+				last++)
+			{
+			}
+
+			r1 = segments[j].start.r;
+			g1 = segments[j].start.g;
+			b1 = segments[j].start.b;
+			r2 = segments[last].end.r;
+			g2 = segments[last].end.g;
+			b2 = segments[last].end.b;
 
 			if (drawCorrectPerspective>0) {
 				r1 = segments[j].start.r / segments[j].start.w;
 				g1 = segments[j].start.g / segments[j].start.w;
 				b1 = segments[j].start.b / segments[j].start.w;
-				r2 = segments[j].end.r / segments[j].end.w;
-				g2 = segments[j].end.g / segments[j].end.w;
-				b2 = segments[j].end.b / segments[j].end.w;
+				r2 = segments[last].end.r / segments[last].end.w;
+				g2 = segments[last].end.g / segments[last].end.w;
+				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
 			dr = r2-r1;
 			dg = g2-g1;
 			db = b2-b1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
  
 			for (k=0; k<dx; k++) {
 				int r = r1 + ((dr*k)/dx);
@@ -485,6 +538,7 @@ static void draw_render32_gouraud(void)
 
 				*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
 			}
+			j = last;
 		}
 
 		dst += surf->pitch>>2;
@@ -518,7 +572,6 @@ static void draw_render8_tex(void)
 			{
 			}
 
-			dx = segments[last].end.x - segments[j].start.x + 1;
 			u1 = segments[j].start.u;
 			v1 = segments[j].start.v;
 			u2 = segments[last].end.u;
@@ -533,6 +586,7 @@ static void draw_render8_tex(void)
 
 			du = u2-u1;
 			dv = v2-v1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
@@ -592,7 +646,6 @@ static void draw_render16_tex(void)
 			{
 			}
 
-			dx = segments[last].end.x - segments[j].start.x + 1;
 			u1 = segments[j].start.u;
 			v1 = segments[j].start.v;
 			u2 = segments[last].end.u;
@@ -606,6 +659,7 @@ static void draw_render16_tex(void)
 
 			du = u2-u1;
 			dv = v2-v1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
  
 			DEBUG_PRINT(("line %d, segment %d->%d (%d,%d), from %d,%d to %d,%d, %d %p\n",
 				i,j,last, segments[j].start.x,segments[last].end.x, u1,v1,u2,v2,
@@ -664,7 +718,6 @@ static void draw_render32_tex(void)
 			{
 			}
 
-			dx = segments[last].end.x - segments[j].start.x + 1;
 			u1 = segments[j].start.u;
 			v1 = segments[j].start.v;
 			u2 = segments[last].end.u;
@@ -679,6 +732,7 @@ static void draw_render32_tex(void)
 
 			du = u2-u1;
 			dv = v2-v1;
+			dx = segments[last].end.x - segments[j].start.x + 1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
