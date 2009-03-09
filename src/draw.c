@@ -440,7 +440,8 @@ static void draw_render8_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
-			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+			int dx,last;
+			float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 
 			/* Find last segment to merge */
 			for (last=j;
@@ -465,16 +466,20 @@ static void draw_render8_gouraud(void)
 				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
-			dr = r2-r1;
-			dg = g2-g1;
-			db = b2-b1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
  
+			dr = (r2-r1)/dx;
+			dg = (g2-g1)/dx;
+			db = (b2-b1)/dx;
+			r = r1;
+			g = g1;
+			b = b1;
+
 			for (k=0; k<dx; k++) {
-				int r = r1 + ((dr*k)/dx);
-				int g = g1 + ((dg*k)/dx);
-				int b = b1 + ((db*k)/dx);
 				*dst_col++ = dither_nearest_index(r,g,b);
+				r += dr;
+				g += dg;
+				b += db;
 			}
 			j = last;
 		}
@@ -499,7 +504,8 @@ static void draw_render16_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
-			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+			int dx,last;
+			float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 
 			/* Find last segment to merge */
 			for (last=j;
@@ -524,16 +530,19 @@ static void draw_render16_gouraud(void)
 				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
-			dr = r2-r1;
-			dg = g2-g1;
-			db = b2-b1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
- 
+			dr = (r2-r1)/dx;
+			dg = (g2-g1)/dx;
+			db = (b2-b1)/dx;
+			r = r1;
+			g = g1;
+			b = b1;
+
 			for (k=0; k<dx; k++) {
-				int r = r1 + ((dr*k)/dx);
-				int g = g1 + ((dg*k)/dx);
-				int b = b1 + ((db*k)/dx);
 				*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+				r += dr;
+				g += dg;
+				b += db;
 			}
 			j = last;
 		}
@@ -558,7 +567,8 @@ static void draw_render24_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x*3];
-			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+			int dx,last;
+			float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 
 			/* Find last segment to merge */
 			for (last=j;
@@ -583,17 +593,16 @@ static void draw_render24_gouraud(void)
 				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
-			dr = r2-r1;
-			dg = g2-g1;
-			db = b2-b1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
- 
-			for (k=0; k<dx; k++) {
-				int r = r1 + ((dr*k)/dx);
-				int g = g1 + ((dg*k)/dx);
-				int b = b1 + ((db*k)/dx);
-				Uint32 color = SDL_MapRGB(surf->format, r,g,b);
+			dr = (r2-r1)/dx;
+			dg = (g2-g1)/dx;
+			db = (b2-b1)/dx;
+			r = r1;
+			g = g1;
+			b = b1;
 
+			for (k=0; k<dx; k++) {
+				Uint32 color = SDL_MapRGB(surf->format, r,g,b);
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 				*dst_col++ = color>>16;
 				*dst_col++ = color>>8;
@@ -603,6 +612,9 @@ static void draw_render24_gouraud(void)
 				*dst_col++ = color>>8;
 				*dst_col++ = color>>16;
 #endif
+				r += dr;
+				g += dg;
+				b += db;
 			}
 			j = last;
 		}
@@ -627,7 +639,8 @@ static void draw_render32_gouraud(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
-			int dx,last, r1,g1,b1, r2,g2,b2, dr,dg,db;
+			int dx,last;
+			float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 
 			/* Find last segment to merge */
 			for (last=j;
@@ -652,17 +665,19 @@ static void draw_render32_gouraud(void)
 				b2 = segments[last].end.b / segments[last].end.w;
 			}
 
-			dr = r2-r1;
-			dg = g2-g1;
-			db = b2-b1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
- 
-			for (k=0; k<dx; k++) {
-				int r = r1 + ((dr*k)/dx);
-				int g = g1 + ((dg*k)/dx);
-				int b = b1 + ((db*k)/dx);
+			dr = (r2-r1)/dx;
+			dg = (g2-g1)/dx;
+			db = (b2-b1)/dx;
+			r = r1;
+			g = g1;
+			b = b1;
 
+			for (k=0; k<dx; k++) {
 				*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+				r += dr;
+				g += dg;
+				b += db;
 			}
 			j = last;
 		}
@@ -687,7 +702,8 @@ static void draw_render8_tex(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x];
-			int dx, u1,v1, u2,v2, du,dv, last;
+			int dx, last;
+			float u1,v1, u2,v2, du,dv, u,v;
 
 			render_texture_t *tex = segments[j].texture;
 
@@ -710,24 +726,26 @@ static void draw_render8_tex(void)
 				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
-			du = u2-u1;
-			dv = v2-v1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
+			du = (u2-u1)/dx;
+			dv = (v2-v1)/dx;
+ 			u = u1;
+			v = v1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
+					*dst_col++ = palette[tex->pixels[((int) v)*tex->pitchw + ((int) u)]];
+					u += du;
+					v += dv;
 				}
 			}/* else {
 				Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 			
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					*dst_col++ = tex_pixels[v*tex->pitchw + u];
+					*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+					u += du;
+					v += dv;
 				}
 			}*/
 
@@ -761,7 +779,8 @@ static void draw_render16_tex(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint16 *dst_col = &dst_line[segments[j].start.x];
-			int dx, u1,v1, u2,v2, du,dv, last;
+			int dx, last;
+			float u1,v1, u2,v2, du,dv, u,v;
 
 			render_texture_t *tex = segments[j].texture;
 
@@ -783,30 +802,26 @@ static void draw_render16_tex(void)
 				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
-			du = u2-u1;
-			dv = v2-v1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
+			du = (u2-u1)/dx;
+			dv = (v2-v1)/dx;
+			u = u1;
+			v = v1;
  
-			DEBUG_PRINT(("line %d, segment %d->%d (%d,%d), from %d,%d to %d,%d, %d %p\n",
-				i,j,last, segments[j].start.x,segments[last].end.x, u1,v1,u2,v2,
-				segments[j].tex_num_pal,tex
-			));
-
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					/*DEBUG_PRINT(("%d: %d,%d->%d,%d: %d,%d\n",k,u1,v1,u2,v2,u,v));*/
-					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
+					*dst_col++ = palette[tex->pixels[((int) v)*tex->pitchw + ((int) u)]];
+					u += du;
+					v += dv;
 				}
 			} else {
 				Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 			
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					*dst_col++ = tex_pixels[v*tex->pitchw + u];
+					*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+					u += du;
+					v += dv;
 				}
 			}
 
@@ -833,7 +848,8 @@ static void draw_render24_tex(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint8 *dst_col = &dst_line[segments[j].start.x*3];
-			int dx, u1,v1, u2,v2, du,dv, last;
+			int dx, last;
+			float u1,v1, u2,v2, du,dv, u,v;
 
 			render_texture_t *tex = segments[j].texture;
 
@@ -856,16 +872,16 @@ static void draw_render24_tex(void)
 				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
-			du = u2-u1;
-			dv = v2-v1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
+			du = (u2-u1)/dx;
+			dv = (v2-v1)/dx;
+			u = u1;
+			v = v1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					Uint32 color = palette[tex->pixels[v*tex->pitchw + u]];
+					Uint32 color = palette[tex->pixels[((int)v)*tex->pitchw + ((int) u)]];
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 					*dst_col++ = color>>16;
 					*dst_col++ = color>>8;
@@ -875,14 +891,14 @@ static void draw_render24_tex(void)
 					*dst_col++ = color>>8;
 					*dst_col++ = color>>16;
 #endif
+					u += du;
+					v += dv;
 				}
 			} else {
 				Uint32 *tex_pixels = (Uint32 *) tex->pixels;
 			
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					Uint32 color = tex_pixels[v*tex->pitchw + u];
+					Uint32 color = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 					*dst_col++ = color>>16;
 					*dst_col++ = color>>8;
@@ -892,6 +908,8 @@ static void draw_render24_tex(void)
 					*dst_col++ = color>>8;
 					*dst_col++ = color>>16;
 #endif
+					u += du;
+					v += dv;
 				}
 			}
 
@@ -918,7 +936,8 @@ static void draw_render32_tex(void)
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			Uint32 *dst_col = &dst_line[segments[j].start.x];
-			int dx, u1,v1, u2,v2, du,dv, last;
+			int dx, last;
+			float u1,v1, u2,v2, du,dv, u,v;
 
 			render_texture_t *tex = segments[j].texture;
 
@@ -941,27 +960,28 @@ static void draw_render32_tex(void)
 				v2 = segments[last].end.v / segments[last].end.w;
 			}
 
-			du = u2-u1;
-			dv = v2-v1;
 			dx = segments[last].end.x - segments[j].start.x + 1;
+			du = (u2-u1)/dx;
+			dv = (v2-v1)/dx;
+			u = u1;
+			v = v1;
  
 			if (tex->paletted) {
 				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					*dst_col++ = palette[tex->pixels[v*tex->pitchw + u]];
+					*dst_col++ = palette[tex->pixels[((int)v)*tex->pitchw + ((int) u)]];
+					u += du;
+					v += dv;
 				}
 			} else {
 				Uint32 *tex_pixels = (Uint32 *) tex->pixels;
 			
 				for (k=0; k<dx; k++) {
-					int u = u1 + ((du*k)/dx);
-					int v = v1 + ((dv*k)/dx);
-					*dst_col++ = tex_pixels[v*tex->pitchw + u];
+					*dst_col++ = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
+					u += du;
+					v += dv;
 				}
 			}
-
 			j = last;
 		}
 
