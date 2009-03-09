@@ -769,12 +769,12 @@ static void draw_render16_tex(void)
 		Uint16 *dst_line = dst;
 		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
 
-		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+		/*for (j=0; j<sbuffer_rows[i].num_segs; j++) {
 			DEBUG_PRINT((" [%d:0x%08x] %d->%d %d %p\n", j, sbuffer_rows[i].segment[j].id,
 				sbuffer_rows[i].segment[j].start.x, sbuffer_rows[i].segment[j].end.x,
 				sbuffer_rows[i].segment[j].tex_num_pal, sbuffer_rows[i].segment[j].texture
 			));
-		}
+		}*/
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
@@ -1211,12 +1211,12 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 		segment->start.u,segment->start.v,
 		segment->end.u,segment->end.v));
 
-	for (i=0; i<sbuffer_rows[y].num_segs; i++) {
+	/*for (i=0; i<sbuffer_rows[y].num_segs; i++) {
 		DEBUG_PRINT((" [%d:0x%08x] %d->%d %d %p\n", i, sbuffer_rows[y].segment[i].id,
 			sbuffer_rows[y].segment[i].start.x, sbuffer_rows[y].segment[i].end.x,
 			sbuffer_rows[y].segment[i].tex_num_pal, sbuffer_rows[y].segment[i].texture
 		));
-	}
+	}*/
 
 	/*--- Trivial cases ---*/
 
