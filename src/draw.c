@@ -1023,7 +1023,7 @@ static int draw_push_segment(const sbuffer_segment_t *segment,
 	sbuffer_point_t *p;
 
 	if (pos>=NUM_SEGMENTS) {
-		return;
+		return 0;
 	}
 
 #if 0
@@ -1070,7 +1070,7 @@ static int draw_insert_segment(const sbuffer_segment_t *segment,
 	/*sbuffer_point_t *p;*/
 
 	if (pos>=NUM_SEGMENTS) {
-		return;
+		return 0;
 	}
 
 #if 0
