@@ -234,6 +234,33 @@ void draw_render(void)
 	}
 }
 
+static Uint32 log2i(Uint32 value)
+{
+	Uint32 r=0;
+
+	if (value & 0xffff0000) {
+		r += 16;
+		value >>= 16;
+	}
+	if (value & 0x0000ff00) {
+		r += 8;
+		value >>= 8;
+	}
+	if (value & 0x000000f0) {
+		r += 4;
+		value >>= 4;
+	}
+	if (value & 0x0000000c) {
+		r += 2;
+		value >>= 2;
+	}
+	if (value & 0x00000002) {
+		++r;
+	}
+
+	return r;
+}
+
 static void draw_render8_fill(void)
 {
 	int i,j;
@@ -808,20 +835,54 @@ static void draw_render16_tex(void)
 			u = u1;
 			v = v1;
  
-			if (tex->paletted) {
-				Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
-				for (k=0; k<dx; k++) {
-					*dst_col++ = palette[tex->pixels[((int) v)*tex->pitchw + ((int) u)]];
-					u += du;
-					v += dv;
+			if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
+				/* Integer calculations */
+				Sint32 vi = v * 65536.0f;
+				Sint32 vd = dv * 65536.0f;
+				Sint32 ui = u * 65536.0f;
+				ui >>= log2i(tex->pitchw);
+				Sint32 ud = du * 65536.0f;
+				ud >>= log2i(tex->pitchw);
+				Uint32 vm = (0xffffffff >> (16-log2i(tex->pitchh))) & 0xffff0000;
+				int rshift = 16-log2i(tex->pitchw);
+
+				if (tex->paletted) {
+					Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
+					for (k=0; k<dx; k++) {
+						Uint32 uv = (vi & vm) | (ui & 0xffff);
+
+						*dst_col++ = palette[tex->pixels[uv >> rshift]];
+						ui += ud;
+						vi += vd;
+					}
+				} else {
+					Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+			
+					for (k=0; k<dx; k++) {
+						Uint32 uv = (vi & vm) | (ui & 0xffff);
+
+						*dst_col++ = tex_pixels[uv >> rshift];
+						ui += ud;
+						vi += vd;
+					}
 				}
 			} else {
-				Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+				/* Float calculations */
+				if (tex->paletted) {
+					Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
+					for (k=0; k<dx; k++) {
+						*dst_col++ = palette[tex->pixels[((int) v)*tex->pitchw + ((int) u)]];
+						u += du;
+						v += dv;
+					}
+				} else {
+					Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 			
-				for (k=0; k<dx; k++) {
-					*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
-					u += du;
-					v += dv;
+					for (k=0; k<dx; k++) {
+						*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+						u += du;
+						v += dv;
+					}
 				}
 			}
 
