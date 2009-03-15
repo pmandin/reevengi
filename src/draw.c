@@ -760,26 +760,62 @@ static void draw_render8_tex(void)
 			v = v1;
  
 #if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+/*
+	XXxxYYyy	uv/uvd
+	XXxx--YY	lsr.w
+	xx--YYXX	rol.l
+*/
 			if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
 				/* Integer calculations */
-				Uint32 vi = v * 65536.0f;
-				Uint32 vd = dv * 65536.0f;
-				Uint32 ui1 = u * 65536.0f;
-				Uint32 ud1 = du * 65536.0f;
-				Uint32 vm = (0xffffffff >> (16-log2i(tex->pitchh))) & 0xffff0000;
-				int rshift = 16-log2i(tex->pitchw);
-				Uint16 ui = ui1 >> log2i(tex->pitchw);
-				Uint16 ud = ud1 >> log2i(tex->pitchw);
+				Sint32 vi = v * 65536.0f;
+				Sint32 vd = dv * 65536.0f;
+				Sint32 ui = u * 65536.0f;
+				Sint32 ud = du * 65536.0f;
+				int ushift = 16-log2i(tex->pitchw);
+				int vshift = log2i(tex->pitchh);
+				Uint32 uv = (vi>>vshift) & 0x0000ffff;
+				Uint32 uvd = (vd>>vshift) & 0x0000ffff;
+				uv |= (ui<<ushift) & 0xffff0000;
+				uvd |= (ud<<ushift) & 0xffff0000;
+
+				ushift = 16-ushift;
+				vshift = 16-vshift;
 
 				if (tex->paletted) {
 					Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
-					for (k=dx-1; k>=0; k--) {
-						Uint32 uv = (vi & vm) | (ui & 0xffff);
-						uv >>= rshift;
-						ui += ud;
-						*dst_col++ = palette[tex->pixels[uv]];
-						vi += vd;
+					Uint8 *tex_pixels = (Uint8 *) tex->pixels;
+
+					/* for signed d0:w addressing */
+					if (tex->pitchh*tex->pitchw>32768) {
+						tex_pixels += 32768;
+						uv ^= 0x8000;
 					}
+
+					--dx;
+__asm__ __volatile__ (
+	"movel	%5,d0\n\t"
+	"moveql	#0,d1\n"
+
+"R_DrawSpan8_loop:\n\t"
+
+	"lsrw	%6,d0\n\t"
+	"roll	%7,d0\n\t"
+	"moveb	%1@(0,d0:w),d1\n\t"
+	"addl	%2,%5\n\t"
+	"moveb	%3@(2,d1:w*4),d1\n\t"
+	"movel	%5,d0\n\t"
+	"moveb	d1,%4@+\n\t"
+
+	"subqw	#1,%0\n\t"
+	"bpls	R_DrawSpan8_loop\n"
+
+	: /* no return value */
+	: /* input */
+		"d"(dx), "a"(tex_pixels), "r"(uvd), "a"(palette),
+		"a"(dst_col), "r"(uv), "d"(ushift), "d"(vshift)
+	: /* clobbered registers */
+		"d0", "d1", "cc", "memory" 
+);						
 				}/* else {
 					Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 			
@@ -873,29 +909,68 @@ static void draw_render16_tex(void)
 			v = v1;
  
 #if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+/*
+	XXxxYYyy	uv/uvd
+	XXxx--YY	lsr.w
+	xx--YYXX	rol.l
+*/
 			if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
 				/* Integer calculations */
-				Uint32 vi = v * 65536.0f;
-				Uint32 vd = dv * 65536.0f;
-				Uint32 ui1 = u * 65536.0f;
-				Uint32 ud1 = du * 65536.0f;
-				Uint32 vm = (0xffffffff >> (16-log2i(tex->pitchh))) & 0xffff0000;
-				int rshift = 16-log2i(tex->pitchw);
-				Uint16 ui = ui1 >> log2i(tex->pitchw);
-				Uint16 ud = ud1 >> log2i(tex->pitchw);
+				Sint32 vi = v * 65536.0f;
+				Sint32 vd = dv * 65536.0f;
+				Sint32 ui = u * 65536.0f;
+				Sint32 ud = du * 65536.0f;
+				int ushift = 16-log2i(tex->pitchw);
+				int vshift = log2i(tex->pitchh);
+				Uint32 uv = (vi>>vshift) & 0x0000ffff;
+				Uint32 uvd = (vd>>vshift) & 0x0000ffff;
+				uv |= (ui<<ushift) & 0xffff0000;
+				uvd |= (ud<<ushift) & 0xffff0000;
+
+				ushift = 16-ushift;
+				vshift = 16-vshift;
 
 				if (tex->paletted) {
 					Uint32 *palette = tex->palettes[segments[j].tex_num_pal];
-					for (k=dx-1; k>=0; k--) {
-						Uint32 uv = (vi & vm) | (ui & 0xffff);
-						uv >>= rshift;
-						ui += ud;
-						*dst_col++ = palette[tex->pixels[uv]];
-						vi += vd;
+					Uint8 *tex_pixels = (Uint8 *) tex->pixels;
+
+					/* for signed d0:w addressing */
+					if (tex->pitchh*tex->pitchw>32768) {
+						tex_pixels += 32768;
+						uv ^= 0x8000;
 					}
+
+					--dx;
+__asm__ __volatile__ (
+	"movel	%5,d0\n\t"
+	"moveql	#0,d1\n"
+	"moveql	#0,d2\n"
+
+"R_DrawSpan16_loop:\n\t"
+
+	"lsrw	%6,d0\n\t"
+	"roll	%7,d0\n\t"
+	"moveb	%1@(0,d0:w),d1\n\t"
+	"addl	%2,%5\n\t"
+	"movew	%3@(2,d1:w*4),d2\n\t"
+	"movel	%5,d0\n\t"
+	"movew	d2,%4@+\n\t"
+
+	"subqw	#1,%0\n\t"
+	"bpls	R_DrawSpan16_loop\n"
+
+	: /* no return value */
+	: /* input */
+		"d"(dx), "a"(tex_pixels), "r"(uvd), "a"(palette),
+		"a"(dst_col), "r"(uv), "d"(ushift), "d"(vshift)
+	: /* clobbered registers */
+		"d0", "d1", "d2", "cc", "memory" 
+);						
 				} else {
 					Uint16 *tex_pixels = (Uint16 *) tex->pixels;
-			
+					Uint32 vm = (0xffffffff>>vshift) & 0xffff0000;
+					int rshift = 16-ushift;
+
 					for (k=dx-1; k>=0; k--) {
 						Uint32 uv = (vi & vm) | (ui & 0xffff);
 						uv >>= rshift;
