@@ -2,6 +2,7 @@ v 0.12
 
 - Fixed some bugs in S-Buffer.
 - Added 24 bits rendering to software renderer.
+- Disabled ARB_npot texture support, till testable.
 
 v 0.11
 
