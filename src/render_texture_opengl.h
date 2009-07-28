@@ -1,5 +1,6 @@
 /*
 	Textures for 3D objects
+	OpenGL backend
 
 	Copyright (C) 2008	Patrice Mandin
 
@@ -18,35 +19,25 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RENDER_TEXTURE_H
-#define RENDER_TEXTURE_H 1
+#ifndef RENDER_TEXTURE_OPENGL_H
+#define RENDER_TEXTURE_OPENGL_H 1
 
-/*--- Defines ---*/
-
-#define MAX_TEX_PALETTE 8
+#include <SDL.h>
+#include <SDL_opengl.h>
 
 /*--- Types ---*/
 
-typedef struct render_texture_s render_texture_t;
+typedef struct render_texture_gl_s render_texture_gl_t;
 
-struct render_texture_s {
-	void (*shutdown)(render_texture_t *this);
+struct render_texture_gl_s {
+	render_texture_t render_texture;
 
-	/* Send/remove texture from video card */
-	void (*upload)(render_texture_t *this);
-	void (*download)(render_texture_t *this);
-
-	int w, h;		/* Dimension of image zone */
-	int pitchw, pitchh;	/* Dimension of bouding zone */
-	int pitch;
-	int paletted;
-	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
-	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
+	GLuint texture_id[MAX_TEX_PALETTE];
 };
 
 /*--- Functions prototypes ---*/
 
 /* Load texture from a TIM image file as pointer */
-render_texture_t *render_texture_load_from_tim(void *tim_ptr);
+render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr);
 
-#endif /* RENDER_TEXTURE_H */
+#endif /* RENDER_TEXTURE_OPENGL_H */

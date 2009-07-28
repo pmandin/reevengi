@@ -1,5 +1,6 @@
 /*
 	Textures for 3D objects
+	OpenGL backend
 
 	Copyright (C) 2008	Patrice Mandin
 
@@ -22,6 +23,7 @@
 
 #include "background_tim.h"
 #include "render_texture.h"
+#include "render_texture_opengl.h"
 #include "video.h"
 #include "dither.h"
 #include "parameters.h"
@@ -63,13 +65,14 @@ static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 }
 
 /* Load texture from a TIM image file as pointer */
-render_texture_t *render_texture_load_from_tim(void *tim_ptr)
+render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr)
 {
 	tim_header_t *tim_header;
 	Uint16 *pal_header;
 	int num_colors, num_palettes, i,j, paletted, img_offset;
 	int w,h, wpot,hpot, tim_type;
 	render_texture_t *tex;
+	render_texture_gl_t *texgl;
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format;
 	int bytes_per_pixel;
@@ -134,10 +137,15 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	}
 
 	/* Allocate memory */
-	tex = calloc(1, sizeof(render_texture_t) + wpot*hpot*bytes_per_pixel);
+	tex = calloc(1, sizeof(render_texture_gl_t) + wpot*hpot*bytes_per_pixel);
 	if (!tex) {
 		fprintf(stderr, "Can not allocate memory for texture\n");
 		return NULL;
+	}
+
+	texgl = (render_texture_gl_t *) tex;
+	for (i=0; i<MAX_TEX_PALETTE; i++) {
+		texgl->texture_id[i] = 0xFFFFFFFFUL;
 	}
 
 	tex->paletted = paletted;
@@ -146,7 +154,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	tex->pitchw = wpot;
 	tex->h = h;
 	tex->pitchh = hpot;
-	tex->pixels = &((Uint8 *)tex)[sizeof(render_texture_t)];
+	tex->pixels = &((Uint8 *)tex)[sizeof(render_texture_gl_t)];
 
 	/* Copy palettes to video format */
 	if (paletted) {
@@ -267,14 +275,16 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 static void shutdown(render_texture_t *texture)
 {
 	if (texture) {
-		free(texture);
+		free((render_texture_gl_t *) texture);
 	}
 }
 
 static void upload(render_texture_t *texture)
 {
+	render_texture_gl_t *texgl = (render_texture_gl_t *) texture;
 }
 
 static void download(render_texture_t *texture)
 {
+	render_texture_gl_t *texgl = (render_texture_gl_t *) texture;
 }
