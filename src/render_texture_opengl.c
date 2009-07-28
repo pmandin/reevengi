@@ -19,6 +19,12 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef ENABLE_OPENGL
+
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -375,3 +381,5 @@ static void download(render_texture_t *texture)
 		}
 	}	
 }
+
+#endif /* ENABLE_OPENGL */
