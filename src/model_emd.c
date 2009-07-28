@@ -144,7 +144,7 @@ model_t *model_emd_load(void *emd, Uint32 emd_length)
 	emd_convert_endianness(model);
 #endif
 
-	model->texture = render_texture_load_from_tim(model->tim_file);
+	model->texture = render.textureFromTim(model->tim_file);
 
 	model->shutdown = model_emd_shutdown;
 	model->draw = model_emd_draw;

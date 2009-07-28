@@ -59,6 +59,8 @@ struct render_s {
 	void (*startFrame)(render_t *this);
 	void (*endFrame)(render_t *this);
 
+	render_texture_t *(*textureFromTim)(void *tim_ptr);
+
 	void (*set_viewport)(int x, int y, int w, int h);
 	void (*set_projection)(float angle, float aspect,
 		float z_near, float z_far);
