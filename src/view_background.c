@@ -83,6 +83,9 @@ static int reload_room = 1;
 static int refresh_bg = 1;
 static int reload_model = 1;
 
+static int num_model = 0;
+static model_t *player_model = NULL;
+
 static int render_grid = 0;
 static int render_restore = 0;
 
@@ -173,23 +176,23 @@ void view_background_input(SDL_Event *event)
 				reload_bg = 1;
 				break;						
 			case KEY_MODEL_DOWN:
-				game_state.num_model--;
-				if (game_state.num_model<0) {
-					game_state.num_model=0;
+				num_model--;
+				if (num_model<0) {
+					num_model=0;
 				} else {
 					reload_model = 1;
 				}
 				break;
 			case KEY_MODEL_UP:
-				game_state.num_model++;
-				if (game_state.num_model>100) {
-					game_state.num_model=100;
+				num_model++;
+				if (num_model>100) {
+					num_model=100;
 				} else {
 					reload_model = 1;
 				}
 				break;
 			case KEY_MODEL_RESET:
-				game_state.num_model = 0;
+				num_model = 0;
 				reload_model = 1;
 				break;
 			case KEY_TOGGLE_GRID:
@@ -287,13 +290,13 @@ void view_background_update(void)
 	Uint32 tick_current = SDL_GetTicks();
 
 	if (reload_room) {
-		state_loadroom();
+		game_state.load_room();
 		reload_room = 0;
 		reload_bg = 1;
 		refresh_player_pos = 1;
 	}
 	if (reload_bg) {
-		state_loadbackground();
+		game_state.load_background();
 		reload_bg = 0;
 		refresh_bg = 1;
 	}
@@ -303,7 +306,7 @@ void view_background_update(void)
 	}
 	if (reload_model) {
 		render.set_texture(0, NULL);	/* To force reloading texture */
-		state_loadmodel();
+		player_model = game_state.load_model(num_model);
 		reload_model = 0;
 	}
 
@@ -509,24 +512,26 @@ static void drawPlayer(void)
 	render.translate(player_x, player_y+2000.0f, player_z);
 	render.rotate(player_a, 0.0f,1.0f,0.0f);
 
-#if 0
-	render.scale(2500.0, 2500.0, 2500.0);
-
-	render.line(0.2,0.0,0.0, -0.2,0.0,0.0);	/* head */
-	render.line(-0.2,0.0,0.0, -0.2,-0.4,0.0);
-	render.line(-0.2,-0.4,0.0, 0.2,-0.4,0.0);
-	render.line(0.2,-0.4,0.0, 0.2,0.0,0.0);
-	render.line(0.0,0.0,0.0, 0.0,1.0,0.0);	/* body */
-	render.line(0.0,0.0,0.0, 0.5,0.5,0.0);	/* right arm */
-	render.line(0.0,0.0,0.0, -0.5,0.5,0.0);	/* left arm */
-	render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
-	render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
-#else
-	if (game_state.model) {
+	if (player_model) {
 		render.set_blending(1);
-		game_state.model->draw(game_state.model);
+		player_model->draw(player_model);
 		render.set_blending(0);
-	}
+#if 0
+	} else {
+		render.set_texture(0, NULL);
+		render.scale(2500.0, 2500.0, 2500.0);
+
+		render.line(0.2,0.0,0.0, -0.2,0.0,0.0);	/* head */
+		render.line(-0.2,0.0,0.0, -0.2,-0.4,0.0);
+		render.line(-0.2,-0.4,0.0, 0.2,-0.4,0.0);
+		render.line(0.2,-0.4,0.0, 0.2,0.0,0.0);
+		render.line(0.0,0.0,0.0, 0.0,1.0,0.0);	/* body */
+		render.line(0.0,0.0,0.0, 0.5,0.5,0.0);	/* right arm */
+		render.line(0.0,0.0,0.0, -0.5,0.5,0.0);	/* left arm */
+		render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
+		render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
 #endif
+	}
+
 	render.pop_matrix();
 }

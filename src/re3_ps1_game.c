@@ -73,9 +73,9 @@ static int re3ps1game_loadroom_ard(const char *filename);
 
 void re3ps1game_init(state_t *game_state)
 {
-	game_state->load_background = re3ps1game_loadbackground;
-	game_state->load_room = re3ps1game_loadroom;
-	game_state->shutdown = re3ps1game_shutdown;
+	game_state->priv_load_background = re3ps1game_loadbackground;
+	game_state->priv_load_room = re3ps1game_loadroom;
+	game_state->priv_shutdown = re3ps1game_shutdown;
 
 	game_state->movies_list = (char **) re3ps1game_movies;
 }

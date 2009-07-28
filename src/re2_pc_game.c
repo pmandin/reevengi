@@ -120,9 +120,9 @@ void re2pcgame_init(state_t *game_state)
 		fprintf(stderr, "Error reading background archive infos\n");
 	}
 
-	game_state->load_background = re2pcgame_loadbackground;
-	game_state->load_room = re2pcgame_loadroom;
-	game_state->shutdown = re2pcgame_shutdown;
+	game_state->priv_load_background = re2pcgame_loadbackground;
+	game_state->priv_load_room = re2pcgame_loadroom;
+	game_state->priv_shutdown = re2pcgame_shutdown;
 
 	switch(game_state->version) {
 		case GAME_RE2_PC_GAME_LEON:
@@ -140,7 +140,7 @@ void re2pcgame_init(state_t *game_state)
 			break;
 	}
 
-	game_state->load_model = re2pcgame_load_model;
+	game_state->priv_load_model = game_state->load_model = re2pcgame_load_model;
 }
 
 static void re2pcgame_shutdown(void)

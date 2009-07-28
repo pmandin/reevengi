@@ -72,15 +72,15 @@ static model_t *re2pcdemo_load_model(int num_model);
 
 void re2pcdemo_init(state_t *game_state)
 {
-	game_state->load_background = re2pcdemo_loadbackground;
-	game_state->load_room = re2pcdemo_loadroom;
-	game_state->shutdown = re2pcdemo_shutdown;
+	game_state->priv_load_background = re2pcdemo_loadbackground;
+	game_state->priv_load_room = re2pcdemo_loadroom;
+	game_state->priv_shutdown = re2pcdemo_shutdown;
 
 	if (game_state->version == GAME_RE2_PC_DEMO_P) {
 		game_lang = 'p';
 	}
 
-	game_state->load_model = re2pcdemo_load_model;
+	game_state->priv_load_model = game_state->load_model = re2pcdemo_load_model;
 }
 
 static void re2pcdemo_shutdown(void)

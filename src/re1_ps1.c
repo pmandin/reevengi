@@ -102,9 +102,9 @@ model_t *re1ps1_load_model(int num_model);
 
 void re1ps1_init(state_t *game_state)
 {
-	game_state->load_background = re1ps1_loadbackground;
-	game_state->load_room = re1ps1_loadroom;
-	game_state->shutdown = re1ps1_shutdown;
+	game_state->priv_load_background = re1ps1_loadbackground;
+	game_state->priv_load_room = re1ps1_loadroom;
+	game_state->priv_shutdown = re1ps1_shutdown;
 
 	if (game_state->version == GAME_RE1_PS1_DEMO) {
 		game_state->movies_list = (char **) re1ps1demo_movies;
@@ -112,7 +112,7 @@ void re1ps1_init(state_t *game_state)
 		game_state->movies_list = (char **) re1ps1game_movies;
 	}
 
-	game_state->load_model = re1ps1_load_model;
+	game_state->priv_load_model = game_state->load_model = re1ps1_load_model;
 }
 
 static void re1ps1_shutdown(void)

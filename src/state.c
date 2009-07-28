@@ -108,6 +108,16 @@ state_t game_state;
 /*--- Functions prototypes ---*/
 
 static void state_detect(void);
+static void state_shutdown(void);
+
+static void state_loadbackground(void);
+static void state_unloadbackground(void);
+
+static void state_loadroom(void);
+static void state_unloadroom(void);
+
+static model_t *state_loadmodel(int num_model);
+static void state_unloadmodels(void);
 
 /*--- Functions ---*/
 
@@ -125,19 +135,21 @@ void state_init(void)
 	game_state.cur_movie = NULL;
 
 	state_detect();
+
+	game_state.load_room = state_loadroom;
+	game_state.load_background = state_loadbackground;
+	game_state.load_model = state_loadmodel;
+	game_state.shutdown = state_shutdown;
 }
 
-void state_shutdown(void)
+static void state_shutdown(void)
 {
-	if (game_state.model) {
-		game_state.model->shutdown(game_state.model);
-	}
-
+	state_unloadmodels();
 	state_unloadbackground();
 	state_unloadroom();
 
-	if (game_state.shutdown) {
-		(*game_state.shutdown)();
+	if (game_state.priv_shutdown) {
+		(*game_state.priv_shutdown)();
 	}
 }
 
@@ -171,12 +183,12 @@ void state_setcamera(int new_camera)
 	game_state.camera = new_camera;
 }
 
-void state_loadbackground(void)
+static void state_loadbackground(void)
 {
 	state_unloadbackground();
 
-	if (game_state.load_background) {
-		(*game_state.load_background)();
+	if (game_state.priv_load_background) {
+		(*game_state.priv_load_background)();
 	}
 }
 
@@ -192,16 +204,16 @@ void state_unloadbackground(void)
 	}
 }
 
-void state_loadroom(void)
+static void state_loadroom(void)
 {
 	state_unloadroom();
 
-	if (game_state.load_room) {
-		(*game_state.load_room)();
+	if (game_state.priv_load_room) {
+		(*game_state.priv_load_room)();
 	}
 }
 
-void state_unloadroom(void)
+static void state_unloadroom(void)
 {
 	if (game_state.room_file) {
 		free(game_state.room_file);
@@ -209,14 +221,48 @@ void state_unloadroom(void)
 	}
 }
 
-void state_loadmodel(void)
+model_t *state_loadmodel(int num_model)
 {
-	if (game_state.model) {
-		game_state.model->shutdown(game_state.model);
-		game_state.model = NULL;
+	int i;
+
+	/* Search if model already loaded */
+	for (i=0; i<game_state.model_list_count; i++) {
+		if (game_state.model_list[i].num_model == num_model) {
+			return game_state.model_list[i].model;
+		}
 	}
-	if (game_state.load_model) {
-		game_state.model = game_state.load_model(game_state.num_model);
+
+	/* Model not in list, reallocate list, and add it at the end */
+	if (!game_state.priv_load_model) {
+		return NULL;
+	}
+
+	++game_state.model_list_count;
+
+	game_state.model_list = (model_item_t *) realloc(game_state.model_list, game_state.model_list_count*sizeof(model_item_t));
+
+	game_state.model_list[game_state.model_list_count-1].num_model = num_model;
+	game_state.model_list[game_state.model_list_count-1].model = game_state.priv_load_model(num_model);
+
+	return game_state.model_list[game_state.model_list_count-1].model;
+}
+
+static void state_unloadmodels(void)
+{
+	int i;
+
+	for (i=0; i<game_state.model_list_count; i++) {
+		model_t *model = game_state.model_list[i].model;
+		if (model) {
+			model->shutdown(model);
+			game_state.model_list[i].num_model = -1;
+			game_state.model_list[i].model = NULL;
+		}
+	}
+	if (game_state.model_list) {
+		free(game_state.model_list);
+		game_state.model_list = NULL;
+		game_state.model_list_count = 0;
 	}
 }
 

@@ -52,6 +52,11 @@ enum {
 /*--- Types ---*/
 
 typedef struct {
+	int num_model;
+	model_t *model;
+} model_item_t;
+
+typedef struct {
 	/*--- Game version ---*/
 	int version;
 
@@ -82,15 +87,19 @@ typedef struct {
 	char *cur_movie/*[1024]*/;
 
 	/*--- EMD model manager ---*/
-	int num_model;
-	model_t *model;
-	model_t *(*load_model)(int num_model);
+	int model_list_count;
+	model_item_t *model_list;
+
+	/*--- Private functions, for backend ---*/
+	void (*priv_load_background)(void);
+	void (*priv_load_room)(void);
+	model_t *(*priv_load_model)(int num_model);
+	void (*priv_shutdown)(void);
 
 	/*--- Functions ---*/
 	void (*load_background)(void);
-
 	void (*load_room)(void);
-
+	model_t *(*load_model)(int num_model);
 	void (*shutdown)(void);
 } state_t;
 
@@ -101,7 +110,6 @@ extern state_t game_state;
 /*--- Functions ---*/
 
 void state_init(void);
-void state_shutdown(void);
 
 const char *state_getGameName(void);
 int state_game_file_exists(char *filename);
@@ -109,14 +117,6 @@ int state_game_file_exists(char *filename);
 void state_setstage(int new_stage);
 void state_setroom(int new_room);
 void state_setcamera(int new_camera);
-
-void state_loadbackground(void);
-void state_unloadbackground(void);
-
-void state_loadroom(void);
-void state_unloadroom(void);
-
-void state_loadmodel(void);
 
 void state_newmovie(void);
 int state_getnummovies(void);

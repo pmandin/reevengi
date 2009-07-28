@@ -788,9 +788,9 @@ static model_t *re2ps1_load_model(int num_model);
 
 void re2ps1_init(state_t *game_state)
 {
-	game_state->load_background = re2ps1_loadbackground;
-	game_state->load_room = re2ps1_loadroom;
-	game_state->shutdown = re2ps1_shutdown;
+	game_state->priv_load_background = re2ps1_loadbackground;
+	game_state->priv_load_room = re2ps1_loadroom;
+	game_state->priv_shutdown = re2ps1_shutdown;
 
 	switch(game_state->version) {
 		case GAME_RE2_PS1_DEMO:
@@ -808,7 +808,7 @@ void re2ps1_init(state_t *game_state)
 			break;
 	}
 
-	game_state->load_model = re2ps1_load_model;
+	game_state->priv_load_model = game_state->load_model = re2ps1_load_model;
 }
 
 static void re2ps1_shutdown(void)

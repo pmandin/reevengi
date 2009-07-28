@@ -163,8 +163,6 @@ int main(int argc, char **argv)
 	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
 #endif
 
-	state_loadmodel();
-
 	/* Force a mode switch */
 	new_width = video.width;
 	new_height = video.height;
@@ -181,14 +179,13 @@ int main(int argc, char **argv)
 
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
-			state_unloadbackground();
 			break;
 		case VIEWMODE_MOVIE:
 			movie_shutdown();
 			break;
 	}
 
-	state_shutdown();
+	game_state.shutdown();
 	video.shutDown(&video);
 	render.shutdown(&render);
 	FS_Shutdown();

@@ -132,9 +132,9 @@ void re3pc_init(state_t *game_state)
 		}
 	}
 
-	game_state->load_background = re3pc_loadbackground;
-	game_state->load_room = re3pc_loadroom;
-	game_state->shutdown = re3pc_shutdown;
+	game_state->priv_load_background = re3pc_loadbackground;
+	game_state->priv_load_room = re3pc_loadroom;
+	game_state->priv_shutdown = re3pc_shutdown;
 
 	switch(game_state->version) {
 		case GAME_RE3_PC_DEMO:
@@ -146,7 +146,7 @@ void re3pc_init(state_t *game_state)
 			break;
 	}
 
-	game_state->load_model = re3pc_load_model;
+	game_state->priv_load_model = game_state->load_model = re3pc_load_model;
 }
 
 void re3pc_shutdown(void)
