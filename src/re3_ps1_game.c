@@ -185,6 +185,7 @@ static int re3ps1game_loadroom_ard(const char *filename)
 	game_state.room = room_create(file);
 	if (!game_state.room) {
 		free(file);
+		free(ard_file);
 		return 0;
 	}
 

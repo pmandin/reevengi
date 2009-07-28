@@ -25,9 +25,4 @@
 
 void re2pcdemo_init(state_t *game_state);
 
-void re2pcdemo_get_camera(long *camera_pos);
-
-int re2pcdemo_get_num_camswitch(void);
-int re2pcdemo_get_camswitch(int num, short *switch_pos);
-
 #endif /* RE2PCDEMO_H */

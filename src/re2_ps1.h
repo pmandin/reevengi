@@ -27,6 +27,4 @@
 
 void re2ps1_init(state_t *game_state);
 
-void re2ps1_get_camera(long *camera_pos);
-
 #endif /* RE2PS1_H */

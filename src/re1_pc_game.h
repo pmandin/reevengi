@@ -27,6 +27,4 @@
 
 void re1pcgame_init(state_t *game_state);
 
-void re1pcgame_get_camera(long *camera_pos);
-
 #endif /* RE1PCGAME_H */
