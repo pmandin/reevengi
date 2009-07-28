@@ -235,33 +235,6 @@ static void draw_endFrame(draw_t *this)
 	}
 }
 
-static Uint32 log2i(Uint32 value)
-{
-	Uint32 r=0;
-
-	if (value & 0xffff0000) {
-		r += 16;
-		value >>= 16;
-	}
-	if (value & 0x0000ff00) {
-		r += 8;
-		value >>= 8;
-	}
-	if (value & 0x000000f0) {
-		r += 4;
-		value >>= 4;
-	}
-	if (value & 0x0000000c) {
-		r += 2;
-		value >>= 2;
-	}
-	if (value & 0x00000002) {
-		++r;
-	}
-
-	return r;
-}
-
 static void draw_render8_fill(void)
 {
 	int i,j;

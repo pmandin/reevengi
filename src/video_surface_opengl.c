@@ -178,7 +178,6 @@ static void createTexture(video_surface_gl_t *this)
 {
 	int sw = this->surf_soft.sdl_surf->w;
 	int sh = this->surf_soft.sdl_surf->h;
-	char *extensions;
 
 	this->can_palette = this->use_palette = 0;
 
