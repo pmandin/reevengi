@@ -25,6 +25,7 @@
 
 #include "video_surface.h"
 #include "model.h"
+#include "room.h"
 
 /*--- Enums ---*/
 
@@ -63,21 +64,15 @@ typedef struct {
 	/*--- Data ---*/
 
 	/* Stage of game */
-	int stage;
+	int num_stage;
 	/* Room of stage */
-	int room;
+	int num_room;
 	/* Camera in room */
-	int camera;
+	int num_camera;
 
-	/* Camera angles in background file */
-	int num_cameras;
 	/* Background image */
 	SDL_Surface *background_surf;
-
 	video_surface_t *back_surf;
-
-	/* Room data file */
-	void *room_file;
 
 	/* List of movies */
 	char **movies_list;
@@ -85,6 +80,9 @@ typedef struct {
 	int num_movie;
 	/* Movie filename */
 	char *cur_movie/*[1024]*/;
+
+	/*--- RDT room manager */
+	room_t *room;
 
 	/*--- EMD model manager ---*/
 	int model_list_count;

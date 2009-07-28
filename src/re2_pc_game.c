@@ -40,6 +40,28 @@
 /*--- Types ---*/
 
 typedef struct {
+	Uint16 unk0;
+	Uint16 const0; /* 0x683c, or 0x73b7 */
+	/* const0>>7 used for engine */
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 offset;
+} rdt_camera_pos_t;
+
+typedef struct {
+	Uint16 const0; /* 0xff01 */
+	Uint8 cam0, cam1;
+	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
+	Sint16 x2,y2;
+	Sint16 x3,y3;
+	Sint16 x4,y4;
+} rdt_camera_switch_t;
+
+typedef struct {
 	long offset;
 	long length;
 } re2_images_t;
@@ -112,6 +134,11 @@ static int re2pcgame_loadroom_rdt(const char *filename);
 
 model_t *re2pcgame_load_model(int num_model);
 
+static void re2pcgame_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
+
+static int re2pcgame_getNumCamswitches(room_t *this);
+static void re2pcgame_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+
 /*--- Functions ---*/
 
 void re2pcgame_init(state_t *game_state)
@@ -140,7 +167,7 @@ void re2pcgame_init(state_t *game_state)
 			break;
 	}
 
-	game_state->priv_load_model = game_state->load_model = re2pcgame_load_model;
+	game_state->priv_load_model = re2pcgame_load_model;
 }
 
 static void re2pcgame_shutdown(void)
@@ -153,15 +180,15 @@ static void re2pcgame_shutdown(void)
 
 static void re2pcgame_loadbackground(void)
 {
-	int num_image = (game_state.stage-1)*512;
-	num_image += game_state.room*16;
-	num_image += game_state.camera;
+	int num_image = (game_state.num_stage-1)*512;
+	num_image += game_state.num_room*16;
+	num_image += game_state.num_camera;
 	if (num_image>=num_re2_images) {
 		num_image = num_re2_images-1;
 	}
 
 	logMsg(1, "adt: Loading stage %d, room %d, camera %d ... ",
-		game_state.stage, game_state.room, game_state.camera);
+		game_state.num_stage, game_state.num_room, game_state.num_camera);
 	logMsg(1, "%s\n", re2pcgame_load_image(num_image) ? "done" : "failed");
 }
 
@@ -260,7 +287,7 @@ static void re2pcgame_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.stage, game_state.room);
+	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.num_stage, game_state.num_room);
 
 	logMsg(1, "rdt: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re2pcgame_loadroom_rdt(filepath) ? "done" : "failed");
@@ -272,16 +299,25 @@ static int re2pcgame_loadroom_rdt(const char *filename)
 {
 	PHYSFS_sint64 length;
 	Uint8 *rdt_header;
-	
-	game_state.num_cameras = 16;
+	void *file;
 
-	game_state.room_file = FS_Load(filename, &length);
-	if (!game_state.room_file) {
+	file = FS_Load(filename, &length);
+	if (!file) {
+		return 0;
+	}
+	
+	game_state.room = room_create(file);
+	if (!game_state.room) {
+		free(file);
 		return 0;
 	}
 
-	rdt_header = (Uint8 *) game_state.room_file;
-	game_state.num_cameras = rdt_header[1];
+	rdt_header = (Uint8 *) file;
+	game_state.room->num_cameras = rdt_header[1];
+	game_state.room->num_camswitches = re2pcgame_getNumCamswitches(game_state.room);
+
+	game_state.room->getCamera = re2pcgame_getCamera;
+	game_state.room->getCamswitch = re2pcgame_getCamswitch;
 
 	return 1;
 }
@@ -333,85 +369,65 @@ model_t *re2pcgame_load_model(int num_model)
 	return model;
 }
 
-typedef struct {
-	Uint16 unk0;
-	Uint16 const0; /* 0x683c, or 0x73b7 */
-	/* const0>>7 used for engine */
-	Sint32 camera_from_x;
-	Sint32 camera_from_y;
-	Sint32 camera_from_z;
-	Sint32 camera_to_x;
-	Sint32 camera_to_y;
-	Sint32 camera_to_z;
-	Uint32 offset;
-} rdt_camera_pos_t;
-
-void re2pcgame_get_camera(long *camera_pos)
+static void re2pcgame_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
 {
 	Uint32 *cams_offset, offset;
 	rdt_camera_pos_t *cam_array;
 	
-	cams_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+7*4]);
+	cams_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+7*4]);
 	offset = SDL_SwapLE32(*cams_offset);
-	cam_array = (rdt_camera_pos_t *) &((Uint8 *)game_state.room_file)[offset];
+	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
 
-	camera_pos[0] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_x);
-	camera_pos[1] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_y);
-	camera_pos[2] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_z);
-	camera_pos[3] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_x);
-	camera_pos[4] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_y);
-	camera_pos[5] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_z);
+	room_camera->from_x = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_x);
+	room_camera->from_y = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_y);
+	room_camera->from_z = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_z);
+	room_camera->to_x = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_x);
+	room_camera->to_y = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_y);
+	room_camera->to_z = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_z);
 }
 
-typedef struct {
-	Uint16 const0; /* 0xff01 */
-	Uint8 cam0, cam1;
-	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
-	Sint16 x2,y2;
-	Sint16 x3,y3;
-	Sint16 x4,y4;
-} rdt_camera_switch_t;
-
-int re2pcgame_get_num_camswitch(void)
+static int re2pcgame_getNumCamswitches(room_t *this)
 {
 	Uint32 *camswitch_offset, offset;
 	rdt_camera_switch_t *camswitch_array;
 	int num_switches = 0;
 
-	camswitch_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+8*4]);
+	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
 	offset = SDL_SwapLE32(*camswitch_offset);
-	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *)game_state.room_file)[offset];
+	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
 	while ((*(Uint32 *) camswitch_array) != 0xffffffff) {
 		/*printf("cam switch %d at offset 0x%08x\n", num_switches, offset);*/
 		offset += sizeof(rdt_camera_switch_t);
-		camswitch_array = (rdt_camera_switch_t *) &((Uint8 *)game_state.room_file)[offset];
+		camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
+
 		num_switches++;
 	}
 
 	return num_switches;
 }
 
-int re2pcgame_get_camswitch(int num, short *switch_pos)
+static void re2pcgame_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch)
 {
 	Uint32 *camswitch_offset, offset;
 	rdt_camera_switch_t *camswitch_array;
 
-	camswitch_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+8*4]);
+	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
 	offset = SDL_SwapLE32(*camswitch_offset);
-	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *)game_state.room_file)[offset];
+	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
-	if ((camswitch_array[num].cam1==0) || (camswitch_array[num].cam0!=game_state.camera)) {
+	/*if ((camswitch_array[num].cam1==0) || (camswitch_array[num].cam0!=game_state.camera)) {
 		return 0;
-	}
+	}*/
 
-	switch_pos[0] = SDL_SwapLE16(camswitch_array[num].x1);
-	switch_pos[1] = SDL_SwapLE16(camswitch_array[num].y1);
-	switch_pos[2] = SDL_SwapLE16(camswitch_array[num].x2);
-	switch_pos[3] = SDL_SwapLE16(camswitch_array[num].y2);
-	switch_pos[4] = SDL_SwapLE16(camswitch_array[num].x3);
-	switch_pos[5] = SDL_SwapLE16(camswitch_array[num].y3);
-	switch_pos[6] = SDL_SwapLE16(camswitch_array[num].x4);
-	switch_pos[7] = SDL_SwapLE16(camswitch_array[num].y4);
-	return 1;
+	room_camswitch->x[0] = SDL_SwapLE16(camswitch_array[num_camswitch].x1);
+	room_camswitch->y[0] = SDL_SwapLE16(camswitch_array[num_camswitch].y1);
+	room_camswitch->x[1] = SDL_SwapLE16(camswitch_array[num_camswitch].x2);
+	room_camswitch->y[1] = SDL_SwapLE16(camswitch_array[num_camswitch].y2);
+	room_camswitch->x[2] = SDL_SwapLE16(camswitch_array[num_camswitch].x3);
+	room_camswitch->y[2] = SDL_SwapLE16(camswitch_array[num_camswitch].y3);
+	room_camswitch->x[3] = SDL_SwapLE16(camswitch_array[num_camswitch].x4);
+	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[num_camswitch].y4);
+
+	/*return 1;*/
 }

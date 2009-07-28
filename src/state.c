@@ -125,9 +125,9 @@ void state_init(void)
 {
 	memset(&game_state, 0, sizeof(state_t));
 
-	game_state.stage = 1;
-	game_state.room = 0;
-	game_state.camera = 0;
+	game_state.num_stage = 1;
+	game_state.num_room = 0;
+	game_state.num_camera = 0;
 
 	game_state.movies_list = NULL;
 	game_state.num_movie = 0;
@@ -170,17 +170,17 @@ const char *state_getGameName(void)
 
 void state_setstage(int new_stage)
 {
-	game_state.stage = new_stage;
+	game_state.num_stage = new_stage;
 }
 
 void state_setroom(int new_room)
 {
-	game_state.room = new_room;
+	game_state.num_room = new_room;
 }
 
 void state_setcamera(int new_camera)
 {
-	game_state.camera = new_camera;
+	game_state.num_camera = new_camera;
 }
 
 static void state_loadbackground(void)
@@ -215,9 +215,9 @@ static void state_loadroom(void)
 
 static void state_unloadroom(void)
 {
-	if (game_state.room_file) {
-		free(game_state.room_file);
-		game_state.room_file = NULL;
+	if (game_state.room) {
+		game_state.room->shutdown(game_state.room);
+		game_state.room = NULL;
 	}
 }
 

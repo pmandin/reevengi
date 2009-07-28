@@ -15,7 +15,7 @@ reevengi_SOURCES = main.c state.c re1_ps1.c re2_pc_demo.c re2_pc_game.c \
 	video_surface_opengl.c model_emd.c model_emd3.c model_emd2.c \
 	log.c render.c render_opengl.c render_texture_opengl.c \
 	render_background.c render_background_opengl.c \
-	matrix.c dither.c render_texture.c draw_simple.c draw_sbuffer.c
+	matrix.c dither.c render_texture.c draw_simple.c draw_sbuffer.c room.c
 
 reevengi_headers = state.h re1_ps1.h re2_pc_demo.h depack_adt.h \
 	parameters.h depack_vlc.h depack_mdec.h idctfst.h re2_ps1.h \
@@ -26,7 +26,7 @@ reevengi_headers = state.h re1_ps1.h re2_pc_demo.h depack_adt.h \
 	model_emd.h model_emd3.h model_emd2.h log.h \
 	render.h render_texture_opengl.h \
 	render_background.h render_background_opengl.h \
-	matrix.h draw.h model.h dither.h render_texture.h draw_simple.h draw_sbuffer.h
+	matrix.h draw.h model.h dither.h render_texture.h draw_simple.h draw_sbuffer.h room.h
 
 reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h
 

@@ -122,61 +122,69 @@ void view_background_input(SDL_Event *event)
 	case SDL_KEYDOWN:
 		switch (event->key.keysym.sym) {
 			case KEY_STAGE_DOWN:
-				game_state.stage -= 1;
-				if (game_state.stage < 1) {
-					game_state.stage = 7;
+				--game_state.num_stage;
+				if (game_state.num_stage < 1) {
+					game_state.num_stage = 7;
 				}
 				reload_room = 1;
 				break;						
 			case KEY_STAGE_UP:
-				game_state.stage += 1;
-				if (game_state.stage > 7) {
-					game_state.stage = 1;
+				++game_state.num_stage;
+				if (game_state.num_stage > 7) {
+					game_state.num_stage = 1;
 				}
 				reload_room = 1;
 				break;						
 			case KEY_STAGE_RESET:
-				game_state.stage = 1;
+				game_state.num_stage = 1;
 				reload_room = 1;
 				break;						
 			case KEY_ROOM_DOWN:
-				game_state.room -= 1;
-				if (game_state.room < 0) {
-					game_state.room = 0x1c;
+				--game_state.num_room;
+				if (game_state.num_room < 0) {
+					game_state.num_room = 0x1c;
 				}
 				reload_room = 1;
 				break;						
 			case KEY_ROOM_UP:
-				game_state.room += 1;
-				if (game_state.room > 0x1c) {
-					game_state.room = 0;
+				++game_state.num_room;
+				if (game_state.num_room > 0x1c) {
+					game_state.num_room = 0;
 				}
 				reload_room = 1;
 				break;						
 			case KEY_ROOM_RESET:
-				game_state.room = 0;
+				game_state.num_room = 0;
 				reload_room = 1;
 				break;						
 			case KEY_CAMERA_DOWN:
-				game_state.camera -= 1;
-				if ((game_state.camera<0) && (game_state.num_cameras>0)) {
-					game_state.camera = game_state.num_cameras-1;
+				if (!game_state.room) {
+					game_state.num_camera = 0;
+				} else {
+					--game_state.num_camera;
+					if ((game_state.num_camera<0) && (game_state.room->num_cameras>0)) {
+						game_state.num_camera = game_state.room->num_cameras-1;
+					}
 				}
 				reload_bg = 1;
-				break;						
+				break;			
 			case KEY_CAMERA_UP:
-				game_state.camera += 1;
-				if (game_state.camera>=game_state.num_cameras) {
-					game_state.camera = 0;
+				if (!game_state.room) {
+					game_state.num_camera = 0;
+				} else {
+					++game_state.num_camera;
+					if (game_state.num_camera>=game_state.room->num_cameras) {
+						game_state.num_camera = 0;
+					}
 				}
 				reload_bg = 1;
 				break;						
 			case KEY_CAMERA_RESET:
-				game_state.camera = 0;
+				game_state.num_camera = 0;
 				reload_bg = 1;
 				break;						
 			case KEY_MODEL_DOWN:
-				num_model--;
+				--num_model;
 				if (num_model<0) {
 					num_model=0;
 				} else {
@@ -184,7 +192,7 @@ void view_background_input(SDL_Event *event)
 				}
 				break;
 			case KEY_MODEL_UP:
-				num_model++;
+				++num_model;
 				if (num_model>100) {
 					num_model=100;
 				} else {
@@ -337,7 +345,7 @@ void view_background_update(void)
 
 void view_background_draw(void)
 {
-	long cam_pos[6];
+	room_camera_t room_camera;
 
 	render.startFrame(&render);
 
@@ -349,55 +357,26 @@ void view_background_draw(void)
 
 	render.drawBackground(&video);
 
-	if (!game_state.room_file) {
+	if (!game_state.room) {
+		return;
+	}
+	if (!game_state.room->getCamera) {
 		return;
 	}
 
-	switch(game_state.version) {
-		case GAME_RE1_PS1_DEMO:
-		case GAME_RE1_PS1_GAME:
-		case GAME_RE1_PS1_SHOCK:
-			re1ps1_get_camera(cam_pos);
-			break;
-		case GAME_RE1_PC_GAME:
-			re1pcgame_get_camera(cam_pos);
-			break;
-		case GAME_RE2_PS1_DEMO:
-		case GAME_RE2_PS1_DEMO2:
-		case GAME_RE2_PS1_GAME_LEON:
-		case GAME_RE2_PS1_GAME_CLAIRE:
-			re2ps1_get_camera(cam_pos);
-			break;
-		case GAME_RE2_PC_GAME_LEON:
-		case GAME_RE2_PC_GAME_CLAIRE:
-			re2pcgame_get_camera(cam_pos);
-			break;
-		case GAME_RE2_PC_DEMO_P:
-		case GAME_RE2_PC_DEMO_U:
-			re2pcdemo_get_camera(cam_pos);
-			break;
-		case GAME_RE3_PS1_GAME:
-			re3ps1game_get_camera(cam_pos);
-			break;
-		case GAME_RE3_PC_DEMO:
-		case GAME_RE3_PC_GAME:
-			re3pc_get_camera(cam_pos);
-			break;
-		default:
-			return;
-	}
+	(*game_state.room->getCamera)(game_state.room, game_state.num_camera, &room_camera);
 
 	if (refresh_player_pos) {
-		player_x = cam_pos[3];
-		player_y = cam_pos[4];
-		player_z = cam_pos[5];
+		player_x = room_camera.to_x;
+		player_y = room_camera.to_y;
+		player_z = room_camera.to_z;
 		refresh_player_pos = 0;
 	}
 
 	render.set_projection(60.0f, 4.0f/3.0f, 1.0f, 100000.0f);
 	render.set_modelview(
-		cam_pos[0], cam_pos[1], cam_pos[2],
-		cam_pos[3], cam_pos[4], cam_pos[5],
+		room_camera.from_x, room_camera.from_y, room_camera.from_z,
+		room_camera.to_x, room_camera.to_y, room_camera.to_z,
 		0.0f, -1.0f, 0.0f
 	);
 
@@ -405,9 +384,9 @@ void view_background_draw(void)
 
 	/* World origin */
 	drawOrigin();
-	drawCameraSwitches();
+	/*drawCameraSwitches();*/
 
-	render.translate(cam_pos[3], cam_pos[4], cam_pos[5]);
+	render.translate(room_camera.to_x, room_camera.to_y, room_camera.to_z);
 	if (render_grid) {
 		drawGrid();
 	}
@@ -472,31 +451,29 @@ static void drawGrid(void)
 
 static void drawCameraSwitches(void)
 {
-	int i, j, num_switches = 0;
+	int i, j;
 	short switchPos[8];
 	vertex_t v[4];
 
-	switch(game_state.version) {
-		case GAME_RE2_PC_DEMO_P:
-		case GAME_RE2_PC_DEMO_U:
-			num_switches = re2pcdemo_get_num_camswitch();
-			break;
-		default:
-			return;
+	if (!game_state.room) {
+		return;
+	}
+	if (!game_state.room->getCamswitch) {
+		return;
 	}
 
 	render.set_texture(0, NULL);
 	render.set_color(0x00cc8844);
 	render.push_matrix();
-	for (i=0; i<num_switches; i++) {
-		if (!re2pcdemo_get_camswitch(i,switchPos)) {
-			continue;
-		}
+	for (i=0; i<game_state.room->num_camswitches; i++) {
+		room_camswitch_t room_camswitch;
+
+		(*game_state.room->getCamswitch)(game_state.room, i, &room_camswitch);
 
 		for (j=0; j<4; j++) {
-			v[j].x = switchPos[j*2];
+			v[j].x = room_camswitch.x[j];
 			v[j].y = 2000;
-			v[j].z = switchPos[j*2+1];
+			v[j].z = room_camswitch.y[j];
 		}
 
 		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);

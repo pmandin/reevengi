@@ -46,6 +46,19 @@
 
 /*--- Types ---*/
 
+typedef struct {
+	Uint16 unk0;
+	Uint16 const0; /* 0x683c, or 0x73b7 */
+	/* const0>>7 used for engine */
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 offset;
+} rdt_camera_pos_t;
+
 /*--- Constant ---*/
 
 static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
@@ -113,6 +126,8 @@ static int re3pc_loadroom_rdt(const char *filename);
 
 static model_t *re3pc_load_model(int num_model);
 
+static void re3pc_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
+
 /*--- Functions ---*/
 
 void re3pc_init(state_t *game_state)
@@ -146,7 +161,7 @@ void re3pc_init(state_t *game_state)
 			break;
 	}
 
-	game_state->priv_load_model = game_state->load_model = re3pc_load_model;
+	game_state->priv_load_model = re3pc_load_model;
 }
 
 void re3pc_shutdown(void)
@@ -162,7 +177,7 @@ void re3pc_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pc_bg, game_state.stage, game_state.room, game_state.camera);
+	sprintf(filepath, re3pc_bg, game_state.num_stage, game_state.num_room, game_state.num_camera);
 
 	logMsg(1, "jpg: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re3pc_load_jpg_bg(filepath) ? "done" : "failed");
@@ -214,7 +229,7 @@ static void re3pc_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pc_room, game_lang, game_state.stage, game_state.room);
+	sprintf(filepath, re3pc_room, game_lang, game_state.num_stage, game_state.num_room);
 
 	logMsg(1, "rdt: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", re3pc_loadroom_rdt(filepath) ? "done" : "failed");
@@ -224,22 +239,27 @@ static void re3pc_loadroom(void)
 
 static int re3pc_loadroom_rdt(const char *filename)
 {
-	int retval = 0;
 	PHYSFS_sint64 length;
 	Uint8 *rdt_header;
-	
-	game_state.num_cameras = 0x1c;
+	void *file;
 
-	game_state.room_file = FS_Load(filename, &length);
-	if (!game_state.room_file) {
-		return retval;
+	file = FS_Load(filename, &length);
+	if (!file) {
+		return 0;
 	}
 
-	rdt_header = (Uint8 *) game_state.room_file;
-	game_state.num_cameras = rdt_header[1];
+	game_state.room = room_create(file);
+	if (!game_state.room) {
+		free(file);
+		return 0;
+	}
 
-	retval = 1;
-	return retval;
+	rdt_header = (Uint8 *) file;
+	game_state.room->num_cameras = rdt_header[1];
+
+	game_state.room->getCamera = re3pc_getCamera;
+
+	return 1;
 }
 
 model_t *re3pc_load_model(int num_model)
@@ -290,32 +310,19 @@ model_t *re3pc_load_model(int num_model)
 	return model;
 }
 
-typedef struct {
-	Uint16 unk0;
-	Uint16 const0; /* 0x683c, or 0x73b7 */
-	/* const0>>7 used for engine */
-	Sint32 camera_from_x;
-	Sint32 camera_from_y;
-	Sint32 camera_from_z;
-	Sint32 camera_to_x;
-	Sint32 camera_to_y;
-	Sint32 camera_to_z;
-	Uint32 offset;
-} rdt_camera_pos_t;
-
-void re3pc_get_camera(long *camera_pos)
+static void re3pc_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
 {
 	Uint32 *cams_offset, offset;
 	rdt_camera_pos_t *cam_array;
-	
-	cams_offset = (Uint32 *) ( &((Uint8 *)game_state.room_file)[8+7*4]);
-	offset = SDL_SwapLE32(*cams_offset);
-	cam_array = (rdt_camera_pos_t *) &((Uint8 *)game_state.room_file)[offset];
 
-	camera_pos[0] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_x);
-	camera_pos[1] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_y);
-	camera_pos[2] = SDL_SwapLE32(cam_array[game_state.camera].camera_from_z);
-	camera_pos[3] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_x);
-	camera_pos[4] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_y);
-	camera_pos[5] = SDL_SwapLE32(cam_array[game_state.camera].camera_to_z);
+	cams_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+7*4]);
+	offset = SDL_SwapLE32(*cams_offset);
+	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
+
+	room_camera->from_x = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_x);
+	room_camera->from_y = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_y);
+	room_camera->from_z = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_z);
+	room_camera->to_x = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_x);
+	room_camera->to_y = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_y);
+	room_camera->to_z = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_z);
 }
