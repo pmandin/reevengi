@@ -33,13 +33,14 @@ struct render_texture_s {
 	void (*shutdown)(render_texture_t *this);
 
 	/* Send/remove texture from video card */
-	void (*upload)(render_texture_t *this);
+	void (*upload)(render_texture_t *this, int num_pal);
 	void (*download)(render_texture_t *this);
 
 	int w, h;		/* Dimension of image zone */
 	int pitchw, pitchh;	/* Dimension of bouding zone */
 	int pitch;
-	int paletted;
+	int num_palettes, paletted;
+	
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
 };

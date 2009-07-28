@@ -31,7 +31,7 @@
 
 static void shutdown(render_texture_t *texture);
 
-static void upload(render_texture_t *texture);
+static void upload(render_texture_t *texture, int num_pal);
 static void download(render_texture_t *texture);
 
 /*--- Functions ---*/
@@ -141,6 +141,7 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	}
 
 	tex->paletted = paletted;
+	tex->num_palettes = paletted ? num_palettes : 0;
 	tex->pitch = wpot*bytes_per_pixel;
 	tex->w = w;
 	tex->pitchw = wpot;
@@ -271,7 +272,7 @@ static void shutdown(render_texture_t *texture)
 	}
 }
 
-static void upload(render_texture_t *texture)
+static void upload(render_texture_t *texture, int num_pal)
 {
 }
 
