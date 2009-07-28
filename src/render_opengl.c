@@ -45,6 +45,12 @@ static int gouraud;
 
 /*--- Functions prototypes ---*/
 
+static void render_opengl_shutdown(render_t *render);
+
+static void render_resize(render_t *this, int w, int h);
+static void render_startFrame(render_t *this);
+static void render_endFrame(render_t *this);
+
 static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect, float z_near, float z_far);
 static void set_modelview(float x_from, float y_from, float z_from,
@@ -75,12 +81,16 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-static void render_opengl_shutdown(render_t *render);
-
 /*--- Functions ---*/
 
 void render_opengl_init(render_t *render)
 {
+	render->shutdown = render_opengl_shutdown;
+
+	render->resize = render_resize;
+	render->startFrame = render_startFrame;
+	render->endFrame = render_endFrame;
+
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
 	render->set_modelview = set_modelview;
@@ -104,8 +114,6 @@ void render_opengl_init(render_t *render)
 	render->texture = NULL;
 	render->tex_pal = -1;
 
-	render->shutdown = render_opengl_shutdown;
-
 	set_render(render, RENDER_WIREFRAME);
 	blending = 0;
 	gouraud = 0;
@@ -117,6 +125,18 @@ static void render_opengl_shutdown(render_t *render)
 	if (tex_obj != (GLuint) -1) {
 		gl.DeleteTextures(1, &tex_obj);
 	}
+}
+
+static void render_resize(render_t *this, int w, int h)
+{
+}
+
+static void render_startFrame(render_t *this)
+{
+}
+
+static void render_endFrame(render_t *this)
+{
 }
 
 static void set_viewport(int x, int y, int w, int h)

@@ -23,6 +23,8 @@
 #include "render_background.h"
 #include "matrix.h"
 #include "draw.h"
+#include "draw_simple.h"
+#include "draw_sbuffer.h"
 
 /*--- Defines ---*/
 
@@ -41,9 +43,15 @@ static float clip_planes[6][4]; /* view frustum clip planes */
 
 static int gouraud;
 
+static draw_t draw;
+
 /*--- Functions prototypes ---*/
 
 static void render_soft_shutdown(render_t *render);
+
+static void render_resize(render_t *this, int w, int h);
+static void render_startFrame(render_t *this);
+static void render_endFrame(render_t *this);
 
 static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect,
@@ -83,6 +91,12 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 void render_soft_init(render_t *render)
 {
+	render->shutdown = render_soft_shutdown;
+
+	render->resize = render_resize;
+	render->startFrame = render_startFrame;
+	render->endFrame = render_endFrame;
+
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
 	render->set_modelview = set_modelview;
@@ -106,8 +120,6 @@ void render_soft_init(render_t *render)
 	render->texture = NULL;
 	render->tex_pal = -1;
 
-	render->shutdown = render_soft_shutdown;
-
 	render->texture = NULL;
 
 	set_render(render, RENDER_WIREFRAME);
@@ -120,11 +132,30 @@ void render_soft_init(render_t *render)
 	mtx_setIdentity(frustum_mtx);
 
 	gouraud = 0;
+
+	/*draw_init_simple(&draw);*/
+	draw_init_sbuffer(&draw);
 }
 
 static void render_soft_shutdown(render_t *render)
 {
+	draw.shutdown(&draw);
 	render_background_shutdown();
+}
+
+static void render_resize(render_t *this, int w, int h)
+{
+	draw.resize(&draw, w,h);
+}
+
+static void render_startFrame(render_t *this)
+{
+	draw.startFrame(&draw);
+}
+
+static void render_endFrame(render_t *this)
+{
+	draw.endFrame(&draw);
 }
 
 /* Recalculate frustum matrix = modelview*projection */
@@ -178,7 +209,7 @@ static void set_modelview(float x_from, float y_from, float z_from,
 	num_modelview_mtx = 0;
 	mtx_setIdentity(modelview_mtx[num_modelview_mtx]);
 
-	draw_clear();
+	/*draw_clear();*/
 }
 
 static void set_identity(void)
@@ -251,7 +282,8 @@ static void set_color(Uint32 color)
 	r = (color>>16) & 0xff;
 	g = (color>>8) & 0xff;
 	b = color & 0xff;
-	draw_setColor(SDL_MapRGBA(surf->format, r,g,b,a));
+
+	draw.setColor(&draw, SDL_MapRGBA(surf->format, r,g,b,a));
 }
 
 static void set_render(render_t *this, int num_render)
@@ -416,7 +448,7 @@ static void line(vertex_t *v1, vertex_t *v2)
 	v[1].x = segment[1][0]/segment[1][2];
 	v[1].y = segment[1][1]/segment[1][2];
 
-	draw_line(&v[0], &v[1]);
+	draw.line(&draw, &v[0], &v[1]);
 }
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -425,7 +457,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	draw_vertex_t v[3];
 
 	if (render.texture) {
-		draw_setColor(get_color_from_texture(v1));
+		draw.setColor(&draw, get_color_from_texture(v1));
 	}
 
 	memset(segment, 0, sizeof(float)*4*4);
@@ -459,7 +491,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	v[2].x = segment[2][0]/segment[2][2];
 	v[2].y = segment[2][1]/segment[2][2];
 
-	draw_triangle(v);
+	draw.triangle(&draw, v);
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -468,7 +500,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	draw_vertex_t v[4];
 
 	if (render.texture) {
-		draw_setColor(get_color_from_texture(v1));
+		draw.setColor(&draw, get_color_from_texture(v1));
 	}
 
 	memset(segment, 0, sizeof(float)*4*4);
@@ -508,7 +540,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	v[3].x = segment[3][0]/segment[3][2];
 	v[3].y = segment[3][1]/segment[3][2];
 
-	draw_quad(v);
+	draw.quad(&draw, v);
 }
 
 /*
@@ -524,7 +556,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	color = get_color_from_texture(v1);
 	if (!gouraud) {
-		draw_setColor(color);
+		draw.setColor(&draw, color);
 	}
 
 	color = get_rgbaColor_from_drawColor(color);
@@ -594,13 +626,11 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw_poly_sbuffer(poly, num_vtx);
-
-	/*if (gouraud) {
-		draw_poly_gouraud(poly, num_vtx);
+	if (gouraud) {
+		draw.polyGouraud(&draw, poly, num_vtx);
 	} else {
-		draw_poly_fill(poly, num_vtx);
-	}*/
+		draw.polyFill(&draw, poly, num_vtx);
+	}
 }
 
 static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -612,7 +642,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	color = get_color_from_texture(v1);
 	if (!gouraud) {
-		draw_setColor(color);
+		draw.setColor(&draw, color);
 	}
 
 	color = get_rgbaColor_from_drawColor(color);
@@ -696,13 +726,11 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw_poly_sbuffer(poly, num_vtx);
-
-	/*if (gouraud) {
-		draw_poly_gouraud(poly, num_vtx);
+	if (gouraud) {
+		draw.polyGouraud(&draw, poly, num_vtx);
 	} else {
-		draw_poly_fill(poly, num_vtx);
-	}*/
+		draw.polyFill(&draw, poly, num_vtx);
+	}
 }
 
 /*
@@ -718,7 +746,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 	render.tex_pal = num_pal;
 	render.texture = render_tex;
 
-	draw_setTexture(num_pal, render_tex);
+	draw.setTexture(&draw, num_pal, render_tex);
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -774,8 +802,7 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw_poly_sbuffer(poly, num_vtx);
-/*	draw_poly_tex(poly, num_vtx);*/
+	draw.polyTexture(&draw, poly, num_vtx);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -838,6 +865,5 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-/*	draw_poly_tex(poly, num_vtx);*/
-	draw_poly_sbuffer(poly, num_vtx);
+	draw.polyTexture(&draw, poly, num_vtx);
 }

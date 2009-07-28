@@ -148,7 +148,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 		/* Check OpenGL extensions */
 		extensions = (char *) gl.GetString(GL_EXTENSIONS);
 
-		this->has_gl_arb_texture_non_power_of_two = 0 /*(strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL);*/
+		this->has_gl_arb_texture_non_power_of_two = (strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL);
 		logMsg(2, "GL_ARB_texture_non_power_of_two: %d\n", this->has_gl_arb_texture_non_power_of_two);
 
 		this->has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);

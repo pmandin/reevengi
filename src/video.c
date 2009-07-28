@@ -234,7 +234,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
-	draw_resize(this->width, this->height);
+	render.resize(&render, this->width, this->height);
 	video.initViewport(&video);
 }
 
@@ -255,7 +255,7 @@ static void swapBuffers(video_t *this)
 	SDL_Rect *list_rects;
 	int i, x, y;
 
-	draw_render();
+	render.endFrame(&render);
 
 	this->countFps(this);
 

@@ -53,6 +53,12 @@ typedef struct {
 typedef struct render_s render_t;
 
 struct render_s {
+	void (*shutdown)(render_t *this);
+
+	void (*resize)(render_t *this, int w, int h);
+	void (*startFrame)(render_t *this);
+	void (*endFrame)(render_t *this);
+
 	void (*set_viewport)(int x, int y, int w, int h);
 	void (*set_projection)(float angle, float aspect,
 		float z_near, float z_far);
@@ -87,8 +93,6 @@ struct render_s {
 
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);
-
-	void (*shutdown)(render_t *this);
 
 	render_texture_t *texture;
 	int tex_pal;	/* Palette to use */

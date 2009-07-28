@@ -336,6 +336,8 @@ void view_background_draw(void)
 {
 	long cam_pos[6];
 
+	render.startFrame(&render);
+
 	if (render_restore && !params.use_opengl) {
 		SDL_FillRect(video.screen, NULL, 0);
 		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],

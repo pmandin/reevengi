@@ -28,30 +28,39 @@ typedef struct {
 	int u,v;	/* U,V texture coordinates */
 } draw_vertex_t;
 
-/*--- Functions prototypes ---*/
+typedef struct draw_s draw_t;
 
-void draw_init(void);
-void draw_shutdown(void);
+struct draw_s {
+	/*--- Variables ---*/
+	Uint32 draw_color;
 
-void draw_resize(int w, int h);
-void draw_clear(void);
-void draw_render(void);
+	/* texture */
+	int tex_num_pal;
+	render_texture_t *texture;
 
-void draw_setColor(Uint32 color);
-void draw_setTexture(int num_pal, render_texture_t *render_tex);
+	/*--- Functions ---*/
+	void (*shutdown)(draw_t *this);
 
-void draw_line(draw_vertex_t *v1, draw_vertex_t *v2);
+	void (*resize)(draw_t *this, int w, int h);
+	void (*startFrame)(draw_t *this);
+	void (*endFrame)(draw_t *this);
 
-void draw_triangle(draw_vertex_t v[3]);
+	void (*setColor)(draw_t *this, Uint32 color);
+	void (*setTexture)(draw_t *this, int num_pal, render_texture_t *render_tex);
 
-void draw_quad(draw_vertex_t v[4]);
+	/* Wireframe */
+	void (*line)(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
+	void (*triangle)(draw_t *this, draw_vertex_t v[3]);
+	void (*quad)(draw_t *this, draw_vertex_t v[4]);
 
-void draw_poly_sbuffer(vertexf_t *vtx, int num_vtx);
+	/* Filled */
+	void (*polyFill)(draw_t *this, vertexf_t *vtx, int num_vtx);
 
-void draw_poly_fill(vertexf_t *vtx, int num_vtx);
+	/* Gouraud */
+	void (*polyGouraud)(draw_t *this, vertexf_t *vtx, int num_vtx);
 
-void draw_poly_gouraud(vertexf_t *vtx, int num_vtx);
-
-void draw_poly_tex(vertexf_t *vtx, int num_vtx);
+	/* Textured */
+	void (*polyTexture)(draw_t *this, vertexf_t *vtx, int num_vtx);
+};
 
 #endif /* DRAW_H */

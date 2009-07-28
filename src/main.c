@@ -42,7 +42,6 @@
 
 #include "video.h"
 #include "render.h"
-#include "draw.h"
 
 /*--- Defines ---*/
 
@@ -165,7 +164,6 @@ int main(int argc, char **argv)
 #endif
 
 	state_loadmodel();
-	draw_init();
 
 	/* Force a mode switch */
 	new_width = video.width;
@@ -190,7 +188,6 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	draw_shutdown();
 	state_shutdown();
 	video.shutDown(&video);
 	render.shutdown(&render);
