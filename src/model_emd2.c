@@ -174,7 +174,7 @@ static void model_emd2_shutdown(model_t *this)
 			free(this->tim_file);
 		}
 		if (this->texture) {
-			render_texture_shutdown(this->texture);
+			this->texture->shutdown(this->texture);
 		}
 		free(this);
 	}

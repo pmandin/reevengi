@@ -27,6 +27,10 @@
 #include "parameters.h"
 #include "log.h"
 
+/*--- Functions prototypes ---*/
+
+static void shutdown(render_texture_t *texture);
+
 /*--- Functions ---*/
 
 static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
@@ -250,10 +254,12 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 			break;
 	}
 
+	tex->shutdown = shutdown;
+
 	return tex;
 }
 
-void render_texture_shutdown(render_texture_t *texture)
+static void shutdown(render_texture_t *texture)
 {
 	if (texture) {
 		free(texture);

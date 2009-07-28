@@ -27,21 +27,22 @@
 
 /*--- Types ---*/
 
-typedef struct {
+typedef struct render_texture_s render_texture_t;
+
+struct render_texture_s {
+	void (*shutdown)(render_texture_t *this);
+
 	int w, h;		/* Dimension of image zone */
 	int pitchw, pitchh;	/* Dimension of bouding zone */
 	int pitch;
 	int paletted;
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
-} render_texture_t;
+};
 
 /*--- Functions prototypes ---*/
 
 /* Load texture from a TIM image file as pointer */
 render_texture_t *render_texture_load_from_tim(void *tim_ptr);
-
-/* Free texture data */
-void render_texture_shutdown(render_texture_t *texture);
 
 #endif /* RENDER_TEXTURE_H */
