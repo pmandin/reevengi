@@ -35,11 +35,11 @@
 #include "video.h"
 #include "render.h"
 #include "render_background_opengl.h"
+#include "render_texture_opengl.h"
 #include "matrix.h"
 
 /*--- Variables ---*/
 
-static GLuint tex_obj = (GLuint) -1;
 static int blending;
 static int gouraud;
 
@@ -91,7 +91,7 @@ void render_opengl_init(render_t *render)
 	render->startFrame = render_startFrame;
 	render->endFrame = render_endFrame;
 
-	render->textureFromTim = render_texture_load_from_tim;
+	render->textureFromTim = render_texture_gl_load_from_tim;
 
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
@@ -114,7 +114,7 @@ void render_opengl_init(render_t *render)
 	render->drawBackground = render_background_opengl;
 
 	render->texture = NULL;
-	render->tex_pal = -1;
+	render->tex_pal = 0;
 
 	set_render(render, RENDER_WIREFRAME);
 	blending = 0;
@@ -123,10 +123,6 @@ void render_opengl_init(render_t *render)
 
 static void render_opengl_shutdown(render_t *render)
 {
-	/* Delete texture obj ? */
-	if (tex_obj != (GLuint) -1) {
-		gl.DeleteTextures(1, &tex_obj);
-	}
 }
 
 static void render_resize(render_t *this, int w, int h)
@@ -427,93 +423,20 @@ static void set_blending(int enable)
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
-	int reupload_tex = 0, i;
-	GLenum internalFormat = GL_RGBA;
-	GLenum pixelType = GL_UNSIGNED_BYTE;
-	GLenum surfaceFormat = GL_RGBA;
+	render.tex_pal = num_pal;
+	render.texture = render_tex;
 
-	if (num_pal!=render.tex_pal) {
-		render.tex_pal = num_pal;
-		reupload_tex = 1;
-	}
-	if (render_tex!=render.texture) {
-		render.texture = render_tex;
-		reupload_tex = 1;
-	}
-	if (tex_obj == (GLuint) -1) {
-		gl.GenTextures(1, &tex_obj);
-		reupload_tex = 1;
-	}
-
-	if (!reupload_tex || !render.texture) {
+	if (render_tex==NULL) {
 		return;
 	}
 
-	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
+	render_tex->upload(render_tex, num_pal);
 
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	/* Upload new palette */
-	if (render_tex->paletted) {
-		surfaceFormat = GL_COLOR_INDEX;
-
-#if defined(GL_EXT_paletted_texture)
-		if (video.has_gl_ext_paletted_texture) {
-			Uint8 mapP[256*4];
-			Uint8 *pMap = mapP;
-
-			internalFormat = GL_COLOR_INDEX8_EXT;
-			for (i=0; i<256; i++) {
-				Uint32 color = render_tex->palettes[num_pal][i];
-
-				*pMap++ = (color>>16) & 0xff;
-				*pMap++ = (color>>8) & 0xff;
-				*pMap++ = color & 0xff;
-				*pMap++ = (color>>24) & 0xff;
-			}
-			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
-				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
-		} else
-#endif
-		{
-			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
-
-			memset(mapR, 0, sizeof(mapR));
-			memset(mapG, 0, sizeof(mapG));
-			memset(mapB, 0, sizeof(mapB));
-			memset(mapA, 0, sizeof(mapA));
-			for (i=0; i<256; i++) {
-				Uint32 color = render_tex->palettes[num_pal][i];
-
-				mapR[i] = ((color>>16) & 0xff) / 255.0;
-				mapG[i] = ((color>>8) & 0xff) / 255.0;
-				mapB[i] = (color & 0xff) / 255.0;
-				mapA[i] = ((color>>24) & 0xff) / 255.0;
-			}
-			gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_G, 256, mapG);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
-		}
-	} else {
-		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
-	}
-
-	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
-		render_tex->pitchw, render_tex->pitchh, 0,
-		surfaceFormat, pixelType, render_tex->pixels
-	);
-
-	if (render_tex->paletted) {
-		if (!video.has_gl_ext_paletted_texture) {
-			gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
-		}
-	}
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -534,8 +457,6 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.CullFace(GL_FRONT);
 
 	gl.Enable(GL_TEXTURE_2D);
-
-	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
 
 	gl.Begin(GL_TRIANGLES);
 	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
@@ -568,8 +489,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.CullFace(GL_FRONT);
 
 	gl.Enable(GL_TEXTURE_2D);
-
-	gl.BindTexture(GL_TEXTURE_2D, tex_obj);
 
 	gl.Begin(GL_QUADS);
 	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
