@@ -411,12 +411,28 @@ void room_map_drawPlayer(float x, float y, float angle)
 	render.pop_matrix();
 }
 
-int room_checkBoundary(float x, float y)
+int room_checkBoundary(room_t *this, float x, float y)
 {
+	int i;
+
+	for (i=0; i<this->num_boundaries; i++) {
+		room_camswitch_t room_camswitch;
+
+		this->getBoundary(this, i, &room_camswitch);
+	}
+
 	return 0;
 }
 
-int room_checkCamswitch(float x, float y)
+int room_checkCamswitch(room_t *this, float x, float y)
 {
+	int i;
+
+	for (i=0; i<this->num_camswitches; i++) {
+		room_camswitch_t room_camswitch;
+
+		this->getCamswitch(this, i, &room_camswitch);
+	}
+
 	return -1;
 }
