@@ -33,7 +33,7 @@ typedef struct {
 } room_camera_t;
 
 typedef struct {
-	Uint8 from, to;	/* camera to switch from/to */
+	Uint8 from, to;	/* camera to switch from/to, to=0 for boundary */
 	Sint16 x[4];	/* Quad zone to check when player enters/exits it */
 	Sint16 y[4];
 } room_camswitch_t;
@@ -45,9 +45,11 @@ struct room_s {
 
 	int num_cameras;
 	int num_camswitches;
+	int num_boundaries;
 
 	void (*getCamera)(room_t *this, int num_camera, room_camera_t *room_camera);
 	void (*getCamswitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
 	void (*shutdown)(room_t *this);
 };
@@ -57,5 +59,6 @@ struct room_s {
 room_t *room_create(void *room_file);
 
 void room_map_init(room_t *this);
+void room_map_draw(room_t *this);
 
 #endif /* ROOM_H */
