@@ -19,6 +19,8 @@
 */
 
 #include <stdlib.h>
+#include <math.h>
+
 #include <SDL.h>
 
 #include "video.h"
@@ -34,6 +36,7 @@
 #define MAP_COLOR_CAMSWITCH_ENABLED	0x00ffcc88
 #define MAP_COLOR_BOUNDARY_DISABLED	0x00660000
 #define MAP_COLOR_BOUNDARY_ENABLED	0x00ff0000
+#define MAP_COLOR_PLAYER		0x0000ff00
 
 /*--- Types ---*/
 
@@ -268,20 +271,45 @@ static void room_map_drawCameras(room_t *this)
 	for (i=0; i<this->num_cameras; i++) {
 		room_camera_t room_camera;
 		vertex_t v[2];
+		float dx, dy, adx, ady, angle, radius;
 
 		this->getCamera(this, i, &room_camera);
+
+		dx = room_camera.to_x - room_camera.from_x;
+		dy = room_camera.to_z - room_camera.from_z;
+		adx = abs(dx);
+		ady = abs(dy);
+		radius = sqrt(dx*dx+dy*dy);
+		if (adx>ady) {
+			angle = atan(ady/adx);
+		} else {
+			angle = (M_PI/2.0f) - atan(adx/ady);
+		}
+		if (dx<0) {
+			angle = M_PI - angle;
+		}
+		if (dy<0) {
+			angle = M_PI*2.0f - angle;
+		}
+		angle = (angle * 180.0f) / M_PI;
+
+		render.set_color((i==game_state.num_camera) ?
+			MAP_COLOR_CAMERA_ENABLED :
+			MAP_COLOR_CAMERA_DISABLED);
 
 		v[0].x = room_camera.from_x;
 		v[0].y = room_camera.from_z;
 		v[0].z = 1.0f;
 
-		v[1].x = room_camera.to_x;
-		v[1].y = room_camera.to_z;
+		v[1].x = room_camera.from_x + radius * cos(((angle+30.0f)*M_PI)/180.0f);
+		v[1].y = room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f);
 		v[1].z = 1.0f;
 
-		render.set_color((i==game_state.num_camera) ?
-			MAP_COLOR_CAMERA_ENABLED :
-			MAP_COLOR_CAMERA_DISABLED);
+		render.line(&v[0], &v[1]);
+
+		v[1].x = room_camera.from_x + radius * cos(((angle-30.0f)*M_PI)/180.0f);
+		v[1].y = room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f);
+		v[1].z = 1.0f;
 
 		render.line(&v[0], &v[1]);
 	}
@@ -343,4 +371,42 @@ static void room_map_drawBoundaries(room_t *this)
 			render.line(&v[0], &v[1]);
 		}
 	}
+}
+
+void room_map_drawPlayer(float x, float y, float angle)
+{
+	vertex_t v[2];
+	const float radius = 2000.0f;
+
+	render.set_texture(0, NULL);
+	render.push_matrix();
+
+	/* Set ortho projection */
+	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
+
+	render.set_color(MAP_COLOR_PLAYER);
+
+	v[0].x = x - radius * cos((-angle * M_PI) / 180.0f) * 0.5f;
+	v[0].y = y - radius * sin((-angle * M_PI) / 180.0f) * 0.5f;
+	v[0].z = 1.0f;
+
+	v[1].x = x + radius * cos((-angle * M_PI) / 180.0f) * 0.5f;
+	v[1].y = y + radius * sin((-angle * M_PI) / 180.0f) * 0.5f;
+	v[1].z = 1.0f;
+
+	render.line(&v[0], &v[1]);
+
+	v[0].x = x + radius * cos((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
+	v[0].y = y + radius * sin((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
+	v[0].z = 1.0f;
+
+	render.line(&v[0], &v[1]);
+
+	v[0].x = x + radius * cos((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
+	v[0].y = y + radius * sin((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
+	v[0].z = 1.0f;
+
+	render.line(&v[0], &v[1]);
+
+	render.pop_matrix();
 }

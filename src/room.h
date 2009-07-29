@@ -60,5 +60,6 @@ room_t *room_create(void *room_file);
 
 void room_map_init(room_t *this);
 void room_map_draw(room_t *this);
+void room_map_drawPlayer(float x, float y, float angle);
 
 #endif /* ROOM_H */

@@ -114,7 +114,6 @@ static Uint32 tick_turnright = 0;
 
 static void drawOrigin(void);
 static void drawGrid(void);
-static void drawCameraSwitches(void);
 
 static void drawPlayer(void);
 
@@ -391,7 +390,6 @@ void view_background_draw(void)
 
 	/* World origin */
 	drawOrigin();
-	/*drawCameraSwitches();*/
 
 	render.translate(room_camera.to_x, room_camera.to_y, room_camera.to_z);
 	if (render_grid) {
@@ -401,6 +399,7 @@ void view_background_draw(void)
 
 	if (render_map) {
 		room_map_draw(game_state.room);
+		room_map_drawPlayer(player_x, player_z, player_a);
 	}
 }
 
@@ -456,38 +455,6 @@ static void drawGrid(void)
 		v[1].z = 400;
 
 		render.line(&v[0], &v[1]);
-	}
-	render.pop_matrix();
-}
-
-static void drawCameraSwitches(void)
-{
-	int i, j;
-	short switchPos[8];
-	vertex_t v[4];
-
-	if (!game_state.room) {
-		return;
-	}
-	if (!game_state.room->getCamswitch) {
-		return;
-	}
-
-	render.set_texture(0, NULL);
-	render.set_color(0x00cc8844);
-	render.push_matrix();
-	for (i=0; i<game_state.room->num_camswitches; i++) {
-		room_camswitch_t room_camswitch;
-
-		(*game_state.room->getCamswitch)(game_state.room, i, &room_camswitch);
-
-		for (j=0; j<4; j++) {
-			v[j].x = room_camswitch.x[j];
-			v[j].y = 2000;
-			v[j].z = room_camswitch.y[j];
-		}
-
-		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 	}
 	render.pop_matrix();
 }
