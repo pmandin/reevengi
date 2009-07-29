@@ -35,20 +35,11 @@
 #include "model_emd.h"
 #include "log.h"
 #include "background_tim.h"
+#include "room_rdt.h"
 
 /*--- Defines ---*/
 
 /*--- Types ---*/
-
-typedef struct {
-	Sint32 camera_from_x;
-	Sint32 camera_from_y;
-	Sint32 camera_from_z;
-	Sint32 camera_to_x;
-	Sint32 camera_to_y;
-	Sint32 camera_to_z;
-	Uint32 unknown[5];
-} rdt_camera_pos_t;
 
 /*--- Constant ---*/
 
@@ -102,8 +93,6 @@ static void re1pcgame_loadroom(void);
 static int re1pcgame_loadroom_rdt(const char *filename);
 
 static model_t *re1pcgame_load_model(int num_model);
-
-static void re1pcgame_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
 
 /*--- Functions ---*/
 
@@ -202,7 +191,6 @@ static void re1pcgame_loadroom(void)
 static int re1pcgame_loadroom_rdt(const char *filename)
 {
 	PHYSFS_sint64 length;
-	Uint8 *rdt_header;
 	void *file;
 
 	file = FS_Load(filename, &length);
@@ -216,10 +204,7 @@ static int re1pcgame_loadroom_rdt(const char *filename)
 		return 0;
 	}
 
-	rdt_header = (Uint8 *) file;
-	game_state.room->num_cameras = rdt_header[1];
-
-	game_state.room->getCamera = re1pcgame_getCamera;
+	room_rdt_init(game_state.room);
 
 	return 1;
 }
@@ -266,18 +251,4 @@ model_t *re1pcgame_load_model(int num_model)
 
 	free(filepath);
 	return model;
-}
-
-static void re1pcgame_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
-{
-	rdt_camera_pos_t *cam_array;
-	
-	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[0x9c];
-
-	room_camera->from_x = SDL_SwapLE32(cam_array[num_camera].camera_from_x);
-	room_camera->from_y = SDL_SwapLE32(cam_array[num_camera].camera_from_y);
-	room_camera->from_z = SDL_SwapLE32(cam_array[num_camera].camera_from_z);
-	room_camera->to_x = SDL_SwapLE32(cam_array[num_camera].camera_to_x);
-	room_camera->to_y = SDL_SwapLE32(cam_array[num_camera].camera_to_y);
-	room_camera->to_z = SDL_SwapLE32(cam_array[num_camera].camera_to_z);
 }

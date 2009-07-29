@@ -246,7 +246,7 @@ void room_map_draw(room_t *this)
 	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
 	/*render.set_identity();*/
 
-	/*room_map_drawBoundaries(this);*/
+	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
 	room_map_drawCameras(this);
 
@@ -298,19 +298,6 @@ static void room_map_drawCamswitches(room_t *this)
 
 		this->getCamswitch(this, i, &room_camswitch);
 
-		/*printf("%d: from %d to %d\n", i,room_camswitch.from,room_camswitch.to);*/
-
-#if 0
-		if (prev_from != room_camswitch.from) {
-			prev_from = room_camswitch.from;
-			boundary=1;
-		}
-		if (boundary && (room_camswitch.to==0)) {
-			/*printf("switch %d is boundary\n", i);*/
-			continue;
-		}
-#endif
-
 		render.set_color((room_camswitch.from==game_state.num_camera) ?
 			MAP_COLOR_CAMSWITCH_ENABLED :
 			MAP_COLOR_CAMSWITCH_DISABLED);
@@ -339,16 +326,6 @@ static void room_map_drawBoundaries(room_t *this)
 		int boundary = 0;
 
 		this->getBoundary(this, i, &room_camswitch);
-
-		if (prev_from != room_camswitch.from) {
-			prev_from = room_camswitch.from;
-			boundary=1;
-		}
-		if (boundary && (room_camswitch.to==0)) {
-			/*printf("switch %d is boundary\n", i);*/
-		} else {
-			continue;
-		}
 
 		render.set_color((room_camswitch.from==game_state.num_camera) ?
 			MAP_COLOR_BOUNDARY_ENABLED :

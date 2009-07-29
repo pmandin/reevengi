@@ -33,34 +33,13 @@
 #include "video.h"
 #include "log.h"
 #include "model_emd2.h"
+#include "room_rdt2.h"
 
 /*--- Defines ---*/
 
 #define MAX_MODELS	0x17
 
 /*--- Types ---*/
-
-typedef struct {
-	Uint16 unk0;
-	Uint16 const0; /* 0x683c, or 0x73b7 */
-	/* const0>>7 used for engine */
-	Sint32 camera_from_x;
-	Sint32 camera_from_y;
-	Sint32 camera_from_z;
-	Sint32 camera_to_x;
-	Sint32 camera_to_y;
-	Sint32 camera_to_z;
-	Uint32 offset;
-} rdt_camera_pos_t;
-
-typedef struct {
-	Uint16 const0; /* 0xff01 */
-	Uint8 cam0, cam1;
-	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
-	Sint16 x2,y2;
-	Sint16 x3,y3;
-	Sint16 x4,y4;
-} rdt_camera_switch_t;
 
 /*--- Constant ---*/
 
@@ -89,11 +68,6 @@ static void re2pcdemo_loadroom(void);
 static int re2pcdemo_loadroom_rdt(const char *filename);
 
 static model_t *re2pcdemo_load_model(int num_model);
-
-static void re2pcdemo_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
-
-static int re2pcdemo_getNumCamswitches(room_t *this);
-static void re2pcdemo_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 
 /*--- Functions ---*/
 
@@ -190,7 +164,6 @@ static void re2pcdemo_loadroom(void)
 static int re2pcdemo_loadroom_rdt(const char *filename)
 {
 	PHYSFS_sint64 length;
-	Uint8 *rdt_header;
 	void *file;
 
 	file = FS_Load(filename, &length);
@@ -204,12 +177,7 @@ static int re2pcdemo_loadroom_rdt(const char *filename)
 		return 0;
 	}
 
-	rdt_header = (Uint8 *) file;
-	game_state.room->num_cameras = rdt_header[1];
-	game_state.room->num_camswitches = re2pcdemo_getNumCamswitches(game_state.room);
-
-	game_state.room->getCamera = re2pcdemo_getCamera;
-	game_state.room->getCamswitch = re2pcdemo_getCamswitch;
+	room_rdt2_init(game_state.room);
 
 	return 1;
 }
@@ -248,92 +216,4 @@ model_t *re2pcdemo_load_model(int num_model)
 
 	free(filepath);
 	return model;
-}
-
-static void re2pcdemo_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
-{
-	Uint32 *cams_offset, offset;
-	rdt_camera_pos_t *cam_array;
-	
-	cams_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+7*4]);
-	offset = SDL_SwapLE32(*cams_offset);
-	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
-
-	room_camera->from_x = SDL_SwapLE32(cam_array[num_camera].camera_from_x);
-	room_camera->from_y = SDL_SwapLE32(cam_array[num_camera].camera_from_y);
-	room_camera->from_z = SDL_SwapLE32(cam_array[num_camera].camera_from_z);
-	room_camera->to_x = SDL_SwapLE32(cam_array[num_camera].camera_to_x);
-	room_camera->to_y = SDL_SwapLE32(cam_array[num_camera].camera_to_y);
-	room_camera->to_z = SDL_SwapLE32(cam_array[num_camera].camera_to_z);
-}
-
-static int re2pcdemo_getNumCamswitches(room_t *this)
-{
-	Uint32 *camswitch_offset, offset;
-	rdt_camera_switch_t *camswitch_array;
-	int i=0, num_switches = 0, prev_from = -1;
-
-	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
-	offset = SDL_SwapLE32(*camswitch_offset);
-	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
-
-	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
-		int boundary=0;
-
-		if (prev_from != camswitch_array[i].cam0) {
-			prev_from = camswitch_array[i].cam0;
-			boundary = 1;
-		}
-		if (boundary && (camswitch_array[i].cam1==0)) {
-			/* boundary, not a switch */
-		} else {
-			num_switches++;
-		}
-
-		++i;
-	}
-
-	return num_switches;
-}
-
-static void re2pcdemo_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch)
-{
-	Uint32 *camswitch_offset, offset;
-	rdt_camera_switch_t *camswitch_array;
-	int i=0, j=0, prev_from=-1;
-
-	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
-	offset = SDL_SwapLE32(*camswitch_offset);
-	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
-
-	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
-		int boundary = 0;
-
-		if (prev_from != camswitch_array[i].cam0) {
-			prev_from = camswitch_array[i].cam0;
-			boundary = 1;
-		}
-		if (boundary && (camswitch_array[i].cam1==0)) {
-			/* boundary, not a switch */
-		} else {
-			if (j==num_camswitch) {
-				break;
-			}
-
-			++j;
-		}
-
-		++i;
-	}
-
-	room_camswitch->from = camswitch_array[i].cam0;
-	room_camswitch->to = camswitch_array[i].cam1;
-	room_camswitch->x[0] = SDL_SwapLE16(camswitch_array[i].x1);
-	room_camswitch->y[0] = SDL_SwapLE16(camswitch_array[i].y1);
-	room_camswitch->x[1] = SDL_SwapLE16(camswitch_array[i].x2);
-	room_camswitch->y[1] = SDL_SwapLE16(camswitch_array[i].y2);
-	room_camswitch->x[2] = SDL_SwapLE16(camswitch_array[i].x3);
-	room_camswitch->y[2] = SDL_SwapLE16(camswitch_array[i].y3);
-	room_camswitch->x[3] = SDL_SwapLE16(camswitch_array[i].x4);
-	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[i].y4);
 }
