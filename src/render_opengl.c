@@ -53,6 +53,8 @@ static void render_endFrame(render_t *this);
 
 static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect, float z_near, float z_far);
+static void set_ortho(float left, float right, float bottom, float top,
+	float near, float far);
 static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up);
@@ -95,6 +97,7 @@ void render_opengl_init(render_t *render)
 
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;
+	render->set_ortho = set_ortho;
 	render->set_modelview = set_modelview;
 	render->set_identity = set_identity;
 	render->scale = scale;
@@ -147,6 +150,20 @@ static void set_projection(float angle, float aspect, float z_near, float z_far)
 	GLfloat m[4][4];
 
 	mtx_setProjection(m, angle, aspect, z_near, z_far);
+
+	gl.MatrixMode(GL_PROJECTION);
+	gl.LoadIdentity();
+	gl.MultMatrixf(&m[0][0]);
+
+	gl.MatrixMode(GL_MODELVIEW);
+}
+
+static void set_ortho(float left, float right, float bottom, float top,
+	float near, float far)
+{
+	GLfloat m[4][4];
+
+	mtx_setOrtho(m, left,right, bottom,top, near,far);
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();

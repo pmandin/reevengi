@@ -88,6 +88,20 @@ void mtx_setProjection(float m[4][4], float angle, float aspect, float z_near, f
 	m[3][3] = 0.0f;
 }
 
+void mtx_setOrtho(float m[4][4],
+	float left, float right, float bottom, float top,
+	float near, float far)
+{
+	memset(m, 0, sizeof(float)*4*4);
+	m[0][0] = 2.0f / (right-left);
+	m[1][1] = 2.0f / (top-bottom);
+	m[2][2] = 2.0f / (far-near);
+	m[3][0] = -(right+left) / (right-left);
+	m[3][1] = -(top+bottom) / (top-bottom);
+	m[3][2] = -(far+near) / (far-near);
+	m[3][3] = 1.0f;
+}
+
 /*
     	gluLookAt(x_from, y_from, z_from,
 		x_to, y_to, z_to,

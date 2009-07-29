@@ -38,6 +38,10 @@ void mtx_print(float m[4][4]);
 void mtx_setProjection(float m[4][4],
 	float angle, float aspect, float z_near, float z_far);
 
+void mtx_setOrtho(float m[4][4],
+	float left, float right, float bottom, float top,
+	float near, float far);
+
 void mtx_setLookAt(float m[4][4],
 	float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
