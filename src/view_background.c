@@ -333,7 +333,10 @@ static void processPlayerMovement(void)
 	if (player_moveforward) {
 		new_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
+		if (!render_map) {
+			player_x = new_x;
+			player_z = new_z;
+		} else if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
 			player_x = new_x;
 			player_z = new_z;
 		}
@@ -346,7 +349,10 @@ static void processPlayerMovement(void)
 	if (player_movebackward) {
 		new_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
+		if (!render_map) {
+			player_x = new_x;
+			player_z = new_z;
+		} else if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
 			player_x = new_x;
 			player_z = new_z;
 		}
