@@ -24,12 +24,16 @@
 #include "video.h"
 #include "render.h"
 #include "room.h"
+#include "state.h"
 
 /*--- Defines ---*/
 
-#define MAP_COLOR_CAMERA	0x00ffffff
-#define MAP_COLOR_CAMSWITCH	0x00cc8844
-#define MAP_COLOR_BOUNDARY	0x00ff0000
+#define MAP_COLOR_CAMERA_DISABLED	0x00888888
+#define MAP_COLOR_CAMERA_ENABLED	0x00ffffff
+#define MAP_COLOR_CAMSWITCH_DISABLED	0x00886644
+#define MAP_COLOR_CAMSWITCH_ENABLED	0x00ffcc88
+#define MAP_COLOR_BOUNDARY_DISABLED	0x00880000
+#define MAP_COLOR_BOUNDARY_ENABLED	0x00ff0000
 
 /*--- Types ---*/
 
@@ -242,7 +246,7 @@ void room_map_draw(room_t *this)
 
 	/* Set ortho projection */
 	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
-	render.set_identity();
+	/*render.set_identity();*/
 
 	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
@@ -263,8 +267,6 @@ static void room_map_drawCameras(room_t *this)
 {
 	int i;
 
-	render.set_color(MAP_COLOR_CAMERA);
-
 	for (i=0; i<this->num_cameras; i++) {
 		room_camera_t room_camera;
 		vertex_t v[2];
@@ -273,11 +275,15 @@ static void room_map_drawCameras(room_t *this)
 
 		v[0].x = room_camera.from_x;
 		v[0].y = room_camera.from_z;
-		v[0].z = 0.0f;
+		v[0].z = 1.0f;
 
 		v[1].x = room_camera.to_x;
 		v[1].y = room_camera.to_z;
-		v[1].z = 0.0f;
+		v[1].z = 1.0f;
+
+		render.set_color((i==game_state.num_camera) ?
+			MAP_COLOR_CAMERA_ENABLED :
+			MAP_COLOR_CAMERA_DISABLED);
 
 		render.line(&v[0], &v[1]);
 	}
@@ -287,7 +293,6 @@ static void room_map_drawCamswitches(room_t *this)
 {
 	int i, j, prev_from=-1;
 
-	render.set_color(MAP_COLOR_CAMSWITCH);
 	for (i=0; i<this->num_camswitches; i++) {
 		room_camswitch_t room_camswitch;
 		vertex_t v[2];
@@ -306,14 +311,18 @@ static void room_map_drawCamswitches(room_t *this)
 			continue;
 		}
 
+		render.set_color((room_camswitch.from==game_state.num_camera) ?
+			MAP_COLOR_CAMSWITCH_ENABLED :
+			MAP_COLOR_CAMSWITCH_DISABLED);
+
 		for (j=0; j<4; j++) {
 			v[0].x = room_camswitch.x[j];
 			v[0].y = room_camswitch.y[j];
-			v[0].z = 0.0f;
+			v[0].z = 1.0f;
 
 			v[1].x = room_camswitch.x[(j+1) & 3];
 			v[1].y = room_camswitch.y[(j+1) & 3];
-			v[1].z = 0.0f;
+			v[1].z = 1.0f;
 
 			render.line(&v[0], &v[1]);
 		}
@@ -324,13 +333,12 @@ static void room_map_drawBoundaries(room_t *this)
 {
 	int i, j, prev_from=-1;
 
-	render.set_color(MAP_COLOR_BOUNDARY);
-	for (i=0; i<this->num_camswitches; i++) {
+	for (i=0; i<this->num_boundaries; i++) {
 		room_camswitch_t room_camswitch;
 		vertex_t v[2];
 		int boundary = 0;
 
-		this->getCamswitch(this, i, &room_camswitch);
+		this->getBoundary(this, i, &room_camswitch);
 
 		if (prev_from != room_camswitch.from) {
 			prev_from = room_camswitch.from;
@@ -342,14 +350,18 @@ static void room_map_drawBoundaries(room_t *this)
 			continue;
 		}
 
+		render.set_color((room_camswitch.from==game_state.num_camera) ?
+			MAP_COLOR_BOUNDARY_ENABLED :
+			MAP_COLOR_BOUNDARY_DISABLED);
+
 		for (j=0; j<4; j++) {
 			v[0].x = room_camswitch.x[j];
 			v[0].y = room_camswitch.y[j];
-			v[0].z = 0.0f;
+			v[0].z = 1.0f;
 
 			v[1].x = room_camswitch.x[(j+1) & 3];
 			v[1].y = room_camswitch.y[(j+1) & 3];
-			v[1].z = 0.0f;
+			v[1].z = 1.0f;
 
 			render.line(&v[0], &v[1]);
 		}
