@@ -150,14 +150,14 @@ static void room_map_minMaxCameras(room_t *this)
 		if ((room_camera.from_z>>16) < minz) {
 			minz = room_camera.from_z>>16;
 		}
-		if ((room_camera.from_z>>16) > maxx) {
+		if ((room_camera.from_z>>16) > maxz) {
 			maxz = room_camera.from_z>>16;
 		}
 
 		if ((room_camera.to_z>>16) < minz) {
 			minz = room_camera.to_z>>16;
 		}
-		if ((room_camera.to_z>>16) > maxx) {
+		if ((room_camera.to_z>>16) > maxz) {
 			maxz = room_camera.to_z>>16;
 		}
 	}
@@ -165,10 +165,56 @@ static void room_map_minMaxCameras(room_t *this)
 
 static void room_map_minMaxCamswitches(room_t *this)
 {
+	int i, j;
+
+	for (i=0; i<this->num_camswitches; i++) {
+		room_camswitch_t room_camswitch;
+
+		this->getCamswitch(this, i, &room_camswitch);
+
+		for (j=0; j<4; j++) {
+			if (room_camswitch.x[j] < minx) {
+				minx = room_camswitch.x[j];
+			}
+			if (room_camswitch.x[j] > maxx) {
+				maxx = room_camswitch.x[j];
+			}
+
+			if (room_camswitch.y[j] < minz) {
+				minz = room_camswitch.y[j];
+			}
+			if (room_camswitch.y[j] > maxz) {
+				maxz = room_camswitch.y[j];
+			}
+		}
+	}
 }
 
 static void room_map_minMaxBoundaries(room_t *this)
 {
+	int i, j;
+
+	for (i=0; i<this->num_boundaries; i++) {
+		room_camswitch_t room_camswitch;
+
+		this->getBoundary(this, i, &room_camswitch);
+
+		for (j=0; j<4; j++) {
+			if (room_camswitch.x[j] < minx) {
+				minx = room_camswitch.x[j];
+			}
+			if (room_camswitch.x[j] > maxx) {
+				maxx = room_camswitch.x[j];
+			}
+
+			if (room_camswitch.y[j] < minz) {
+				minz = room_camswitch.y[j];
+			}
+			if (room_camswitch.y[j] > maxz) {
+				maxz = room_camswitch.y[j];
+			}
+		}
+	}
 }
 
 void room_map_draw(room_t *this)
