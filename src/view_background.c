@@ -103,12 +103,7 @@ static int player_movedown = 0;
 static int player_turnleft = 0;
 static int player_turnright = 0;
 static float playerstart_x = 0, playerstart_y = 0, playerstart_z = 0, playerstart_a = 0;
-static Uint32 tick_moveforward = 0;
-static Uint32 tick_movebackward = 0;
-static Uint32 tick_moveup = 0;
-static Uint32 tick_movedown = 0;
-static Uint32 tick_turnleft = 0;
-static Uint32 tick_turnright = 0;
+static Uint32 tick_movement = 0;
 
 /*--- Functions prototypes ---*/
 
@@ -121,6 +116,8 @@ static void drawPlayer(void);
 
 void view_background_input(SDL_Event *event)
 {
+	int start_movement = 0;
+
 	switch(event->type) {
 	case SDL_KEYDOWN:
 		switch (event->key.keysym.sym) {
@@ -221,35 +218,27 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_MOVE_FORWARD:
 				player_moveforward = 1;
-				tick_moveforward = SDL_GetTicks();
-				playerstart_x = player_x;
-				playerstart_z = player_z;
+				start_movement = 1;
 				break;
 			case KEY_MOVE_BACKWARD:
 				player_movebackward = 1;
-				tick_movebackward = SDL_GetTicks();
-				playerstart_x = player_x;
-				playerstart_z = player_z;
+				start_movement = 1;
 				break;
 			case KEY_MOVE_UP:
 				player_moveup = 1;
-				tick_moveup = SDL_GetTicks();
-				playerstart_y = player_y;
+				start_movement = 1;
 				break;
 			case KEY_MOVE_DOWN:
 				player_movedown = 1;
-				tick_movedown = SDL_GetTicks();
-				playerstart_y = player_y;
+				start_movement = 1;
 				break;
 			case KEY_TURN_LEFT:
 				player_turnleft = 1;
-				tick_turnleft = SDL_GetTicks();
-				playerstart_a = player_a;
+				start_movement = 1;
 				break;
 			case KEY_TURN_RIGHT:
 				player_turnright = 1;
-				tick_turnright = SDL_GetTicks();
-				playerstart_a = player_a;
+				start_movement = 1;
 				break;
 			case KEY_RENDER_WIREFRAME:
 				render.set_render(&render, RENDER_WIREFRAME);
@@ -292,6 +281,14 @@ void view_background_input(SDL_Event *event)
 		}
 		break;
 	}
+
+	if (start_movement) {
+		tick_movement = SDL_GetTicks();
+		playerstart_x = player_x;
+		playerstart_y = player_y;
+		playerstart_z = player_z;
+		playerstart_a = player_a;
+	}
 }
 
 void view_background_refresh(void)
@@ -326,24 +323,24 @@ void view_background_update(void)
 
 	/* Move player ? */
 	if (player_moveforward) {
-		player_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_moveforward);
-		player_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_moveforward);
+		player_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		player_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 	}
 	if (player_movebackward) {
-		player_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movebackward);
-		player_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movebackward);
+		player_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		player_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 	}
 	if (player_moveup) {
-		player_y = playerstart_y - 5.0f*(tick_current-tick_moveup);
+		player_y = playerstart_y - 5.0f*(tick_current-tick_movement);
 	}
 	if (player_movedown) {
-		player_y = playerstart_y + 5.0f*(tick_current-tick_movedown);
+		player_y = playerstart_y + 5.0f*(tick_current-tick_movement);
 	}
 	if (player_turnleft) {
-		player_a = playerstart_a - 0.1f*(tick_current-tick_turnleft);
+		player_a = playerstart_a - 0.1f*(tick_current-tick_movement);
 	}
 	if (player_turnright) {
-		player_a = playerstart_a + 0.1f*(tick_current-tick_turnright);
+		player_a = playerstart_a + 0.1f*(tick_current-tick_movement);
 	}
 
 	/*printf("pos:%.3f,%.3f,%.3f angle:%.3f\n", player_x,player_y,player_z,player_a);*/
