@@ -104,6 +104,7 @@ const game_detect_t game_detect[]={
 /*--- Variables ---*/
 
 state_t game_state;
+static int num_game_detected = -1;
 
 /*--- Functions prototypes ---*/
 
@@ -158,14 +159,8 @@ static void state_shutdown(void)
 
 const char *state_getGameName(void)
 {
-	int i=0;
-
-	while (game_detect[i].version != -1) {
-		if (game_detect[i].version == game_state.version) {
-			return game_detect[i].name;
-		}
-
-		i++;
+	if (num_game_detected!=-1) {
+		return game_detect[num_game_detected].name;
 	}
 
 	return "Unknown version";
@@ -351,6 +346,7 @@ static void state_detect(void)
 
 	while (game_detect[i].version != -1) {
 		if (state_game_file_exists(game_detect[i].filename)) {
+			num_game_detected = i;
 			game_state.version = game_detect[i].version;
 			break;
 		}
