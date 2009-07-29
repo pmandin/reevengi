@@ -63,6 +63,8 @@
 
 #define KEY_TOGGLE_GRID		SDLK_y
 #define KEY_TOGGLE_RESTORE	SDLK_h
+#define KEY_TOGGLE_MAP		SDLK_n
+
 #define KEY_FORCE_REFRESH	SDLK_SPACE
 
 #define KEY_MOVE_FORWARD	SDLK_UP
@@ -89,6 +91,7 @@ static model_t *player_model = NULL;
 
 static int render_grid = 0;
 static int render_restore = 0;
+static int render_map = 0;
 
 static int refresh_player_pos = 0;
 static float player_x = 0, player_y = 0, player_z = 0;
@@ -209,6 +212,9 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_TOGGLE_RESTORE:
 				render_restore ^= 1;
+				break;
+			case KEY_TOGGLE_MAP:
+				render_map ^= 1;
 				break;
 			case KEY_FORCE_REFRESH:
 				refresh_bg = 1;
@@ -393,7 +399,9 @@ void view_background_draw(void)
 	}
 	drawOrigin();	/* what the camera looks at */
 
-	room_map_draw(game_state.room);
+	if (render_map) {
+		room_map_draw(game_state.room);
+	}
 }
 
 static void drawOrigin(void)
