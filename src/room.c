@@ -87,17 +87,17 @@ void room_map_init(room_t *this)
 	maxx = maxz = -32768;
 
 	room_map_minMaxCameras(this);
-	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
+	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 	room_map_minMaxCamswitches(this);
-	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
+	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 	room_map_minMaxBoundaries(this);
-	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
+	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 
 #if 0
-	/* Add 10% around */
+	/* Add 5% around */
 	range = maxx-minx;
 
-	v = minx -(range*10)/100;
+	v = minx -(range*5)/100;
 	if (v<-32768) {
 		v = -32768;
 	} else if (v>32767) {
@@ -105,7 +105,7 @@ void room_map_init(room_t *this)
 	}
 	minx = v;
 
-	v = maxx + (range*10)/100;
+	v = maxx + (range*5)/100;
 	if (v<-32768) {
 		v = -32768;
 	} else if (v>32767) {
@@ -115,7 +115,7 @@ void room_map_init(room_t *this)
 
 	range = maxz-minz;
 
-	v = minz - (range*10)/100;
+	v = minz - (range*5)/100;
 	if (v<-32768) {
 		v = -32768;
 	} else if (v>32767) {
@@ -123,7 +123,7 @@ void room_map_init(room_t *this)
 	}
 	minz = v;
 
-	v = maxz + (range*10)/100;
+	v = maxz + (range*5)/100;
 	if (v<-32768) {
 		v = -32768;
 	} else if (v>32767) {
@@ -132,7 +132,7 @@ void room_map_init(room_t *this)
 	maxz = v;
 #endif
 
-	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
+	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 }
 
 static void room_map_minMaxCameras(room_t *this)
@@ -145,9 +145,9 @@ static void room_map_minMaxCameras(room_t *this)
 
 		this->getCamera(this, i, &room_camera);
 
-		printf("cam %d: 0x%08x 0x%08x 0x%08x 0x%08x\n", i,
+		/*printf("cam %d: 0x%08x 0x%08x 0x%08x 0x%08x\n", i,
 			room_camera.from_x, room_camera.from_z,
-			room_camera.to_x, room_camera.to_z);
+			room_camera.to_x, room_camera.to_z);*/
 
 		v = room_camera.from_x;
 		if (v < minx) {
