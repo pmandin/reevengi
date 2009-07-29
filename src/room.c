@@ -52,3 +52,7 @@ static void shutdown(room_t *this)
 		free(this);
 	}
 }
+
+void room_map_init(room_t *this)
+{
+}

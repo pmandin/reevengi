@@ -210,6 +210,10 @@ static void state_loadroom(void)
 
 	if (game_state.priv_load_room) {
 		(*game_state.priv_load_room)();
+
+		if (game_state.room) {
+			room_map_init(game_state.room);
+		}
 	}
 }
 

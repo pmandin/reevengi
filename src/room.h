@@ -56,4 +56,6 @@ struct room_s {
 
 room_t *room_create(void *room_file);
 
+void room_map_init(room_t *this);
+
 #endif /* ROOM_H */
