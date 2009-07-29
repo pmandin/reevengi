@@ -415,6 +415,11 @@ int room_checkBoundary(room_t *this, int num_camera, float x, float y)
 {
 	int i,j;
 
+	if (!this) {
+		return 0;
+	}
+
+	/*printf("-- cam %d %.3f,%.3f\n", num_camera,x,y);*/
 	for (i=0; i<this->num_boundaries; i++) {
 		room_camswitch_t room_camswitch;
 		int is_inside = 1;
@@ -434,14 +439,15 @@ int room_checkBoundary(room_t *this, int num_camera, float x, float y)
 			dx2 = x - room_camswitch.x[j];
 			dy2 = y - room_camswitch.y[j];
 
-			if (dx1*dx2+dy1*dy2 < 0) {
+			if (dx1*dy2-dy1*dx2 >= 0) {
 				is_inside = 0;
 			}
 
-			/*printf(" segment %d: %d,%d->%d,%d %.3f\n",j,
+			/*printf(" segment %d: %d,%d->%d,%d %.3f,%.3f,%.3f,%.3f %.3f\n",j,
 				room_camswitch.x[j], room_camswitch.y[j],
 				room_camswitch.x[(j+1) & 3], room_camswitch.y[(j+1) & 3],
-				dx1*dx2+dy1*dy2);*/
+				dx1,dy1,dx2,dy2,
+				dx1*dy2-dy1*dx2);*/
 		}
 
 		if (!is_inside) {
@@ -455,6 +461,10 @@ int room_checkBoundary(room_t *this, int num_camera, float x, float y)
 int room_checkCamswitch(room_t *this, int num_camera, float x, float y)
 {
 	int i,j;
+
+	if (!this) {
+		return -1;
+	}
 
 	/*printf("-- %.3f %.3f\n",x,y);*/
 	for (i=0; i<this->num_camswitches; i++) {
@@ -478,14 +488,14 @@ int room_checkCamswitch(room_t *this, int num_camera, float x, float y)
 			dx2 = x - room_camswitch.x[j];
 			dy2 = y - room_camswitch.y[j];
 
-			if (dx1*dx2+dy1*dy2 < 0) {
+			if (dx1*dy2-dy1*dx2 >= 0) {
 				is_inside = 0;
 			}
 
 			/*printf(" segment %d: %d,%d->%d,%d %.3f\n",j,
 				room_camswitch.x[j], room_camswitch.y[j],
 				room_camswitch.x[(j+1) & 3], room_camswitch.y[(j+1) & 3],
-				dx1*dx2+dy1*dy2);*/
+				dx1*dy2-dy1*dx2);*/
 		}
 
 		if (is_inside) {

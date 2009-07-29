@@ -327,16 +327,18 @@ void view_background_update(void)
 static void processPlayerMovement(void)
 {
 	float new_x, new_z;
-	int new_camera;
+	int new_camera, was_inside, is_inside;
 	Uint32 tick_current = SDL_GetTicks();
+
+	was_inside = (room_checkBoundary(game_state.room, game_state.num_camera, player_x, player_z) == 0);
 
 	if (player_moveforward) {
 		new_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		if (!render_map) {
-			player_x = new_x;
-			player_z = new_z;
-		} else if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
+		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
+		if (was_inside && !is_inside) {
+			/* Player can not go out */
+		} else {
 			player_x = new_x;
 			player_z = new_z;
 		}
@@ -349,10 +351,10 @@ static void processPlayerMovement(void)
 	if (player_movebackward) {
 		new_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		if (!render_map) {
-			player_x = new_x;
-			player_z = new_z;
-		} else if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
+		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
+		if (was_inside && !is_inside) {
+			/* Player can not go out */
+		} else {
 			player_x = new_x;
 			player_z = new_z;
 		}
