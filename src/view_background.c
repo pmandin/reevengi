@@ -29,6 +29,7 @@
 #include "render.h"
 #include "parameters.h"
 #include "model.h"
+#include "room.h"
 #include "re1_pc_game.h"
 #include "re1_ps1.h"
 #include "re2_pc_demo.h"
@@ -391,6 +392,8 @@ void view_background_draw(void)
 		drawGrid();
 	}
 	drawOrigin();	/* what the camera looks at */
+
+	room_map_draw(game_state.room);
 }
 
 static void drawOrigin(void)

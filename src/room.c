@@ -83,8 +83,11 @@ void room_map_init(room_t *this)
 	maxx = maxz = -32768;
 
 	room_map_minMaxCameras(this);
+	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
 	room_map_minMaxCamswitches(this);
+	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
 	room_map_minMaxBoundaries(this);
+	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
 
 	/* Add 10% around */
 	range = maxx-minx;
@@ -115,13 +118,15 @@ void room_map_init(room_t *this)
 	}
 	minz = v;
 
-	v = maxz - (range*10)/100;
+	v = maxz + (range*10)/100;
 	if (v<-32768) {
 		v = -32768;
 	} else if (v>32767) {
 		v = 32767;
 	}
 	maxz = v;
+
+	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
 }
 
 static void room_map_minMaxCameras(room_t *this)
@@ -130,35 +135,44 @@ static void room_map_minMaxCameras(room_t *this)
 
 	for (i=0; i<this->num_cameras; i++) {
 		room_camera_t room_camera;
+		Sint16 v;
 
 		this->getCamera(this, i, &room_camera);
 
-		if ((room_camera.from_x>>16) < minx) {
-			minx = room_camera.from_x>>16;
+		printf("cam %d: 0x%08x 0x%08x 0x%08x 0x%08x\n", i,
+			room_camera.from_x, room_camera.from_z,
+			room_camera.to_x, room_camera.to_z);
+
+		v = room_camera.from_x;
+		if (v < minx) {
+			minx = v;
 		}
-		if ((room_camera.from_x>>16) > maxx) {
-			maxx = room_camera.from_x>>16;
+		if (v > maxx) {
+			maxx = v;
 		}
 
-		if ((room_camera.to_x>>16) < minx) {
-			minx = room_camera.to_x>>16;
+		v = room_camera.to_x;
+		if (v < minx) {
+			minx = v;
 		}
-		if ((room_camera.to_x>>16) > maxx) {
-			maxx = room_camera.to_x>>16;
-		}
-
-		if ((room_camera.from_z>>16) < minz) {
-			minz = room_camera.from_z>>16;
-		}
-		if ((room_camera.from_z>>16) > maxz) {
-			maxz = room_camera.from_z>>16;
+		if (v > maxx) {
+			maxx = v;
 		}
 
-		if ((room_camera.to_z>>16) < minz) {
-			minz = room_camera.to_z>>16;
+		v = room_camera.from_z;
+		if (v < minz) {
+			minz = v;
 		}
-		if ((room_camera.to_z>>16) > maxz) {
-			maxz = room_camera.to_z>>16;
+		if (v > maxz) {
+			maxz = v;
+		}
+
+		v = room_camera.to_z;
+		if (v < minz) {
+			minz = v;
+		}
+		if (v > maxz) {
+			maxz = v;
 		}
 	}
 }
@@ -221,9 +235,20 @@ void room_map_draw(room_t *this)
 {
 	render.push_matrix();
 
+	/*printf("draw map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
+
 	/* Set ortho projection */
 	render.set_identity();
-	render.scale(2.0f / (maxx - minx), 2.0f / (maxz - minz), 2.0f / (1.0f - -1.0f));
+	render.scale(
+		2.0f / (maxx - minx),
+		2.0f / (maxz - minz),
+		2.0f / (1.0f - -1.0f)
+	);
+	render.translate(
+		(-1.0f * (maxx+minx)) / (maxx-minx),
+		(-1.0f * (maxz+minz)) / (maxz-minz),
+		(-1.0f * (1.0f + -1.0f)) / (1.0f - -1.0f)
+	);
 
 	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
@@ -251,13 +276,13 @@ static void room_map_drawCameras(room_t *this)
 
 		this->getCamera(this, i, &room_camera);
 
-		v[0].x = room_camera.from_x>>16;
-		v[0].y = room_camera.from_z>>16;
-		v[0].z = 0;
+		v[0].x = room_camera.from_x / 65536.0f;
+		v[0].y = room_camera.from_z / 65536.0f;
+		v[0].z = 0.0f;
 
-		v[1].x = room_camera.to_x>>16;
-		v[1].y = room_camera.to_z>>16;
-		v[1].z = 0;
+		v[1].x = room_camera.to_x / 65536.0f;
+		v[1].y = room_camera.to_z / 65536.0f;
+		v[1].z = 0.0f;
 
 		render.line(&v[0], &v[1]);
 	}
@@ -277,11 +302,11 @@ static void room_map_drawCamswitches(room_t *this)
 		for (j=0; j<4; j++) {
 			v[0].x = room_camswitch.x[j];
 			v[0].y = room_camswitch.y[j];
-			v[0].z = 0;
+			v[0].z = 0.0f;
 
 			v[1].x = room_camswitch.x[(j+1) & 3];
 			v[1].y = room_camswitch.y[(j+1) & 3];
-			v[1].z = 0;
+			v[1].z = 0.0f;
 
 			render.line(&v[0], &v[1]);
 		}
@@ -302,11 +327,11 @@ static void room_map_drawBoundaries(room_t *this)
 		for (j=0; j<4; j++) {
 			v[0].x = room_camswitch.x[j];
 			v[0].y = room_camswitch.y[j];
-			v[0].z = 0;
+			v[0].z = 0.0f;
 
 			v[1].x = room_camswitch.x[(j+1) & 3];
 			v[1].y = room_camswitch.y[(j+1) & 3];
-			v[1].z = 0;
+			v[1].z = 0.0f;
 
 			render.line(&v[0], &v[1]);
 		}
