@@ -223,6 +223,7 @@ void room_map_draw(room_t *this)
 
 	/* Set ortho projection */
 	render.set_identity();
+	render.scale(2.0f / (maxx - minx), 2.0f / (maxz - minz), 2.0f / (1.0f - -1.0f));
 
 	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
@@ -250,12 +251,12 @@ static void room_map_drawCameras(room_t *this)
 
 		this->getCamera(this, i, &room_camera);
 
-		v[0].x = room_camera.from_x;
-		v[0].y = room_camera.from_z;
+		v[0].x = room_camera.from_x>>16;
+		v[0].y = room_camera.from_z>>16;
 		v[0].z = 0;
 
-		v[1].x = room_camera.to_x;
-		v[1].y = room_camera.to_z;
+		v[1].x = room_camera.to_x>>16;
+		v[1].y = room_camera.to_z>>16;
 		v[1].z = 0;
 
 		render.line(&v[0], &v[1]);
