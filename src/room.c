@@ -89,6 +89,7 @@ void room_map_init(room_t *this)
 	room_map_minMaxBoundaries(this);
 	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
 
+#if 0
 	/* Add 10% around */
 	range = maxx-minx;
 
@@ -125,6 +126,7 @@ void room_map_init(room_t *this)
 		v = 32767;
 	}
 	maxz = v;
+#endif
 
 	printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);
 }
@@ -233,22 +235,14 @@ static void room_map_minMaxBoundaries(room_t *this)
 
 void room_map_draw(room_t *this)
 {
+	render.set_texture(0, NULL);
 	render.push_matrix();
 
 	/*printf("draw map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 
 	/* Set ortho projection */
+	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
 	render.set_identity();
-	render.scale(
-		2.0f / (maxx - minx),
-		2.0f / (maxz - minz),
-		2.0f / (1.0f - -1.0f)
-	);
-	render.translate(
-		(-1.0f * (maxx+minx)) / (maxx-minx),
-		(-1.0f * (maxz+minz)) / (maxz-minz),
-		(-1.0f * (1.0f + -1.0f)) / (1.0f - -1.0f)
-	);
 
 	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
@@ -270,18 +264,19 @@ static void room_map_drawCameras(room_t *this)
 	int i;
 
 	render.set_color(MAP_COLOR_CAMERA);
+
 	for (i=0; i<this->num_cameras; i++) {
 		room_camera_t room_camera;
 		vertex_t v[2];
 
 		this->getCamera(this, i, &room_camera);
 
-		v[0].x = room_camera.from_x / 65536.0f;
-		v[0].y = room_camera.from_z / 65536.0f;
+		v[0].x = room_camera.from_x;
+		v[0].y = room_camera.from_z;
 		v[0].z = 0.0f;
 
-		v[1].x = room_camera.to_x / 65536.0f;
-		v[1].y = room_camera.to_z / 65536.0f;
+		v[1].x = room_camera.to_x;
+		v[1].y = room_camera.to_z;
 		v[1].z = 0.0f;
 
 		render.line(&v[0], &v[1]);
@@ -290,14 +285,26 @@ static void room_map_drawCameras(room_t *this)
 
 static void room_map_drawCamswitches(room_t *this)
 {
-	int i, j;
+	int i, j, prev_from=-1;
 
 	render.set_color(MAP_COLOR_CAMSWITCH);
 	for (i=0; i<this->num_camswitches; i++) {
 		room_camswitch_t room_camswitch;
 		vertex_t v[2];
+		int boundary = 0;
 
 		this->getCamswitch(this, i, &room_camswitch);
+
+		/*printf("%d: from %d to %d\n", i,room_camswitch.from,room_camswitch.to);*/
+
+		if (prev_from != room_camswitch.from) {
+			prev_from = room_camswitch.from;
+			boundary=1;
+		}
+		if (boundary && (room_camswitch.to==0)) {
+			/*printf("switch %d is boundary\n", i);*/
+			continue;
+		}
 
 		for (j=0; j<4; j++) {
 			v[0].x = room_camswitch.x[j];
@@ -315,14 +322,25 @@ static void room_map_drawCamswitches(room_t *this)
 
 static void room_map_drawBoundaries(room_t *this)
 {
-	int i, j;
+	int i, j, prev_from=-1;
 
 	render.set_color(MAP_COLOR_BOUNDARY);
-	for (i=0; i<this->num_boundaries; i++) {
+	for (i=0; i<this->num_camswitches; i++) {
 		room_camswitch_t room_camswitch;
 		vertex_t v[2];
+		int boundary = 0;
 
-		this->getBoundary(this, i, &room_camswitch);
+		this->getCamswitch(this, i, &room_camswitch);
+
+		if (prev_from != room_camswitch.from) {
+			prev_from = room_camswitch.from;
+			boundary=1;
+		}
+		if (boundary && (room_camswitch.to==0)) {
+			/*printf("switch %d is boundary\n", i);*/
+		} else {
+			continue;
+		}
 
 		for (j=0; j<4; j++) {
 			v[0].x = room_camswitch.x[j];

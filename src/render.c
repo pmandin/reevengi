@@ -192,6 +192,9 @@ static void set_ortho(float left, float right, float bottom, float top,
 	float near, float far)
 {
 	mtx_setOrtho(projection_mtx, left,right, bottom,top, near,far);
+
+	mtx_setIdentity(camera_mtx);
+
 	recalc_frustum_mtx();
 }
 

@@ -420,6 +420,8 @@ static void re2pcgame_getCamswitch(room_t *this, int num_camswitch, room_camswit
 		return 0;
 	}*/
 
+	room_camswitch->from = camswitch_array[num_camswitch].cam0;
+	room_camswitch->to = camswitch_array[num_camswitch].cam1;
 	room_camswitch->x[0] = SDL_SwapLE16(camswitch_array[num_camswitch].x1);
 	room_camswitch->y[0] = SDL_SwapLE16(camswitch_array[num_camswitch].y1);
 	room_camswitch->x[1] = SDL_SwapLE16(camswitch_array[num_camswitch].x2);
