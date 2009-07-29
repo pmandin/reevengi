@@ -207,10 +207,10 @@ static void re3ps1game_getCamera(room_t *this, int num_camera, room_camera_t *ro
 	offset = SDL_SwapLE32(*cams_offset);
 	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
 
-	room_camera->from_x = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_x);
-	room_camera->from_y = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_y);
-	room_camera->from_z = SDL_SwapLE32(cam_array[game_state.num_camera].camera_from_z);
-	room_camera->to_x = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_x);
-	room_camera->to_y = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_y);
-	room_camera->to_z = SDL_SwapLE32(cam_array[game_state.num_camera].camera_to_z);
+	room_camera->from_x = SDL_SwapLE32(cam_array[num_camera].camera_from_x);
+	room_camera->from_y = SDL_SwapLE32(cam_array[num_camera].camera_from_y);
+	room_camera->from_z = SDL_SwapLE32(cam_array[num_camera].camera_from_z);
+	room_camera->to_x = SDL_SwapLE32(cam_array[num_camera].camera_to_x);
+	room_camera->to_y = SDL_SwapLE32(cam_array[num_camera].camera_to_y);
+	room_camera->to_z = SDL_SwapLE32(cam_array[num_camera].camera_to_z);
 }
