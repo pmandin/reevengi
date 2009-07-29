@@ -295,6 +295,145 @@ static const re2ps1_ems_t re2ps1demo22_ems[]={
 	{0x00267800, 0}		/* file length */
 };
 
+static const re2ps1_ems_t re2ps1beta1_ems[]={
+	{0x00000000, 0},
+	{0x00019000, 1}, /* tim */
+	{0x00029800, 1}, /* emd */   /* Zombie (Police Officer) */
+	{0x0004D800, 1}, /* tim */
+	{0x0006E800, 1}, /* emd */   /* Zombie (Male Civilian) */
+	{0x00092800, 1}, /* tim */
+	{0x000A3000, 1}, /* emd */   /* Zombie (Female Civilian) */
+	{0x000C7000, 1}, /* tim */
+	{0x000D7800, 1}, /* emd */   /* Zombie (Scientist) */
+	{0x000FB800, 1}, /* tim */
+	{0x0010C000, 1}, /* emd */   /* Zombie (Nude) */
+	{0x00130000, 1}, /* tim */
+	{0x00140800, 1}, /* emd */   /* Zombie (Male Civilian) */
+	{0x00163000, 1}, /* tim */
+	{0x00184000, 1}, /* emd */   /* Zombie (Male Civilian) */
+	{0x001A6800, 1}, /* tim */
+	{0x001C7800, 1}, /* emd */   /* Zombie (Male Civilian) */
+	{0x001F5000, 1}, /* tim */
+	{0x00205800, 1}, /* emd */   /* Zombie (Dog) */
+	{0x0022D800, 1}, /* tim */
+	{0x00236000, 1}, /* emd */   /* Crow */
+	{0x0024C000, 1}, /* tim */
+	{0x0025C800, 1}, /* emd */   /* Licker (Normal) */
+	{0x00291800, 1}, /* tim */
+	{0x002B2800, 1}, /* emd */   /* Alligator */
+	{0x002EE000, 1}, /* tim */
+	{0x002FE800, 1}, /* emd */   /* Spider (Big) */
+	{0x0030F000, 1}, /* tim */
+	{0x00317800, 1}, /* emd */   /* Spider (Small) */
+	{0x00320800, 1}, /* tim */
+	{0x00329000, 1}, /* emd */   /* G-Baby */
+	{0x00340000, 1}, /* tim */
+	{0x00361000, 1}, /* emd */   /* G-Mutant */
+	{0x00393000, 1}, /* tim */
+	{0x0039B800, 1}, /* emd */   /* Moth (Small) */
+	{0x003A9000, 1}, /* tim */
+	{0x003B9800, 1}, /* emd */   /* Mr. X (Normal) */
+	{0x003E5800, 1}, /* tim */
+	{0x003FE000, 1}, /* emd */   /* Mr. X (Mutated) */
+	{0x00420800, 1}, /* tim */
+	{0x00429000, 1}, /* emd */   /* William Birkin (Form 3 Arm) */
+	{0x00430000, 1}, /* tim */
+	{0x00438800, 1}, /* emd */   /* Zombie (Arm) */
+	{0x0044A000, 1}, /* tim */
+	{0x0045A800, 1}, /* emd */   /* Ivy (Form 1) */
+	{0x00494800, 1}, /* tim */
+	{0x0049D000, 1}, /* emd */   /* Ivy (Tenacle) */
+	{0x004AD800, 1}, /* tim */
+	{0x004C6000, 1}, /* emd */   /* William Birkin (Form 1) */
+	{0x004FB800, 1}, /* tim */
+	{0x00514000, 1}, /* emd */   /* William Birkin (Form 2) */
+	{0x00550800, 1}, /* tim */
+	{0x00569000, 1}, /* emd */   /* William Birkin (Form 3) */
+	{0x005B1000, 1}, /* tim */
+	{0x005C9800, 1}, /* emd */   /* William Birkin (Form 4) */
+	{0x0061B800, 1}, /* tim */
+	{0x0063C000, 1}, /* emd */   /* William Birkin (Form 5) */
+	{0x00660800, 1}, /* tim */
+	{0x00669000, 1}, /* emd */   /* William Birkin (Form 5 Tenacle) */
+	{0x00680800, 1}, /* tim */
+	{0x00691000, 1}, /* emd */   /* Ivy (Form 2) */
+	{0x006D0000, 1}, /* tim */
+	{0x006E0800, 1}, /* emd */   /* Moth (Giant) */
+	{0x006EE800, 1}, /* tim */
+	{0x006F7000, 1}, /* emd */   /* Moth (Larvae) */
+	{0x006F9000, 1}, /* tim */
+	{0x00701800, 1}, /* emd */   /* Fuse Case Machine-Arm */
+	{0x00710800, 1}, /* tim */
+	{0x00719000, 1}, /* emd */   /* Fuse Box */
+	{0x0071F800, 1}, /* tim */
+	{0x00738000, 1}, /* emd */   /* Brian Irons */
+	{0x00745800, 1}, /* tim */
+	{0x00756000, 1}, /* emd */   /* Ada Wong */
+	{0x00769800, 1}, /* tim */
+	{0x00782000, 1}, /* emd */   /* Ada Wong (Injured) */
+	{0x00795800, 1}, /* tim */
+	{0x007AE000, 1}, /* emd */   /* Ben Bertolucci */
+	{0x007C0800, 1}, /* tim */
+	{0x007D1000, 1}, /* emd */   /* Sherry Birkin */
+	{0x007E4000, 1}, /* tim */
+	{0x007FC800, 1}, /* emd */   /* Ben Bertolucci */
+	{0x0080F000, 1}, /* tim */
+	{0x00827800, 1}, /* emd */   /* Annette Birkin */
+	{0x0083A800, 1}, /* tim */
+	{0x00853000, 1}, /* emd */   /* Robert Kendo */
+	{0x0085B000, 1}, /* tim */
+	{0x00873800, 1}, /* emd */   /* Annette Birkin */
+	{0x00886800, 1}, /* tim */
+	{0x0089F000, 1}, /* emd */   /* Marvin Branagh */
+	{0x008C6800, 1}, /* tim */
+	{0x008D7000, 1}, /* emd */   /* Sherry Birkin (Claire's Vest) */
+	{0x008EA000, 1}, /* tim */
+	{0x008FA800, 1}, /* emd */   /* Leon S. Kennedy */
+	{0x0090D000, 1}, /* tim */
+	{0x0091D800, 1}, /* emd */   /* Claire Redfield */
+	{0x00931000, 1}, /* tim */
+	{0x00941800, 1}, /* emd */   /* Leon S. Kennedy (Wounded) */
+	{0x00954000, 1}, /* tim */
+	{0x00964800, 1}, /* emd */   /* Claire Redfield (No Vest) */
+	{0x00978000, 1}, /* tim */
+	{0x00988800, 1}, /* emd */   /* Leon S. Kennedy (Special) */
+	{0x0099B000, 1}, /* tim */
+	{0x009AB800, 1}, /* emd */   /* Claire Redfield (Special) */
+	{0x009BF000, 0}  /* file length */
+};
+
+static const re2ps1_ems_t re2ps1beta2_ems[]={
+	{0x00000000, 1}, /* tim */
+	{0x00010800, 1}, /* emd */   /* Zombie (Police Officer) */
+	{0x00034800, 1}, /* tim */
+	{0x00055800, 1}, /* emd */   /* Zombie (Male Civilian) */
+	{0x00079800, 1}, /* tim */
+	{0x0008a000, 1}, /* emd */   /* Zombie (Female Civilian) */
+	{0x000ae000, 1}, /* tim */
+	{0x000cf000, 1}, /* emd */   /* Zombie (Male Civilian) */
+	{0x000f1800, 1}, /* tim */
+	{0x00102000, 1}, /* emd */   /* Zombie (Dog) */
+	{0x00120000, 1}, /* tim */
+	{0x00130800, 1}, /* emd */   /* Spider (Big) */
+	{0x0013e000, 1}, /* tim */
+	{0x00146800, 1}, /* emd */   /* Spider (Small) */
+	{0x00148800, 1}, /* tim */
+	{0x00151000, 1}, /* emd */   /* Moth (Small) */
+	{0x00154000, 1}, /* tim */
+	{0x00164800, 1}, /* emd */   /* Sherry Birkin */
+	{0x00177800, 1}, /* tim */
+	{0x00190000, 1}, /* emd */   /* Annette Birkin */
+	{0x001A3000, 1}, /* tim */
+	{0x001BB800, 1}, /* emd */   /* Annette Birkin */
+	{0x001CE800, 1}, /* tim */
+	{0x001DF000, 1}, /* emd */   /* Leon S. Kennedy */
+	{0x001F1800, 1}, /* tim */
+	{0x00202000, 1}, /* emd */   /* Leon S. Kennedy (Special) */
+	{0x00214800, 1}, /* tim */
+	{0x00225000, 1}, /* emd */   /* Claire Redfield (Special) */
+	{0x00238800, 1}, /* file length */
+};
+
 static const re2ps1_ems_t re2ps1gamel1_ems[]={
 	{0x00000000, 0},
 	{0x0001a000, 1},	/* tim */
