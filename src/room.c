@@ -23,6 +23,12 @@
 
 #include "room.h"
 
+/*--- Types ---*/
+
+/*--- Variables ---*/
+
+static Sint16 minx, maxx, minz, maxz;
+
 /*--- Functions prototypes ---*/
 
 static void shutdown(room_t *this);
@@ -55,4 +61,84 @@ static void shutdown(room_t *this)
 
 void room_map_init(room_t *this)
 {
+	int i, range, v;
+
+	minx = minz = 32767;
+	maxx = maxz = -32768;
+
+	/* Found boundaries in cameras */
+	for (i=0; i<this->num_cameras; i++) {
+		room_camera_t room_camera;
+
+		this->getCamera(this, i, &room_camera);
+
+		if ((room_camera.from_x>>16) < minx) {
+			minx = room_camera.from_x>>16;
+		}
+		if ((room_camera.from_x>>16) > maxx) {
+			maxx = room_camera.from_x>>16;
+		}
+
+		if ((room_camera.to_x>>16) < minx) {
+			minx = room_camera.to_x>>16;
+		}
+		if ((room_camera.to_x>>16) > maxx) {
+			maxx = room_camera.to_x>>16;
+		}
+
+		if ((room_camera.from_z>>16) < minz) {
+			minz = room_camera.from_z>>16;
+		}
+		if ((room_camera.from_z>>16) > maxx) {
+			maxz = room_camera.from_z>>16;
+		}
+
+		if ((room_camera.to_z>>16) < minz) {
+			minz = room_camera.to_z>>16;
+		}
+		if ((room_camera.to_z>>16) > maxx) {
+			maxz = room_camera.to_z>>16;
+		}
+	}
+
+	/* Found boundaries in camera switches */
+
+	/* Found boundaries in object limits */
+
+	/* Add 10% around */
+	range = maxx-minx;
+
+	v = minx -(range*10)/100;
+	if (v<-32768) {
+		v = -32768;
+	} else if (v>32767) {
+		v = 32767;
+	}
+	minx = v;
+
+	v = maxx + (range*10)/100;
+	if (v<-32768) {
+		v = -32768;
+	} else if (v>32767) {
+		v = 32767;
+	}
+	maxx = v;
+
+	range = maxz-minz;
+
+	v = minz - (range*10)/100;
+	if (v<-32768) {
+		v = -32768;
+	} else if (v>32767) {
+		v = 32767;
+	}
+	minz = v;
+
+	v = maxz - (range*10)/100;
+	if (v<-32768) {
+		v = -32768;
+	} else if (v>32767) {
+		v = 32767;
+	}
+	maxz = v;
 }
