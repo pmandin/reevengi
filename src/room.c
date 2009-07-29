@@ -93,7 +93,6 @@ void room_map_init(room_t *this)
 	room_map_minMaxBoundaries(this);
 	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 
-#if 0
 	/* Add 5% around */
 	range = maxx-minx;
 
@@ -130,7 +129,6 @@ void room_map_init(room_t *this)
 		v = 32767;
 	}
 	maxz = v;
-#endif
 
 	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 }
@@ -248,7 +246,7 @@ void room_map_draw(room_t *this)
 	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
 	/*render.set_identity();*/
 
-	room_map_drawBoundaries(this);
+	/*room_map_drawBoundaries(this);*/
 	room_map_drawCamswitches(this);
 	room_map_drawCameras(this);
 
@@ -302,6 +300,7 @@ static void room_map_drawCamswitches(room_t *this)
 
 		/*printf("%d: from %d to %d\n", i,room_camswitch.from,room_camswitch.to);*/
 
+#if 0
 		if (prev_from != room_camswitch.from) {
 			prev_from = room_camswitch.from;
 			boundary=1;
@@ -310,6 +309,7 @@ static void room_map_drawCamswitches(room_t *this)
 			/*printf("switch %d is boundary\n", i);*/
 			continue;
 		}
+#endif
 
 		render.set_color((room_camswitch.from==game_state.num_camera) ?
 			MAP_COLOR_CAMSWITCH_ENABLED :
