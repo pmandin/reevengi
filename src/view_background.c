@@ -333,24 +333,24 @@ static void processPlayerMovement(void)
 	if (player_moveforward) {
 		new_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		if (!room_checkBoundary(game_state.room, new_x, new_z)) {
+		if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
 			player_x = new_x;
 			player_z = new_z;
 		}
-		new_camera = room_checkCamswitch(game_state.room, player_x, player_z);
+		new_camera = room_checkCamswitch(game_state.room, game_state.num_camera, player_x, player_z);
 		if (new_camera != -1) {
 			game_state.num_camera = new_camera;
 			reload_bg = 1;
 		}
 	}
 	if (player_movebackward) {
-		player_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		player_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		if (!room_checkBoundary(game_state.room, new_x, new_z)) {
+		new_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		new_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		if (!room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z)) {
 			player_x = new_x;
 			player_z = new_z;
 		}
-		new_camera = room_checkCamswitch(game_state.room, player_x, player_z);
+		new_camera = room_checkCamswitch(game_state.room, game_state.num_camera, player_x, player_z);
 		if (new_camera != -1) {
 			game_state.num_camera = new_camera;
 			reload_bg = 1;

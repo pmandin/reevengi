@@ -411,27 +411,86 @@ void room_map_drawPlayer(float x, float y, float angle)
 	render.pop_matrix();
 }
 
-int room_checkBoundary(room_t *this, float x, float y)
+int room_checkBoundary(room_t *this, int num_camera, float x, float y)
 {
-	int i;
+	int i,j;
 
 	for (i=0; i<this->num_boundaries; i++) {
 		room_camswitch_t room_camswitch;
+		int is_inside = 1;
 
 		this->getBoundary(this, i, &room_camswitch);
+
+		if (room_camswitch.from != num_camera) {
+			continue;
+		}
+
+		for (j=0; j<4; j++) {
+			float dx1,dy1,dx2,dy2;
+
+			dx1 = room_camswitch.x[(j+1) & 3] - room_camswitch.x[j];
+			dy1 = room_camswitch.y[(j+1) & 3] - room_camswitch.y[j];
+
+			dx2 = x - room_camswitch.x[j];
+			dy2 = y - room_camswitch.y[j];
+
+			if (dx1*dx2+dy1*dy2 < 0) {
+				is_inside = 0;
+			}
+
+			/*printf(" segment %d: %d,%d->%d,%d %.3f\n",j,
+				room_camswitch.x[j], room_camswitch.y[j],
+				room_camswitch.x[(j+1) & 3], room_camswitch.y[(j+1) & 3],
+				dx1*dx2+dy1*dy2);*/
+		}
+
+		if (!is_inside) {
+			return 1;
+		}
 	}
 
 	return 0;
 }
 
-int room_checkCamswitch(room_t *this, float x, float y)
+int room_checkCamswitch(room_t *this, int num_camera, float x, float y)
 {
-	int i;
+	int i,j;
 
+	/*printf("-- %.3f %.3f\n",x,y);*/
 	for (i=0; i<this->num_camswitches; i++) {
 		room_camswitch_t room_camswitch;
+		int is_inside = 1;
 
 		this->getCamswitch(this, i, &room_camswitch);
+
+		if (room_camswitch.from != num_camera) {
+			continue;
+		}
+
+		/*printf("cam %d switch %d\n",num_camera,i);*/
+
+		for (j=0; j<4; j++) {
+			float dx1,dy1,dx2,dy2;
+
+			dx1 = room_camswitch.x[(j+1) & 3] - room_camswitch.x[j];
+			dy1 = room_camswitch.y[(j+1) & 3] - room_camswitch.y[j];
+
+			dx2 = x - room_camswitch.x[j];
+			dy2 = y - room_camswitch.y[j];
+
+			if (dx1*dx2+dy1*dy2 < 0) {
+				is_inside = 0;
+			}
+
+			/*printf(" segment %d: %d,%d->%d,%d %.3f\n",j,
+				room_camswitch.x[j], room_camswitch.y[j],
+				room_camswitch.x[(j+1) & 3], room_camswitch.y[(j+1) & 3],
+				dx1*dx2+dy1*dy2);*/
+		}
+
+		if (is_inside) {
+			return room_camswitch.to;
+		}
 	}
 
 	return -1;
