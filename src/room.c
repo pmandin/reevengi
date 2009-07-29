@@ -410,3 +410,13 @@ void room_map_drawPlayer(float x, float y, float angle)
 
 	render.pop_matrix();
 }
+
+int room_checkBoundary(float x, float y)
+{
+	return 0;
+}
+
+int room_checkCamswitch(float x, float y)
+{
+	return -1;
+}

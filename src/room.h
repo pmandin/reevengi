@@ -62,4 +62,7 @@ void room_map_init(room_t *this);
 void room_map_draw(room_t *this);
 void room_map_drawPlayer(float x, float y, float angle);
 
+int room_checkBoundary(float x, float y);	/* Return 1 if player crossed boundary */
+int room_checkCamswitch(float x, float y);	/* Return -1 if no cam switch, or new num camera */
+
 #endif /* ROOM_H */

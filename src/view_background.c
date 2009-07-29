@@ -107,6 +107,8 @@ static Uint32 tick_movement = 0;
 
 /*--- Functions prototypes ---*/
 
+static void processPlayerMovement(void);
+
 static void drawOrigin(void);
 static void drawGrid(void);
 
@@ -298,7 +300,7 @@ void view_background_refresh(void)
 
 void view_background_update(void)
 {
-	Uint32 tick_current = SDL_GetTicks();
+	processPlayerMovement();
 
 	if (reload_room) {
 		game_state.load_room();
@@ -320,15 +322,39 @@ void view_background_update(void)
 		player_model = game_state.load_model(num_model);
 		reload_model = 0;
 	}
+}
 
-	/* Move player ? */
+static void processPlayerMovement(void)
+{
+	float new_x, new_z;
+	int new_camera;
+	Uint32 tick_current = SDL_GetTicks();
+
 	if (player_moveforward) {
-		player_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		player_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		new_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		new_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		if (!room_checkBoundary(new_x, new_z)) {
+			player_x = new_x;
+			player_z = new_z;
+		}
+		new_camera = room_checkCamswitch(player_x, player_z);
+		if (new_camera != -1) {
+			game_state.num_camera = new_camera;
+			reload_bg = 1;
+		}
 	}
 	if (player_movebackward) {
 		player_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		player_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		if (!room_checkBoundary(new_x, new_z)) {
+			player_x = new_x;
+			player_z = new_z;
+		}
+		new_camera = room_checkCamswitch(player_x, player_z);
+		if (new_camera != -1) {
+			game_state.num_camera = new_camera;
+			reload_bg = 1;
+		}
 	}
 	if (player_moveup) {
 		player_y = playerstart_y - 5.0f*(tick_current-tick_movement);
@@ -342,8 +368,6 @@ void view_background_update(void)
 	if (player_turnright) {
 		player_a = playerstart_a + 0.1f*(tick_current-tick_movement);
 	}
-
-	/*printf("pos:%.3f,%.3f,%.3f angle:%.3f\n", player_x,player_y,player_z,player_a);*/
 }
 
 void view_background_draw(void)
