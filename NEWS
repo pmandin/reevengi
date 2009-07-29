@@ -1,8 +1,10 @@
-v 0.11
+v 0.12
 
-- Received contribution to add more PS1 versions, thanks to Mark Grass.
-- Reworked detection of game/demo versions.
-- S-Buffer implementation for software renderer.
+- Fixed some bugs in S-Buffer.
+- Added 24 bits rendering to software renderer.
+- Added room map with camera, camera switches and boundaries.
+- OpenGL: Disabled ARB_npot texture support, till testable.
+- OpenGL: Only upload texture to video card when loading model.
 
 
 See ChangeLog for older changes.

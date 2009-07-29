@@ -2,7 +2,9 @@ v 0.12
 
 - Fixed some bugs in S-Buffer.
 - Added 24 bits rendering to software renderer.
-- Disabled ARB_npot texture support, till testable.
+- Added room map with camera, camera switches and boundaries.
+- OpenGL: Disabled ARB_npot texture support, till testable.
+- OpenGL: Only upload texture to video card when loading model.
 
 v 0.11
 

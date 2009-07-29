@@ -95,6 +95,8 @@ B		reset model
 
 Y		toggle grid display
 H		toggle background restoration display
+N		toggle map display (white: camera, orange: camera switch, red: boundary)
+
 SPACE		refresh background, move player at current camera position
 Arrow keys	Move player
 Pageup/down	Move player up/down (Atari: use ClrHome/Insert)
