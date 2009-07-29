@@ -59,6 +59,15 @@ typedef struct {
 	Uint32 offset;
 } rdt_camera_pos_t;
 
+typedef struct {
+	Uint16 const0; /* 0xff01 */
+	Uint8 cam0, cam1;
+	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
+	Sint16 x2,y2;
+	Sint16 x3,y3;
+	Sint16 x4,y4;
+} rdt_camera_switch_t;
+
 /*--- Constant ---*/
 
 static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
@@ -127,6 +136,9 @@ static int re3pc_loadroom_rdt(const char *filename);
 static model_t *re3pc_load_model(int num_model);
 
 static void re3pc_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
+
+static int re3pc_getNumCamswitches(room_t *this);
+static void re3pc_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 
 /*--- Functions ---*/
 
@@ -256,8 +268,10 @@ static int re3pc_loadroom_rdt(const char *filename)
 
 	rdt_header = (Uint8 *) file;
 	game_state.room->num_cameras = rdt_header[1];
+	game_state.room->num_camswitches = re3pc_getNumCamswitches(game_state.room);
 
 	game_state.room->getCamera = re3pc_getCamera;
+	game_state.room->getCamswitch = re3pc_getCamswitch;
 
 	return 1;
 }
@@ -325,4 +339,75 @@ static void re3pc_getCamera(room_t *this, int num_camera, room_camera_t *room_ca
 	room_camera->to_x = SDL_SwapLE32(cam_array[num_camera].camera_to_x);
 	room_camera->to_y = SDL_SwapLE32(cam_array[num_camera].camera_to_y);
 	room_camera->to_z = SDL_SwapLE32(cam_array[num_camera].camera_to_z);
+}
+
+static int re3pc_getNumCamswitches(room_t *this)
+{
+	Uint32 *camswitch_offset, offset;
+	rdt_camera_switch_t *camswitch_array;
+	int i=0, num_switches = 0, prev_from = -1;
+
+	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
+	offset = SDL_SwapLE32(*camswitch_offset);
+	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
+
+	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
+		int boundary=0;
+
+		if (prev_from != camswitch_array[i].cam0) {
+			prev_from = camswitch_array[i].cam0;
+			boundary = 1;
+		}
+		if (boundary && (camswitch_array[i].cam1==0)) {
+			/* boundary, not a switch */
+		} else {
+			num_switches++;
+		}
+
+		++i;
+	}
+
+	return num_switches;
+}
+
+static void re3pc_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch)
+{
+	Uint32 *camswitch_offset, offset;
+	rdt_camera_switch_t *camswitch_array;
+	int i=0, j=0, prev_from=-1;
+
+	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
+	offset = SDL_SwapLE32(*camswitch_offset);
+	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
+
+	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
+		int boundary = 0;
+
+		if (prev_from != camswitch_array[i].cam0) {
+			prev_from = camswitch_array[i].cam0;
+			boundary = 1;
+		}
+		if (boundary && (camswitch_array[i].cam1==0)) {
+			/* boundary, not a switch */
+		} else {
+			if (j==num_camswitch) {
+				break;
+			}
+
+			++j;
+		}
+
+		++i;
+	}
+
+	room_camswitch->from = camswitch_array[i].cam0;
+	room_camswitch->to = camswitch_array[i].cam1;
+	room_camswitch->x[0] = SDL_SwapLE16(camswitch_array[i].x1);
+	room_camswitch->y[0] = SDL_SwapLE16(camswitch_array[i].y1);
+	room_camswitch->x[1] = SDL_SwapLE16(camswitch_array[i].x2);
+	room_camswitch->y[1] = SDL_SwapLE16(camswitch_array[i].y2);
+	room_camswitch->x[2] = SDL_SwapLE16(camswitch_array[i].x3);
+	room_camswitch->y[2] = SDL_SwapLE16(camswitch_array[i].y3);
+	room_camswitch->x[3] = SDL_SwapLE16(camswitch_array[i].x4);
+	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[i].y4);
 }
