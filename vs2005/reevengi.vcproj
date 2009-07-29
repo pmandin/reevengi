@@ -215,7 +215,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\draw.c"
+				RelativePath="..\src\draw_sbuffer.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\draw_simple.c"
 				>
 			</File>
 			<File
@@ -311,6 +315,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\render_texture_opengl.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt2.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\state.c"
 				>
 			</File>
@@ -381,6 +401,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\draw_sbuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\draw_simple.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\dyngl.h"
 				>
 			</File>
@@ -398,6 +426,10 @@
 			</File>
 			<File
 				RelativePath="..\src\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\model.h"
 				>
 			</File>
 			<File
@@ -462,6 +494,22 @@
 			</File>
 			<File
 				RelativePath="..\src\render_texture.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_texture_opengl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt2.h"
 				>
 			</File>
 			<File
