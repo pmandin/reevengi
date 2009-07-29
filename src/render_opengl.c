@@ -156,6 +156,7 @@ static void set_projection(float angle, float aspect, float z_near, float z_far)
 	gl.MultMatrixf(&m[0][0]);
 
 	gl.MatrixMode(GL_MODELVIEW);
+	gl.LoadIdentity();
 }
 
 static void set_ortho(float left, float right, float bottom, float top,
@@ -170,6 +171,7 @@ static void set_ortho(float left, float right, float bottom, float top,
 	gl.MultMatrixf(&m[0][0]);
 
 	gl.MatrixMode(GL_MODELVIEW);
+	gl.LoadIdentity();
 }
 
 static void set_modelview(float x_from, float y_from, float z_from,
