@@ -117,6 +117,8 @@ static void state_loadroom(void);
 static void state_unloadroom(void);
 
 static model_t *state_loadmodel(int num_model);
+static void state_download_textures(void);
+
 static void state_unloadmodels(void);
 
 /*--- Functions ---*/
@@ -139,6 +141,7 @@ void state_init(void)
 	game_state.load_room = state_loadroom;
 	game_state.load_background = state_loadbackground;
 	game_state.load_model = state_loadmodel;
+	game_state.download_textures = state_download_textures;
 	game_state.shutdown = state_shutdown;
 }
 
@@ -249,6 +252,22 @@ model_t *state_loadmodel(int num_model)
 	game_state.model_list[game_state.model_list_count-1].model = game_state.priv_load_model(num_model);
 
 	return game_state.model_list[game_state.model_list_count-1].model;
+}
+
+/* Force reupload textures */
+static void state_download_textures(void)
+{
+	int i;
+
+	for (i=0; i<game_state.model_list_count; i++) {
+		model_t *model = game_state.model_list[i].model;
+		if (model) {
+			render_texture_t *texture = model->texture;
+			if (texture) {
+				texture->download(texture);
+			}
+		}
+	}
 }
 
 static void state_unloadmodels(void)

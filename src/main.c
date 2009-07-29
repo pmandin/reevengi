@@ -277,6 +277,7 @@ static int viewer_loop(void)
 static void viewer_update(void)
 {
 	if (switch_mode) {
+		game_state.download_textures();
 		video.setVideoMode(&video, new_width, new_height, video.bpp);
 	}
 
