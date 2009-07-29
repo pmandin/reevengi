@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 #include "room.h"
+#include "log.h"
 
 /*--- Types ---*/
 
@@ -46,6 +47,7 @@ void room_rdt_init(room_t *this)
 	Uint8 *rdt_header = (Uint8 *) this->file;
 
 	this->num_cameras = rdt_header[1];
+	logMsg(2, "%d cameras angles\n", this->num_cameras);
 
 	this->getCamera = rdt_getCamera;
 }

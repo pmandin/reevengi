@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 #include "room.h"
+#include "log.h"
 
 /*--- Types ---*/
 
@@ -66,6 +67,8 @@ void room_rdt2_init(room_t *this)
 	this->num_cameras = rdt_header[1];
 	this->num_camswitches = rdt2_getNumCamswitches(this);
 	this->num_boundaries = rdt2_getNumBoundaries(this);
+	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
+		this->num_cameras, this->num_camswitches, this->num_boundaries);
 
 	this->getCamera = rdt2_getCamera;
 	this->getCamswitch = rdt2_getCamswitch;
