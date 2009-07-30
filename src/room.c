@@ -193,7 +193,7 @@ void room_map_draw(room_t *this)
 	/*printf("draw map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 
 	/* Set ortho projection */
-	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
+	render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f,1.0f);
 	/*render.set_identity();*/
 
 	room_map_drawBoundaries(this);
@@ -244,18 +244,18 @@ static void room_map_drawCameras(room_t *this)
 			MAP_COLOR_CAMERA_ENABLED :
 			MAP_COLOR_CAMERA_DISABLED);
 
-		v[0].x = room_camera.from_x;
-		v[0].y = room_camera.from_z;
+		v[0].x = room_camera.from_x * 0.5f;
+		v[0].y = room_camera.from_z * 0.5f;
 		v[0].z = 1.0f;
 
-		v[1].x = room_camera.from_x + radius * cos(((angle+30.0f)*M_PI)/180.0f);
-		v[1].y = room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f);
+		v[1].x = (room_camera.from_x + radius * cos(((angle+30.0f)*M_PI)/180.0f)) * 0.5f;
+		v[1].y = (room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f)) * 0.5f;
 		v[1].z = 1.0f;
 
 		render.line(&v[0], &v[1]);
 
-		v[1].x = room_camera.from_x + radius * cos(((angle-30.0f)*M_PI)/180.0f);
-		v[1].y = room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f);
+		v[1].x = (room_camera.from_x + radius * cos(((angle-30.0f)*M_PI)/180.0f)) * 0.5f;
+		v[1].y = (room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f)) * 0.5f;
 		v[1].z = 1.0f;
 
 		render.line(&v[0], &v[1]);
@@ -278,12 +278,12 @@ static void room_map_drawCamswitches(room_t *this)
 			MAP_COLOR_CAMSWITCH_DISABLED);
 
 		for (j=0; j<4; j++) {
-			v[0].x = room_camswitch.x[j];
-			v[0].y = room_camswitch.y[j];
+			v[0].x = room_camswitch.x[j] * 0.5f;
+			v[0].y = room_camswitch.y[j] * 0.5f;
 			v[0].z = 1.0f;
 
-			v[1].x = room_camswitch.x[(j+1) & 3];
-			v[1].y = room_camswitch.y[(j+1) & 3];
+			v[1].x = room_camswitch.x[(j+1) & 3] * 0.5f;
+			v[1].y = room_camswitch.y[(j+1) & 3] * 0.5f;
 			v[1].z = 1.0f;
 
 			render.line(&v[0], &v[1]);
@@ -307,12 +307,12 @@ static void room_map_drawBoundaries(room_t *this)
 			MAP_COLOR_BOUNDARY_DISABLED);
 
 		for (j=0; j<4; j++) {
-			v[0].x = room_camswitch.x[j];
-			v[0].y = room_camswitch.y[j];
+			v[0].x = room_camswitch.x[j] * 0.5f;
+			v[0].y = room_camswitch.y[j] * 0.5f;
 			v[0].z = 1.0f;
 
-			v[1].x = room_camswitch.x[(j+1) & 3];
-			v[1].y = room_camswitch.y[(j+1) & 3];
+			v[1].x = room_camswitch.x[(j+1) & 3] * 0.5f;
+			v[1].y = room_camswitch.y[(j+1) & 3] * 0.5f;
 			v[1].z = 1.0f;
 
 			render.line(&v[0], &v[1]);
@@ -329,28 +329,28 @@ void room_map_drawPlayer(float x, float y, float angle)
 	render.push_matrix();
 
 	/* Set ortho projection */
-	render.set_ortho(minx,maxx, minz,maxz, -1.0f,1.0f);
+	render.set_ortho(minx * 0.5f,maxx * 0.5f, minz * 0.5f,maxz * 0.5f, -1.0f,1.0f);
 
 	render.set_color(MAP_COLOR_PLAYER);
 
-	v[0].x = x - radius * cos((-angle * M_PI) / 180.0f) * 0.5f;
-	v[0].y = y - radius * sin((-angle * M_PI) / 180.0f) * 0.5f;
+	v[0].x = (x - radius * cos((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
+	v[0].y = (y - radius * sin((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
 	v[0].z = 1.0f;
 
-	v[1].x = x + radius * cos((-angle * M_PI) / 180.0f) * 0.5f;
-	v[1].y = y + radius * sin((-angle * M_PI) / 180.0f) * 0.5f;
+	v[1].x = (x + radius * cos((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
+	v[1].y = (y + radius * sin((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
 	v[1].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
 
-	v[0].x = x + radius * cos((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
-	v[0].y = y + radius * sin((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
+	v[0].x = (x + radius * cos((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].y = (y + radius * sin((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
 
-	v[0].x = x + radius * cos((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
-	v[0].y = y + radius * sin((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f;
+	v[0].x = (x + radius * cos((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].y = (y + radius * sin((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);

@@ -40,7 +40,7 @@ enum {
 /*--- Types ---*/
 
 typedef struct {
-	Sint32 x,y,z;	/* Vertex coords */
+	Sint16 x,y,z;	/* Vertex coords */
 	Uint16 u,v;	/* Texture coords */
 } vertex_t;
 
