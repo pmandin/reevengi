@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct {
 	Uint16 const0; /* 0xff01 */
-	Uint8 cam0, cam1;
+	Uint8 from,to;
 	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
 	Sint16 x2,y2;
 	Sint16 x3,y3;
@@ -108,11 +108,11 @@ static int rdt2_getNumCamswitches(room_t *this)
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
 		int boundary=0;
 
-		if (prev_from != camswitch_array[i].cam0) {
-			prev_from = camswitch_array[i].cam0;
+		if (prev_from != camswitch_array[i].from) {
+			prev_from = camswitch_array[i].from;
 			boundary = 1;
 		}
-		if (boundary && (camswitch_array[i].cam1==0)) {
+		if (boundary && (camswitch_array[i].to==0)) {
 			/* boundary, not a switch */
 		} else {
 			num_switches++;
@@ -137,11 +137,11 @@ static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t 
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
 		int boundary = 0;
 
-		if (prev_from != camswitch_array[i].cam0) {
-			prev_from = camswitch_array[i].cam0;
+		if (prev_from != camswitch_array[i].from) {
+			prev_from = camswitch_array[i].from;
 			boundary = 1;
 		}
-		if (boundary && (camswitch_array[i].cam1==0)) {
+		if (boundary && (camswitch_array[i].to==0)) {
 			/* boundary, not a switch */
 		} else {
 			if (j==num_camswitch) {
@@ -154,8 +154,8 @@ static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t 
 		++i;
 	}
 
-	room_camswitch->from = camswitch_array[i].cam0;
-	room_camswitch->to = camswitch_array[i].cam1;
+	room_camswitch->from = camswitch_array[i].from;
+	room_camswitch->to = camswitch_array[i].to;
 	room_camswitch->x[0] = SDL_SwapLE16(camswitch_array[i].x1);
 	room_camswitch->y[0] = SDL_SwapLE16(camswitch_array[i].y1);
 	room_camswitch->x[1] = SDL_SwapLE16(camswitch_array[i].x2);
@@ -179,11 +179,11 @@ static int rdt2_getNumBoundaries(room_t *this)
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
 		int boundary=0;
 
-		if (prev_from != camswitch_array[i].cam0) {
-			prev_from = camswitch_array[i].cam0;
+		if (prev_from != camswitch_array[i].from) {
+			prev_from = camswitch_array[i].from;
 			boundary = 1;
 		}
-		if (boundary && (camswitch_array[i].cam1==0)) {
+		if (boundary && (camswitch_array[i].to==0)) {
 			++num_boundaries;
 		} else {
 			/* switch, not a boundary */
@@ -208,11 +208,11 @@ static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *r
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
 		int boundary = 0;
 
-		if (prev_from != camswitch_array[i].cam0) {
-			prev_from = camswitch_array[i].cam0;
+		if (prev_from != camswitch_array[i].from) {
+			prev_from = camswitch_array[i].from;
 			boundary = 1;
 		}
-		if (boundary && (camswitch_array[i].cam1==0)) {
+		if (boundary && (camswitch_array[i].to==0)) {
 			if (j==num_boundary) {
 				break;
 			}
@@ -225,8 +225,8 @@ static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *r
 		++i;
 	}
 
-	room_camswitch->from = camswitch_array[i].cam0;
-	room_camswitch->to = camswitch_array[i].cam1;
+	room_camswitch->from = camswitch_array[i].from;
+	room_camswitch->to = camswitch_array[i].to;
 	room_camswitch->x[0] = SDL_SwapLE16(camswitch_array[i].x1);
 	room_camswitch->y[0] = SDL_SwapLE16(camswitch_array[i].y1);
 	room_camswitch->x[1] = SDL_SwapLE16(camswitch_array[i].x2);
