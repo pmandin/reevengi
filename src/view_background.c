@@ -164,8 +164,12 @@ void view_background_input(SDL_Event *event)
 					game_state.num_camera = 0;
 				} else {
 					--game_state.num_camera;
-					if ((game_state.num_camera<0) && (game_state.room->num_cameras>0)) {
-						game_state.num_camera = game_state.room->num_cameras-1;
+					if (game_state.num_camera<0) {
+						if (game_state.room->num_cameras>0) {
+							game_state.num_camera = game_state.room->num_cameras-1;
+						} else {
+							game_state.num_camera = 0;
+						}
 					}
 				}
 				reload_bg = 1;
