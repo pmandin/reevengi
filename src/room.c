@@ -38,6 +38,9 @@
 #define MAP_COLOR_BOUNDARY_ENABLED	0x00ff0000
 #define MAP_COLOR_PLAYER		0x0000ff00
 
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define MIN(x,y) ((x)<(y)?(x):(y))
+
 /*--- Types ---*/
 
 /*--- Variables ---*/
@@ -92,48 +95,24 @@ void room_map_init(room_t *this)
 	maxx = maxz = -32768;
 
 	room_map_minMaxCameras(this);
-	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 	room_map_minMaxCamswitches(this);
-	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 	room_map_minMaxBoundaries(this);
-	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 
 	/* Add 5% around */
 	range = maxx-minx;
 
 	v = minx -(range*5)/100;
-	if (v<-32768) {
-		v = -32768;
-	} else if (v>32767) {
-		v = 32767;
-	}
-	minx = v;
-
+	minx = MIN(MAX(v,-32768),32767);
 	v = maxx + (range*5)/100;
-	if (v<-32768) {
-		v = -32768;
-	} else if (v>32767) {
-		v = 32767;
-	}
-	maxx = v;
+	maxx = MIN(MAX(v,-32768),32767);
 
 	range = maxz-minz;
 
 	v = minz - (range*5)/100;
-	if (v<-32768) {
-		v = -32768;
-	} else if (v>32767) {
-		v = 32767;
-	}
-	minz = v;
+	minz = MIN(MAX(v,-32768),32767);
 
 	v = maxz + (range*5)/100;
-	if (v<-32768) {
-		v = -32768;
-	} else if (v>32767) {
-		v = 32767;
-	}
-	maxz = v;
+	maxz = MIN(MAX(v,-32768),32767);
 
 	if (maxz-minz > maxx-minx) {
 		minx = minz;
@@ -142,8 +121,6 @@ void room_map_init(room_t *this)
 		minz = minx;
 		maxz = maxx;
 	}
-
-	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 }
 
 static void room_map_minMaxCameras(room_t *this)
@@ -156,41 +133,17 @@ static void room_map_minMaxCameras(room_t *this)
 
 		this->getCamera(this, i, &room_camera);
 
-		/*printf("cam %d: 0x%08x 0x%08x 0x%08x 0x%08x\n", i,
-			room_camera.from_x, room_camera.from_z,
-			room_camera.to_x, room_camera.to_z);*/
+		minx = MIN(room_camera.from_x, minx);
+		maxx = MAX(room_camera.from_x, maxx);
 
-		v = room_camera.from_x;
-		if (v < minx) {
-			minx = v;
-		}
-		if (v > maxx) {
-			maxx = v;
-		}
+		minx = MIN(room_camera.to_x, minx);
+		maxx = MAX(room_camera.to_x, maxx);
 
-		v = room_camera.to_x;
-		if (v < minx) {
-			minx = v;
-		}
-		if (v > maxx) {
-			maxx = v;
-		}
+		minz = MIN(room_camera.from_z, minz);
+		maxz = MAX(room_camera.from_z, maxz);
 
-		v = room_camera.from_z;
-		if (v < minz) {
-			minz = v;
-		}
-		if (v > maxz) {
-			maxz = v;
-		}
-
-		v = room_camera.to_z;
-		if (v < minz) {
-			minz = v;
-		}
-		if (v > maxz) {
-			maxz = v;
-		}
+		minz = MIN(room_camera.to_z, minz);
+		maxz = MAX(room_camera.to_z, maxz);
 	}
 }
 
@@ -204,19 +157,11 @@ static void room_map_minMaxCamswitches(room_t *this)
 		this->getCamswitch(this, i, &room_camswitch);
 
 		for (j=0; j<4; j++) {
-			if (room_camswitch.x[j] < minx) {
-				minx = room_camswitch.x[j];
-			}
-			if (room_camswitch.x[j] > maxx) {
-				maxx = room_camswitch.x[j];
-			}
+			minx = MIN(room_camswitch.x[j], minx);
+			maxx = MAX(room_camswitch.x[j], maxx);
 
-			if (room_camswitch.y[j] < minz) {
-				minz = room_camswitch.y[j];
-			}
-			if (room_camswitch.y[j] > maxz) {
-				maxz = room_camswitch.y[j];
-			}
+			minz = MIN(room_camswitch.y[j], minz);
+			maxz = MAX(room_camswitch.y[j], maxz);
 		}
 	}
 }
@@ -231,19 +176,11 @@ static void room_map_minMaxBoundaries(room_t *this)
 		this->getBoundary(this, i, &room_camswitch);
 
 		for (j=0; j<4; j++) {
-			if (room_camswitch.x[j] < minx) {
-				minx = room_camswitch.x[j];
-			}
-			if (room_camswitch.x[j] > maxx) {
-				maxx = room_camswitch.x[j];
-			}
+			minx = MIN(room_camswitch.x[j], minx);
+			maxx = MAX(room_camswitch.x[j], maxx);
 
-			if (room_camswitch.y[j] < minz) {
-				minz = room_camswitch.y[j];
-			}
-			if (room_camswitch.y[j] > maxz) {
-				maxz = room_camswitch.y[j];
-			}
+			minz = MIN(room_camswitch.y[j], minz);
+			maxz = MAX(room_camswitch.y[j], maxz);
 		}
 	}
 }
