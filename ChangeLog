@@ -6,6 +6,7 @@ v 0.12
 - OpenGL: Disabled ARB_npot texture support, till testable.
 - OpenGL: Only upload texture to video card when loading model.
 - Camera switches, and boundary checks for player movement.
+- RE1: Fixed wrong row length for some backgrounds.
 
 v 0.11
 

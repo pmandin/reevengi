@@ -95,9 +95,10 @@ B		reset model
 
 Y		toggle grid display
 H		toggle background restoration display
-N		toggle map display (white: camera, orange: camera switch,
-		red: boundary, green arrow: you). Camera switches and boundary
-		checks are enabled.
+N		toggle map display.
+		Camera switches and boundary checks are enabled.
+		WHITE: camera, ORANGE: camera switch,
+		RED: boundary, GREEN ARROW: you.
 
 SPACE		refresh background, move player at current camera position
 Arrow keys	Move player
