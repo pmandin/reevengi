@@ -133,6 +133,14 @@ void room_map_init(room_t *this)
 	}
 	maxz = v;
 
+	if (maxz-minz > maxx-minx) {
+		minx = minz;
+		maxx = maxz;
+	} else {
+		minz = minx;
+		maxz = maxx;
+	}
+
 	/*printf("init map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
 }
 
