@@ -66,14 +66,6 @@ static int background_vlc_load(SDL_RWops *src, int chunk_size)
 	int dstBufLen;
 	int retval = 0;
 
-#if 0
-	game_state.room->num_cameras = SDL_RWseek(src, 0, RW_SEEK_END) / chunk_size;
-	if (game_state.num_camera<0) {
-		game_state.num_camera=0;
-	} else if (game_state.num_camera>=game_state.room->num_cameras) {
-		game_state.num_camera = game_state.room->num_cameras-1;
-	}
-#endif
 	SDL_RWseek(src, game_state.num_camera * chunk_size, RW_SEEK_SET);
 
 	vlc_depack(src, &dstBuffer, &dstBufLen);
