@@ -134,6 +134,8 @@ static void render_resize(render_t *this, int w, int h)
 
 static void render_startFrame(render_t *this)
 {
+	gl.ClearColor(0.0,0.0,0.0,0.0);
+	gl.Clear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 }
 
 static void render_endFrame(render_t *this)

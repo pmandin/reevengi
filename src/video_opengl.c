@@ -167,9 +167,6 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	}
 
 	video.initViewport(&video);
-
-	gl.ClearColor(0.0,0.0,0.0,0.0);
-	gl.Clear(GL_COLOR_BUFFER_BIT);
 }
 
 static void swapBuffers(video_t *this)
@@ -177,8 +174,6 @@ static void swapBuffers(video_t *this)
 	this->countFps(this);
 
 	SDL_GL_SwapBuffers();
-
-	gl.Clear(GL_DEPTH_BUFFER_BIT);
 }
 
 static void screenShot(video_t *this)
