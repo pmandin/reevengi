@@ -26,7 +26,6 @@
 #include "dither.h"
 #include "render.h"
 #include "draw.h"
-#include "draw_simple.h"
 
 /*--- Defines ---*/
 
@@ -105,6 +104,14 @@ static Uint32 sbuffer_seg_id;
 static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pixels */
 
 /*--- Functions prototypes ---*/
+
+static unsigned logbase2(unsigned n)
+{
+	unsigned log2 = 0;
+	while (n >>= 1)
+		++log2;
+	return log2;
+}
 
 static void draw_shutdown(draw_t *this);
 
@@ -745,8 +752,8 @@ static void draw_render8_tex(void)
 				Sint32 vd = dv * 65536.0f;
 				Sint32 ui = u * 65536.0f;
 				Sint32 ud = du * 65536.0f;
-				int ushift = 16-log2i(tex->pitchw);
-				int vshift = log2i(tex->pitchh);
+				int ushift = 16-logbase2(tex->pitchw);
+				int vshift = logbase2(tex->pitchh);
 				Uint32 uv = (vi>>vshift) & 0x0000ffff;
 				Uint32 uvd = (vd>>vshift) & 0x0000ffff;
 				uv |= (ui<<ushift) & 0xffff0000;
@@ -894,8 +901,8 @@ static void draw_render16_tex(void)
 				Sint32 vd = dv * 65536.0f;
 				Sint32 ui = u * 65536.0f;
 				Sint32 ud = du * 65536.0f;
-				int ushift = 16-log2i(tex->pitchw);
-				int vshift = log2i(tex->pitchh);
+				int ushift = 16-logbase2(tex->pitchw);
+				int vshift = logbase2(tex->pitchh);
 				Uint32 uv = (vi>>vshift) & 0x0000ffff;
 				Uint32 uvd = (vd>>vshift) & 0x0000ffff;
 				uv |= (ui<<ushift) & 0xffff0000;
