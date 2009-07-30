@@ -107,7 +107,7 @@ static void re3ps1game_loadbackground(void)
 	sprintf(filepath, re3ps1game_bg, game_state.num_stage, game_state.num_stage, game_state.num_room);
 
 	logMsg(1, "bss: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed");
+	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE, 0) ? "done" : "failed");
 
 	free(filepath);
 }

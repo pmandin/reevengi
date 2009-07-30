@@ -38,12 +38,12 @@
 
 /*--- Functions prototypes ---*/
 
-static int background_vlc_load(SDL_RWops *src, int chunk_size);
-static int background_mdec_load(SDL_RWops *src);
+static int background_vlc_load(SDL_RWops *src, int chunk_size, int row_offset);
+static int background_mdec_load(SDL_RWops *src, int row_offset);
 
 /*--- Functions ---*/
 
-int background_bss_load(const char *filename, int chunk_size)
+int background_bss_load(const char *filename, int chunk_size, int row_offset)
 {
 	SDL_RWops *src;
 	/*Uint8 *dstBuffer;
@@ -52,7 +52,7 @@ int background_bss_load(const char *filename, int chunk_size)
 	
 	src = FS_makeRWops(filename);
 	if (src) {
-		retval = background_vlc_load(src, chunk_size);
+		retval = background_vlc_load(src, chunk_size, row_offset);
 
 		SDL_RWclose(src);
 	}
@@ -60,7 +60,7 @@ int background_bss_load(const char *filename, int chunk_size)
 	return retval;
 }
 
-static int background_vlc_load(SDL_RWops *src, int chunk_size)
+static int background_vlc_load(SDL_RWops *src, int chunk_size, int row_offset)
 {
 	Uint8 *dstBuffer;
 	int dstBufLen;
@@ -75,7 +75,7 @@ static int background_vlc_load(SDL_RWops *src, int chunk_size)
 			
 		mdec_src = SDL_RWFromMem(dstBuffer, dstBufLen);
 		if (mdec_src) {
-			retval = background_mdec_load(mdec_src);
+			retval = background_mdec_load(mdec_src, row_offset);
 
 			SDL_FreeRW(mdec_src);
 		}
@@ -86,7 +86,7 @@ static int background_vlc_load(SDL_RWops *src, int chunk_size)
 	return retval;
 }
 
-static int background_mdec_load(SDL_RWops *src)
+static int background_mdec_load(SDL_RWops *src, int row_offset)
 {
 	Uint8 *dstBuffer;
 	int dstBufLen;
@@ -102,7 +102,7 @@ static int background_mdec_load(SDL_RWops *src)
 			retval = 1;
 		}*/
 
-		image = mdec_surface(dstBuffer, WIDTH, HEIGHT);
+		image = mdec_surface(dstBuffer, WIDTH, HEIGHT, row_offset);
 		if (image) {
 			game_state.back_surf = video.createSurfaceSu(image);
 			if (game_state.back_surf) {

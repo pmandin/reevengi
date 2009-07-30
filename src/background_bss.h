@@ -23,6 +23,6 @@
 
 /*--- Functions ---*/
 
-int background_bss_load(const char *filename, int chunk_size);
+int background_bss_load(const char *filename, int chunk_size, int row_offset);
 
 #endif /* BACKGROUND_BSS_H */

@@ -972,7 +972,7 @@ static void re2ps1_loadbackground(void)
 	sprintf(filepath, file_bg, game_state.num_stage, game_state.num_room);
 
 	logMsg(1, "bss: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed");
+	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE, 0) ? "done" : "failed");
 
 	free(filepath);
 }

@@ -282,7 +282,7 @@ void mdec_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength,
 	*dstLength = dstBufLen;
 }
 
-SDL_Surface *mdec_surface(Uint8 *source, int width, int height)
+SDL_Surface *mdec_surface(Uint8 *source, int width, int height, int row_offset)
 {
 	SDL_Surface *surface;
 	Uint8 *surface_line;
@@ -309,7 +309,7 @@ SDL_Surface *mdec_surface(Uint8 *source, int width, int height)
 	for (y=0; y<height; y++) {
 		memcpy(surface_line, source, width*3);
 		surface_line += surface->pitch;
-		source += width*3;
+		source += (width+row_offset)*3;
 	}
 
 	return surface;

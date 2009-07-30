@@ -125,6 +125,13 @@ static void re1ps1_loadbackground(void)
 	char *filepath;
 	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	int re1_stage = (game_state.num_stage>5 ? game_state.num_stage-5 : game_state.num_stage);
+	int row_offset = 0;
+
+	if (re1_stage == 2) {
+		if (game_state.num_room==0) {
+			row_offset = -4;
+		}
+	}
 
 	filepath = malloc(strlen(re1ps1_bg)+16);
 	if (!filepath) {
@@ -134,7 +141,7 @@ static void re1ps1_loadbackground(void)
 	sprintf(filepath, re1ps1_bg, is_shock, re1_stage, re1_stage, game_state.num_room);
 
 	logMsg(1, "bss: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed");
+	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE, row_offset) ? "done" : "failed");
 
 	free(filepath);
 }

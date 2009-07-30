@@ -25,6 +25,6 @@
 
 void mdec_depack(SDL_RWops *src, Uint8 **dstPointer, int *dstLength,
 	int width, int height);
-SDL_Surface *mdec_surface(Uint8 *source, int width, int height);
+SDL_Surface *mdec_surface(Uint8 *source, int width, int height, int row_offset);
 
 #endif /* DEPACK_MDEC_H */
