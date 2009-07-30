@@ -26,7 +26,7 @@
 
 /*--- Functions ---*/
 
-SDL_Surface *background_tim_load(SDL_RWops *src)
+SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 {
 	int start = 0;
 	int scale_width, palette_size, i, j, w, h, dblpitch, bpp;
@@ -106,7 +106,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src)
 			}
 		}
 	}
-	
+
 	/* Read image */
 	SDL_RWseek(src, image_offset, SEEK_SET);
 	if ( !SDL_RWread( src, &tim_size, sizeof(tim_size), 1 ) ) {
@@ -162,7 +162,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src)
 						*dstline++ = color & 15;
 						*dstline++ = (color>>4)&15;
 					}
-					src += w>>1;
+					src += (w>>1) + row_offset;
 					dst += surface->pitch;
 				}
 			}
@@ -175,7 +175,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src)
 				dst = surface->pixels;
 				for (y=0;y<h;y++) {
 					memcpy(dst, src, w);
-					src += w;
+					src += w + row_offset;
 					dst += surface->pitch;
 				}
 			}
@@ -193,7 +193,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src)
 						Uint16 color = *srcline++;
 						*dstline++ = SDL_SwapLE16(color);
 					}
-					src += w;
+					src += w + row_offset;
 					dst += (surface->pitch)>>1;
 				}
 			}

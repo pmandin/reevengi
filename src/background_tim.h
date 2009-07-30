@@ -49,6 +49,6 @@ typedef struct {
 
 /*--- Functions ---*/
 
-SDL_Surface *background_tim_load(SDL_RWops *src);
+SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset);
 
 #endif /* BACKGROUND_TIM_H */

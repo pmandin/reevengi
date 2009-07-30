@@ -87,7 +87,7 @@ static const char *re1pcgame_movies[] = {
 static void re1pcgame_shutdown(void);
 
 static void re1pcgame_loadbackground(void);
-static int re1pcgame_load_pak_bg(const char *filename);
+static int re1pcgame_load_pak_bg(const char *filename, int row_offset);
 
 static void re1pcgame_loadroom(void);
 static int re1pcgame_loadroom_rdt(const char *filename);
@@ -115,6 +115,30 @@ void re1pcgame_loadbackground(void)
 {
 	char *filepath;
 	int re1_stage = (game_state.num_stage>5 ? game_state.num_stage-5 : game_state.num_stage);
+	int row_offset = 0;
+
+	if (re1_stage == 2) {
+		if (game_state.num_room==0) {
+			row_offset = -4;
+		}
+	} else if (re1_stage == 3) {
+		if (game_state.num_room==6) {
+			if (game_state.num_camera==0) {
+				row_offset = -4;
+			} else if (game_state.num_camera==2) {
+				row_offset = -4;
+			}
+		} else if (game_state.num_room==7) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		} else if (game_state.num_room==0x0b) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		} else if (game_state.num_room==0x0f) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		}
+	}
 
 	filepath = malloc(strlen(re1pcgame_bg)+8);
 	if (!filepath) {
@@ -125,12 +149,12 @@ void re1pcgame_loadbackground(void)
 		game_state.num_room, game_state.num_camera);
 
 	logMsg(1, "pak: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re1pcgame_load_pak_bg(filepath) ? "done" : "failed");
+	logMsg(1, "%s\n", re1pcgame_load_pak_bg(filepath, row_offset) ? "done" : "failed");
 
 	free(filepath);
 }
 
-int re1pcgame_load_pak_bg(const char *filename)
+int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 {
 	SDL_RWops *src;
 	int retval = 0;
@@ -150,7 +174,7 @@ int re1pcgame_load_pak_bg(const char *filename)
 			if (tim_src) {
 				SDL_Surface *image;
 
-				image = background_tim_load(tim_src);
+				image = background_tim_load(tim_src, row_offset);
 				if (image) {
 					game_state.back_surf = video.createSurfaceSu(image);
 					if (game_state.back_surf) {
