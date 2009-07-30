@@ -168,7 +168,7 @@ static int re3ps1game_loadroom_ard(const char *filename)
 
 	memcpy(file, &ard_file[offset], len);
 
-	game_state.room = room_create(file);
+	game_state.room = room_create(file, len);
 	if (!game_state.room) {
 		free(file);
 		free(ard_file);

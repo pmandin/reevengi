@@ -279,7 +279,7 @@ static int re2pcgame_loadroom_rdt(const char *filename)
 		return 0;
 	}
 	
-	game_state.room = room_create(file);
+	game_state.room = room_create(file, length);
 	if (!game_state.room) {
 		free(file);
 		return 0;

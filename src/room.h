@@ -42,6 +42,7 @@ typedef struct room_s room_t;
 
 struct room_s {
 	void *file;	/* RDT Room data file */
+	Uint32 file_length;
 
 	int num_cameras;
 	int num_camswitches;
@@ -56,7 +57,7 @@ struct room_s {
 
 /*--- Functions ---*/
 
-room_t *room_create(void *room_file);
+room_t *room_create(void *room_file, Uint32 length);
 
 void room_map_init(room_t *this);
 void room_map_draw(room_t *this);

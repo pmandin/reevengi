@@ -58,7 +58,7 @@ static void room_map_drawBoundaries(room_t *this);
 
 /*--- Functions ---*/
 
-room_t *room_create(void *room_file)
+room_t *room_create(void *room_file, Uint32 length)
 {
 	room_t *this = calloc(1, sizeof(room_t));
 	if (!this) {
@@ -66,6 +66,8 @@ room_t *room_create(void *room_file)
 	}
 
 	this->file = room_file;
+	this->file_length = length;
+
 	this->shutdown = shutdown;
 
 	return this;

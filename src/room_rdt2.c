@@ -64,15 +64,18 @@ void room_rdt2_init(room_t *this)
 {
 	Uint8 *rdt_header = (Uint8 *) this->file;
 
-	this->num_cameras = rdt_header[1];
-	this->num_camswitches = rdt2_getNumCamswitches(this);
-	this->num_boundaries = rdt2_getNumBoundaries(this);
+	if (this->file_length > 4) {
+		this->num_cameras = rdt_header[1];
+		this->num_camswitches = rdt2_getNumCamswitches(this);
+		this->num_boundaries = rdt2_getNumBoundaries(this);
+
+		this->getCamera = rdt2_getCamera;
+		this->getCamswitch = rdt2_getCamswitch;
+		this->getBoundary = rdt2_getBoundary;
+	}
+
 	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
 		this->num_cameras, this->num_camswitches, this->num_boundaries);
-
-	this->getCamera = rdt2_getCamera;
-	this->getCamswitch = rdt2_getCamswitch;
-	this->getBoundary = rdt2_getBoundary;
 }
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
