@@ -417,14 +417,15 @@ void view_background_draw(void)
 
 	drawPlayer();
 
-	/* World origin */
-	drawOrigin();
-
-	render.translate(room_camera.to_x, room_camera.to_y, room_camera.to_z);
 	if (render_grid) {
+		/* World origin */
+		drawOrigin();
+
+		render.translate(room_camera.to_x, room_camera.to_y, room_camera.to_z);
 		drawGrid();
+
+		drawOrigin();	/* what the camera looks at */
 	}
-	drawOrigin();	/* what the camera looks at */
 
 	if (render_map) {
 		room_map_draw(game_state.room);
