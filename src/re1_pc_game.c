@@ -114,13 +114,14 @@ void re1pcgame_shutdown(void)
 void re1pcgame_loadbackground(void)
 {
 	char *filepath;
+	int re1_stage = (game_state.num_stage>5 ? game_state.num_stage-5 : game_state.num_stage);
 
 	filepath = malloc(strlen(re1pcgame_bg)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1pcgame_bg, game_state.num_stage, game_state.num_stage,
+	sprintf(filepath, re1pcgame_bg, re1_stage, re1_stage,
 		game_state.num_room, game_state.num_camera);
 
 	logMsg(1, "pak: Loading %s ... ", filepath);

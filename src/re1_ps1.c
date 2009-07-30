@@ -124,13 +124,14 @@ static void re1ps1_loadbackground(void)
 {
 	char *filepath;
 	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	int re1_stage = (game_state.num_stage>5 ? game_state.num_stage-5 : game_state.num_stage);
 
 	filepath = malloc(strlen(re1ps1_bg)+16);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1ps1_bg, is_shock, game_state.num_stage, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re1ps1_bg, is_shock, re1_stage, re1_stage, game_state.num_room);
 
 	logMsg(1, "bss: Loading %s ... ", filepath);
 	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE) ? "done" : "failed");
