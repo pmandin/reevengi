@@ -105,15 +105,9 @@ static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pix
 
 /*--- Functions prototypes ---*/
 
-static unsigned logbase2(unsigned n)
-{
-	unsigned log2 = 0;
-	while (n >>= 1)
-		++log2;
-	return log2;
-}
-
 static void draw_shutdown(draw_t *this);
+
+static unsigned logbase2(unsigned n);
 
 static void draw_resize(draw_t *this, int w, int h);
 static void draw_startFrame(draw_t *this);
@@ -166,6 +160,14 @@ static void draw_shutdown(draw_t *this)
 		poly_hlines = NULL;
 	}
 	size_poly_minmaxx = 0;
+}
+
+static unsigned logbase2(unsigned n)
+{
+	unsigned log2 = 0;
+	while (n >>= 1)
+		++log2;
+	return log2;
 }
 
 static void draw_resize(draw_t *this, int w, int h)
