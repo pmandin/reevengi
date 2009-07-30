@@ -138,6 +138,13 @@ void re1pcgame_loadbackground(void)
 			/* All cameras angles for this room */
 			row_offset = -4;
 		}
+	} else if (re1_stage == 5) {
+		if (game_state.num_room==0x0d) {
+			row_offset = -4;
+		}
+		if (game_state.num_room==0x15) {
+			row_offset = -4;
+		}
 	}
 
 	filepath = malloc(strlen(re1pcgame_bg)+8);

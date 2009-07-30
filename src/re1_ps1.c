@@ -131,6 +131,27 @@ static void re1ps1_loadbackground(void)
 		if (game_state.num_room==0) {
 			row_offset = -4;
 		}
+	} else if (re1_stage == 3) {
+		if (game_state.num_room==6) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		} else if (game_state.num_room==7) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		} else if (game_state.num_room==0x0b) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		} else if (game_state.num_room==0x0f) {
+			/* All cameras angles for this room */
+			row_offset = -4;
+		}
+	} else if (re1_stage == 5) {
+		if (game_state.num_room==0x0d) {
+			row_offset = -4;
+		}
+		if (game_state.num_room==0x15) {
+			row_offset = -4;
+		}
 	}
 
 	filepath = malloc(strlen(re1ps1_bg)+16);
