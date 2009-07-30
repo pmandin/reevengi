@@ -306,8 +306,14 @@ SDL_Surface *mdec_surface(Uint8 *source, int width, int height, int row_offset)
 	}
 
 	surface_line = surface->pixels;
+	if (row_offset<0) {
+		int num_pixels = -row_offset>>1;
+		surface_line += surface->pitch * num_pixels;
+		surface_line += num_pixels*3;
+		height -= num_pixels*2;
+	}
 	for (y=0; y<height; y++) {
-		memcpy(surface_line, source, width*3);
+		memcpy(surface_line, source, (width+row_offset)*3);
 		surface_line += surface->pitch;
 		source += (width+row_offset)*3;
 	}
