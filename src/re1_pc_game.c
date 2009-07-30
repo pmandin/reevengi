@@ -119,7 +119,9 @@ void re1pcgame_loadbackground(void)
 
 	if (re1_stage == 2) {
 		if (game_state.num_room==0) {
-			row_offset = -4;
+			if (game_state.num_camera==0) {
+				row_offset = -4;
+			}
 		}
 	} else if (re1_stage == 3) {
 		if (game_state.num_room==6) {
