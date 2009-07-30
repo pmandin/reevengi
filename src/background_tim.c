@@ -150,19 +150,26 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 		case TIM_TYPE_4:
 			{
 				Uint8 *src, *dst;
-				/*SDL_SetPalette(surface, SDL_PHYSPAL|SDL_LOGPAL, palette, 0, palette_size);*/
+				int src_pitch = (w>>1) + row_offset;
+
 				src = tim_image;
 				dst = surface->pixels;
+				if (row_offset<0) {
+					int num_pixels = -row_offset>>1;
+					dst += num_pixels;
+					dst += surface->pitch * num_pixels;
+					h -= num_pixels*2;
+				}
 				for (y=0;y<h;y++) {
 					Uint8 *srcline, *dstline;
 					srcline = src;
 					dstline = dst;
-					for (x=0;x<w>>1;x++) {
+					for (x=0;x<(w>>1)+row_offset;x++) {
 						int color = *srcline++;
 						*dstline++ = color & 15;
 						*dstline++ = (color>>4)&15;
 					}
-					src += (w>>1) + row_offset;
+					src += src_pitch;
 					dst += surface->pitch;
 				}
 			}
@@ -170,12 +177,19 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 		case TIM_TYPE_8:
 			{
 				Uint8 *src, *dst;
-				/*SDL_SetPalette(surface, SDL_PHYSPAL|SDL_LOGPAL, &palette[256], 0, palette_size);*/
+				int src_pitch = w + row_offset;
+
 				src = tim_image;
 				dst = surface->pixels;
+				if (row_offset<0) {
+					int num_pixels = -row_offset>>1;
+					dst += num_pixels;
+					dst += surface->pitch * num_pixels;
+					h -= num_pixels*2;
+				}
 				for (y=0;y<h;y++) {
-					memcpy(dst, src, w);
-					src += w + row_offset;
+					memcpy(dst, src, w+row_offset);
+					src += src_pitch;
 					dst += surface->pitch;
 				}
 			}
@@ -183,17 +197,25 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 		case TIM_TYPE_16:
 			{
 				Uint16 *src, *dst;
+				int src_pitch = w + row_offset;
+
 				src = (Uint16 *) tim_image;
 				dst = (Uint16 *) surface->pixels;
+				if (row_offset<0) {
+					int num_pixels = -row_offset>>1;
+					dst += num_pixels;
+					dst += (surface->pitch * num_pixels)>>1;
+					h -= num_pixels*2;
+				}
 				for (y=0;y<h;y++) {
 					Uint16 *srcline, *dstline;
 					srcline = src;
 					dstline = dst;
-					for (x=0;x<w;x++) {
+					for (x=0;x<w+row_offset;x++) {
 						Uint16 color = *srcline++;
 						*dstline++ = SDL_SwapLE16(color);
 					}
-					src += w + row_offset;
+					src += src_pitch;
 					dst += (surface->pitch)>>1;
 				}
 			}
