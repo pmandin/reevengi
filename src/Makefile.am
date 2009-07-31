@@ -35,7 +35,7 @@ reevengi_headers = background_bss.h background_tim.h \
 	render_background.h render_background_opengl.h \
 	render.h \
 	render_texture.h render_texture_opengl.h \
-	room.h room_rdt.h room_rdt2.h \
+	room.h room_rdt.h room_rdt2.h room_rdt2_items.h \
 	state.h video.h \
 	video_surface.h video_surface_opengl.h \
 	view_background.h view_movie.h

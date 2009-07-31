@@ -21,6 +21,8 @@
 
 #include <SDL.h>
 
+#include "room.h"
+
 /*--- Defines ---*/
 
 #define ITEM_END_LIST	0x01
@@ -163,3 +165,9 @@ typedef union {
 	rdt_item4e_t	item4e;
 	rdt_item67_t	item67;
 } rdt_item_t;
+
+/*--- Functions ---*/
+
+void room_rdt2_listItems(room_t *this)
+{
+}
