@@ -1,12 +1,4 @@
-v 0.12
-
-- Fixed some bugs in S-Buffer.
-- Added 24 bits rendering to software renderer.
-- Added room map with camera, camera switches and boundaries.
-- OpenGL: Disabled ARB_npot texture support, till testable.
-- OpenGL: Only upload texture to video card when loading model.
-- Camera switches, and boundary checks for player movement.
-- RE1: Fixed wrong row length for some backgrounds.
+v 0.13
 
 
 See ChangeLog for older changes.
