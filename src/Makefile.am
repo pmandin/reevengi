@@ -18,7 +18,7 @@ reevengi_SOURCES = background_bss.c background_tim.c \
 	render_background.c render_background_opengl.c \
 	render.c render_opengl.c \
 	render_texture.c render_texture_opengl.c \
-	room.c room_rdt.c room_rdt2.c \
+	room.c room_rdt.c room_rdt2.c room_rdt2_items.c \
 	state.c video.c video_opengl.c \
 	video_surface.c video_surface_opengl.c \
 	view_background.c view_movie.c
