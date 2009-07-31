@@ -152,9 +152,7 @@ model_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	model->tim_file = tim;
 	model->tim_length = tim_length;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_convert_endianness(model);
-#endif
 
 	model->texture = render.textureFromTim(model->tim_file);
 
@@ -409,6 +407,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 
 static void emd_convert_endianness(model_t *this)
 {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	emd_header_t *emd_header;
 	Uint32 *hdr_offsets, mesh_offset;
 	int i;
@@ -606,12 +605,14 @@ static void emd_convert_endianness(model_t *this)
 
 		emd_mesh_object++;
 	}
+#endif
 }
 
 static void emd_convert_endianness_skel(model_t *this, int num_skel,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data)
 {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	/* FIXME: mark already converted skel parts, to avoid multiple conversion if needed*/
 	int i;
 	Uint8 *emd_skel_mesh = (Uint8 *) emd_skel_data;
@@ -626,4 +627,5 @@ static void emd_convert_endianness_skel(model_t *this, int num_skel,
 		int num_mesh = emd_skel_mesh[emd_skel_data[num_skel].offset+i];
 		emd_convert_endianness_skel(this, num_mesh, emd_skel_relpos, emd_skel_data);
 	}
+#endif
 }
