@@ -93,7 +93,7 @@ T		previous model
 G		next model
 B		reset model
 
-Y		toggle grid display
+Y		toggle grid and origin display
 H		toggle background restoration display
 N		toggle map display.
 		Camera switches and boundary checks are enabled.
