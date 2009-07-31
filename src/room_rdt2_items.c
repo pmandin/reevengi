@@ -29,22 +29,33 @@
 #define ITEM_NULL	0x00
 #define ITEM_END_LIST	0x01
 #define ITEM_START_LIST	0x02
+#define ITEM_04		0x04
 #define ITEM_06		0x06
 #define ITEM_07		0x07
 #define ITEM_08		0x08
+#define ITEM_0F		0x0f
 #define ITEM_21		0x21
 #define ITEM_22		0x22
+#define ITEM_29		0x29
 #define ITEM_2C		0x2c
 #define ITEM_2D		0x2d
+#define ITEM_2E		0x2e
+#define ITEM_33		0x33
 #define ITEM_37		0x37
 #define ITEM_3A		0x3a
 #define ITEM_DOOR	0x3b
+#define ITEM_3D		0x3d
 #define ITEM_ENEMY	0x44
 #define ITEM_46		0x46
 #define ITEM_4B		0x4b
 #define ITEM_4E		0x4e
 #define ITEM_51		0x51
+#define ITEM_54		0x54
+#define ITEM_5D		0x5d
 #define ITEM_67		0x67
+#define ITEM_68		0x68
+#define ITEM_6A		0x6a
+#define ITEM_6C		0x6c
 
 /*--- Types ---*/
 
@@ -113,6 +124,12 @@ typedef struct {
 	Uint8 type;
 	Uint8 unknown0;
 	Uint16 unknown1;
+} rdt_item2e_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
+	Uint16 unknown1;
 } rdt_item37_t;
 
 typedef struct {
@@ -142,6 +159,12 @@ typedef struct {
 	Uint8 door_key;
 	Uint8 unknown3;
 } rdt_item_door_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
+	Uint16 unknown1[6];
+} rdt_item3d_t;
 
 typedef struct {
 	Uint8 type;
@@ -187,6 +210,12 @@ typedef struct {
 
 typedef struct {
 	Uint8 type;
+	Uint8 unknown0;
+	Uint16 unknown1[3];
+} rdt_item54_t;
+
+typedef struct {
+	Uint8 type;
 	Uint8 number;
 	Uint16 unknown0[2];
 	Sint16 x,y,z;
@@ -208,14 +237,17 @@ typedef union {
 	rdt_item22_t	item22;
 	rdt_item2c_t	item2c;
 	rdt_item2d_t	item2d;
+	rdt_item2e_t	item2e;
 	rdt_item37_t	item37;
 	rdt_item3a_t	item3a;
 	rdt_item_door_t	door;
+	rdt_item3d_t	item3d;
 	rdt_item_enemy_t	enemy;
 	rdt_item46_t	item46;
 	rdt_item4b_t	item4b;
 	rdt_item4e_t	item4e;
 	rdt_item51_t	item51;
+	rdt_item54_t	item54;
 	rdt_item67_t	item67;
 } rdt_item_t;
 
@@ -280,6 +312,10 @@ void room_rdt2_listItems(room_t *this)
 				logMsg(2, " Item 0x2d\n");
 				item_length = sizeof(rdt_item2d_t);
 				break;
+			case ITEM_2E:
+				logMsg(2, " Item 0x2e\n");
+				item_length = sizeof(rdt_item2e_t);
+				break;
 			case ITEM_37:
 				logMsg(2, " Item 0x37\n");
 				item_length = sizeof(rdt_item37_t);
@@ -291,6 +327,10 @@ void room_rdt2_listItems(room_t *this)
 			case ITEM_DOOR:
 				logMsg(2, " Door %d\n", item->door.number);
 				item_length = sizeof(rdt_item_door_t);
+				break;
+			case ITEM_3D:
+				logMsg(2, " Item 0x3d\n");
+				item_length = sizeof(rdt_item3d_t);
 				break;
 			case ITEM_ENEMY:
 				logMsg(2, " Enemy %d\n", item->enemy.number);
@@ -311,6 +351,10 @@ void room_rdt2_listItems(room_t *this)
 			case ITEM_51:
 				logMsg(2, " Item 0x51\n");
 				item_length = sizeof(rdt_item51_t);
+				break;
+			case ITEM_54:
+				logMsg(2, " Item 0x54\n");
+				item_length = sizeof(rdt_item54_t);
 				break;
 			case ITEM_67:
 				logMsg(2, " Item 0x67\n");
