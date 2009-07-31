@@ -65,7 +65,7 @@ struct render_s {
 	void (*set_projection)(float angle, float aspect,
 		float z_near, float z_far);
 	void (*set_ortho)(float left, float right, float bottom, float top,
-		float near, float far);
+		float p_near, float p_far);
 	void (*set_modelview)(float x_from, float y_from, float z_from,
 		float x_to, float y_to, float z_to,
 		float x_up, float y_up, float z_up);

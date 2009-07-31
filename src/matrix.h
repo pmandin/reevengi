@@ -40,7 +40,7 @@ void mtx_setProjection(float m[4][4],
 
 void mtx_setOrtho(float m[4][4],
 	float left, float right, float bottom, float top,
-	float near, float far);
+	float p_near, float p_far);
 
 void mtx_setLookAt(float m[4][4],
 	float x_from, float y_from, float z_from,

@@ -57,7 +57,7 @@ static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect,
 	float z_near, float z_far);
 static void set_ortho(float left, float right, float bottom, float top,
-	float near, float far);
+	float p_near, float p_far);
 static void set_modelview(float x_from, float y_from, float z_from,
 	float x_to, float y_to, float z_to,
 	float x_up, float y_up, float z_up);
@@ -193,9 +193,9 @@ static void set_projection(float angle, float aspect, float z_near, float z_far)
 }
 
 static void set_ortho(float left, float right, float bottom, float top,
-	float near, float far)
+	float p_near, float p_far)
 {
-	mtx_setOrtho(projection_mtx, left,right, bottom,top, near,far);
+	mtx_setOrtho(projection_mtx, left,right, bottom,top, p_near,p_far);
 	mtx_setIdentity(camera_mtx);
 
 	recalc_frustum_mtx();
