@@ -26,6 +26,7 @@
 
 /*--- Defines ---*/
 
+#define ITEM_NULL	0x00
 #define ITEM_END_LIST	0x01
 #define ITEM_START_LIST	0x02
 #define ITEM_06		0x06
@@ -40,6 +41,11 @@
 #define ITEM_67		0x67
 
 /*--- Types ---*/
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown;
+} rdt_item_null_t;
 
 typedef struct {
 	Uint8 type;
@@ -153,6 +159,7 @@ typedef struct {
 
 typedef union {
 	Uint8 type;
+	rdt_item_null_t	null;
 	rdt_item_end_t	end;
 	rdt_item_start_t	start;
 	rdt_item06_t	item06;
@@ -187,6 +194,10 @@ void room_rdt2_listItems(room_t *this)
 		item = (rdt_item_t *) &((Uint8 *) this->file)[offset];
 
 		switch(item->type) {
+			case ITEM_NULL:
+				logMsg(2, " Null item\n");
+				item_length = sizeof(rdt_item_null_t);
+				break;
 			case ITEM_END_LIST:
 				logMsg(2, " End of item list\n");
 				end_list=1;
