@@ -127,14 +127,15 @@ typedef struct {
 typedef struct {
 	Uint8 type;
 	Uint8 number;
-} rdt_item2c_t;
+} rdt_item2c_header_t;
 
-typedef struct {	/* follow rdt_item2c in file, if item2c.number<>0 */
+typedef struct {	/* if item2c.number<>0 */
+	Uint8 type;
+	Uint8 number;
 	Uint16 unknown0[2];
-	Sint16 x,y,z;
-	Sint16 angle;
+	Sint16 x,y,w,h;
 	Uint16 unknown1[3];
-} rdt_item2c_sub_t;
+} rdt_item2c_t;
 
 typedef struct {
 	Uint8 type;
@@ -386,9 +387,9 @@ void room_rdt2_listItems(room_t *this)
 					rdt_item2c_t *item2c = (rdt_item2c_t *) item;
 
 					logMsg(2, " Item 0x2c\n");
-					item_length = sizeof(rdt_item2c_t);
+					item_length = sizeof(rdt_item2c_header_t);
 					if (item2c->number != 0) {
-						item_length += sizeof(rdt_item2c_sub_t);
+						item_length = sizeof(rdt_item2c_t);
 					}
 				}
 				break;
@@ -532,10 +533,10 @@ void room_rdt2_drawItems(room_t *this)
 				{
 					rdt_item2c_t *item2c = (rdt_item2c_t *) item;
 
-					item_length = sizeof(rdt_item2c_t);
+					item_length = sizeof(rdt_item2c_header_t);
 					if (item2c->number != 0) {
-						room_rdt2_drawItem2c((rdt_item2c_t *) item);
-						item_length += sizeof(rdt_item2c_sub_t);
+						/*room_rdt2_drawItem2c((rdt_item2c_t *) item);*/
+						item_length = sizeof(rdt_item2c_t);
 					}
 				}
 				break;
@@ -605,11 +606,36 @@ void room_rdt2_drawItems(room_t *this)
 
 static void room_rdt2_drawItem2c(rdt_item2c_t *item)
 {
+	vertex_t v[4];
+	Sint16 x = SDL_SwapLE16(item->x);
+	Sint16 y = SDL_SwapLE16(item->y);
+	Sint16 w = SDL_SwapLE16(item->w);
+	Sint16 h = SDL_SwapLE16(item->h);
+
+	/*printf("item %d: %04x,%04x %04x,%04x\n",item->number,x,y,w,h);*/
+
+	v[0].x = x * 0.5f;
+	v[0].y = y * 0.5f;
+	v[0].z = 1.0f;
+
+	v[1].x = (x+w) * 0.5f;
+	v[1].y = y * 0.5f;
+	v[1].z = 1.0f;
+
+	v[2].x = (x+w) * 0.5f;
+	v[2].y = (y+h) * 0.5f;
+	v[2].z = 1.0f;
+
+	v[3].x = x * 0.5f;
+	v[3].y = (y+h) * 0.5f;
+	v[3].z = 1.0f;
+
+	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 }
 
 static void room_rdt2_drawWalls(rdt_item_walls_t *item)
 {
-	vertex_t v[2];
+	vertex_t v[4];
 
 	v[0].x = SDL_SwapLE16(item->x1) * 0.5f;
 	v[0].y = SDL_SwapLE16(item->y1) * 0.5f;
@@ -619,23 +645,13 @@ static void room_rdt2_drawWalls(rdt_item_walls_t *item)
 	v[1].y = SDL_SwapLE16(item->y2) * 0.5f;
 	v[1].z = 1.0f;
 
-	render.line(&v[0], &v[1]);
+	v[2].x = SDL_SwapLE16(item->x3) * 0.5f;
+	v[2].y = SDL_SwapLE16(item->y3) * 0.5f;
+	v[2].z = 1.0f;
 
-	v[0].x = SDL_SwapLE16(item->x3) * 0.5f;
-	v[0].y = SDL_SwapLE16(item->y3) * 0.5f;
-	v[0].z = 1.0f;
+	v[3].x = SDL_SwapLE16(item->x4) * 0.5f;
+	v[3].y = SDL_SwapLE16(item->y4) * 0.5f;
+	v[3].z = 1.0f;
 
-	render.line(&v[1], &v[0]);
-
-	v[1].x = SDL_SwapLE16(item->x4) * 0.5f;
-	v[1].y = SDL_SwapLE16(item->y4) * 0.5f;
-	v[1].z = 1.0f;
-
-	render.line(&v[0], &v[1]);
-
-	v[0].x = SDL_SwapLE16(item->x1) * 0.5f;
-	v[0].y = SDL_SwapLE16(item->y1) * 0.5f;
-	v[0].z = 1.0f;
-
-	render.line(&v[1], &v[0]);
+	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 }
