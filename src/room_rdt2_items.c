@@ -93,6 +93,11 @@ typedef struct {
 
 typedef struct {
 	Uint8 type;
+	Uint8 unknown;
+} rdt_item0f_t;
+
+typedef struct {
+	Uint8 type;
 	Uint8 unknown0;
 	Uint16 unknown1;
 } rdt_item21_t;
@@ -102,6 +107,11 @@ typedef struct {
 	Uint8 unknown0;
 	Uint16 unknown1;
 } rdt_item22_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
+} rdt_item29_t;
 
 typedef struct {
 	Uint8 type;
@@ -216,6 +226,11 @@ typedef struct {
 
 typedef struct {
 	Uint8 type;
+	Uint8 unknown;
+} rdt_item5d_t;
+
+typedef struct {
+	Uint8 type;
 	Uint8 number;
 	Uint16 unknown0[2];
 	Sint16 x,y,z;
@@ -233,8 +248,10 @@ typedef union {
 	rdt_item06_t	item06;
 	rdt_item07_t	item07;
 	rdt_item08_t	item08;
+	rdt_item0f_t	item0f;
 	rdt_item21_t	item21;
 	rdt_item22_t	item22;
+	rdt_item29_t	item29;
 	rdt_item2c_t	item2c;
 	rdt_item2d_t	item2d;
 	rdt_item2e_t	item2e;
@@ -248,6 +265,7 @@ typedef union {
 	rdt_item4e_t	item4e;
 	rdt_item51_t	item51;
 	rdt_item54_t	item54;
+	rdt_item5d_t	item5d;
 	rdt_item67_t	item67;
 } rdt_item_t;
 
@@ -296,6 +314,10 @@ void room_rdt2_listItems(room_t *this)
 				logMsg(2, " Item 0x08\n");
 				item_length = sizeof(rdt_item08_t);
 				break;
+			case ITEM_0F:
+				logMsg(2, " Item 0x0f\n");
+				item_length = sizeof(rdt_item0f_t);
+				break;
 			case ITEM_21:
 				logMsg(2, " Item 0x21\n");
 				item_length = sizeof(rdt_item21_t);
@@ -303,6 +325,10 @@ void room_rdt2_listItems(room_t *this)
 			case ITEM_22:
 				logMsg(2, " Item 0x22\n");
 				item_length = sizeof(rdt_item22_t);
+				break;
+			case ITEM_29:
+				logMsg(2, " Item 0x29\n");
+				item_length = sizeof(rdt_item29_t);
 				break;
 			case ITEM_2C:
 				logMsg(2, " Item 0x2c\n");
@@ -355,6 +381,10 @@ void room_rdt2_listItems(room_t *this)
 			case ITEM_54:
 				logMsg(2, " Item 0x54\n");
 				item_length = sizeof(rdt_item54_t);
+				break;
+			case ITEM_5D:
+				logMsg(2, " Item 0x5d\n");
+				item_length = sizeof(rdt_item5d_t);
 				break;
 			case ITEM_67:
 				logMsg(2, " Item 0x67\n");
