@@ -29,8 +29,10 @@
 #define ITEM_07		0x07
 #define ITEM_2C		0x2c
 #define ITEM_2D		0x2d
+#define ITEM_3A		0x3a
 #define ITEM_DOOR	0x3b
 #define ITEM_ENEMY	0x44
+#define ITEM_46		0x46
 #define ITEM_4E		0x4e
 #define ITEM_67		0x67
 
@@ -71,6 +73,23 @@ typedef struct {
 typedef struct {
 	Uint8 type;
 	Uint8 number;
+	Uint32 unknown0[3];
+	Sint16 x,y,z;
+	Uint32 unknown1[4];
+	Uint16 unknown2;
+} rdt_item2d_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
+	Uint16 unknown1[3];
+	Sint16 x,y,z;
+	Uint16 unknown2;
+} rdt_item3a_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 number;
 	Uint32 unknown0;
 	Sint16 x,y,z;
 	Sint16 angle;
@@ -106,6 +125,12 @@ typedef struct {
 typedef struct {
 	Uint8 type;
 	Uint8 unknown0;
+	Uint32 unknown1[3];
+} rdt_item46_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
 	Uint32 unknown1;
 	Sint16 x,y,z;
 	Sint16 angle;
@@ -130,8 +155,11 @@ typedef union {
 	rdt_item06_t	item06;
 	rdt_item07_t	item07;
 	rdt_item2c_t	item2c;
+	rdt_item2d_t	item2d;
+	rdt_item3a_t	item3a;
 	rdt_item3b_t	door;
 	rdt_item44_t	enemy;
+	rdt_item46_t	item46;
 	rdt_item4e_t	item4e;
 	rdt_item67_t	item67;
 } rdt_item_t;
