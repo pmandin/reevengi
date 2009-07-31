@@ -176,7 +176,7 @@ typedef struct {
 	Uint16 unknown1[2];
 	Sint16 x,y,z;
 	Sint16 angle;
-	Uint16 unknown2[5];
+	Uint16 unknown2[4];
 } rdt_item4e_t;
 
 typedef struct {
