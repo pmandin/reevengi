@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include <SDL.h>
 #include <physfs.h>
@@ -83,6 +84,38 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 	void	*buffer;
 
 	curfile=PHYSFS_openRead(filename);
+	if (curfile==NULL) {
+		/* Try in upper case */
+
+		char *up_filename = calloc(1,strlen(filename)+1);
+		if (up_filename) {
+			int i;
+
+			for (i=0; i<strlen(filename); i++) {
+				up_filename[i] = toupper(filename[i]);
+			}
+
+			curfile = PHYSFS_openRead(up_filename);
+
+			free(up_filename);
+		}
+	}
+	if (curfile==NULL) {
+		/* Try in lower upcase */
+
+		char *lo_filename = calloc(1,strlen(filename)+1);
+		if (lo_filename) {
+			int i;
+
+			for (i=0; i<strlen(filename); i++) {
+				lo_filename[i] = tolower(filename[i]);
+			}
+
+			curfile = PHYSFS_openRead(lo_filename);
+
+			free(lo_filename);
+		}
+	}
 	if (curfile==NULL) {
 /*		fprintf(stderr, "fs: can not open %s\n", filename);*/
 		return NULL;
