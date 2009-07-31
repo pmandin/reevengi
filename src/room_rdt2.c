@@ -49,6 +49,27 @@ typedef struct {
 	Sint16 x4,y4;
 } rdt_camera_switch_t;
 
+typedef struct {
+	Uint8 id[8];
+} rdt_anim_list_t;
+
+typedef struct {
+	Uint16 num_frames;
+	Uint16 num_sprites;
+	Uint8 w,h;
+	Uint16 unknown;
+} rdt_anim_header_t;
+
+typedef struct {
+	Uint8 sprite;
+	Uint8 unknown[7];
+} rdt_anim_step_t;
+
+typedef struct {
+	Uint8 x,y;
+	Sint8 offset_x,offset_y;
+} rdt_anim_sprite_t;
+
 /*--- Functions prototypes ---*/
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
