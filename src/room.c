@@ -200,13 +200,10 @@ void room_map_draw(room_t *this)
 	room_map_drawCamswitches(this);
 	room_map_drawCameras(this);
 
-	/* Draw doors */
-
-	/* Draw objects */
-
-	/* Draw enemies */
-
-	/* Draw player */
+	/* Draw items: objects, doors, enemies */
+	if (this->drawItems) {
+		(*this->drawItems)(this);
+	}
 
 	render.pop_matrix();
 }

@@ -75,6 +75,8 @@ void room_rdt2_init(room_t *this)
 		this->getBoundary = rdt2_getBoundary;
 
 		room_rdt2_listItems(this);
+
+		this->drawItems = room_rdt2_drawItems;
 	}
 
 	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",

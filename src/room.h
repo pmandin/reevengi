@@ -52,6 +52,8 @@ struct room_s {
 	void (*getCamswitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
+	void (*drawItems)(room_t *this);
+
 	void (*shutdown)(room_t *this);
 };
 

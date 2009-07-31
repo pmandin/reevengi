@@ -40,6 +40,7 @@
 #define ITEM_2C		0x2c
 #define ITEM_2D		0x2d
 #define ITEM_2E		0x2e
+#define ITEM_32		0x32
 #define ITEM_33		0x33
 #define ITEM_37		0x37
 #define ITEM_3A		0x3a
@@ -73,6 +74,12 @@ typedef struct {
 	Uint8 type;
 	Uint8 unknown;
 } rdt_item_start_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
+	Uint16 unknown1[2];
+} rdt_item04_t;
 
 typedef struct {
 	Uint8 type;
@@ -138,6 +145,12 @@ typedef struct {
 	Uint8 unknown0;
 	Uint16 unknown1;
 } rdt_item2e_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 unknown0;
+	Uint16 unknown1[4];
+} rdt_item32_t;
 
 typedef struct {
 	Uint8 type;
@@ -255,11 +268,17 @@ typedef struct {
 	Uint16 unknown0[19];
 } rdt_item68_t;
 
+typedef struct {
+	Uint8 type;
+	Uint8 unknown;
+} rdt_item6c_t;
+
 typedef union {
 	Uint8 type;
 	rdt_item_null_t	null;
 	rdt_item_end_t	end;
 	rdt_item_start_t	start;
+	rdt_item04_t	item04;
 	rdt_item06_t	item06;
 	rdt_item07_t	item07;
 	rdt_item08_t	item08;
@@ -270,6 +289,7 @@ typedef union {
 	rdt_item2c_t	item2c;
 	rdt_item2d_t	item2d;
 	rdt_item2e_t	item2e;
+	rdt_item32_t	item32;
 	rdt_item33_t	item33;
 	rdt_item37_t	item37;
 	rdt_item3a_t	item3a;
@@ -284,7 +304,13 @@ typedef union {
 	rdt_item5d_t	item5d;
 	rdt_item67_t	item67;
 	rdt_item68_t	item68;
+	rdt_item6c_t	item6c;
 } rdt_item_t;
+
+/*--- Functions prototypes ---*/
+
+static void room_rdt2_drawItem2c(rdt_item2c_t *item);
+static void room_rdt2_drawItem67(rdt_item67_t *item);
 
 /*--- Functions ---*/
 
@@ -318,6 +344,10 @@ void room_rdt2_listItems(room_t *this)
 			case ITEM_START_LIST:
 				logMsg(2, " Start of item list\n");
 				item_length = sizeof(rdt_item_start_t);
+				break;
+			case ITEM_04:
+				logMsg(2, " Item 0x04\n");
+				item_length = sizeof(rdt_item04_t);
 				break;
 			case ITEM_06:
 				logMsg(2, " Item 0x06\n");
@@ -366,13 +396,17 @@ void room_rdt2_listItems(room_t *this)
 				logMsg(2, " Item 0x2e\n");
 				item_length = sizeof(rdt_item2e_t);
 				break;
-			case ITEM_37:
-				logMsg(2, " Item 0x37\n");
-				item_length = sizeof(rdt_item37_t);
+			case ITEM_32:
+				logMsg(2, " Item 0x32\n");
+				item_length = sizeof(rdt_item32_t);
 				break;
 			case ITEM_33:
 				logMsg(2, " Item 0x33\n");
 				item_length = sizeof(rdt_item33_t);
+				break;
+			case ITEM_37:
+				logMsg(2, " Item 0x37\n");
+				item_length = sizeof(rdt_item37_t);
 				break;
 			case ITEM_3A:
 				logMsg(2, " Item 0x3a\n");
@@ -422,6 +456,10 @@ void room_rdt2_listItems(room_t *this)
 				logMsg(2, " Item 0x68\n");
 				item_length = sizeof(rdt_item68_t);
 				break;
+			case ITEM_6C:
+				logMsg(2, " Item 0x6c\n");
+				item_length = sizeof(rdt_item6c_t);
+				break;
 			default:
 				logMsg(2, " Unknown item 0x%02x\n", item->type);
 				end_list=1;
@@ -430,4 +468,135 @@ void room_rdt2_listItems(room_t *this)
 
 		offset += item_length;
 	}
+}
+
+void room_rdt2_drawItems(room_t *this)
+{
+	rdt_item_t *item;
+	Uint32 *item_offset, offset;
+	int end_list=0;
+
+	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+16*4]);
+	offset = SDL_SwapLE32(*item_offset);
+
+	while (!end_list) {
+		Uint32 item_length = 0;
+		item = (rdt_item_t *) &((Uint8 *) this->file)[offset];
+
+		switch(item->type) {
+			case ITEM_NULL:
+				item_length = sizeof(rdt_item_null_t);
+				break;
+			case ITEM_END_LIST:
+				end_list=1;
+				item_length = sizeof(rdt_item_end_t);
+				break;
+			case ITEM_START_LIST:
+				item_length = sizeof(rdt_item_start_t);
+				break;
+			case ITEM_04:
+				item_length = sizeof(rdt_item04_t);
+				break;
+			case ITEM_06:
+				item_length = sizeof(rdt_item06_t);
+				break;
+			case ITEM_07:
+				item_length = sizeof(rdt_item07_t);
+				break;
+			case ITEM_08:
+				item_length = sizeof(rdt_item08_t);
+				break;
+			case ITEM_0F:
+				item_length = sizeof(rdt_item0f_t);
+				break;
+			case ITEM_21:
+				item_length = sizeof(rdt_item21_t);
+				break;
+			case ITEM_22:
+				item_length = sizeof(rdt_item22_t);
+				break;
+			case ITEM_29:
+				item_length = sizeof(rdt_item29_t);
+				break;
+			case ITEM_2C:
+				{
+					rdt_item2c_t *item2c = (rdt_item2c_t *) item;
+
+					item_length = sizeof(rdt_item2c_t);
+					if (item2c->number != 0) {
+						room_rdt2_drawItem2c((rdt_item2c_t *) item);
+						item_length += sizeof(rdt_item2c_sub_t);
+					}
+				}
+				break;
+			case ITEM_2D:
+				item_length = sizeof(rdt_item2d_t);
+				break;
+			case ITEM_2E:
+				item_length = sizeof(rdt_item2e_t);
+				break;
+			case ITEM_32:
+				item_length = sizeof(rdt_item32_t);
+				break;
+			case ITEM_33:
+				item_length = sizeof(rdt_item33_t);
+				break;
+			case ITEM_37:
+				item_length = sizeof(rdt_item37_t);
+				break;
+			case ITEM_3A:
+				item_length = sizeof(rdt_item3a_t);
+				break;
+			case ITEM_DOOR:
+				item_length = sizeof(rdt_item_door_t);
+				break;
+			case ITEM_3D:
+				item_length = sizeof(rdt_item3d_t);
+				break;
+			case ITEM_ENEMY:
+				item_length = sizeof(rdt_item_enemy_t);
+				break;
+			case ITEM_46:
+				item_length = sizeof(rdt_item46_t);
+				break;
+			case ITEM_4B:
+				item_length = sizeof(rdt_item4b_t);
+				break;
+			case ITEM_4E:
+				item_length = sizeof(rdt_item4e_t);
+				break;
+			case ITEM_51:
+				item_length = sizeof(rdt_item51_t);
+				break;
+			case ITEM_54:
+				item_length = sizeof(rdt_item54_t);
+				break;
+			case ITEM_5D:
+				item_length = sizeof(rdt_item5d_t);
+				break;
+			case ITEM_67:
+				room_rdt2_drawItem67((rdt_item67_t *) item);
+				item_length = sizeof(rdt_item67_t);
+				break;
+			case ITEM_68:
+				item_length = sizeof(rdt_item68_t);
+				break;
+			case ITEM_6C:
+				item_length = sizeof(rdt_item6c_t);
+				break;
+			default:
+				end_list=1;
+				break;
+		}
+
+		offset += item_length;
+	}
+}
+
+static void room_rdt2_drawItem2c(rdt_item2c_t *item)
+{
+}
+
+static void room_rdt2_drawItem67(rdt_item67_t *item)
+{
 }

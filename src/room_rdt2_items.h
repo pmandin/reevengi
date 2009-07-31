@@ -24,4 +24,6 @@
 
 void room_rdt2_listItems(room_t *this);
 
+void room_rdt2_drawItems(room_t *this);
+
 #endif /* ROOM_RDT2_ITEMS_H */
