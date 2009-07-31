@@ -185,7 +185,7 @@ void room_rdt2_listItems(room_t *this)
 	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+16*4]);
 	offset = SDL_SwapLE32(*item_offset);
 
-	logMsg(2, "Listing items from offset 0x%08x\n", offset);
+	logMsg(1, "Listing items from offset 0x%08x\n", offset);
 
 	while (!end_list) {
 		Uint32 item_length = 0;
