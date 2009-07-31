@@ -116,11 +116,14 @@ typedef struct {
 typedef struct {
 	Uint8 type;
 	Uint8 number;
+} rdt_item2c_t;
+
+typedef struct {	/* follow rdt_item2c in file, if item2c.number<>0 */
 	Uint16 unknown0[2];
 	Sint16 x,y,z;
 	Sint16 angle;
 	Uint16 unknown1[3];
-} rdt_item2c_t;
+} rdt_item2c_sub_t;
 
 typedef struct {
 	Uint8 type;
@@ -331,8 +334,15 @@ void room_rdt2_listItems(room_t *this)
 				item_length = sizeof(rdt_item29_t);
 				break;
 			case ITEM_2C:
-				logMsg(2, " Item 0x2c\n");
-				item_length = sizeof(rdt_item2c_t);
+				{
+					rdt_item2c_t *item2c = (rdt_item2c_t *) item;
+
+					logMsg(2, " Item 0x2c\n");
+					item_length = sizeof(rdt_item2c_t);
+					if (item2c->number != 0) {
+						item_length += sizeof(rdt_item2c_sub_t);
+					}
+				}
 				break;
 			case ITEM_2D:
 				logMsg(2, " Item 0x2d\n");
