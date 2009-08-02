@@ -24,11 +24,13 @@
 #include "video.h"
 #include "render.h"
 #include "room.h"
+#include "room_rdt2.h"
 #include "log.h"
 
 /*--- Defines ---*/
 
-#define MAP_COLOR_ITEM		0x00ff00ff
+#define MAP_COLOR_DOOR		0x0000cccc
+#define MAP_COLOR_WALLS		0x00ff00ff
 
 #define ITEM_NULL	0x00
 #define ITEM_END_LIST	0x01
@@ -185,8 +187,8 @@ typedef struct {
 	Uint8 type;
 	Uint8 number;
 	Uint16 unknown0[2];
-	Sint16 x,y,z;
-	Sint16 angle;
+	Sint16 x,y;
+	Uint16 w,h;
 	Sint16 next_x,next_y,next_z;
 	Sint16 next_angle;
 	Uint8 stage;
@@ -321,9 +323,15 @@ typedef union {
 /*--- Functions prototypes ---*/
 
 static void room_rdt2_drawItem2c(rdt_item2c_t *item);
+static void room_rdt2_drawDoor(rdt_item_door_t *item);
 static void room_rdt2_drawWalls(rdt_item_walls_t *item);
 
 /*--- Functions ---*/
+
+void room_rdt2_items_init(room_t *this)
+{
+	/*this->checkWalls = room_rdt2_checkWalls;*/
+}
 
 void room_rdt2_listItems(room_t *this)
 {
@@ -491,8 +499,6 @@ void room_rdt2_drawItems(room_t *this)
 		return;
 	}
 
-	render.set_color(MAP_COLOR_ITEM);
-
 	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+16*4]);
 	offset = SDL_SwapLE32(*item_offset);
 
@@ -565,6 +571,7 @@ void room_rdt2_drawItems(room_t *this)
 				item_length = sizeof(rdt_item3a_t);
 				break;
 			case ITEM_DOOR:
+				room_rdt2_drawDoor((rdt_item_door_t *) item);
 				item_length = sizeof(rdt_item_door_t);
 				break;
 			case ITEM_3D:
@@ -639,25 +646,94 @@ static void room_rdt2_drawItem2c(rdt_item2c_t *item)
 	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 }
 
+static void room_rdt2_drawDoor(rdt_item_door_t *item)
+{
+	vertex_t v[4];
+	Sint16 x = SDL_SwapLE16(item->x);
+	Sint16 y = SDL_SwapLE16(item->y);
+	Sint16 w = SDL_SwapLE16(item->w);
+	Sint16 h = SDL_SwapLE16(item->h);
+
+	/*printf("door %d: %d,%d %d,%d\n",item->number,x,y,w,h);*/
+
+	render.set_color(MAP_COLOR_DOOR);
+
+	v[0].x = x * 0.5f;
+	v[0].y = y * 0.5f;
+	v[0].z = 1;
+
+	v[1].x = (x+w) * 0.5f;
+	v[1].y = y * 0.5f;
+	v[1].z = 1;
+
+	render.line(&v[0], &v[1]);
+
+	v[0].x = (x+w) * 0.5f;
+	v[0].y = (y+h) * 0.5f;
+	v[0].z = 1;
+
+	render.line(&v[0], &v[1]);
+
+	v[1].x = x * 0.5f;
+	v[1].y = (y+h) * 0.5f;
+	v[1].z = 1;
+
+	render.line(&v[0], &v[1]);
+
+	v[0].x = x * 0.5f;
+	v[0].y = y * 0.5f;
+	v[0].z = 1;
+
+	render.line(&v[0], &v[1]);
+
+#if 0
+	v[0].x = x * 0.5f;
+	v[0].y = y * 0.5f;
+	v[0].z = 1;
+
+	v[1].x = (x+w) * 0.5f;
+	v[1].y = y * 0.5f;
+	v[1].z = 1;
+
+	v[2].x = (x+w) * 0.5f;
+	v[2].y = (y+h) * 0.5f;
+	v[2].z = 1;
+
+	v[3].x = x * 0.5f;
+	v[3].y = (y+h) * 0.5f;
+	v[3].z = 1;
+
+	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+#endif
+}
+
 static void room_rdt2_drawWalls(rdt_item_walls_t *item)
 {
 	vertex_t v[4];
 
+	render.set_color(MAP_COLOR_WALLS);
+
+	/*printf("walls %d: %d,%d %d,%d %d,%d %d,%d\n",item->number,
+		SDL_SwapLE16(item->x1),SDL_SwapLE16(item->y1),
+		SDL_SwapLE16(item->x2),SDL_SwapLE16(item->y2),
+		SDL_SwapLE16(item->x3),SDL_SwapLE16(item->y3),
+		SDL_SwapLE16(item->x4),SDL_SwapLE16(item->y4));*/
+
 	v[0].x = SDL_SwapLE16(item->x1) * 0.5f;
 	v[0].y = SDL_SwapLE16(item->y1) * 0.5f;
-	v[0].z = 1.0f;
+	v[0].z = 1;
 
 	v[1].x = SDL_SwapLE16(item->x2) * 0.5f;
 	v[1].y = SDL_SwapLE16(item->y2) * 0.5f;
-	v[1].z = 1.0f;
+	v[1].z = 1;
 
 	v[2].x = SDL_SwapLE16(item->x3) * 0.5f;
 	v[2].y = SDL_SwapLE16(item->y3) * 0.5f;
-	v[2].z = 1.0f;
+	v[2].z = 1;
 
 	v[3].x = SDL_SwapLE16(item->x4) * 0.5f;
 	v[3].y = SDL_SwapLE16(item->y4) * 0.5f;
-	v[3].z = 1.0f;
+	v[3].z = 1;
 
 	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 }
