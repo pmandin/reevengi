@@ -62,6 +62,10 @@
 #define ITEM_6A		0x6a
 #define ITEM_6C		0x6c
 
+/* walls.flag */
+#define WALLS_NO_ENTER	0xff
+#define WALLS_NO_EXIT	0x00
+
 /*--- Types ---*/
 
 typedef struct {
@@ -264,7 +268,9 @@ typedef struct {
 	Sint16 x2,y2;
 	Sint16 x3,y3;
 	Sint16 x4,y4;
-	Uint16 unknown1[3];
+	Uint16 unknown1[2];
+	Uint8 unknown2;
+	Uint8 flag;
 } rdt_item_walls_t;
 
 typedef struct {
