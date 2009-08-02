@@ -70,6 +70,18 @@ typedef struct {
 	Sint8 offset_x,offset_y;
 } rdt_anim_sprite_t;
 
+typedef struct {
+	Uint16 offsets[8];
+} rdt_anim_unknown0_t;
+
+typedef struct {
+	Uint8 unknown[0x38];
+} rdt_anim_unknown1_t;
+
+typedef struct {
+	Uint32 length;
+} rdt_anim_end_t;
+
 /*--- Functions prototypes ---*/
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
