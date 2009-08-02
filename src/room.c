@@ -265,7 +265,7 @@ static void room_map_drawCamswitches(room_t *this)
 
 	for (i=0; i<this->num_camswitches; i++) {
 		room_camswitch_t room_camswitch;
-		vertex_t v[2];
+		vertex_t v[4];
 		int boundary = 0;
 
 		this->getCamswitch(this, i, &room_camswitch);
@@ -275,16 +275,12 @@ static void room_map_drawCamswitches(room_t *this)
 			MAP_COLOR_CAMSWITCH_DISABLED);
 
 		for (j=0; j<4; j++) {
-			v[0].x = room_camswitch.x[j] * 0.5f;
-			v[0].y = room_camswitch.y[j] * 0.5f;
-			v[0].z = 1.0f;
-
-			v[1].x = room_camswitch.x[(j+1) & 3] * 0.5f;
-			v[1].y = room_camswitch.y[(j+1) & 3] * 0.5f;
-			v[1].z = 1.0f;
-
-			render.line(&v[0], &v[1]);
+			v[j].x = room_camswitch.x[j] * 0.5f;
+			v[j].y = room_camswitch.y[j] * 0.5f;
+			v[j].z = 1.0f;
 		}
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 	}
 }
 
@@ -294,7 +290,7 @@ static void room_map_drawBoundaries(room_t *this)
 
 	for (i=0; i<this->num_boundaries; i++) {
 		room_camswitch_t room_camswitch;
-		vertex_t v[2];
+		vertex_t v[4];
 		int boundary = 0;
 
 		this->getBoundary(this, i, &room_camswitch);
@@ -304,16 +300,12 @@ static void room_map_drawBoundaries(room_t *this)
 			MAP_COLOR_BOUNDARY_DISABLED);
 
 		for (j=0; j<4; j++) {
-			v[0].x = room_camswitch.x[j] * 0.5f;
-			v[0].y = room_camswitch.y[j] * 0.5f;
-			v[0].z = 1.0f;
-
-			v[1].x = room_camswitch.x[(j+1) & 3] * 0.5f;
-			v[1].y = room_camswitch.y[(j+1) & 3] * 0.5f;
-			v[1].z = 1.0f;
-
-			render.line(&v[0], &v[1]);
+			v[j].x = room_camswitch.x[j] * 0.5f;
+			v[j].y = room_camswitch.y[j] * 0.5f;
+			v[j].z = 1.0f;
 		}
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 	}
 }
 
