@@ -38,6 +38,11 @@ typedef struct {
 	Sint16 y[4];
 } room_camswitch_t;
 
+typedef struct {
+	Sint16 x,y,z,angle;
+	Uint8 stage,room,camera;
+} room_doorswitch_t;
+
 typedef struct room_s room_t;
 
 struct room_s {
@@ -53,6 +58,7 @@ struct room_s {
 	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
 	void (*drawItems)(room_t *this);
+	int (*enterDoor)(room_t *this, room_doorswitch_t *doorswitch);
 
 	void (*shutdown)(room_t *this);
 };
