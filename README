@@ -101,6 +101,7 @@ N		toggle map display.
 		RED: boundary, GREEN ARROW: you.
 
 SPACE		refresh background, move player at current camera position
+U		Enter a door
 Arrow keys	Move player
 Pageup/down	Move player up/down (Atari: use ClrHome/Insert)
 

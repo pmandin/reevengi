@@ -1,5 +1,8 @@
 v 0.13
 
+- Display doors and walls on map.
+- Can enter doors.
+
 v 0.12
 
 - Fixed some bugs in S-Buffer.
