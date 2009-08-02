@@ -653,5 +653,37 @@ static void room_rdt2_drawWalls(rdt_item_walls_t *item)
 
 static int room_rdt2_itemsEnterDoor(room_t *this, room_doorswitch_t *doorswitch)
 {
-	return 0;
+	rdt_item_t *item;
+	int is_inside = 0;
+	
+	item = room_rdt2_itemsStartEnum(this);
+	while (item) {
+		if (item->type == ITEM_DOOR) {
+			rdt_item_door_t *door = (rdt_item_door_t *) item;
+			Sint16 dx = SDL_SwapLE16(door->x);
+			Sint16 dy = SDL_SwapLE16(door->y);
+			Sint16 dw = SDL_SwapLE16(door->w);
+			Sint16 dh = SDL_SwapLE16(door->h);
+
+			if ((doorswitch->x >= dx) && (doorswitch->x <= dx+dw) &&
+			    (doorswitch->y >= dy) && (doorswitch->y <= dy+dh))
+			{
+				doorswitch->next_x = SDL_SwapLE16(door->next_x);
+				doorswitch->next_y = SDL_SwapLE16(door->next_y);
+				doorswitch->next_z = SDL_SwapLE16(door->next_z);
+				doorswitch->next_angle = SDL_SwapLE16(door->next_angle);
+
+				doorswitch->next_stage = door->stage;
+				doorswitch->next_room = door->room;
+				doorswitch->next_camera = door->camera;
+
+				is_inside = 1;
+				break;
+			}
+		}
+
+		item = room_rdt2_itemsNextEnum(this);
+	}
+
+	return is_inside;
 }

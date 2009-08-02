@@ -39,8 +39,10 @@ typedef struct {
 } room_camswitch_t;
 
 typedef struct {
-	Sint16 x,y,z,angle;
-	Uint8 stage,room,camera;
+	Sint16 x,y;	/* player pos */
+
+	Sint16 next_x,next_y,next_z,next_angle;
+	Uint8 next_stage,next_room,next_camera;
 } room_doorswitch_t;
 
 typedef struct room_s room_t;
