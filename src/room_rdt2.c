@@ -22,7 +22,9 @@
 #include <SDL.h>
 
 #include "room.h"
+#include "state.h"
 #include "room_rdt2_items.h"
+#include "room_rdt3_script.h"
 #include "log.h"
 
 /*--- Types ---*/
@@ -107,7 +109,16 @@ void room_rdt2_init(room_t *this)
 		this->getCamswitch = rdt2_getCamswitch;
 		this->getBoundary = rdt2_getBoundary;
 
-		room_rdt2_items_init(this);
+		switch(game_state.version) {
+			case GAME_RE3_PS1_GAME:
+			case GAME_RE3_PC_GAME:
+			case GAME_RE3_PC_DEMO:
+				room_rdt3_scriptInit(this);
+				break;
+			default:
+				room_rdt2_items_init(this);
+				break;
+		}
 	}
 
 	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
