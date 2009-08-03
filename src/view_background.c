@@ -78,6 +78,7 @@
 #define KEY_MOVE_UP		SDLK_PAGEUP
 #define KEY_MOVE_DOWN		SDLK_PAGEDOWN
 #endif
+#define KEY_ENTER_DOOR		SDLK_u
 
 /*--- Variables ---*/
 
@@ -108,6 +109,7 @@ static Uint32 tick_movement = 0;
 /*--- Functions prototypes ---*/
 
 static void processPlayerMovement(void);
+static void processEnterDoor(void);
 
 static void drawOrigin(void);
 static void drawGrid(void);
@@ -246,6 +248,9 @@ void view_background_input(SDL_Event *event)
 				player_turnright = 1;
 				start_movement = 1;
 				break;
+			case KEY_ENTER_DOOR:
+				processEnterDoor();
+				break;
 			case KEY_RENDER_WIREFRAME:
 				render.set_render(&render, RENDER_WIREFRAME);
 				break;
@@ -379,6 +384,33 @@ static void processPlayerMovement(void)
 	}
 	if (player_turnright) {
 		player_a = playerstart_a + 0.1f*(tick_current-tick_movement);
+	}
+}
+
+static void processEnterDoor(void)
+{
+	room_doorswitch_t doorSwitch;
+
+	if (!game_state.room) {
+		return;
+	}
+	if (!game_state.room->enterDoor) {
+		return;
+	}
+
+	doorSwitch.x = player_x;
+	doorSwitch.y = player_z;
+	if (game_state.room->enterDoor(game_state.room, &doorSwitch)) {
+		player_x = doorSwitch.next_x;
+		player_y = doorSwitch.next_y;
+		player_z = doorSwitch.next_z;
+		player_a = doorSwitch.next_angle;
+
+		game_state.num_stage = doorSwitch.next_stage;
+		game_state.num_room = doorSwitch.next_room;
+		game_state.num_camera = doorSwitch.next_camera;
+
+		reload_room = 1;
 	}
 }
 
