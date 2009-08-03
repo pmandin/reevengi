@@ -526,6 +526,9 @@ static void room_rdt2_itemsList(room_t *this)
 				reindent(--indent, indentStr);
 				logMsg(2, "%s}\n", indentStr);
 				break;
+			case ITEM_2C:
+				logMsg(2, "%sCreateObstacle\n", indentStr, item->item2c.number);
+				break;
 			case ITEM_DOOR:
 				logMsg(2, "%sCreateDoor %d\n", indentStr, item->door.number);
 				break;
