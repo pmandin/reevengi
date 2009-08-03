@@ -32,6 +32,8 @@
 #define INST_IF		0x06
 #define INST_IF_CK		0x4c
 #define INST_IF_CMP		0x4e
+#define INST_IF_CC		0x1d
+#define INST_IF_CC_LEN		(8+6)
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x09
@@ -77,6 +79,10 @@
 #define INST_22_LEN	2
 #define INST_2F		0x2f
 #define INST_2F_LEN	2
+#define INST_30		0x30
+#define INST_30_LEN	6
+#define INST_32		0x32
+#define INST_32_LEN	6
 #define INST_40		0x40
 #define INST_40_LEN	4
 #define INST_41		0x41
@@ -91,6 +97,8 @@
 #define INST_52_LEN	2
 #define INST_55		0x55
 #define INST_55_LEN	16
+#define INST_56		0x56
+#define INST_56_LEN	6
 #define INST_57		0x57
 #define INST_57_LEN	6
 #define INST_58		0x58
@@ -103,12 +111,16 @@
 #define INST_5B_LEN	6
 #define INST_60		0x60
 #define INST_60_LEN	2
+#define INST_62		0x62
+#define INST_62_LEN	0x72
 #define INST_63		0x63
 #define INST_63_LEN	0x14
 #define INST_64		0x64
 #define INST_64_LEN	0x1c
 #define INST_65		0x65
 #define INST_65_LEN	10
+#define INST_66		0x66
+#define INST_66_LEN	2
 #define INST_67		0x67
 #define INST_67_LEN	0x16
 #define INST_69		0x69
@@ -125,6 +137,8 @@
 #define INST_74_LEN	6
 #define INST_75		0x75
 #define INST_75_LEN	2
+#define INST_76		0x76
+#define INST_76_LEN	6
 #define INST_77		0x77
 #define INST_77_LEN	12
 #define INST_78		0x78
@@ -157,6 +171,10 @@
 #define INST_88_LEN	4
 #define INST_89		0x89
 #define INST_89_LEN	2
+#define INST_8E		0x8e
+#define INST_8E_LEN	4
+#define INST_8F		0x8f
+#define INST_8F_LEN	4
 
 /*--- Types ---*/
 
@@ -399,7 +417,7 @@ static script_inst_t *scriptResetInst(room_t *this)
 	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+13*4]);
 	next_offset = SDL_SwapLE32(*item_offset);
 	script_length = 0;
-	if (next_offset<>0) {
+	if (next_offset!=0) {
 		script_length = next_offset - offset;
 	}
 
@@ -436,6 +454,7 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_22:
 		case INST_2F:
 		case INST_5A:
+		case INST_66:
 		case INST_83:
 		case INST_84:
 		case INST_87:
@@ -467,6 +486,9 @@ static script_inst_t *scriptNextInst(room_t *this)
 						break;
 					case INST_IF_CMP:
 						item_length = sizeof(script_if_cmp_t);
+						break;
+					case INST_IF_CC:
+						item_length = INST_IF_CC_LEN;
 						break;
 				}
 			}
@@ -548,6 +570,12 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_FADE_SET:
 			item_length = sizeof(script_fade_set_t);
 			break;
+		case INST_30:
+			item_length = INST_30_LEN;
+			break;
+		case INST_32:
+			item_length = INST_32_LEN;
+			break;
 		case INST_40:
 			item_length = INST_40_LEN;
 			break;
@@ -569,6 +597,9 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_55:
 			item_length = INST_55_LEN;
 			break;
+		case INST_56:
+			item_length = INST_56_LEN;
+			break;
 		case INST_57:
 			item_length = INST_57_LEN;
 			break;
@@ -583,6 +614,9 @@ static script_inst_t *scriptNextInst(room_t *this)
 			break;
 		case INST_60:
 			item_length = INST_60_LEN;
+			break;
+		case INST_62:
+			item_length = INST_62_LEN;
 			break;
 		case INST_63:
 			item_length = INST_63_LEN;
@@ -616,6 +650,9 @@ static script_inst_t *scriptNextInst(room_t *this)
 			break;
 		case INST_75:
 			item_length = INST_75_LEN;
+			break;
+		case INST_76:
+			item_length = INST_76_LEN;
 			break;
 		case INST_77:
 			item_length = INST_77_LEN;
@@ -655,6 +692,12 @@ static script_inst_t *scriptNextInst(room_t *this)
 			break;
 		case INST_89:
 			item_length = INST_89_LEN;
+			break;
+		case INST_8E:
+			item_length = INST_8E_LEN;
+			break;
+		case INST_8F:
+			item_length = INST_8F_LEN;
 			break;
 	}
 
