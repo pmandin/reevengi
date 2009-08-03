@@ -166,6 +166,7 @@ static int re3ps1game_loadroom_ard(const char *filename)
 		return 0;
 	}
 
+	logMsg(3, "Loading embedded RDT file from offset 0x%08x\n", offset);
 	memcpy(file, &ard_file[offset], len);
 
 	game_state.room = room_create(file, len);
