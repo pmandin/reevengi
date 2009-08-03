@@ -398,7 +398,10 @@ static script_inst_t *scriptResetInst(room_t *this)
 	/* length using next item in rdt file */
 	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+13*4]);
 	next_offset = SDL_SwapLE32(*item_offset);
-	script_length = next_offset - offset;
+	script_length = 0;
+	if (next_offset<>0) {
+		script_length = next_offset - offset;
+	}
 
 	return cur_inst;
 }
@@ -658,7 +661,7 @@ static script_inst_t *scriptNextInst(room_t *this)
 	if (item_length == 0) {
 		/* Unknown opcode */
 		next_inst = NULL;
-	} else if (cur_inst_offset >= script_length) {
+	} else if ((cur_inst_offset >= script_length) && (script_length>0)) {
 		/* End of script */
 		next_inst = NULL;
 		logMsg(3, "End of script\n");
