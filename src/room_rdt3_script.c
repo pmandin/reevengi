@@ -25,16 +25,49 @@
 
 /*--- Defines ---*/
 
+#define INST_NOP	0x00
 #define INST_RETURN	0x01
 #define INST_SLEEP_1	0x02
 #define INST_IF		0x06
+#define INST_IF_CK		0x4c
+#define INST_IF_CMP		0x4e
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x09
+#define INST_SWITCH	0x14
+#define INST_CASE	0x15
 #define INST_FUNC	0x19
+#define INST_FLOOR_SET	0x3f
+#define INST_SETOBJFLAG	0x4d
+#define INST_CUT_REPLACE	0x53
+#define INST_MAKE_DOOR	0x61
 
+#define INST_10		0x10
+#define INST_10_LEN	24
 #define INST_12		0x12
 #define INST_12_LEN	18
+#define INST_57		0x57
+#define INST_57_LEN	6
+#define INST_58		0x58
+#define INST_58_LEN	6
+#define INST_59		0x59
+#define INST_59_LEN	8
+#define INST_63		0x63
+#define INST_63_LEN	20
+#define INST_67		0x67
+#define INST_67_LEN	0x3e
+#define INST_73		0x73
+#define INST_73_LEN	24
+#define INST_78		0x78
+#define INST_78_LEN	6
+#define INST_7F		0x7f
+#define INST_7F_LEN	40
+#define INST_81		0x81
+#define INST_81_LEN	8
+#define INST_85		0x85
+#define INST_85_LEN	8
+#define INST_86		0x86
+#define INST_86_LEN	(16*8+10)
 
 /*--- Types ---*/
 
@@ -43,9 +76,101 @@ typedef struct {
 	Uint8 num_func;
 } script_func_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown;
+	Uint16 delay;
+} script_sleepn_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 flag;
+	Uint8 object;
+	Uint8 value;
+} script_setobjflag_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown[0x30-1];
+} script_make_door_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 before;
+	Uint8 after;
+} script_cut_replace_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 num_floor;
+	Uint8 value;
+} script_floor_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 skip_if_fail;
+	Uint8 cond_func;	/* = INST_IF_CK */
+	Uint8 value_flag;
+	Uint8 value_obj;
+	Uint8 value_comp;
+} script_if_ck_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 skip_if_fail;
+	Uint8 cond_func;	/* = INST_IF_CMP */
+	Uint8 value_flag;
+	Uint8 value_obj;
+	Uint8 value_comp;
+	Uint16 value2_comp;
+} script_if_cmp_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 skip_if_fail;
+	Uint8 cond_func;
+} script_if_base_t;
+
+typedef union {
+	script_if_base_t base;
+	script_if_ck_t	check;
+	script_if_cmp_t	compare;
+} script_if_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 skip_if_fail;
+} script_else_if_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 num_object;
+} script_switch_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 cmp;
+	Uint16 value;
+} script_case_t;
+
 typedef union {
 	Uint8 opcode;
 	script_func_t func;
+	script_sleepn_t sleepn;
+	script_setobjflag_t setobjflag;
+	script_make_door_t	make_door;
+	script_floor_set_t	floor_set;
+	script_cut_replace_t	cut_replace;
+	script_if_t	begin_if;
+	script_else_if_t	else_if;
+	script_switch_t		switch_case;
+	script_case_t		case_case;
 } script_inst_t;
 
 /*--- Variables ---*/
@@ -94,14 +219,92 @@ static script_inst_t *scriptNextInst(room_t *this)
 	}
 
 	switch(cur_inst->opcode) {
+		case INST_NOP:
+			item_length = 1;
+			break;
 		case INST_RETURN:
 			item_length = 2;
+			break;
+		case INST_SLEEP_N:
+			item_length = sizeof(script_sleepn_t);
 			break;
 		case INST_FUNC:
 			item_length = sizeof(script_func_t);
 			break;
+		case INST_SETOBJFLAG:
+			item_length = sizeof(script_setobjflag_t);
+			break;
+		case INST_MAKE_DOOR:
+			item_length = sizeof(script_make_door_t);
+			break;
+		case INST_FLOOR_SET:
+			item_length = sizeof(script_floor_set_t);
+			break;
+		case INST_CUT_REPLACE:
+			item_length = sizeof(script_cut_replace_t);
+			break;
+		case INST_IF:
+			{
+				switch(cur_inst->begin_if.base.cond_func) {
+					case INST_IF_CK:
+						item_length = sizeof(script_if_ck_t);
+						break;
+					case INST_IF_CMP:
+						item_length = sizeof(script_if_cmp_t);
+						break;
+				}
+			}
+			break;
+		case INST_ELSE:
+			item_length = sizeof(script_else_if_t);
+			break;
+		case INST_END_IF:
+			item_length = 2;
+			break;
+		case INST_SWITCH:
+			item_length = sizeof(script_switch_t);
+			break;
+		case INST_CASE:
+			item_length = sizeof(script_case_t);
+			break;
+		case INST_10:
+			item_length = INST_10_LEN;
+			break;
 		case INST_12:
 			item_length = INST_12_LEN;
+			break;
+		case INST_57:
+			item_length = INST_57_LEN;
+			break;
+		case INST_58:
+			item_length = INST_58_LEN;
+			break;
+		case INST_59:
+			item_length = INST_59_LEN;
+			break;
+		case INST_63:
+			item_length = INST_63_LEN;
+			break;
+		case INST_67:
+			item_length = INST_67_LEN;
+			break;
+		case INST_73:
+			item_length = INST_73_LEN;
+			break;
+		case INST_78:
+			item_length = INST_78_LEN;
+			break;
+		case INST_7F:
+			item_length = INST_7F_LEN;
+			break;
+		case INST_81:
+			item_length = INST_81_LEN;
+			break;
+		case INST_85:
+			item_length = INST_85_LEN;
+			break;
+		case INST_86:
+			item_length = INST_86_LEN;
 			break;
 	}
 
@@ -142,8 +345,13 @@ static void scriptDisasm(room_t *this)
 	inst = scriptResetInst(this);
 	while (inst) {
 		switch(inst->opcode) {
+			case INST_NOP:
+				logMsg(3, "%snop\n", indentStr);
+				break;
 			case INST_RETURN:
-				logMsg(3, "%sreturn();\n", indentStr);
+				if (indent>1) {
+					logMsg(3, "%sreturn();\n", indentStr);
+				}
 				reindent(--indent);
 				logMsg(3, "%s}\n", indentStr);
 				if (indent==0) {
@@ -151,9 +359,89 @@ static void scriptDisasm(room_t *this)
 					reindent(++indent);
 				}
 				break;
+			case INST_SLEEP_N:
+				{
+					script_sleepn_t sleepn;
+					
+					memcpy(&sleepn, inst, sizeof(script_sleepn_t));
+					logMsg(3, "%ssleep %d\n", indentStr, SDL_SwapLE16(sleepn.delay));
+				}
+				break;
 			case INST_FUNC:
 				{
 					logMsg(3, "%sFunc%d()\n", indentStr, inst->func.num_func);
+				}
+				break;
+			case INST_SETOBJFLAG:
+				{
+					logMsg(3, "%sset flag 0x%02x object 0x%02x %s\n", indentStr,
+						inst->setobjflag.flag,
+						inst->setobjflag.object,
+						(inst->setobjflag.value ? "on" : "off"));
+				}
+				break;
+			case INST_MAKE_DOOR:
+				{
+					logMsg(3, "%smakeDoor()\n", indentStr);
+				}
+				break;
+			case INST_FLOOR_SET:
+				{
+					logMsg(3, "%sfloorSet %d %s\n", indentStr,
+						inst->floor_set.num_floor,
+						(inst->floor_set.value ? "on" : "off")
+					);
+				}
+				break;
+			case INST_CUT_REPLACE:
+				{
+					logMsg(3, "%scutReplace %d %d\n", indentStr,
+						inst->cut_replace.before,
+						inst->cut_replace.after
+					);
+				}
+				break;
+			case INST_IF:
+				{
+					switch(inst->begin_if.base.cond_func) {
+						case INST_IF_CK:
+							logMsg(3, "%sif (CK) {\n", indentStr);
+							reindent(++indent);
+							break;
+						case INST_IF_CMP:
+							logMsg(3, "%sif (CMP) {\n", indentStr);
+							reindent(++indent);
+							break;
+						default:
+							logMsg(3, "%sif (???) {\n", indentStr);
+							reindent(++indent);
+							break;
+					}
+				}
+				break;
+			case INST_ELSE:
+				{
+					reindent(--indent);
+					logMsg(3,"%s} else {\n", indentStr);
+					reindent(++indent);
+				}
+				break;
+			case INST_END_IF:
+				{
+					reindent(--indent);
+					logMsg(3,"%s}\n", indentStr);
+				}
+				break;
+			case INST_SWITCH:
+				{
+					logMsg(3,"%sswitch(object xxx) {\n", indentStr);
+					reindent(++indent);
+				}
+				break;
+			case INST_CASE:
+				{
+					logMsg(3,"%scase xxx:\n", indentStr);
+					reindent(++indent);
 				}
 				break;
 			default:
