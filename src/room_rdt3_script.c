@@ -36,6 +36,8 @@
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x09
 #define INST_SLEEP_W	0x0b
+#define INST_FOR	0x0d
+#define INST_FOR_END	0x0f
 #define INST_WHILE	0x10
 #define INST_WHILE_END	0x11
 #define INST_DO		0x12
@@ -61,8 +63,8 @@
 
 #define INST_03		0x03
 #define INST_03_LEN	2
-#define INST_0D		0x0d
-#define INST_0D_LEN	6
+#define INST_05		0x05
+#define INST_05_LEN	2
 #define INST_0E		0x0e
 #define INST_0E_LEN	2
 #define INST_18		0x18
@@ -71,10 +73,12 @@
 #define INST_1D_LEN	4
 #define INST_20		0x20
 #define INST_20_LEN	6
+#define INST_22		0x22
+#define INST_22_LEN	2
 #define INST_2F		0x2f
 #define INST_2F_LEN	2
 #define INST_40		0x40
-#define INST_40_LEN	8
+#define INST_40_LEN	4
 #define INST_41		0x41
 #define INST_41_LEN	4
 #define INST_42		0x42
@@ -127,6 +131,8 @@
 #define INST_78_LEN	6
 #define INST_79		0x79
 #define INST_79_LEN	4
+#define INST_7B		0x7b
+#define INST_7B_LEN	6
 #define INST_7D		0x7d
 #define INST_7D_LEN	24
 #define INST_7F		0x7f
@@ -135,10 +141,20 @@
 #define INST_80_LEN	4
 #define INST_81		0x81
 #define INST_81_LEN	8
+#define INST_82		0x82
+#define INST_82_LEN	10
+#define INST_83		0x83
+#define INST_83_LEN	2
+#define INST_84		0x84
+#define INST_84_LEN	2
 #define INST_85		0x85
 #define INST_85_LEN	8
 #define INST_86		0x86
 #define INST_86_LEN	(16*8+10)
+#define INST_87		0x87
+#define INST_87_LEN	2
+#define INST_88		0x88
+#define INST_88_LEN	4
 #define INST_89		0x89
 #define INST_89_LEN	2
 
@@ -306,6 +322,13 @@ typedef union {
 	script_do_end_cmp_t	compare;
 } script_do_end_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown;
+	Uint16 block_length;
+	Uint16 count;
+} script_for_t;
+
 typedef union {
 	Uint8 opcode;
 	script_func_t func;
@@ -326,12 +349,14 @@ typedef union {
 	script_line_begin_t	line_begin;
 	script_line_main_t	line_main;
 	script_do_end_t		do_end;
+	script_for_t		do_for;
 } script_inst_t;
 
 /*--- Variables ---*/
 
 static script_inst_t *cur_inst;
 static int cur_inst_offset;
+static int script_length;
 
 static int num_block_len;
 static Uint8 stack_block_len[256];
@@ -355,7 +380,7 @@ void room_rdt3_scriptInit(room_t *this)
 
 static script_inst_t *scriptResetInst(room_t *this)
 {
-	Uint32 *item_offset, offset;
+	Uint32 *item_offset, offset, next_offset;
 
 	if (!this) {
 		return NULL;
@@ -369,6 +394,11 @@ static script_inst_t *scriptResetInst(room_t *this)
 
 	num_block_len = 0;
 	memset(stack_block_len, 0, sizeof(stack_block_len));
+
+	/* length using next item in rdt file */
+	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+13*4]);
+	next_offset = SDL_SwapLE32(*item_offset);
+	script_length = next_offset - offset;
 
 	return cur_inst;
 }
@@ -384,12 +414,10 @@ static script_inst_t *scriptNextInst(room_t *this)
 
 	switch(cur_inst->opcode) {
 		case INST_NOP:
-			{
-				if (cur_inst->func.num_func > 0) {		
-					item_length = 1;
-				} else {
-					item_length = 2;
-				}
+			if (cur_inst->func.num_func > 0) {
+				item_length = 4;
+			} else {
+				item_length = 2;
 			}
 			break;
 		case INST_END_SWITCH:
@@ -399,9 +427,15 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_WHILE_END:
 		case INST_SLEEP_W:
 		case INST_03:
+		case INST_05:
 		case INST_0E:
+		case INST_FOR_END:
+		case INST_22:
 		case INST_2F:
 		case INST_5A:
+		case INST_83:
+		case INST_84:
+		case INST_87:
 			item_length = 2;
 			break;
 		case INST_SLEEP_N:
@@ -448,6 +482,15 @@ static script_inst_t *scriptNextInst(room_t *this)
 			break;
 		case INST_WHILE:
 			{
+				if (cur_inst->i_while.base.unknown0 & 0x80) {
+					item_length = 4;
+					break;
+				}
+				if (cur_inst->i_while.base.unknown0 == 0) {
+					item_length = 2;
+					break;
+				}
+
 				switch(cur_inst->i_while.base.cond_func) {
 					case INST_IF_CK:
 						item_length = sizeof(script_if_ck_t);
@@ -473,8 +516,8 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_EXEC:
 			item_length = sizeof(script_exec_t);
 			break;
-		case INST_0D:
-			item_length = INST_0D_LEN;
+		case INST_FOR:
+			item_length = sizeof(script_for_t);
 			break;
 		case INST_18:
 			item_length = INST_18_LEN;
@@ -580,6 +623,9 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_79:
 			item_length = INST_79_LEN;
 			break;
+		case INST_7B:
+			item_length = INST_7B_LEN;
+			break;
 		case INST_7D:
 			item_length = INST_7D_LEN;
 			break;
@@ -592,11 +638,17 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_81:
 			item_length = INST_81_LEN;
 			break;
+		case INST_82:
+			item_length = INST_82_LEN;
+			break;
 		case INST_85:
 			item_length = INST_85_LEN;
 			break;
 		case INST_86:
 			item_length = INST_86_LEN;
+			break;
+		case INST_88:
+			item_length = INST_88_LEN;
 			break;
 		case INST_89:
 			item_length = INST_89_LEN;
@@ -604,8 +656,12 @@ static script_inst_t *scriptNextInst(room_t *this)
 	}
 
 	if (item_length == 0) {
-		/* End of list, or unknown item */
+		/* Unknown opcode */
 		next_inst = NULL;
+	} else if (cur_inst_offset >= script_length) {
+		/* End of script */
+		next_inst = NULL;
+		logMsg(3, "End of script\n");
 	} else {
 		next_inst = &next_inst[item_length];
 		cur_inst_offset += item_length;
@@ -643,7 +699,9 @@ static void scriptDisasm(room_t *this)
 		switch(inst->opcode) {
 			case INST_NOP:
 				if (cur_inst->func.num_func > 0) {		
-					logMsg(3, "%snop\n", indentStr);
+					logMsg(3, "Unknown opcode 0x%04x, offset 0x%08x\n",
+						(inst->func.num_func<<8)|inst->opcode,
+						cur_inst_offset);
 				} else {
 					reindent(--indent);
 					logMsg(3, "%s}\n", indentStr);
@@ -855,13 +913,26 @@ static void scriptDisasm(room_t *this)
 					logMsg(3, "%slineStart 0x%02x %d\n", indentStr,
 						inst->line_begin.flag,
 						inst->line_begin.size);
-					reindent(++indent);
 				}
 				break;
 			case INST_LINE_MAIN:
 				{
 					logMsg(3, "%slineMain\n", indentStr);
+				}
+				break;
+			case INST_FOR:
+				{
+					script_for_t	do_for;
+					
+					memcpy(&do_for, inst, sizeof(script_for_t));
+					logMsg(3, "%sfor (%d) {\n", indentStr, SDL_SwapLE16(do_for.count));
 					reindent(++indent);
+				}
+				break;
+			case INST_FOR_END:
+				{
+					reindent(--indent);
+					logMsg(3, "%s}\n", indentStr);
 				}
 				break;
 			default:
