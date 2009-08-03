@@ -32,12 +32,12 @@
 #define MAP_COLOR_DOOR		0x0000cccc
 #define MAP_COLOR_WALLS		0x00ff00ff
 
-#define ITEM_NULL	0x00
-#define ITEM_END_LIST	0x01
-#define ITEM_START_LIST	0x02
+#define ITEM_END_IF	0x00
+#define ITEM_END_FUNC	0x01
+#define ITEM_START_FUNC	0x02
 #define ITEM_04		0x04
-#define ITEM_06		0x06
-#define ITEM_07		0x07
+#define ITEM_IF	0x06
+#define ITEM_ELSE	0x07
 #define ITEM_08		0x08
 #define ITEM_0F		0x0f
 #define ITEM_21		0x21
@@ -369,19 +369,22 @@ static rdt_item_t *room_rdt2_itemsNextEnum(room_t *this)
 	}
 
 	switch(current_item->type) {
-		case ITEM_NULL:
+		case ITEM_END_IF:
 			item_length = sizeof(rdt_item_null_t);
 			break;
-		case ITEM_START_LIST:
+		case ITEM_START_FUNC:
 			item_length = sizeof(rdt_item_start_t);
+			break;
+		case ITEM_END_FUNC:
+			/*item_length = sizeof(rdt_item_start_t);*/
 			break;
 		case ITEM_04:
 			item_length = sizeof(rdt_item04_t);
 			break;
-		case ITEM_06:
+		case ITEM_IF:
 			item_length = sizeof(rdt_item06_t);
 			break;
-		case ITEM_07:
+		case ITEM_ELSE:
 			item_length = sizeof(rdt_item07_t);
 			break;
 		case ITEM_08:
@@ -463,7 +466,6 @@ static rdt_item_t *room_rdt2_itemsNextEnum(room_t *this)
 		case ITEM_6C:
 			item_length = sizeof(rdt_item6c_t);
 			break;
-		case ITEM_END_LIST:
 		default:
 			break;
 	}
@@ -479,25 +481,62 @@ static rdt_item_t *room_rdt2_itemsNextEnum(room_t *this)
 	return current_item;
 }
 
+static void reindent(int indent, char indentStr[256])
+{
+	int i;
+
+	memset(indentStr, 0, 256);
+	for (i=0; (i<indent) && (i<255); i++) {
+		indentStr[i<<1]=' ';
+		indentStr[(i<<1)+1]=' ';
+	}
+}
+
 static void room_rdt2_itemsList(room_t *this)
 {
 	rdt_item_t *item;
+	int indent = 0, numFunc=0;
+	char indentStr[256];
 
-	logMsg(1, "Listing items for room\n");
+	reindent(indent, indentStr);
+
+	logMsg(1, "Initialization script for room\n");
 	item = room_rdt2_itemsStartEnum(this);
 	while (item) {
+
 		switch(item->type) {
+			case ITEM_START_FUNC:
+				logMsg(2, "%sfunction FuncName%d() {\n", indentStr, numFunc++);
+				reindent(++indent, indentStr);
+				break;
+			case ITEM_END_FUNC:
+				reindent(--indent, indentStr);
+				logMsg(2, "%s}\n", indentStr);
+				break;
+			case ITEM_IF:
+				logMsg(2, "%sif (???) {\n", indentStr);
+				reindent(++indent, indentStr);
+				break;
+			case ITEM_ELSE:
+				reindent(--indent, indentStr);
+				logMsg(2, "%s} else {\n", indentStr);
+				reindent(++indent, indentStr);
+				break;
+			case ITEM_END_IF:
+				reindent(--indent, indentStr);
+				logMsg(2, "%s}\n", indentStr);
+				break;
 			case ITEM_DOOR:
-				logMsg(2, " Door %d\n", item->door.number);
+				logMsg(2, "%sCreateDoor %d\n", indentStr, item->door.number);
 				break;
 			case ITEM_ENEMY:
-				logMsg(2, " Enemy %d\n", item->enemy.number);
+				logMsg(2, "%sCreateEnemy %d\n", indentStr, item->enemy.number);
 				break;
 			case ITEM_WALLS:
-				logMsg(2, " Walls %d\n", item->walls.number);
+				logMsg(2, "%sCreateWalls %d\n", indentStr, item->walls.number);
 				break;
 			default:
-				logMsg(2, " Item 0x%02x\n", item->type);
+				logMsg(2, "%sItem 0x%02x\n", indentStr, item->type);
 				break;
 		}
 
@@ -517,11 +556,11 @@ void room_rdt2_itemsDraw(room_t *this)
 				break;
 			/*case ITEM_ENEMY:
 				logMsg(2, " Enemy %d\n", item->enemy.number);
-				break;*/
+				break;
 			case ITEM_WALLS:
 				room_rdt2_drawWalls((rdt_item_walls_t *) item);
 				break;
-			/*default:
+			default:
 				logMsg(2, " Item 0x%02x\n", item->type);
 				break;*/
 		}
@@ -673,7 +712,7 @@ static int room_rdt2_itemsEnterDoor(room_t *this, room_doorswitch_t *doorswitch)
 				doorswitch->next_z = SDL_SwapLE16(door->next_z);
 				doorswitch->next_angle = SDL_SwapLE16(door->next_angle);
 
-				doorswitch->next_stage = door->stage;
+				doorswitch->next_stage = door->stage+1;
 				doorswitch->next_room = door->room;
 				doorswitch->next_camera = door->camera;
 
