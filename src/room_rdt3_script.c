@@ -34,18 +34,25 @@
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x09
+#define INST_WHILE	0x10
 #define INST_SWITCH	0x14
 #define INST_CASE	0x15
+#define INST_END_SWITCH	0x17
 #define INST_FUNC	0x19
+#define INST_BREAK	0x1b
 #define INST_FLOOR_SET	0x3f
 #define INST_SETOBJFLAG	0x4d
 #define INST_CUT_REPLACE	0x53
 #define INST_MAKE_DOOR	0x61
 
-#define INST_10		0x10
-#define INST_10_LEN	24
 #define INST_12		0x12
 #define INST_12_LEN	18
+#define INST_1E		0x1e
+#define INST_1E_LEN	4
+#define INST_33		0x33
+#define INST_33_LEN	4
+#define INST_47		0x47
+#define INST_47_LEN	4
 #define INST_57		0x57
 #define INST_57_LEN	6
 #define INST_58		0x58
@@ -54,12 +61,22 @@
 #define INST_59_LEN	8
 #define INST_63		0x63
 #define INST_63_LEN	20
+#define INST_65		0x65
+#define INST_65_LEN	10
 #define INST_67		0x67
 #define INST_67_LEN	0x3e
+#define INST_70		0x70
+#define INST_70_LEN	16
 #define INST_73		0x73
 #define INST_73_LEN	24
+#define INST_75		0x75
+#define INST_75_LEN	2
+#define INST_77		0x77
+#define INST_77_LEN	12
 #define INST_78		0x78
 #define INST_78_LEN	6
+#define INST_7D		0x7d
+#define INST_7D_LEN	24
 #define INST_7F		0x7f
 #define INST_7F_LEN	40
 #define INST_81		0x81
@@ -159,6 +176,12 @@ typedef struct {
 	Uint16 value;
 } script_case_t;
 
+typedef struct {
+	script_if_base_t base;
+	script_if_ck_t	check;
+	script_if_cmp_t	compare;
+} script_while_t;
+
 typedef union {
 	Uint8 opcode;
 	script_func_t func;
@@ -171,6 +194,7 @@ typedef union {
 	script_else_if_t	else_if;
 	script_switch_t		switch_case;
 	script_case_t		case_case;
+	script_while_t		i_while;
 } script_inst_t;
 
 /*--- Variables ---*/
@@ -220,8 +244,16 @@ static script_inst_t *scriptNextInst(room_t *this)
 
 	switch(cur_inst->opcode) {
 		case INST_NOP:
-			item_length = 1;
+			{
+				if (cur_inst->func.num_func > 0) {		
+					item_length = 1;
+				} else {
+					item_length = 2;
+				}
+			}
 			break;
+		case INST_END_SWITCH:
+		case INST_BREAK:
 		case INST_RETURN:
 			item_length = 2;
 			break;
@@ -267,11 +299,29 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_CASE:
 			item_length = sizeof(script_case_t);
 			break;
-		case INST_10:
-			item_length = INST_10_LEN;
+		case INST_WHILE:
+			{
+				switch(cur_inst->i_while.base.cond_func) {
+					case INST_IF_CK:
+						item_length = sizeof(script_if_ck_t);
+						break;
+					case INST_IF_CMP:
+						item_length = sizeof(script_if_cmp_t);
+						break;
+				}
+			}
 			break;
 		case INST_12:
 			item_length = INST_12_LEN;
+			break;
+		case INST_1E:
+			item_length = INST_1E_LEN;
+			break;
+		case INST_33:
+			item_length = INST_33_LEN;
+			break;
+		case INST_47:
+			item_length = INST_47_LEN;
 			break;
 		case INST_57:
 			item_length = INST_57_LEN;
@@ -285,14 +335,29 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_63:
 			item_length = INST_63_LEN;
 			break;
+		case INST_65:
+			item_length = INST_65_LEN;
+			break;
 		case INST_67:
 			item_length = INST_67_LEN;
+			break;
+		case INST_70:
+			item_length = INST_70_LEN;
 			break;
 		case INST_73:
 			item_length = INST_73_LEN;
 			break;
+		case INST_75:
+			item_length = INST_75_LEN;
+			break;
+		case INST_77:
+			item_length = INST_77_LEN;
+			break;
 		case INST_78:
 			item_length = INST_78_LEN;
+			break;
+		case INST_7D:
+			item_length = INST_7D_LEN;
 			break;
 		case INST_7F:
 			item_length = INST_7F_LEN;
@@ -346,11 +411,16 @@ static void scriptDisasm(room_t *this)
 	while (inst) {
 		switch(inst->opcode) {
 			case INST_NOP:
-				logMsg(3, "%snop\n", indentStr);
+				if (cur_inst->func.num_func > 0) {		
+					logMsg(3, "%snop\n", indentStr);
+				} else {
+					reindent(--indent);
+					logMsg(3, "%s}\n", indentStr);
+				}
 				break;
 			case INST_RETURN:
 				if (indent>1) {
-					logMsg(3, "%sreturn();\n", indentStr);
+					logMsg(3, "%sreturn\n", indentStr);
 				}
 				reindent(--indent);
 				logMsg(3, "%s}\n", indentStr);
@@ -444,6 +514,23 @@ static void scriptDisasm(room_t *this)
 					reindent(++indent);
 				}
 				break;
+			case INST_END_SWITCH:
+				{
+					reindent(--indent);
+					logMsg(3,"%s}\n", indentStr);
+				}
+				break;
+			case INST_BREAK:
+				{
+					logMsg(3,"%sbreak\n", indentStr);
+				}
+				break;
+			case INST_WHILE:
+				{
+					logMsg(3,"%swhile (xxx) {\n", indentStr);
+					reindent(++indent);
+				}
+				break;
 			default:
 				logMsg(3, "Unknown opcode 0x%02x\n", inst->opcode);
 				break;
@@ -452,3 +539,15 @@ static void scriptDisasm(room_t *this)
 		inst = scriptNextInst(this);
 	}
 }
+
+/*
+BE_FLG = BE_FLG + DISP_OFF ;
+42 10 00 00 20 00 00 10
+10 00 41 00 10 00
+
+BE_FLG = BE_FLG + SC_AT + OB_AT + DISP_OFF;
+42 10 00 00 20 00 00 10
+00 20 20 00 00 10
+00 40 20 00 00 10
+10 00 41 00 10 00
+*/
