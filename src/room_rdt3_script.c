@@ -31,11 +31,21 @@
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x09
+#define INST_FUNC	0x19
+
+#define INST_12		0x12
+#define INST_12_LEN	18
 
 /*--- Types ---*/
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 num_func;
+} script_func_t;
+
+typedef union {
+	Uint8 opcode;
+	script_func_t func;
 } script_inst_t;
 
 /*--- Variables ---*/
@@ -87,6 +97,12 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_RETURN:
 			item_length = 2;
 			break;
+		case INST_FUNC:
+			item_length = sizeof(script_func_t);
+			break;
+		case INST_12:
+			item_length = INST_12_LEN;
+			break;
 	}
 
 	if (item_length == 0) {
@@ -113,18 +129,35 @@ static void reindent(int num_indent)
 
 static void scriptDisasm(room_t *this)
 {
-	int indent = 0;
+	int indent = 0, numFunc = 0;
 	script_inst_t *inst;
 
 	reindent(indent);
+
+	logMsg(3, "Disasm script\n");
+
+	logMsg(3, "function Func%d()\n{\n", numFunc++);
+	reindent(++indent);
 
 	inst = scriptResetInst(this);
 	while (inst) {
 		switch(inst->opcode) {
 			case INST_RETURN:
-				logMsg(2, "%sreturn();", indentStr);
+				logMsg(3, "%sreturn();\n", indentStr);
 				reindent(--indent);
-				logMsg(2, "%s}", indentStr);
+				logMsg(3, "%s}\n", indentStr);
+				if (indent==0) {
+					logMsg(3, "\nfunction Func%d()\n{\n", numFunc++);
+					reindent(++indent);
+				}
+				break;
+			case INST_FUNC:
+				{
+					logMsg(3, "%sFunc%d()\n", indentStr, inst->func.num_func);
+				}
+				break;
+			default:
+				logMsg(3, "Unknown opcode 0x%02x\n", inst->opcode);
 				break;
 		}
 
