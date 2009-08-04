@@ -1,6 +1,6 @@
 /*
 	Room description
-	RE1 RDT manager
+	RE1 RDT script
 
 	Copyright (C) 2009	Patrice Mandin
 
@@ -19,34 +19,9 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT_H
-#define ROOM_RDT_H 1
+#ifndef ROOM_RDT_SCRIPT_H
+#define ROOM_RDT_SCRIPT_H 1
 
-#include "room.h"
+void room_rdt_scriptInit(room_t *this);
 
-/*--- Defines ---*/
-
-#define RDT1_OFFSET_CAM_SWITCHES	0
-#define RDT1_OFFSET_INIT_SCRIPT		6
-
-/*--- Types ---*/
-
-typedef struct {
-	Sint32	x,y,z;
-	Uint32	unknown[2];
-} rdt1_header_part_t;
-
-typedef struct {
-	Uint8	unknown0;
-	Uint8	num_cameras;
-	Uint8	unknown1[4];
-	Uint16	unknown2[3];
-	rdt1_header_part_t	unknown3[3];
-	Uint32	offsets[19];
-} rdt1_header_t;
-
-/*--- Functions ---*/
-
-void room_rdt_init(room_t *this);
-
-#endif /* ROOM_RDT_H */
+#endif /* ROOM_RDT_SCRIPT_H */

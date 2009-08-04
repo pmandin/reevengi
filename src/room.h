@@ -51,6 +51,9 @@ struct room_s {
 	void *file;	/* RDT Room data file */
 	Uint32 file_length;
 
+	void (*shutdown)(room_t *this);
+
+	/* Camera, switches and boundaries */
 	int num_cameras;
 	int num_camswitches;
 	int num_boundaries;
@@ -59,10 +62,18 @@ struct room_s {
 	void (*getCamswitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
+	/* Script execution */
+	Uint8 *cur_inst;
+	int cur_inst_offset;
+	int script_length;
+
+	Uint8 *(*scriptFirstInst)(room_t *this);
+	Uint8 *(*scriptNextInst)(room_t *this);
+	void (*scriptDumpInst)(room_t *this);
+
+	/* Misc */
 	void (*drawItems)(room_t *this);
 	int (*enterDoor)(room_t *this, room_doorswitch_t *doorswitch);
-
-	void (*shutdown)(room_t *this);
 };
 
 /*--- Functions ---*/
