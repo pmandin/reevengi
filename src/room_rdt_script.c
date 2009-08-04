@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 block_length;
-	Uint8 unknown[2];	/* [0] = 0x50,0x1a,0x07 */
+	Uint8 unknown[2];	/* [0] = 0x50,0x1a,0x07,0x21 */
 } script_if02_t;
 
 typedef struct {
@@ -89,17 +89,10 @@ typedef struct {
 	Uint8 unknown[4];	/* [0] = 0x04,0x06 */
 } script_if04_t;
 
-typedef struct {
-	Uint8 opcode;
-	Uint8 block_length;
-	Uint8 unknown[6];
-} script_if06_t;
-
 typedef union {
 	script_if_base_t	base;
 	script_if02_t		if02;
 	script_if04_t		if04;
-	script_if06_t		if06;
 } script_if_t;
 
 typedef struct {
@@ -177,6 +170,8 @@ static Uint8 *scriptFirstInst(room_t *this);
 static Uint8 *scriptNextInst(room_t *this);
 static void scriptDumpInst(room_t *this);
 
+static int scriptGetInstLen(room_t *this);
+
 /*--- Functions ---*/
 
 void room_rdt_scriptInit(room_t *this)
@@ -224,8 +219,8 @@ static Uint8 *scriptFirstInst(room_t *this)
 
 static Uint8 *scriptNextInst(room_t *this)
 {
-	int i, inst_len = 0, next_offset;
-	Uint8 *next_inst;
+	int inst_len;
+	Uint8 *cur_inst;
 
 	if (!this) {
 		return NULL;
@@ -234,9 +229,80 @@ static Uint8 *scriptNextInst(room_t *this)
 		return NULL;
 	}
 
-	next_inst = this->cur_inst;
+	inst_len = scriptGetInstLen(this);
+	if (inst_len == 0) {
+		return NULL;
+	}
+
+	this->cur_inst_offset += inst_len;	
+	if (this->script_length>0) {
+		if (this->cur_inst_offset>= this->script_length) {
+			logMsg(3, "End of script reached\n");
+			return NULL;
+		}
+	}
+
+	cur_inst = this->cur_inst;
+
+	this->cur_inst = &cur_inst[inst_len];
+	return this->cur_inst;
+}
+
+static void scriptDumpInst(room_t *this)
+{
+	int i, inst_len;
+
+	if (!this) {
+		return;
+	}
+	if (!this->cur_inst) {
+		return;
+	}
+
+	inst_len = scriptGetInstLen(this);
+	for (i=0; i<inst_len; i++) {
+		logMsg(3, "%02x ", this->cur_inst[i]);
+		/*logMsg(3, "%02x%s", this->cur_inst[i],
+			(((i>0) && ((i & 15)==0)) ? "\n" : " ")
+		);*/
+	}
+	logMsg(3, "\n");
+
+	switch(this->cur_inst[0]) {
+		case INST_NOP:
+			logMsg(3, "  nop\n");
+			break;
+		case INST_IF:
+			logMsg(3, "  if (xxx) {\n");
+			break;
+		case INST_ELSE:
+			logMsg(3, "  } else {\n");
+			break;
+		case INST_ENDIF:
+			logMsg(3, "  }\n");
+			break;
+		case INST_DOOR:
+			logMsg(3, "  create door\n");
+			break;
+		default:
+			/*logMsg(3, "  Unknown opcode 0x%02x, offset 0x%04x\n", this->cur_inst[0], this->cur_inst_offset);*/
+			break;
+	}
+}
+
+static int scriptGetInstLen(room_t *this)
+{
+	int i, inst_len = 0;
+
+	if (!this) {
+		return 0;
+	}
+	if (!this->cur_inst) {
+		return 0;
+	}
+
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
-		if (inst_length[i].opcode == next_inst[0]) {
+		if (inst_length[i].opcode == this->cur_inst[0]) {
 			inst_len = inst_length[i].length;
 			break;
 		}
@@ -244,10 +310,10 @@ static Uint8 *scriptNextInst(room_t *this)
 
 	/* Exceptions, variable lengths */
 	if (inst_len == 0) {
-		switch (next_inst[0]) {
+		switch (this->cur_inst[0]) {
 			case INST_IF:
 				{
-					script_if02_t *i_if = (script_if02_t *) next_inst;
+					script_if02_t *i_if = (script_if02_t *) this->cur_inst;
 					if (i_if->unknown[0] == 0x50) {
 						inst_len = sizeof(script_if02_t);
 					} else if (i_if->unknown[0] == 0x1a) {
@@ -268,46 +334,6 @@ static Uint8 *scriptNextInst(room_t *this)
 		}
 	}
 
-	if (inst_len == 0) {
-		return NULL;
-	}
-
-	this->cur_inst_offset += inst_len;	
-	if (this->script_length>0) {
-		if (this->cur_inst_offset>= this->script_length) {
-			logMsg(3, "End of script reached\n");
-			return NULL;
-		}
-	}
-
-	this->cur_inst = &next_inst[inst_len];
-	return this->cur_inst;
-}
-
-static void scriptDumpInst(room_t *this)
-{
-	if (!this) {
-		return;
-	}
-	if (!this->cur_inst) {
-		return;
-	}
-
-	switch(this->cur_inst[0]) {
-		case INST_NOP:
-			logMsg(3, "nop\n");
-			break;
-		case INST_IF:
-			logMsg(3, "if (xxx) {\n");
-			break;
-		case INST_ELSE:
-			logMsg(3, "} else {\n");
-			break;
-		case INST_ENDIF:
-			logMsg(3, "}\n");
-			break;
-		default:
-			logMsg(3, "Unknown opcode 0x%02x, offset 0x%04x\n", this->cur_inst[0], this->cur_inst_offset);
-			break;
-	}
+	/*logMsg(4, "opcode 0x%02x len %d\n", this->cur_inst[0], inst_len);*/
+	return inst_len;
 }
