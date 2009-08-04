@@ -34,6 +34,7 @@
 #define INST_05		0x05
 #define INST_06		0x06
 #define INST_07		0x07
+#define INST_09		0x09
 #define INST_DOOR	0x0c
 #define INST_0D		0x0d
 #define INST_0F		0x0f
@@ -55,6 +56,7 @@
 #define INST_2B		0x2b
 #define INST_2F		0x2f
 #define INST_30		0x30
+#define INST_31		0x31
 #define INST_33		0x33
 #define INST_35		0x35
 #define INST_37		0x37
@@ -66,6 +68,7 @@
 #define INST_47		0x47
 #define INST_49		0x49
 #define INST_4C		0x4c
+#define INST_78		0x78
 
 /*--- Types ---*/
 
@@ -132,6 +135,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_05,	4},
 	{INST_06,	2},
 	{INST_07,	10},
+	{INST_09,	2},
 	{INST_DOOR,	26},
 	{INST_0D,	18},
 	{INST_0F,	8},
@@ -153,6 +157,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_2B,	4},
 	{INST_2F,	4},
 	{INST_30,	12},
+	{INST_31,	4},
 	{INST_33,	12},
 	{INST_35,	4},
 	{INST_37,	4},
@@ -160,7 +165,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_3B,	6},
 	{INST_3D,	12},
 	{INST_41,	4},
-	{INST_46,	4},
+	{INST_46,	4+(12*3)+4},
 	{INST_47,	14},
 	{INST_49,	2},
 	{INST_4C,	4}
@@ -205,6 +210,9 @@ static Uint8 *scriptFirstInst(room_t *this)
 	if (!this) {
 		return NULL;
 	}
+	if (this->script_length == 0) {
+		return NULL;
+	}
 
 	rdt_header = (rdt1_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_INIT_SCRIPT]);
@@ -243,6 +251,8 @@ static Uint8 *scriptNextInst(room_t *this)
 					if (i_if->unknown[0] == 0x50) {
 						inst_len = sizeof(script_if02_t);
 					} else if (i_if->unknown[0] == 0x1a) {
+						inst_len = sizeof(script_if02_t);
+					} else if (i_if->unknown[0] == 0x21) {
 						inst_len = sizeof(script_if02_t);
 					} else if (i_if->unknown[0] == 0x07) {
 						inst_len = sizeof(script_if02_t);
