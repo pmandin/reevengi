@@ -43,6 +43,7 @@
 #define INST_18		0x18
 #define INST_19		0x19
 #define INST_1B		0x1b
+#define INST_1C		0x1c
 #define INST_1D		0x1d
 #define INST_1F		0x1f
 #define INST_20		0x20
@@ -135,6 +136,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_18,	26},
 	{INST_19,	4},
 	{INST_1B,	22},
+	{INST_1C,	10},
 	{INST_1D,	6},
 	{INST_1F,	28},
 	{INST_20,	18},
