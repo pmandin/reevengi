@@ -32,26 +32,63 @@
 #define INST_ENDIF	0x03
 #define INST_04		0x04
 #define INST_05		0x05
+#define INST_06		0x06
 #define INST_DOOR	0x0c
 #define INST_0D		0x0d
+#define INST_0F		0x0f
+#define INST_10		0x10
 #define INST_12		0x12
 #define INST_13		0x13
 #define INST_14		0x14
 #define INST_18		0x18
+#define INST_19		0x19
 #define INST_1B		0x1b
+#define INST_1D		0x1d
 #define INST_1F		0x1f
 #define INST_20		0x20
 #define INST_23		0x23
+#define INST_2A		0x2a
+#define INST_2F		0x2f
 #define INST_30		0x30
+#define INST_35		0x35
 #define INST_37		0x37
 #define INST_3B		0x3b
+#define INST_47		0x47
+#define INST_4C		0x4c
+#define INST_6A		0x6a
+#define INST_6B		0x6b
+#define INST_8A		0x8a
 
 /*--- Types ---*/
 
 typedef struct {
 	Uint8 opcode;
 	Uint8 block_length;
-	Uint8 unknown[4];
+} script_if_base_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+	Uint8 unknown[2];	/* [0] = 0x50,0x1a,0x07 */
+} script_if02_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+	Uint8 unknown[4];	/* [0] = 0x04,0x06 */
+} script_if04_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+	Uint8 unknown[6];
+} script_if06_t;
+
+typedef union {
+	script_if_base_t	base;
+	script_if02_t		if02;
+	script_if04_t		if04;
+	script_if06_t		if06;
 } script_if_t;
 
 typedef struct {
@@ -80,24 +117,34 @@ typedef struct {
 
 static const script_inst_len_t inst_length[]={
 	{INST_NOP,	2},
-	{INST_IF,	sizeof(script_if_t)},
+	/*{INST_IF,	sizeof(script_if_t)},*/
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_ENDIF,	sizeof(script_endif_t)},
 	{INST_04,	4},
 	{INST_05,	4},
+	{INST_06,	2},
 	{INST_DOOR,	26},
 	{INST_0D,	18},
+	{INST_0F,	8},
+	{INST_10,	10},
 	{INST_12,	10},
 	{INST_13,	4},
 	{INST_14,	4},
 	{INST_18,	26},
+	{INST_19,	4},
 	{INST_1B,	22},
+	{INST_1D,	6},
 	{INST_1F,	28},
-	{INST_20,	16},
+	{INST_20,	18},
 	{INST_23,	4},
+	{INST_2A,	12},
+	{INST_2F,	4},
 	{INST_30,	4},
+	{INST_35,	4},
 	{INST_37,	4},
-	{INST_3B,	6}
+	{INST_3B,	6},
+	{INST_47,	14},
+	{INST_4C,	4}
 };
 
 /*--- Functions prototypes ---*/
@@ -159,12 +206,6 @@ static Uint8 *scriptNextInst(room_t *this)
 	if (!this->cur_inst) {
 		return NULL;
 	}
-	if (this->script_length>0) {
-		if (this->cur_inst_offset>= this->script_length) {
-			logMsg(3, "End of script reached\n");
-			return NULL;
-		}
-	}
 
 	next_inst = this->cur_inst;
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
@@ -174,11 +215,42 @@ static Uint8 *scriptNextInst(room_t *this)
 		}
 	}
 
+	/* Exceptions, variable lengths */
+	if (inst_len == 0) {
+		switch (next_inst[0]) {
+			case INST_IF:
+				{
+					script_if02_t *i_if = (script_if02_t *) next_inst;
+					if (i_if->unknown[0] == 0x50) {
+						inst_len = sizeof(script_if02_t);
+					} else if (i_if->unknown[0] == 0x1a) {
+						inst_len = sizeof(script_if02_t);
+					} else if (i_if->unknown[0] == 0x07) {
+						inst_len = sizeof(script_if02_t);
+					} else if (i_if->unknown[0] == 0x04) {
+						inst_len = sizeof(script_if04_t);
+					} else if (i_if->unknown[0] == 0x06) {
+						inst_len = sizeof(script_if04_t);
+					}
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
 	if (inst_len == 0) {
 		return NULL;
 	}
 
 	this->cur_inst_offset += inst_len;	
+	if (this->script_length>0) {
+		if (this->cur_inst_offset>= this->script_length) {
+			logMsg(3, "End of script reached\n");
+			return NULL;
+		}
+	}
+
 	this->cur_inst = &next_inst[inst_len];
 	return this->cur_inst;
 }
@@ -206,7 +278,7 @@ static void scriptDumpInst(room_t *this)
 			logMsg(3, "}\n");
 			break;
 		default:
-			logMsg(3, "Unknown opcode 0x%02x\n", this->cur_inst[0]);
+			logMsg(3, "Unknown opcode 0x%02x, offset 0x%04x\n", this->cur_inst[0], this->cur_inst_offset);
 			break;
 	}
 }
