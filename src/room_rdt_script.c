@@ -33,6 +33,7 @@
 #define INST_04		0x04
 #define INST_05		0x05
 #define INST_06		0x06
+#define INST_07		0x07
 #define INST_DOOR	0x0c
 #define INST_0D		0x0d
 #define INST_0F		0x0f
@@ -49,18 +50,22 @@
 #define INST_20		0x20
 #define INST_21		0x21
 #define INST_23		0x23
+#define INST_28		0x28
 #define INST_2A		0x2a
+#define INST_2B		0x2b
 #define INST_2F		0x2f
 #define INST_30		0x30
+#define INST_33		0x33
 #define INST_35		0x35
 #define INST_37		0x37
+#define INST_3A		0x3a
 #define INST_3B		0x3b
+#define INST_3D		0x3d
+#define INST_41		0x41
 #define INST_46		0x46
 #define INST_47		0x47
+#define INST_49		0x49
 #define INST_4C		0x4c
-#define INST_6A		0x6a
-#define INST_6B		0x6b
-#define INST_8A		0x8a
 
 /*--- Types ---*/
 
@@ -126,6 +131,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_04,	4},
 	{INST_05,	4},
 	{INST_06,	2},
+	{INST_07,	10},
 	{INST_DOOR,	26},
 	{INST_0D,	18},
 	{INST_0F,	8},
@@ -139,17 +145,24 @@ static const script_inst_len_t inst_length[]={
 	{INST_1C,	10},
 	{INST_1D,	6},
 	{INST_1F,	28},
-	{INST_20,	18},
+	{INST_20,	14},
 	{INST_21,	18},
 	{INST_23,	4},
+	{INST_28,	6},
 	{INST_2A,	12},
+	{INST_2B,	4},
 	{INST_2F,	4},
 	{INST_30,	12},
+	{INST_33,	12},
 	{INST_35,	4},
 	{INST_37,	4},
+	{INST_3A,	4},
 	{INST_3B,	6},
+	{INST_3D,	12},
+	{INST_41,	4},
 	{INST_46,	4},
 	{INST_47,	14},
+	{INST_49,	2},
 	{INST_4C,	4}
 };
 
