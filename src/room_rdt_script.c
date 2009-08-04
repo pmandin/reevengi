@@ -26,6 +26,7 @@
 
 /*--- Defines ---*/
 
+#define INST_NOP	0x00
 #define INST_IF		0x01
 #define INST_ELSE	0x02
 #define INST_ENDIF	0x03
@@ -34,9 +35,14 @@
 #define INST_DOOR	0x0c
 #define INST_0D		0x0d
 #define INST_12		0x12
+#define INST_13		0x13
+#define INST_14		0x14
 #define INST_18		0x18
 #define INST_1B		0x1b
 #define INST_1F		0x1f
+#define INST_20		0x20
+#define INST_23		0x23
+#define INST_30		0x30
 #define INST_37		0x37
 #define INST_3B		0x3b
 
@@ -73,17 +79,23 @@ typedef struct {
 /*--- Variables ---*/
 
 static const script_inst_len_t inst_length[]={
+	{INST_NOP,	2},
 	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_ENDIF,	sizeof(script_endif_t)},
 	{INST_04,	4},
-	{INST_05,	5},
+	{INST_05,	4},
 	{INST_DOOR,	26},
 	{INST_0D,	18},
 	{INST_12,	10},
+	{INST_13,	4},
+	{INST_14,	4},
 	{INST_18,	26},
 	{INST_1B,	22},
 	{INST_1F,	28},
+	{INST_20,	16},
+	{INST_23,	4},
+	{INST_30,	4},
 	{INST_37,	4},
 	{INST_3B,	6}
 };
@@ -147,6 +159,12 @@ static Uint8 *scriptNextInst(room_t *this)
 	if (!this->cur_inst) {
 		return NULL;
 	}
+	if (this->script_length>0) {
+		if (this->cur_inst_offset>= this->script_length) {
+			logMsg(3, "End of script reached\n");
+			return NULL;
+		}
+	}
 
 	next_inst = this->cur_inst;
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
@@ -160,14 +178,7 @@ static Uint8 *scriptNextInst(room_t *this)
 		return NULL;
 	}
 
-	next_offset = this->cur_inst_offset + inst_len;	
-	if (this->script_length>0) {
-		if (next_offset >= this->script_length) {
-			logMsg(3, "End of script reached\n");
-			return NULL;
-		}
-	}
-
+	this->cur_inst_offset += inst_len;	
 	this->cur_inst = &next_inst[inst_len];
 	return this->cur_inst;
 }
@@ -182,6 +193,9 @@ static void scriptDumpInst(room_t *this)
 	}
 
 	switch(this->cur_inst[0]) {
+		case INST_NOP:
+			logMsg(3, "nop\n");
+			break;
 		case INST_IF:
 			logMsg(3, "if (xxx) {\n");
 			break;
