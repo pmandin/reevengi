@@ -46,6 +46,7 @@
 #define INST_1D		0x1d
 #define INST_1F		0x1f
 #define INST_20		0x20
+#define INST_21		0x21
 #define INST_23		0x23
 #define INST_2A		0x2a
 #define INST_2F		0x2f
@@ -53,6 +54,7 @@
 #define INST_35		0x35
 #define INST_37		0x37
 #define INST_3B		0x3b
+#define INST_46		0x46
 #define INST_47		0x47
 #define INST_4C		0x4c
 #define INST_6A		0x6a
@@ -136,13 +138,15 @@ static const script_inst_len_t inst_length[]={
 	{INST_1D,	6},
 	{INST_1F,	28},
 	{INST_20,	18},
+	{INST_21,	18},
 	{INST_23,	4},
 	{INST_2A,	12},
 	{INST_2F,	4},
-	{INST_30,	4},
+	{INST_30,	12},
 	{INST_35,	4},
 	{INST_37,	4},
 	{INST_3B,	6},
+	{INST_46,	4},
 	{INST_47,	14},
 	{INST_4C,	4}
 };
