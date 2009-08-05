@@ -67,9 +67,11 @@ struct room_s {
 	int cur_inst_offset;
 	int script_length;
 
-	Uint8 *(*scriptFirstInst)(room_t *this);
-	Uint8 *(*scriptNextInst)(room_t *this);
-	void (*scriptDumpInst)(room_t *this);
+	Uint8 *(*scriptPrivFirstInst)(room_t *this);
+	int (*scriptPrivGetInstLen)(room_t *this);
+	void (*scriptPrivPrintInst)(room_t *this);
+
+	void (*scriptDump)(room_t *this);
 
 	/* Misc */
 	void (*drawItems)(room_t *this);

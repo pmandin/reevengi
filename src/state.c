@@ -211,6 +211,9 @@ static void state_loadroom(void)
 
 		if (game_state.room) {
 			room_map_init(game_state.room);
+			if (params.verbose>=3) {
+				game_state.room->scriptDump(game_state.room);
+			}
 		}
 	}
 }

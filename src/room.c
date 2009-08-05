@@ -59,6 +59,13 @@ static void room_map_drawCameras(room_t *this);
 static void room_map_drawCamswitches(room_t *this);
 static void room_map_drawBoundaries(room_t *this);
 
+static Uint8 *scriptPrivFirstInst(room_t *this);
+static int scriptPrivGetInstLen(room_t *this);
+static void scriptPrivPrintInst(room_t *this);
+
+static Uint8 *scriptNextInst(room_t *this);
+static void scriptDump(room_t *this);
+
 /*--- Functions ---*/
 
 room_t *room_create(void *room_file, Uint32 length)
@@ -73,6 +80,12 @@ room_t *room_create(void *room_file, Uint32 length)
 
 	this->shutdown = shutdown;
 
+	this->scriptPrivFirstInst = scriptPrivFirstInst;
+	this->scriptPrivGetInstLen = scriptPrivGetInstLen;
+	this->scriptPrivPrintInst = scriptPrivPrintInst;
+
+	this->scriptDump = scriptDump;
+
 	return this;
 }
 
@@ -86,6 +99,8 @@ static void shutdown(room_t *this)
 		free(this);
 	}
 }
+
+/* Map functions */
 
 void room_map_init(room_t *this)
 {
@@ -425,4 +440,71 @@ int room_checkCamswitch(room_t *this, int num_camera, float x, float y)
 	}
 
 	return -1;
+}
+
+/* Script functions */
+
+static Uint8 *scriptPrivFirstInst(room_t *this)
+{
+	return NULL;
+}
+
+static int scriptPrivGetInstLen(room_t *this)
+{
+	return 0;
+}
+
+static void scriptPrivPrintInst(room_t *this)
+{
+}
+
+static Uint8 *scriptNextInst(room_t *this)
+{
+	int inst_len;
+	Uint8 *cur_inst;
+
+	if (!this) {
+		return NULL;
+	}
+	if (!this->cur_inst) {
+		return NULL;
+	}
+
+	inst_len = this->scriptPrivGetInstLen(this);
+	if (inst_len == 0) {
+		return NULL;
+	}
+
+	this->cur_inst_offset += inst_len;	
+	if (this->script_length>0) {
+		if (this->cur_inst_offset>= this->script_length) {
+			logMsg(3, "End of script reached\n");
+			return NULL;
+		}
+	}
+
+	cur_inst = this->cur_inst;
+
+	this->cur_inst = &cur_inst[inst_len];
+	return this->cur_inst;
+}
+
+static void scriptDump(room_t *this)
+{
+	Uint8 *inst;
+
+	inst = this->scriptPrivFirstInst(this);
+	while (inst) {
+		int i, inst_len;
+
+		inst_len = this->scriptPrivGetInstLen(this);
+		for (i=0; i<inst_len; i++) {
+			logMsg(3, "%02x ", this->cur_inst[i]);
+		}
+		logMsg(3, "\n");
+
+		this->scriptPrivPrintInst(this);
+
+		inst = scriptNextInst(this);
+	}
 }

@@ -167,10 +167,8 @@ static const script_inst_len_t inst_length[]={
 /*--- Functions prototypes ---*/
 
 static Uint8 *scriptFirstInst(room_t *this);
-static Uint8 *scriptNextInst(room_t *this);
-static void scriptDumpInst(room_t *this);
-
 static int scriptGetInstLen(room_t *this);
+static void scriptPrintInst(room_t *this);
 
 /*--- Functions ---*/
 
@@ -183,18 +181,11 @@ void room_rdt_scriptInit(room_t *this)
 
 	this->script_length = SDL_SwapLE16(*init_script);
 
-	this->scriptFirstInst = scriptFirstInst;
-	this->scriptNextInst = scriptNextInst;
-	this->scriptDumpInst = scriptDumpInst;
+	logMsg(3, "rdt1: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
 
-	logMsg(3, "Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
-
-	/* Dump script */
-	inst = this->scriptFirstInst(this);
-	while (inst) {
-		this->scriptDumpInst(this);
-		inst = this->scriptNextInst(this);
-	}
+	this->scriptPrivFirstInst = scriptFirstInst;
+	this->scriptPrivGetInstLen = scriptGetInstLen;
+	this->scriptPrivPrintInst = scriptPrintInst;
 }
 
 static Uint8 *scriptFirstInst(room_t *this)
@@ -217,56 +208,14 @@ static Uint8 *scriptFirstInst(room_t *this)
 	return this->cur_inst;
 }
 
-static Uint8 *scriptNextInst(room_t *this)
+static void scriptPrintInst(room_t *this)
 {
-	int inst_len;
-	Uint8 *cur_inst;
-
-	if (!this) {
-		return NULL;
-	}
-	if (!this->cur_inst) {
-		return NULL;
-	}
-
-	inst_len = scriptGetInstLen(this);
-	if (inst_len == 0) {
-		return NULL;
-	}
-
-	this->cur_inst_offset += inst_len;	
-	if (this->script_length>0) {
-		if (this->cur_inst_offset>= this->script_length) {
-			logMsg(3, "End of script reached\n");
-			return NULL;
-		}
-	}
-
-	cur_inst = this->cur_inst;
-
-	this->cur_inst = &cur_inst[inst_len];
-	return this->cur_inst;
-}
-
-static void scriptDumpInst(room_t *this)
-{
-	int i, inst_len;
-
 	if (!this) {
 		return;
 	}
 	if (!this->cur_inst) {
 		return;
 	}
-
-	inst_len = scriptGetInstLen(this);
-	for (i=0; i<inst_len; i++) {
-		logMsg(3, "%02x ", this->cur_inst[i]);
-		/*logMsg(3, "%02x%s", this->cur_inst[i],
-			(((i>0) && ((i & 15)==0)) ? "\n" : " ")
-		);*/
-	}
-	logMsg(3, "\n");
 
 	switch(this->cur_inst[0]) {
 		case INST_NOP:
@@ -283,9 +232,6 @@ static void scriptDumpInst(room_t *this)
 			break;
 		case INST_DOOR:
 			logMsg(3, "  create door\n");
-			break;
-		default:
-			/*logMsg(3, "  Unknown opcode 0x%02x, offset 0x%04x\n", this->cur_inst[0], this->cur_inst_offset);*/
 			break;
 	}
 }
@@ -334,6 +280,5 @@ static int scriptGetInstLen(room_t *this)
 		}
 	}
 
-	/*logMsg(4, "opcode 0x%02x len %d\n", this->cur_inst[0], inst_len);*/
 	return inst_len;
 }
