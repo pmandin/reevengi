@@ -431,12 +431,21 @@ static void reindent(int num_indent);
 
 void room_rdt3_scriptInit(room_t *this)
 {
+	int i;
 	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
 	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_INIT_SCRIPT]);
-	Uint32 next_offset = SDL_SwapLE32(rdt_header->offsets[13]);
+	Uint32 smaller_offset = this->file_length;
 
-	if (next_offset>offset) {
-		this->script_length = next_offset - offset;
+	/* Search smaller offset after script to calc length */
+	for (i=0; i<21; i++) {
+		Uint32 next_offset = SDL_SwapLE32(rdt_header->offsets[i]);
+		if ((next_offset>0) && (next_offset<smaller_offset) && (next_offset>offset)) {
+			smaller_offset = next_offset;
+		}
+	}
+
+	if (smaller_offset>offset) {
+		this->script_length = smaller_offset - offset;
 	}
 
 	logMsg(3, "rdt3: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);

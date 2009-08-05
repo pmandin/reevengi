@@ -39,7 +39,7 @@ typedef struct {
 	Uint8	unknown0;
 	Uint8	num_cameras;
 	Uint8	unknown1[6];
-	Uint32	offsets[22];
+	Uint32	offsets[21];
 } rdt2_header_t;
 
 /*--- Functions ---*/
