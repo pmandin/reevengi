@@ -47,7 +47,7 @@
 #define INST_SWITCH_END	0x17
 #define INST_FUNC	0x19
 #define INST_BREAK	0x1b
-#define INST_SET0	0x1e
+#define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
 #define INST_CALC_ADD	0x20
 #define INST_LINE_BEGIN	0x2d
@@ -57,14 +57,29 @@
 #define INST_CALC_END	0x41
 #define INST_CALC_BEGIN	0x42
 #define INST_FADE_SET	0x46
-#define INST_SETOBJFLAG	0x4d
+#define INST_WORK_SET	0x47
+#define INST_FLAG_SET	0x4d
 #define INST_CUT_REPLACE	0x53
-#define INST_MAKE_DOOR	0x61
+#define INST_MESSAGE_ON	0x5b
+#define INST_DOOR_SET	0x61
+#define INST_AOT_SET	0x63
+#define INST_AOT_RESET	0x65
+#define INST_SUPER_SET	0x6a
+#define INST_ESPR_ON	0x70
+#define INST_ESPR3D_ON2	0x73
+#define INST_ESPR_KILL	0x74
+#define INST_ESPR_KILL2	0x75
+#define INST_SE_ON	0x77
+#define INST_BGM_CTL	0x78
+#define INST_EM_SET	0x7d
+#define INST_OM_SET	0x7f
+#define INST_END_SCRIPT	0xff
 
 #define CONDITION_CK		0x4c
 #define CONDITION_CMP		0x4e
 #define CONDITION_CC		0x1d
 
+/*
 #define INST_03		0x03
 #define INST_03_LEN	2
 #define INST_05		0x05
@@ -101,58 +116,30 @@
 #define INST_55_LEN	16
 #define INST_56		0x56
 #define INST_56_LEN	6
-#define INST_57		0x57
-#define INST_57_LEN	6
-#define INST_58		0x58
-#define INST_58_LEN	6
 #define INST_59		0x59
 #define INST_59_LEN	8
 #define INST_5A		0x5a
 #define INST_5A_LEN	2
-#define INST_5B		0x5b
-#define INST_5B_LEN	6
 #define INST_60		0x60
 #define INST_60_LEN	2
 #define INST_62		0x62
 #define INST_62_LEN	0x72
-#define INST_63		0x63
-#define INST_63_LEN	0x14
 #define INST_64		0x64
 #define INST_64_LEN	0x1c
-#define INST_65		0x65
-#define INST_65_LEN	10
 #define INST_66		0x66
 #define INST_66_LEN	2
 #define INST_67		0x67
 #define INST_67_LEN	0x16
 #define INST_69		0x69
 #define INST_69_LEN	0x0e
-#define INST_6A		0x6a
-#define INST_6A_LEN	16
 #define INST_6E		0x6e
 #define INST_6E_LEN	4
-#define INST_70		0x70
-#define INST_70_LEN	16
-#define INST_73		0x73
-#define INST_73_LEN	24
-#define INST_74		0x74
-#define INST_74_LEN	6
-#define INST_75		0x75
-#define INST_75_LEN	2
 #define INST_76		0x76
 #define INST_76_LEN	6
-#define INST_77		0x77
-#define INST_77_LEN	12
-#define INST_78		0x78
-#define INST_78_LEN	6
 #define INST_79		0x79
 #define INST_79_LEN	4
 #define INST_7B		0x7b
 #define INST_7B_LEN	6
-#define INST_7D		0x7d
-#define INST_7D_LEN	24
-#define INST_7F		0x7f
-#define INST_7F_LEN	40
 #define INST_80		0x80
 #define INST_80_LEN	4
 #define INST_81		0x81
@@ -165,8 +152,6 @@
 #define INST_84_LEN	2
 #define INST_85		0x85
 #define INST_85_LEN	8
-#define INST_86		0x86
-#define INST_86_LEN	(16*8+10)
 #define INST_87		0x87
 #define INST_87_LEN	2
 #define INST_88		0x88
@@ -177,6 +162,7 @@
 #define INST_8E_LEN	4
 #define INST_8F		0x8f
 #define INST_8F_LEN	4
+*/
 
 /*--- Types ---*/
 
@@ -226,7 +212,7 @@ typedef struct {
 	Uint8 flag;
 	Uint8 object;
 	Uint8 value;
-} script_setobjflag_t;
+} script_set_flag_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -259,14 +245,14 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown0;
-	Uint16 num_object;
+	Uint8 object;
+	Uint16 block_length;
 } script_switch_t;
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown0;
-	Uint16 cmp;
+	Uint8 dummy;
+	Uint16 block_length;
 	Uint16 value;
 } script_case_t;
 
@@ -329,7 +315,7 @@ typedef union {
 	Uint8 opcode;
 	script_func_t func;
 	script_sleepn_t sleepn;
-	script_setobjflag_t setobjflag;
+	script_set_flag_t set_flag;
 	script_make_door_t	make_door;
 	script_floor_set_t	floor_set;
 	script_cut_replace_t	cut_replace;
@@ -356,10 +342,13 @@ typedef struct {
 /*--- Variables ---*/
 
 static const script_inst_len_t inst_length[]={
+	/* 0x00-0x0f */
 	{INST_NOP,	1},
 	{INST_RETURN,	2},
 	{INST_SLEEP_1,	2},
+	{0x03,		2},
 	{INST_EXEC,	sizeof(script_exec_t)},
+	{0x05,		2},
 	/*{INST_IF,	sizeof(script_if_t)},*/
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
@@ -368,6 +357,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_FOR,	sizeof(script_for_t)},
 	{INST_FOR_END,	2},
 
+	/* 0x10-0x1f */
 	/*{INST_WHILE,	sizeof(script_while_t)},*/
 	{INST_WHILE_END,	2},
 	{INST_DO,	4},
@@ -377,25 +367,51 @@ static const script_inst_len_t inst_length[]={
 	{INST_SWITCH_END,	2},
 	{INST_FUNC,	2},
 	{INST_BREAK,	2},	
-	{INST_SET0,	4},
+	{INST_VALUE_SET,	4},
 	{INST_SET1,	4},
 
+	/* 0x20-0x2f */
 	{INST_CALC_ADD,	6},
 	{INST_LINE_BEGIN,	sizeof(script_line_begin_t)},
 	{INST_LINE_MAIN,	sizeof(script_line_main_t)},
 
+	/* 0x30-0x3f */
 	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
 	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
 
+	/* 0x40-0x4f */
 	{INST_CALC_END,	4},
 	{INST_CALC_BEGIN,	4},
+	{INST_WORK_SET,	4 /* or 8,12 ?*/},
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
-	{INST_SETOBJFLAG,	sizeof(script_setobjflag_t)},
+	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
 
+	/* 0x50-0x5f */
+	{0x51,		4},
 	{INST_CUT_REPLACE,	sizeof(script_cut_replace_t)},
+	{0x57,		6},
+	{0x58,		6},
+	{0x59,		8},
+	{INST_MESSAGE_ON,	6},
 
-	{INST_MAKE_DOOR,	sizeof(script_make_door_t)},
+	/* 0x60-0x6f */
+	{INST_DOOR_SET,	sizeof(script_make_door_t)},
+	{INST_AOT_SET,		20},
+	{INST_AOT_RESET,	10},
+	{0x67,			16},
+	{INST_SUPER_SET,	16},
 
+	/* 0x70-0x7f */
+	{INST_ESPR_ON,	16},
+	{INST_ESPR3D_ON2,	24},
+	{INST_ESPR_KILL,	8},
+	{INST_ESPR_KILL2,	2},
+	{INST_SE_ON,	12},
+	{INST_BGM_CTL,	6},
+	{INST_EM_SET,	24},
+	{INST_OM_SET,	40},
+
+	/* 0x80-0x8f */
 	{0x86,		16*8+10}
 };
 
@@ -548,9 +564,9 @@ static void scriptPrintInst(room_t *this)
 	inst = (script_inst_t *) this->cur_inst;
 
 	switch(inst->opcode) {
-			case INST_NOP:
-				logMsg(3, "%snop\n", indentStr);
-				break;
+		case INST_NOP:
+			logMsg(3, "%snop\n", indentStr);
+			break;
 			case INST_RETURN:
 				if (indent>1) {
 					logMsg(3, "%sreturn\n", indentStr);
@@ -562,194 +578,201 @@ static void scriptPrintInst(room_t *this)
 					reindent(++indent);
 				}
 				break;
-			case INST_SLEEP_1:
-				{
-					logMsg(3, "%ssleep 1\n", indentStr);
-				}
-				break;
-			case INST_SLEEP_N:
-				{
-					script_sleepn_t sleepn;
-					
-					memcpy(&sleepn, inst, sizeof(script_sleepn_t));
-					logMsg(3, "%ssleep %d\n", indentStr, SDL_SwapLE16(sleepn.delay));
-				}
-				break;
-			case INST_FUNC:
-				{
-					logMsg(3, "%sFunc%d()\n", indentStr, inst->func.num_func);
-				}
-				break;
-			case INST_SETOBJFLAG:
-				{
-					logMsg(3, "%sset flag 0x%02x object 0x%02x %s\n", indentStr,
-						inst->setobjflag.flag,
-						inst->setobjflag.object,
-						(inst->setobjflag.value ? "on" : "off"));
-				}
-				break;
-			case INST_MAKE_DOOR:
-				{
-					logMsg(3, "%smakeDoor()\n", indentStr);
-				}
-				break;
-			case INST_FLOOR_SET:
-				{
-					logMsg(3, "%sFLR_SET %d %s\n", indentStr,
-						inst->floor_set.num_floor,
-						(inst->floor_set.value ? "on" : "off")
-					);
-				}
-				break;
-			case INST_CUT_REPLACE:
-				{
-					logMsg(3, "%sCUT_REPLACE %d %d\n", indentStr,
-						inst->cut_replace.before,
-						inst->cut_replace.after
-					);
-				}
-				break;
-			case INST_IF:
-				{
-					logMsg(3, "%sif (xxx) {\n", indentStr);
-					reindent(++indent);
-				}
-				break;
-			case INST_ELSE:
-				{
-					reindent(--indent);
-					logMsg(3,"%s} else {\n", indentStr);
-					reindent(++indent);
-				}
-				break;
-			case INST_END_IF:
-				{
-					reindent(--indent);
-					logMsg(3,"%s}\n", indentStr);
-				}
-				break;
-			case INST_SWITCH:
-				{
-					logMsg(3,"%sswitch(object xxx) {\n", indentStr);
-					indent += 2;
-					reindent(indent);
-				}
-				break;
-			case INST_CASE:
-				{
-					reindent(--indent);
-					logMsg(3,"%scase xxx:\n", indentStr);
-					reindent(++indent);
-				}
-				break;
-			case INST_SWITCH_END:
-				{
-					indent -= 2;
-					reindent(indent);
-					logMsg(3,"%s}\n", indentStr);
-				}
-				break;
-			case INST_BREAK:
-				{
-					logMsg(3,"%sbreak\n", indentStr);
-					/*reindent(--indent);*/
-				}
-				break;
-			case INST_WHILE:
-				{
-					logMsg(3,"%swhile (xxx) {\n", indentStr);
-					reindent(++indent);
-				}
-				break;
-			case INST_WHILE_END:
-				{
-					reindent(--indent);
-					logMsg(3,"%s}\n", indentStr);
-				}
-				break;
-			case INST_FADE_SET:
-				{
-					logMsg(3, "%sfadeSet xxx\n", indentStr);
-				}
-				break;
-			case INST_EXEC:
-				{
-					logMsg(3, "%seventExec flag 0x%02x Func%d()\n",
-						indentStr,
-						inst->exec.mask,
-						inst->exec.func[1]
-					);
-				}
-				break;
-			case INST_SET0:
-			case INST_SET1:
-				{
-					script_set_t new_set;
-
-					memcpy(&new_set, inst, sizeof(script_set_t));
-
-					logMsg(3, "%sset variable 0x%02x = %d\n",
-						indentStr,
-						new_set.variable,
-						SDL_SwapLE16(new_set.value)
-					);
-				}
-				break;
-			case INST_AHEAD_ROOM_SET:
-				{
-					script_ahead_room_set_t ahead_room_set;
-
-					memcpy(&ahead_room_set, inst, sizeof(script_ahead_room_set_t));
-
-					logMsg(3, "%saheadRoomSet 0x%04x\n",
-						indentStr,
-						SDL_SwapLE16(ahead_room_set.value)
-					);
-				}
-				break;
-			case INST_DO:
-				{
-					logMsg(3, "%sdo {\n", indentStr);
-					reindent(++indent);
-				}
-				break;
-			case INST_DO_END:
-				{
-					reindent(--indent);
-					logMsg(3, "%s} while (xxx)\n", indentStr);
-				}
-				break;
-			case INST_LINE_BEGIN:
-				{
-					logMsg(3, "%slineStart 0x%02x %d\n", indentStr,
-						inst->line_begin.flag,
-						inst->line_begin.size);
-				}
-				break;
-			case INST_LINE_MAIN:
-				{
-					logMsg(3, "%slineMain\n", indentStr);
-				}
-				break;
-			case INST_FOR:
-				{
-					script_for_t	do_for;
-					
-					memcpy(&do_for, inst, sizeof(script_for_t));
-					logMsg(3, "%sfor (%d) {\n", indentStr, SDL_SwapLE16(do_for.count));
-					reindent(++indent);
-				}
-				break;
-			case INST_FOR_END:
-				{
-					reindent(--indent);
-					logMsg(3, "%s}\n", indentStr);
-				}
-				break;
-/*		default:
-			logMsg(3, "Unknown opcode 0x%02x\n", inst->opcode);
+		case INST_SLEEP_1:
+			logMsg(3, "%ssleep 1\n", indentStr);
 			break;
-*/
+		case INST_SLEEP_N:
+			{
+				script_sleepn_t sleepn;
+	
+				memcpy(&sleepn, inst, sizeof(script_sleepn_t));
+				logMsg(3, "%ssleep %d\n", indentStr, SDL_SwapLE16(sleepn.delay));
+			}
+			break;
+		case INST_FUNC:
+			logMsg(3, "%sFunc%02x()\n", indentStr, inst->func.num_func);
+			break;
+		case INST_FLAG_SET:
+			logMsg(3, "%sFLAG_SET 0x%02x object 0x%02x %s\n", indentStr,
+				inst->set_flag.flag,
+				inst->set_flag.object,
+				(inst->set_flag.value ? "on" : "off"));
+			break;
+		case INST_DOOR_SET:
+			logMsg(3, "%sDOOR_SET xxx\n", indentStr);
+			break;
+		case INST_FLOOR_SET:
+			logMsg(3, "%sFLR_SET %d %s\n", indentStr,
+				inst->floor_set.num_floor,
+				(inst->floor_set.value ? "on" : "off")
+			);
+			break;
+		case INST_CUT_REPLACE:
+			logMsg(3, "%sCUT_REPLACE 0x%02x 0x%02x\n", indentStr,
+				inst->cut_replace.before,
+				inst->cut_replace.after
+			);
+			break;
+		case INST_IF:
+			{
+				logMsg(3, "%sif (xxx) {\n", indentStr);
+				reindent(++indent);
+			}
+			break;
+		case INST_ELSE:
+			{
+				reindent(--indent);
+				logMsg(3,"%s} else {\n", indentStr);
+				reindent(++indent);
+			}
+			break;
+		case INST_END_IF:
+			{
+				reindent(--indent);
+				logMsg(3,"%s}\n", indentStr);
+			}
+			break;
+		case INST_SWITCH:
+			{
+				logMsg(3,"%sswitch(object xxx) {\n", indentStr);
+				indent += 2;
+				reindent(indent);
+			}
+			break;
+		case INST_CASE:
+			{
+				reindent(--indent);
+				logMsg(3,"%scase xxx:\n", indentStr);
+				reindent(++indent);
+			}
+			break;
+		case INST_SWITCH_END:
+			{
+				indent -= 2;
+				reindent(indent);
+				logMsg(3,"%s}\n", indentStr);
+			}
+			break;
+		case INST_BREAK:
+			logMsg(3,"%sbreak\n", indentStr);
+			break;
+		case INST_WHILE:
+			{
+				logMsg(3,"%swhile (xxx) {\n", indentStr);
+				reindent(++indent);
+			}
+			break;
+		case INST_WHILE_END:
+			{
+				reindent(--indent);
+				logMsg(3,"%s}\n", indentStr);
+			}
+			break;
+		case INST_FADE_SET:
+			logMsg(3, "%sFADE_SET xxx\n", indentStr);
+			break;
+		case INST_EXEC:
+			logMsg(3, "%sEVT_EXEC flag 0x%02x Func%d()\n",
+				indentStr,
+				inst->exec.mask,
+				inst->exec.func[1]
+			);
+			break;
+		case INST_VALUE_SET:
+		case INST_SET1:
+			{
+				script_set_t new_set;
+
+				memcpy(&new_set, inst, sizeof(script_set_t));
+
+				logMsg(3, "%svar%02x = 0x%04x\n",
+					indentStr,
+					new_set.variable,
+					SDL_SwapLE16(new_set.value)
+				);
+			}
+			break;
+		case INST_AHEAD_ROOM_SET:
+			{
+				script_ahead_room_set_t ahead_room_set;
+
+				memcpy(&ahead_room_set, inst, sizeof(script_ahead_room_set_t));
+
+				logMsg(3, "%sAHEAD_ROOM_SET 0x%04x\n",
+					indentStr,
+					SDL_SwapLE16(ahead_room_set.value)
+				);
+			}
+			break;
+		case INST_DO:
+			{
+				logMsg(3, "%sdo {\n", indentStr);
+				reindent(++indent);
+			}
+			break;
+		case INST_DO_END:
+			{
+				reindent(--indent);
+				logMsg(3, "%s} while (xxx)\n", indentStr);
+			}
+			break;
+		case INST_LINE_BEGIN:
+			logMsg(3, "%slineStart 0x%02x %d\n", indentStr,
+				inst->line_begin.flag,
+				inst->line_begin.size
+			);
+			break;
+		case INST_LINE_MAIN:
+			logMsg(3, "%slineMain\n", indentStr);
+			break;
+		case INST_FOR:
+			{
+				script_for_t	do_for;
+			
+				memcpy(&do_for, inst, sizeof(script_for_t));
+				logMsg(3, "%sfor (%d) {\n", indentStr, SDL_SwapLE16(do_for.count));
+				reindent(++indent);
+			}
+			break;
+		case INST_FOR_END:
+			{
+				reindent(--indent);
+				logMsg(3, "%s}\n", indentStr);
+			}
+			break;
+		case INST_WORK_SET:
+			logMsg(3, "%sWORK_SET xxx\n", indentStr);
+			break;
+		case INST_AOT_SET:
+			logMsg(3, "%sAOT_SET xxx\n", indentStr);
+			break;
+		case INST_ESPR3D_ON2:
+			logMsg(3, "%sESPR3D_ON2 xxx\n", indentStr);
+			break;
+		case INST_ESPR_KILL2:
+			logMsg(3, "%sESPR_KILL2 %d\n", indentStr, this->cur_inst[1]);
+			break;
+		case INST_EM_SET:
+			logMsg(3, "%sEM_SET xxx\n", indentStr);
+			break;
+		case INST_OM_SET:
+			logMsg(3, "%sOM_SET xxx\n", indentStr);
+			break;
+		case INST_SUPER_SET:
+			logMsg(3, "%sSUPER_SET xxx\n", indentStr);
+			break;
+		case INST_BGM_CTL:
+			logMsg(3, "%sBGM_CTL xxx\n", indentStr);
+			break;
+		case INST_MESSAGE_ON:
+			logMsg(3, "%sMESSAGE_ON xxx\n", indentStr);
+			break;
+		case INST_ESPR_KILL:
+			logMsg(3, "%sESPR_KILL xxx\n", indentStr);
+			break;
+		default:
+			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
+			break;
+
 	}
 }
-
