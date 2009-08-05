@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 #include "room.h"
+#include "room_rdt2.h"
 
 /*--- Defines ---*/
 
@@ -46,7 +47,7 @@
 #define INST_DO_END	0x13
 #define INST_SWITCH	0x14
 #define INST_CASE	0x15
-#define INST_END_SWITCH	0x17
+#define INST_SWITCH_END	0x17
 #define INST_FUNC	0x19
 #define INST_BREAK	0x1b
 #define INST_SET0	0x1e
@@ -251,7 +252,7 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 unknown0;
 	Uint16 skip_if_fail;
-} script_else_if_t;
+} script_else_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -356,7 +357,7 @@ typedef union {
 	script_floor_set_t	floor_set;
 	script_cut_replace_t	cut_replace;
 	script_if_t	begin_if;
-	script_else_if_t	else_if;
+	script_else_t	else_if;
 	script_switch_t		switch_case;
 	script_case_t		case_case;
 	script_while_t		i_while;
@@ -370,11 +371,56 @@ typedef union {
 	script_for_t		do_for;
 } script_inst_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 length;
+} script_inst_len_t;
+
 /*--- Variables ---*/
 
-static script_inst_t *cur_inst;
-static int cur_inst_offset;
-static int script_length;
+static const script_inst_len_t inst_length[]={
+	{INST_NOP,	2},
+	{INST_RETURN,	2},
+	{INST_SLEEP_1,	2},
+	{INST_EXEC,	sizeof(script_exec_t)},
+	/*{INST_IF,	sizeof(script_if_t)},*/
+	{INST_ELSE,	sizeof(script_else_t)},
+	{INST_END_IF,	2},
+	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
+	{INST_SLEEP_W,	2},
+	{INST_FOR,	sizeof(script_for_t)},
+	{INST_FOR_END,	2},
+
+	/*{INST_WHILE,	sizeof(script_while_t)},*/
+	{INST_WHILE_END,	2},
+	{INST_DO,	4},
+	/*{INST_DO_END,	sizeof(script_do_end_t)},*/
+	{INST_SWITCH,	sizeof(script_switch_t)},
+	{INST_CASE,	sizeof(script_case_t)},
+	{INST_SWITCH_END,	2},
+	{INST_FUNC,	2},
+	{INST_BREAK,	2},	
+	{INST_SET0,	4},
+	{INST_SET1,	4},
+
+	{INST_CALC_ADD,	6},
+	{INST_LINE_BEGIN,	sizeof(script_line_begin_t)},
+	{INST_LINE_MAIN,	sizeof(script_line_main_t)},
+
+	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
+	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
+
+	{INST_CALC_END,	4},
+	{INST_CALC_BEGIN,	4},
+	{INST_FADE_SET,	sizeof(script_fade_set_t)},
+	{INST_SETOBJFLAG,	sizeof(script_setobjflag_t)},
+
+	{INST_CUT_REPLACE,	sizeof(script_cut_replace_t)},
+
+	{INST_MAKE_DOOR,	sizeof(script_make_door_t)},
+
+	{0x86,		16*8+10}
+};
 
 static int num_block_len;
 static Uint8 stack_block_len[256];
@@ -383,62 +429,104 @@ static char indentStr[256];
 
 /*--- Functions prototypes ---*/
 
-static script_inst_t *scriptResetInst(room_t *this);
-static script_inst_t *scriptNextInst(room_t *this);
+static Uint8 *scriptFirstInst(room_t *this);
+static int scriptGetInstLen(room_t *this);
+static void scriptPrintInst(room_t *this);
 
 static void reindent(int num_indent);
-static void scriptDisasm(room_t *this);
 
 /*--- Functions ---*/
 
 void room_rdt3_scriptInit(room_t *this)
 {
-	scriptDisasm(this);
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_INIT_SCRIPT]);
+	Uint32 next_offset = SDL_SwapLE32(rdt_header->offsets[13]);
+
+	if (next_offset>offset) {
+		this->script_length = next_offset - offset;
+	}
+
+	logMsg(3, "rdt3: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
+
+	this->scriptPrivFirstInst = scriptFirstInst;
+	this->scriptPrivGetInstLen = scriptGetInstLen;
+	this->scriptPrivPrintInst = scriptPrintInst;
 }
 
-static script_inst_t *scriptResetInst(room_t *this)
+static Uint8 *scriptFirstInst(room_t *this)
 {
-	Uint32 *item_offset, offset, next_offset;
+	rdt2_header_t *rdt_header;
+	Uint32 offset;
 
 	if (!this) {
 		return NULL;
 	}
-	
-	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+16*4]);
-	offset = SDL_SwapLE32(*item_offset);
-	cur_inst = (script_inst_t *) &((Uint8 *) this->file)[offset];
-
-	cur_inst_offset = 0;
-
-	num_block_len = 0;
-	memset(stack_block_len, 0, sizeof(stack_block_len));
-
-	/* length using next item in rdt file */
-	item_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+13*4]);
-	next_offset = SDL_SwapLE32(*item_offset);
-	script_length = 0;
-	if (next_offset!=0) {
-		script_length = next_offset - offset;
-	}
-
-	return cur_inst;
-}
-
-static script_inst_t *scriptNextInst(room_t *this)
-{
-	int item_length = 0;
-	Uint8 *next_inst = (Uint8 *) cur_inst;
-
-	if (!this) {
+	if (this->script_length == 0) {
 		return NULL;
 	}
+
+	rdt_header = (rdt2_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_INIT_SCRIPT]);
+
+	this->cur_inst_offset = 0;
+	this->cur_inst = (& ((Uint8 *) this->file)[offset]);
+	return this->cur_inst;
+}
+
+static int scriptGetInstLen(room_t *this)
+{
+	int i, inst_len = 0;
+	Uint8 *next_inst;
+	script_inst_t *cur_inst;
+
+	if (!this) {
+		return 0;
+	}
+	if (!this->cur_inst) {
+		return 0;
+	}
+
+#if 1
+	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
+		if (inst_length[i].opcode == this->cur_inst[0]) {
+			inst_len = inst_length[i].length;
+			break;
+		}
+	}
+
+	/* Exceptions, variable lengths */
+	if (inst_len == 0) {
+		switch(cur_inst->opcode) {
+			case INST_IF:
+				{
+					switch(cur_inst->begin_if.base.cond_func) {
+						case INST_IF_CK:
+							inst_len = sizeof(script_if_ck_t);
+							break;
+						case INST_IF_CMP:
+							inst_len = sizeof(script_if_cmp_t);
+							break;
+						case INST_IF_CC:
+							inst_len = INST_IF_CC_LEN;
+							break;
+					}
+				}
+				break;
+			default:
+				break;
+		}
+	}
+#else
+	cur_inst = (script_inst_t *) this->cur_inst;
+	next_inst = (Uint8 *) cur_inst;
 
 	switch(cur_inst->opcode) {
 		case INST_NOP:
 			if (cur_inst->func.num_func > 0) {
-				item_length = 4;
+				inst_len = 4;
 			} else {
-				item_length = 2;
+				inst_len = 2;
 			}
 			break;
 		case INST_END_SWITCH:
@@ -458,70 +546,70 @@ static script_inst_t *scriptNextInst(room_t *this)
 		case INST_83:
 		case INST_84:
 		case INST_87:
-			item_length = 2;
+			inst_len = 2;
 			break;
 		case INST_SLEEP_N:
-			item_length = sizeof(script_sleepn_t);
+			inst_len = sizeof(script_sleepn_t);
 			break;
 		case INST_FUNC:
-			item_length = sizeof(script_func_t);
+			inst_len = sizeof(script_func_t);
 			break;
 		case INST_SETOBJFLAG:
-			item_length = sizeof(script_setobjflag_t);
+			inst_len = sizeof(script_setobjflag_t);
 			break;
 		case INST_MAKE_DOOR:
-			item_length = sizeof(script_make_door_t);
+			inst_len = sizeof(script_make_door_t);
 			break;
 		case INST_FLOOR_SET:
-			item_length = sizeof(script_floor_set_t);
+			inst_len = sizeof(script_floor_set_t);
 			break;
 		case INST_CUT_REPLACE:
-			item_length = sizeof(script_cut_replace_t);
+			inst_len = sizeof(script_cut_replace_t);
 			break;
 		case INST_IF:
 			{
 				switch(cur_inst->begin_if.base.cond_func) {
 					case INST_IF_CK:
-						item_length = sizeof(script_if_ck_t);
+						inst_len = sizeof(script_if_ck_t);
 						break;
 					case INST_IF_CMP:
-						item_length = sizeof(script_if_cmp_t);
+						inst_len = sizeof(script_if_cmp_t);
 						break;
 					case INST_IF_CC:
-						item_length = INST_IF_CC_LEN;
+						inst_len = INST_IF_CC_LEN;
 						break;
 				}
 			}
 			break;
 		case INST_ELSE:
-			item_length = sizeof(script_else_if_t);
+			inst_len = sizeof(script_else_if_t);
 			break;
 		case INST_END_IF:
-			item_length = 2;
+			inst_len = 2;
 			break;
 		case INST_SWITCH:
-			item_length = sizeof(script_switch_t);
+			inst_len = sizeof(script_switch_t);
 			break;
 		case INST_CASE:
-			item_length = sizeof(script_case_t);
+			inst_len = sizeof(script_case_t);
 			break;
 		case INST_WHILE:
 			{
 				if (cur_inst->i_while.base.unknown0 & 0x80) {
-					item_length = 4;
+					inst_len = 4;
 					break;
 				}
 				if (cur_inst->i_while.base.unknown0 == 0) {
-					item_length = 2;
+					inst_len = 2;
 					break;
 				}
 
 				switch(cur_inst->i_while.base.cond_func) {
 					case INST_IF_CK:
-						item_length = sizeof(script_if_ck_t);
+						inst_len = sizeof(script_if_ck_t);
 						break;
 					case INST_IF_CMP:
-						item_length = sizeof(script_if_cmp_t);
+						inst_len = sizeof(script_if_cmp_t);
 						break;
 				}
 			}
@@ -530,191 +618,179 @@ static script_inst_t *scriptNextInst(room_t *this)
 			{
 				switch(cur_inst->do_end.base.cond_func) {
 					case INST_IF_CK:
-						item_length = sizeof(script_do_end_ck_t);
+						inst_len = sizeof(script_do_end_ck_t);
 						break;
 					case INST_IF_CMP:
-						item_length = sizeof(script_do_end_cmp_t);
+						inst_len = sizeof(script_do_end_cmp_t);
 						break;
 				}
 			}
 			break;
 		case INST_EXEC:
-			item_length = sizeof(script_exec_t);
+			inst_len = sizeof(script_exec_t);
 			break;
 		case INST_FOR:
-			item_length = sizeof(script_for_t);
+			inst_len = sizeof(script_for_t);
 			break;
 		case INST_18:
-			item_length = INST_18_LEN;
+			inst_len = INST_18_LEN;
 			break;
 		case INST_1D:
-			item_length = INST_1D_LEN;
+			inst_len = INST_1D_LEN;
 			break;
 		case INST_SET0:
 		case INST_SET1:
 		case INST_DO:
-			item_length = 4;
+			inst_len = 4;
 			break;
 		case INST_20:
-			item_length = INST_20_LEN;
+			inst_len = INST_20_LEN;
 			break;
 		case INST_AHEAD_ROOM_SET:
-			item_length = sizeof(script_ahead_room_set_t);
+			inst_len = sizeof(script_ahead_room_set_t);
 			break;
 		case INST_LINE_BEGIN:
-			item_length = sizeof(script_line_begin_t);
+			inst_len = sizeof(script_line_begin_t);
 			break;
 		case INST_LINE_MAIN:
-			item_length = sizeof(script_line_main_t);
+			inst_len = sizeof(script_line_main_t);
 			break;
 		case INST_FADE_SET:
-			item_length = sizeof(script_fade_set_t);
+			inst_len = sizeof(script_fade_set_t);
 			break;
 		case INST_30:
-			item_length = INST_30_LEN;
+			inst_len = INST_30_LEN;
 			break;
 		case INST_32:
-			item_length = INST_32_LEN;
+			inst_len = INST_32_LEN;
 			break;
 		case INST_40:
-			item_length = INST_40_LEN;
+			inst_len = INST_40_LEN;
 			break;
 		case INST_41:
-			item_length = INST_41_LEN;
+			inst_len = INST_41_LEN;
 			break;
 		case INST_42:
-			item_length = INST_42_LEN;
+			inst_len = INST_42_LEN;
 			break;
 		case INST_47:
-			item_length = INST_47_LEN;
+			inst_len = INST_47_LEN;
 			break;
 		case INST_50:
-			item_length = INST_50_LEN;
+			inst_len = INST_50_LEN;
 			break;
 		case INST_52:
-			item_length = INST_52_LEN;
+			inst_len = INST_52_LEN;
 			break;
 		case INST_55:
-			item_length = INST_55_LEN;
+			inst_len = INST_55_LEN;
 			break;
 		case INST_56:
-			item_length = INST_56_LEN;
+			inst_len = INST_56_LEN;
 			break;
 		case INST_57:
-			item_length = INST_57_LEN;
+			inst_len = INST_57_LEN;
 			break;
 		case INST_58:
-			item_length = INST_58_LEN;
+			inst_len = INST_58_LEN;
 			break;
 		case INST_59:
-			item_length = INST_59_LEN;
+			inst_len = INST_59_LEN;
 			break;
 		case INST_5B:
-			item_length = INST_5B_LEN;
+			inst_len = INST_5B_LEN;
 			break;
 		case INST_60:
-			item_length = INST_60_LEN;
+			inst_len = INST_60_LEN;
 			break;
 		case INST_62:
-			item_length = INST_62_LEN;
+			inst_len = INST_62_LEN;
 			break;
 		case INST_63:
-			item_length = INST_63_LEN;
+			inst_len = INST_63_LEN;
 			break;
 		case INST_64:
-			item_length = INST_64_LEN;
+			inst_len = INST_64_LEN;
 			break;
 		case INST_65:
-			item_length = INST_65_LEN;
+			inst_len = INST_65_LEN;
 			break;
 		case INST_67:
-			item_length = INST_67_LEN;
+			inst_len = INST_67_LEN;
 			break;
 		case INST_69:
-			item_length = INST_69_LEN;
+			inst_len = INST_69_LEN;
 			break;
 		case INST_6A:
-			item_length = INST_6A_LEN;
+			inst_len = INST_6A_LEN;
 			break;
 		case INST_6E:
-			item_length = INST_6E_LEN;
+			inst_len = INST_6E_LEN;
 			break;
 		case INST_70:
-			item_length = INST_70_LEN;
+			inst_len = INST_70_LEN;
 			break;
 		case INST_73:
-			item_length = INST_73_LEN;
+			inst_len = INST_73_LEN;
 			break;
 		case INST_74:
-			item_length = INST_74_LEN;
+			inst_len = INST_74_LEN;
 			break;
 		case INST_75:
-			item_length = INST_75_LEN;
+			inst_len = INST_75_LEN;
 			break;
 		case INST_76:
-			item_length = INST_76_LEN;
+			inst_len = INST_76_LEN;
 			break;
 		case INST_77:
-			item_length = INST_77_LEN;
+			inst_len = INST_77_LEN;
 			break;
 		case INST_78:
-			item_length = INST_78_LEN;
+			inst_len = INST_78_LEN;
 			break;
 		case INST_79:
-			item_length = INST_79_LEN;
+			inst_len = INST_79_LEN;
 			break;
 		case INST_7B:
-			item_length = INST_7B_LEN;
+			inst_len = INST_7B_LEN;
 			break;
 		case INST_7D:
-			item_length = INST_7D_LEN;
+			inst_len = INST_7D_LEN;
 			break;
 		case INST_7F:
-			item_length = INST_7F_LEN;
+			inst_len = INST_7F_LEN;
 			break;
 		case INST_80:
-			item_length = INST_80_LEN;
+			inst_len = INST_80_LEN;
 			break;
 		case INST_81:
-			item_length = INST_81_LEN;
+			inst_len = INST_81_LEN;
 			break;
 		case INST_82:
-			item_length = INST_82_LEN;
+			inst_len = INST_82_LEN;
 			break;
 		case INST_85:
-			item_length = INST_85_LEN;
+			inst_len = INST_85_LEN;
 			break;
 		case INST_86:
-			item_length = INST_86_LEN;
+			inst_len = INST_86_LEN;
 			break;
 		case INST_88:
-			item_length = INST_88_LEN;
+			inst_len = INST_88_LEN;
 			break;
 		case INST_89:
-			item_length = INST_89_LEN;
+			inst_len = INST_89_LEN;
 			break;
 		case INST_8E:
-			item_length = INST_8E_LEN;
+			inst_len = INST_8E_LEN;
 			break;
 		case INST_8F:
-			item_length = INST_8F_LEN;
+			inst_len = INST_8F_LEN;
 			break;
 	}
+#endif
 
-	if (item_length == 0) {
-		/* Unknown opcode */
-		next_inst = NULL;
-	} else if ((cur_inst_offset >= script_length) && (script_length>0)) {
-		/* End of script */
-		next_inst = NULL;
-		logMsg(3, "End of script\n");
-	} else {
-		next_inst = &next_inst[item_length];
-		cur_inst_offset += item_length;
-	}
-	cur_inst = (script_inst_t *) next_inst;
-
-	return cur_inst;
+	return inst_len;
 }
 
 static void reindent(int num_indent)
@@ -728,26 +804,28 @@ static void reindent(int num_indent)
 	}
 }
 
-static void scriptDisasm(room_t *this)
+static void scriptPrintInst(room_t *this)
 {
 	int indent = 0, numFunc = 0;
 	script_inst_t *inst;
 
+	if (!this) {
+		return;
+	}
+	if (!this->cur_inst) {
+		return;
+	}
+
 	reindent(indent);
 
-	logMsg(3, "Disasm script\n");
+	inst = (script_inst_t *) this->cur_inst;
 
-	logMsg(3, "function Func%d()\n{\n", numFunc++);
-	reindent(++indent);
-
-	inst = scriptResetInst(this);
-	while (inst) {
-		switch(inst->opcode) {
+	switch(inst->opcode) {
 			case INST_NOP:
-				if (cur_inst->func.num_func > 0) {		
+				if (inst->func.num_func > 0) {		
 					logMsg(3, "Unknown opcode 0x%04x, offset 0x%08x\n",
 						(inst->func.num_func<<8)|inst->opcode,
-						cur_inst_offset);
+						this->cur_inst_offset);
 				} else {
 					reindent(--indent);
 					logMsg(3, "%s}\n", indentStr);
@@ -861,7 +939,7 @@ static void scriptDisasm(room_t *this)
 					reindent(++indent);
 				}
 				break;
-			case INST_END_SWITCH:
+			case INST_SWITCH_END:
 				{
 					indent -= 2;
 					reindent(indent);
@@ -981,12 +1059,9 @@ static void scriptDisasm(room_t *this)
 					logMsg(3, "%s}\n", indentStr);
 				}
 				break;
-			default:
-				logMsg(3, "Unknown opcode 0x%02x, offset 0x%08x\n", inst->opcode, cur_inst_offset);
-				break;
-		}
-
-		inst = scriptNextInst(this);
+		default:
+			logMsg(3, "Unknown opcode 0x%02x\n", inst->opcode);
+			break;
 	}
 }
 
