@@ -50,18 +50,22 @@
 #define INST_BREAK	0x1b
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
+
 #define INST_CALC_ADD	0x20
 #define INST_EVT_CUT	0x22
 #define INST_LINE_BEGIN	0x2d
 #define INST_LINE_MAIN	0x2e
 #define INST_LINE_END	0x2f
+
 #define INST_AHEAD_ROOM_SET	0x33
 #define INST_FLOOR_SET	0x3f
+
 #define INST_CALC_END	0x41
 #define INST_CALC_BEGIN	0x42
 #define INST_FADE_SET	0x46
 #define INST_WORK_SET	0x47
 #define INST_FLAG_SET	0x4d
+
 #define INST_CUT_CHG	0x50
 #define INST_CUT_AUTO	0x52
 #define INST_CUT_REPLACE	0x53
@@ -69,6 +73,7 @@
 #define INST_DIR_SET	0x56
 #define INST_RBJ_SET	0x5a
 #define INST_MESSAGE_ON	0x5b
+
 #define INST_DOOR_SET	0x61
 #define INST_AOT_SET	0x63
 #define INST_AOT_SET_4P	0x64
@@ -77,6 +82,7 @@
 #define INST_KAGE_SET	0x69
 #define INST_SUPER_SET	0x6a
 #define INST_SCA_ID_SET	0x6e
+
 #define INST_ESPR_ON	0x70
 #define INST_ESPR3D_ON2	0x73
 #define INST_ESPR_KILL	0x74
@@ -87,6 +93,7 @@
 #define INST_BGM_TBL_SET	0x7b
 #define INST_EM_SET	0x7d
 #define INST_OM_SET	0x7f
+
 #define INST_PLC_MOTION	0x80
 #define INST_PLC_DEST	0x81
 #define INST_PLC_NECK	0x82
@@ -95,11 +102,14 @@
 #define INST_PLC_STOP	0x87
 #define INST_PLC_ROT	0x88
 #define INST_PLC_CNT	0x89
+
 #define INST_END_SCRIPT	0xff
 
+#define CONDITION_CC		0x1d
+#define CONDITION_35		0x35
+#define CONDITION_43		0x43
 #define CONDITION_CK		0x4c
 #define CONDITION_CMP		0x4e
-#define CONDITION_CC		0x1d
 
 /*--- Types ---*/
 
@@ -301,24 +311,32 @@ static const script_inst_len_t inst_length[]={
 	/*{INST_DO_END,	sizeof(script_do_end_t)},*/
 	{INST_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
+	{0x16,		2},	/* maybe */
 	{INST_SWITCH_END,	2},
 	{0x18,		6},
 	{INST_FUNC,	2},
 	{0x1a,		4},
 	{INST_BREAK,	2},	
+	{0x1c,		2},	/* maybe */
 	{0x1d,		4},
 	{INST_VALUE_SET,	4},
 	{INST_SET1,	4},
 
 	/* 0x20-0x2f */
 	{INST_CALC_ADD,	6},
+	{0x21,		2}, /* maybe */
 	{INST_EVT_CUT,	4},
+	{0x24,		2}, /* maybe */
+	{0x27,		4}, /* maybe */
 	{INST_LINE_BEGIN,	sizeof(script_line_begin_t)},
 	{INST_LINE_MAIN,	sizeof(script_line_main_t)},
 	{INST_LINE_END,		2},
 
 	/* 0x30-0x3f */
+	{0x30,		6},	/* maybe */
+	{0x32,		6},	/* maybe */
 	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
+	{0x3b,		4},	/* maybe */
 	{0x3d,		2},
 	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
 
@@ -326,8 +344,13 @@ static const script_inst_len_t inst_length[]={
 	{0x40,		4},
 	{INST_CALC_END,	4},
 	{INST_CALC_BEGIN,	4},
-	/*{INST_WORK_SET,	4},*/
+	{0x43,		2},	/* maybe */
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
+	/*{INST_WORK_SET,	4},*/
+	{0x48,		10},	/* maybe */
+	{0x49,		4},	/* maybe */
+	{0x4c,		4},	/* maybe */
+	{0x4e,		6},	/* maybe */
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
 
 	/* 0x50-0x5f */
@@ -335,6 +358,7 @@ static const script_inst_len_t inst_length[]={
 	{0x51,		4},
 	{INST_CUT_AUTO,		2},
 	{INST_CUT_REPLACE,	sizeof(script_cut_replace_t)},
+	{0x54,		12},	/* maybe */
 	{INST_POS_SET,		8},
 	{INST_DIR_SET,		8},
 	{0x57,		6},
@@ -346,23 +370,30 @@ static const script_inst_len_t inst_length[]={
 	/* 0x60-0x6f */
 	{0x60,			2},
 	{INST_DOOR_SET,	sizeof(script_make_door_t)},
+	{0x62,			40},	/* maybe */
 	{INST_AOT_SET,		20},
 	{INST_AOT_SET_4P,	28},
 	{INST_AOT_RESET,	10},
+	{0x66,			2 /*6*/}, /* maybe */
 	{INST_ITEM_AOT_SET,	22},
+	{0x68,			30}, /* maybe */
 	{INST_KAGE_SET,	14},
 	{INST_SUPER_SET,	16},
 	{INST_SCA_ID_SET,	4},
 
 	/* 0x70-0x7f */
 	{INST_ESPR_ON,	16},
+	{0x71, 18},	/* maybe */
+	{0x72, 22},	/* maybe */
 	{INST_ESPR3D_ON2,	24},
-	{INST_ESPR_KILL,	8},
+	{INST_ESPR_KILL,	6 /*8*/},
 	{INST_ESPR_KILL2,	2},
+	{0x76, 		6},	/* maybe */
 	{INST_SE_ON,	12},
 	{INST_BGM_CTL,	6},
 	{INST_XA_ON,	4},
 	{INST_BGM_TBL_SET,	6},
+	{0x7c,			2}, /*maybe */
 	{INST_EM_SET,	24},
 	{INST_OM_SET,	40},
 
@@ -372,10 +403,13 @@ static const script_inst_len_t inst_length[]={
 	{INST_PLC_NECK,		10},
 	{INST_PLC_RET,		2},
 	{INST_PLC_FLG,		4},
-	{0x86,		16*8+10},
 	{INST_PLC_STOP,	2},
 	{INST_PLC_ROT,	4},
-	{INST_PLC_CNT,	2}
+	{INST_PLC_CNT,	2},
+	{0x8a,		2},	/* maybe */
+	{0x8b,		2},	/* maybe */
+	{0x8e,		2},	/* maybe */
+	{0x8f,		2}	/* maybe */
 };
 
 static char indentStr[256];
@@ -422,6 +456,7 @@ static Uint8 *scriptFirstInst(room_t *this)
 {
 	rdt2_header_t *rdt_header;
 	Uint32 offset;
+	Uint16 *functionArrayPtr;
 
 	if (!this) {
 		return NULL;
@@ -433,8 +468,13 @@ static Uint8 *scriptFirstInst(room_t *this)
 	rdt_header = (rdt2_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_INIT_SCRIPT]);
 
-	this->cur_inst_offset = 0;
-	this->cur_inst = (& ((Uint8 *) this->file)[offset]);
+	/* Start of script is an array of offsets to the various script functions
+	 * The first offset also gives the first instruction to execute
+	 */
+	functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
+
+	this->cur_inst_offset = SDL_SwapLE16(functionArrayPtr[0]);
+	this->cur_inst = (& ((Uint8 *) this->file)[offset + this->cur_inst_offset]);
 	return this->cur_inst;
 }
 
@@ -443,6 +483,12 @@ static int scriptGetConditionLen(script_condition_t *conditionPtr)
 	int inst_len = 0;
 
 	switch(conditionPtr->type) {
+		case CONDITION_35:
+			inst_len = sizeof(script_condition_cmp_t);
+			break;
+		case CONDITION_43:
+			inst_len = sizeof(script_condition_cmp_t);
+			break;
 		case CONDITION_CK:
 			inst_len = sizeof(script_condition_ck_t);
 			break;
@@ -502,13 +548,21 @@ static int scriptGetInstLen(room_t *this)
 				break;
 			case INST_WORK_SET:
 				inst_len = 4;
-				if (this->cur_inst[3] & 0x80) {
+				switch(this->cur_inst[3]) {
+					case 0x80:
+						inst_len = 8;
+						break;
+					case 0x82:
+						inst_len = 12;
+						break;
+				}
+				/*if (this->cur_inst[3] & 0x80) {
 					if ((this->cur_inst[3] & 7)==2) {
 						inst_len = 12;
 					} else {
 						inst_len = 8;
 					}
-				}
+				}*/
 				break;
 			case INST_SLEEP_1:
 				inst_len = 2;
