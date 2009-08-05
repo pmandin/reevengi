@@ -106,12 +106,15 @@
 #define INST_END_SCRIPT	0xff
 
 #define CONDITION_CC		0x1d
-#define CONDITION_35		0x35
-#define CONDITION_43		0x43
 #define CONDITION_CK		0x4c
 #define CONDITION_CMP		0x4e
 
 /*--- Types ---*/
+
+typedef struct {
+	Uint8 type;
+	Uint8 flag;
+} script_condition_27_t;
 
 typedef struct {
 	Uint8 type;
@@ -300,7 +303,9 @@ static const script_inst_len_t inst_length[]={
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
 	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
+	{0x0a,		2},	/* maybe */
 	{INST_SLEEP_W,	2},
+	{0x0c,		2},	/* maybe */
 	{INST_FOR,	sizeof(script_for_t)},
 	{INST_FOR_END,	2},
 
@@ -327,7 +332,11 @@ static const script_inst_len_t inst_length[]={
 	{0x21,		2}, /* maybe */
 	{INST_EVT_CUT,	4},
 	{0x24,		2}, /* maybe */
+	{0x25,		5}, /* maybe */
 	{0x27,		4}, /* maybe */
+	{0x28,		14}, /* maybe */
+	{0x2a,		6}, /* maybe */
+	{0x2c,		4}, /* maybe */
 	{INST_LINE_BEGIN,	sizeof(script_line_begin_t)},
 	{INST_LINE_MAIN,	sizeof(script_line_main_t)},
 	{INST_LINE_END,		2},
@@ -336,8 +345,12 @@ static const script_inst_len_t inst_length[]={
 	{0x30,		6},	/* maybe */
 	{0x32,		6},	/* maybe */
 	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
+	{0x34,		10},	/* maybe */
+	{0x37,		2},	/* maybe */
+	{0x38,		4},	/* maybe */
 	{0x3b,		4},	/* maybe */
 	{0x3d,		2},
+	{0x3e,		6},	/* maybe */
 	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
 
 	/* 0x40-0x4f */
@@ -347,8 +360,10 @@ static const script_inst_len_t inst_length[]={
 	{0x43,		2},	/* maybe */
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
 	/*{INST_WORK_SET,	4},*/
-	{0x48,		10},	/* maybe */
+	{0x48,		4},	/* maybe */
 	{0x49,		4},	/* maybe */
+	{0x4a,		2},	/* maybe */
+	{0x4b,		2},	/* maybe */
 	{0x4c,		4},	/* maybe */
 	{0x4e,		6},	/* maybe */
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
@@ -358,7 +373,7 @@ static const script_inst_len_t inst_length[]={
 	{0x51,		4},
 	{INST_CUT_AUTO,		2},
 	{INST_CUT_REPLACE,	sizeof(script_cut_replace_t)},
-	{0x54,		12},	/* maybe */
+	{0x54,		4 /*12*/},	/* maybe */
 	{INST_POS_SET,		8},
 	{INST_DIR_SET,		8},
 	{0x57,		6},
@@ -366,6 +381,10 @@ static const script_inst_len_t inst_length[]={
 	{0x59,		8},
 	{INST_RBJ_SET,		2},
 	{INST_MESSAGE_ON,	6},
+	{0x5c,		2},	/* maybe */
+	{0x5d,		2},	/* maybe */
+	{0x5e,		4},	/* maybe */
+	{0x5f,		2},	/* maybe */
 
 	/* 0x60-0x6f */
 	{0x60,			2},
@@ -379,6 +398,7 @@ static const script_inst_len_t inst_length[]={
 	{0x68,			30}, /* maybe */
 	{INST_KAGE_SET,	14},
 	{INST_SUPER_SET,	16},
+	{0x6c,			2}, /* maybe */
 	{INST_SCA_ID_SET,	4},
 
 	/* 0x70-0x7f */
@@ -386,15 +406,17 @@ static const script_inst_len_t inst_length[]={
 	{0x71, 18},	/* maybe */
 	{0x72, 22},	/* maybe */
 	{INST_ESPR3D_ON2,	24},
-	{INST_ESPR_KILL,	6 /*8*/},
+	{INST_ESPR_KILL,	5 /*6*/ /*8*/},
 	{INST_ESPR_KILL2,	2},
-	{0x76, 		6},	/* maybe */
+	{0x76, 		3},	/* maybe */
 	{INST_SE_ON,	12},
 	{INST_BGM_CTL,	6},
 	{INST_XA_ON,	4},
+	{0x7a, 		2},	/* maybe */
 	{INST_BGM_TBL_SET,	6},
 	{0x7c,			2}, /*maybe */
 	{INST_EM_SET,	24},
+	{0x7e,			2}, /*maybe */
 	{INST_OM_SET,	40},
 
 	/* 0x80-0x8f */
@@ -483,15 +505,18 @@ static int scriptGetConditionLen(script_condition_t *conditionPtr)
 	int inst_len = 0;
 
 	switch(conditionPtr->type) {
-		case CONDITION_35:
-			inst_len = sizeof(script_condition_cmp_t);
-			break;
-		case CONDITION_43:
-			inst_len = sizeof(script_condition_cmp_t);
+		case 0x0e:
+		case 0x27:
+		case 0x6b:
+			inst_len = sizeof(script_condition_27_t);
 			break;
 		case CONDITION_CK:
+		case 0x6c:
 			inst_len = sizeof(script_condition_ck_t);
 			break;
+		case 0x35:
+		case 0x36:
+		case 0x43:
 		case CONDITION_CMP:
 			inst_len = sizeof(script_condition_cmp_t);
 			break;
