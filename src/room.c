@@ -496,7 +496,7 @@ static void scriptDump(room_t *this)
 
 	inst = this->scriptPrivFirstInst(this);
 	while (inst) {
-		if (params.verbose>4) {
+		if (params.verbose>=4) {
 			int i, inst_len;
 
 			inst_len = this->scriptPrivGetInstLen(this);
@@ -507,7 +507,6 @@ static void scriptDump(room_t *this)
 		}
 
 		this->scriptPrivPrintInst(this);
-
 		inst = scriptNextInst(this);
 	}
 }

@@ -31,9 +31,6 @@
 #define INST_SLEEP_1	0x02
 #define INST_EXEC	0x04
 #define INST_IF		0x06
-#define INST_IF_CK		0x4c
-#define INST_IF_CMP		0x4e
-#define INST_IF_CC		0x1d
 #define INST_IF_CC_LEN		(8+6)
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
@@ -63,6 +60,10 @@
 #define INST_SETOBJFLAG	0x4d
 #define INST_CUT_REPLACE	0x53
 #define INST_MAKE_DOOR	0x61
+
+#define CONDITION_CK		0x4c
+#define CONDITION_CMP		0x4e
+#define CONDITION_CC		0x1d
 
 #define INST_03		0x03
 #define INST_03_LEN	2
@@ -180,6 +181,36 @@
 /*--- Types ---*/
 
 typedef struct {
+	Uint8 type;
+	Uint8 flag;
+	Uint8 object;
+	Uint8 value;
+} script_condition_ck_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 flag;
+	Uint8 object;
+	Uint8 value;
+	Uint16 value2;
+} script_condition_cmp_t;
+
+typedef struct {
+	Uint8 type;
+	Uint8 flag;
+	Uint8 object;
+	Uint8 value;
+	Uint8 unknown[6];
+} script_condition_cc_t;
+
+typedef union {
+	Uint8 type;
+	script_condition_ck_t	ck;
+	script_condition_cmp_t	cmp;
+	script_condition_cc_t	cc;
+} script_condition_t;
+
+typedef struct {
 	Uint8 opcode;
 	Uint8 num_func;
 } script_func_t;
@@ -217,41 +248,13 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 unknown0;
-	Uint16 skip_if_fail;
-	Uint8 cond_func;	/* = INST_IF_CK */
-	Uint8 value_flag;
-	Uint8 value_obj;
-	Uint8 value_comp;
-} script_if_ck_t;
+	Uint16 block_length;
+} script_if_t;	/* always followed by script_condition_t */
 
 typedef struct {
 	Uint8 opcode;
 	Uint8 unknown0;
-	Uint16 skip_if_fail;
-	Uint8 cond_func;	/* = INST_IF_CMP */
-	Uint8 value_flag;
-	Uint8 value_obj;
-	Uint8 value_comp;
-	Uint16 value2_comp;
-} script_if_cmp_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 unknown0;
-	Uint16 skip_if_fail;
-	Uint8 cond_func;
-} script_if_base_t;
-
-typedef union {
-	script_if_base_t base;
-	script_if_ck_t	check;
-	script_if_cmp_t	compare;
-} script_if_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 unknown0;
-	Uint16 skip_if_fail;
+	Uint16 block_length;
 } script_else_t;
 
 typedef struct {
@@ -268,10 +271,10 @@ typedef struct {
 } script_case_t;
 
 typedef struct {
-	script_if_base_t base;
-	script_if_ck_t	check;
-	script_if_cmp_t	compare;
-} script_while_t;
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint16 block_length;
+} script_while_t;	/* always followed by script_condition_t */
 
 typedef struct {
 	Uint8 opcode;
@@ -310,36 +313,10 @@ typedef struct {
 	Uint16 p1, p2;
 } script_line_main_t;
 
-typedef struct {
-	Uint8 opcode;
-	Uint8 unknown0;
-	Uint8 cond_func;	/* = INST_IF_CK */
-	Uint8 value_flag;
-	Uint8 value_obj;
-	Uint8 value_comp;
-} script_do_end_ck_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 unknown0;
-	Uint8 cond_func;	/* = INST_IF_CMP */
-	Uint8 value_flag;
-	Uint8 value_obj;
-	Uint8 value_comp;
-	Uint16 value2_comp;
-} script_do_end_cmp_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 unknown0;
-	Uint8 cond_func;
-} script_do_end_base_t;
-
 typedef union {
-	script_do_end_base_t	base;
-	script_do_end_ck_t	check;
-	script_do_end_cmp_t	compare;
-} script_do_end_t;
+	Uint8 opcode;
+	Uint8 unknown0;
+} script_do_end_t;	/* always followed by script_condition_t */
 
 typedef struct {
 	Uint8 opcode;
@@ -379,7 +356,7 @@ typedef struct {
 /*--- Variables ---*/
 
 static const script_inst_len_t inst_length[]={
-	{INST_NOP,	2},
+	{INST_NOP,	1},
 	{INST_RETURN,	2},
 	{INST_SLEEP_1,	2},
 	{INST_EXEC,	sizeof(script_exec_t)},
@@ -422,9 +399,6 @@ static const script_inst_len_t inst_length[]={
 	{0x86,		16*8+10}
 };
 
-static int num_block_len;
-static Uint8 stack_block_len[256];
-
 static char indentStr[256];
 
 /*--- Functions prototypes ---*/
@@ -432,6 +406,8 @@ static char indentStr[256];
 static Uint8 *scriptFirstInst(room_t *this);
 static int scriptGetInstLen(room_t *this);
 static void scriptPrintInst(room_t *this);
+
+static int scriptGetConditionLen(script_condition_t *conditionPtr);
 
 static void reindent(int num_indent);
 
@@ -474,11 +450,31 @@ static Uint8 *scriptFirstInst(room_t *this)
 	return this->cur_inst;
 }
 
+static int scriptGetConditionLen(script_condition_t *conditionPtr)
+{
+	int inst_len = 0;
+
+	switch(conditionPtr->type) {
+		case CONDITION_CK:
+			inst_len = sizeof(script_condition_ck_t);
+			break;
+		case CONDITION_CMP:
+			inst_len = sizeof(script_condition_cmp_t);
+			break;
+		case CONDITION_CC:
+			inst_len = sizeof(script_condition_cc_t);
+			break;
+		default:
+			logMsg(3, "Unknown condition type 0x%02x\n", conditionPtr->type);
+			break;
+	}
+
+	return inst_len;
+}
+
 static int scriptGetInstLen(room_t *this)
 {
 	int i, inst_len = 0;
-	Uint8 *next_inst;
-	script_inst_t *cur_inst;
 
 	if (!this) {
 		return 0;
@@ -487,7 +483,6 @@ static int scriptGetInstLen(room_t *this)
 		return 0;
 	}
 
-#if 1
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
 		if (inst_length[i].opcode == this->cur_inst[0]) {
 			inst_len = inst_length[i].length;
@@ -497,298 +492,30 @@ static int scriptGetInstLen(room_t *this)
 
 	/* Exceptions, variable lengths */
 	if (inst_len == 0) {
+		script_inst_t *cur_inst = (script_inst_t *) this->cur_inst;
 		switch(cur_inst->opcode) {
 			case INST_IF:
-				{
-					switch(cur_inst->begin_if.base.cond_func) {
-						case INST_IF_CK:
-							inst_len = sizeof(script_if_ck_t);
-							break;
-						case INST_IF_CMP:
-							inst_len = sizeof(script_if_cmp_t);
-							break;
-						case INST_IF_CC:
-							inst_len = INST_IF_CC_LEN;
-							break;
-					}
-				}
+				inst_len = sizeof(script_if_t) +
+					scriptGetConditionLen(
+						(script_condition_t *) (&this->cur_inst[sizeof(script_if_t)])
+					);
+				break;
+			case INST_WHILE:
+				inst_len = sizeof(script_while_t) +
+					scriptGetConditionLen(
+						(script_condition_t *) (&this->cur_inst[sizeof(script_while_t)])
+					);
+				break;
+			case INST_DO_END:
+				inst_len = sizeof(script_do_end_t) +
+					scriptGetConditionLen(
+						(script_condition_t *) (&this->cur_inst[sizeof(script_do_end_t)])
+					);
 				break;
 			default:
 				break;
 		}
 	}
-#else
-	cur_inst = (script_inst_t *) this->cur_inst;
-	next_inst = (Uint8 *) cur_inst;
-
-	switch(cur_inst->opcode) {
-		case INST_NOP:
-			if (cur_inst->func.num_func > 0) {
-				inst_len = 4;
-			} else {
-				inst_len = 2;
-			}
-			break;
-		case INST_END_SWITCH:
-		case INST_BREAK:
-		case INST_RETURN:
-		case INST_SLEEP_1:
-		case INST_WHILE_END:
-		case INST_SLEEP_W:
-		case INST_03:
-		case INST_05:
-		case INST_0E:
-		case INST_FOR_END:
-		case INST_22:
-		case INST_2F:
-		case INST_5A:
-		case INST_66:
-		case INST_83:
-		case INST_84:
-		case INST_87:
-			inst_len = 2;
-			break;
-		case INST_SLEEP_N:
-			inst_len = sizeof(script_sleepn_t);
-			break;
-		case INST_FUNC:
-			inst_len = sizeof(script_func_t);
-			break;
-		case INST_SETOBJFLAG:
-			inst_len = sizeof(script_setobjflag_t);
-			break;
-		case INST_MAKE_DOOR:
-			inst_len = sizeof(script_make_door_t);
-			break;
-		case INST_FLOOR_SET:
-			inst_len = sizeof(script_floor_set_t);
-			break;
-		case INST_CUT_REPLACE:
-			inst_len = sizeof(script_cut_replace_t);
-			break;
-		case INST_IF:
-			{
-				switch(cur_inst->begin_if.base.cond_func) {
-					case INST_IF_CK:
-						inst_len = sizeof(script_if_ck_t);
-						break;
-					case INST_IF_CMP:
-						inst_len = sizeof(script_if_cmp_t);
-						break;
-					case INST_IF_CC:
-						inst_len = INST_IF_CC_LEN;
-						break;
-				}
-			}
-			break;
-		case INST_ELSE:
-			inst_len = sizeof(script_else_if_t);
-			break;
-		case INST_END_IF:
-			inst_len = 2;
-			break;
-		case INST_SWITCH:
-			inst_len = sizeof(script_switch_t);
-			break;
-		case INST_CASE:
-			inst_len = sizeof(script_case_t);
-			break;
-		case INST_WHILE:
-			{
-				if (cur_inst->i_while.base.unknown0 & 0x80) {
-					inst_len = 4;
-					break;
-				}
-				if (cur_inst->i_while.base.unknown0 == 0) {
-					inst_len = 2;
-					break;
-				}
-
-				switch(cur_inst->i_while.base.cond_func) {
-					case INST_IF_CK:
-						inst_len = sizeof(script_if_ck_t);
-						break;
-					case INST_IF_CMP:
-						inst_len = sizeof(script_if_cmp_t);
-						break;
-				}
-			}
-			break;
-		case INST_DO_END:
-			{
-				switch(cur_inst->do_end.base.cond_func) {
-					case INST_IF_CK:
-						inst_len = sizeof(script_do_end_ck_t);
-						break;
-					case INST_IF_CMP:
-						inst_len = sizeof(script_do_end_cmp_t);
-						break;
-				}
-			}
-			break;
-		case INST_EXEC:
-			inst_len = sizeof(script_exec_t);
-			break;
-		case INST_FOR:
-			inst_len = sizeof(script_for_t);
-			break;
-		case INST_18:
-			inst_len = INST_18_LEN;
-			break;
-		case INST_1D:
-			inst_len = INST_1D_LEN;
-			break;
-		case INST_SET0:
-		case INST_SET1:
-		case INST_DO:
-			inst_len = 4;
-			break;
-		case INST_20:
-			inst_len = INST_20_LEN;
-			break;
-		case INST_AHEAD_ROOM_SET:
-			inst_len = sizeof(script_ahead_room_set_t);
-			break;
-		case INST_LINE_BEGIN:
-			inst_len = sizeof(script_line_begin_t);
-			break;
-		case INST_LINE_MAIN:
-			inst_len = sizeof(script_line_main_t);
-			break;
-		case INST_FADE_SET:
-			inst_len = sizeof(script_fade_set_t);
-			break;
-		case INST_30:
-			inst_len = INST_30_LEN;
-			break;
-		case INST_32:
-			inst_len = INST_32_LEN;
-			break;
-		case INST_40:
-			inst_len = INST_40_LEN;
-			break;
-		case INST_41:
-			inst_len = INST_41_LEN;
-			break;
-		case INST_42:
-			inst_len = INST_42_LEN;
-			break;
-		case INST_47:
-			inst_len = INST_47_LEN;
-			break;
-		case INST_50:
-			inst_len = INST_50_LEN;
-			break;
-		case INST_52:
-			inst_len = INST_52_LEN;
-			break;
-		case INST_55:
-			inst_len = INST_55_LEN;
-			break;
-		case INST_56:
-			inst_len = INST_56_LEN;
-			break;
-		case INST_57:
-			inst_len = INST_57_LEN;
-			break;
-		case INST_58:
-			inst_len = INST_58_LEN;
-			break;
-		case INST_59:
-			inst_len = INST_59_LEN;
-			break;
-		case INST_5B:
-			inst_len = INST_5B_LEN;
-			break;
-		case INST_60:
-			inst_len = INST_60_LEN;
-			break;
-		case INST_62:
-			inst_len = INST_62_LEN;
-			break;
-		case INST_63:
-			inst_len = INST_63_LEN;
-			break;
-		case INST_64:
-			inst_len = INST_64_LEN;
-			break;
-		case INST_65:
-			inst_len = INST_65_LEN;
-			break;
-		case INST_67:
-			inst_len = INST_67_LEN;
-			break;
-		case INST_69:
-			inst_len = INST_69_LEN;
-			break;
-		case INST_6A:
-			inst_len = INST_6A_LEN;
-			break;
-		case INST_6E:
-			inst_len = INST_6E_LEN;
-			break;
-		case INST_70:
-			inst_len = INST_70_LEN;
-			break;
-		case INST_73:
-			inst_len = INST_73_LEN;
-			break;
-		case INST_74:
-			inst_len = INST_74_LEN;
-			break;
-		case INST_75:
-			inst_len = INST_75_LEN;
-			break;
-		case INST_76:
-			inst_len = INST_76_LEN;
-			break;
-		case INST_77:
-			inst_len = INST_77_LEN;
-			break;
-		case INST_78:
-			inst_len = INST_78_LEN;
-			break;
-		case INST_79:
-			inst_len = INST_79_LEN;
-			break;
-		case INST_7B:
-			inst_len = INST_7B_LEN;
-			break;
-		case INST_7D:
-			inst_len = INST_7D_LEN;
-			break;
-		case INST_7F:
-			inst_len = INST_7F_LEN;
-			break;
-		case INST_80:
-			inst_len = INST_80_LEN;
-			break;
-		case INST_81:
-			inst_len = INST_81_LEN;
-			break;
-		case INST_82:
-			inst_len = INST_82_LEN;
-			break;
-		case INST_85:
-			inst_len = INST_85_LEN;
-			break;
-		case INST_86:
-			inst_len = INST_86_LEN;
-			break;
-		case INST_88:
-			inst_len = INST_88_LEN;
-			break;
-		case INST_89:
-			inst_len = INST_89_LEN;
-			break;
-		case INST_8E:
-			inst_len = INST_8E_LEN;
-			break;
-		case INST_8F:
-			inst_len = INST_8F_LEN;
-			break;
-	}
-#endif
 
 	return inst_len;
 }
@@ -822,14 +549,7 @@ static void scriptPrintInst(room_t *this)
 
 	switch(inst->opcode) {
 			case INST_NOP:
-				if (inst->func.num_func > 0) {		
-					logMsg(3, "Unknown opcode 0x%04x, offset 0x%08x\n",
-						(inst->func.num_func<<8)|inst->opcode,
-						this->cur_inst_offset);
-				} else {
-					reindent(--indent);
-					logMsg(3, "%s}\n", indentStr);
-				}
+				logMsg(3, "%snop\n", indentStr);
 				break;
 			case INST_RETURN:
 				if (indent>1) {
@@ -875,7 +595,7 @@ static void scriptPrintInst(room_t *this)
 				break;
 			case INST_FLOOR_SET:
 				{
-					logMsg(3, "%sfloorSet %d %s\n", indentStr,
+					logMsg(3, "%sFLR_SET %d %s\n", indentStr,
 						inst->floor_set.num_floor,
 						(inst->floor_set.value ? "on" : "off")
 					);
@@ -883,7 +603,7 @@ static void scriptPrintInst(room_t *this)
 				break;
 			case INST_CUT_REPLACE:
 				{
-					logMsg(3, "%scutReplace %d %d\n", indentStr,
+					logMsg(3, "%sCUT_REPLACE %d %d\n", indentStr,
 						inst->cut_replace.before,
 						inst->cut_replace.after
 					);
@@ -891,25 +611,8 @@ static void scriptPrintInst(room_t *this)
 				break;
 			case INST_IF:
 				{
-					switch(inst->begin_if.base.cond_func) {
-						case INST_IF_CK:
-							logMsg(3, "%sif (CK flag 0x%02x object 0x%02x %s) {\n",
-								indentStr,
-								inst->begin_if.check.value_flag,
-								inst->begin_if.check.value_obj,
-								(inst->begin_if.check.value_comp ? "on" : "off")
-							);
-							reindent(++indent);
-							break;
-						case INST_IF_CMP:
-							logMsg(3, "%sif (CMP) {\n", indentStr);
-							reindent(++indent);
-							break;
-						default:
-							logMsg(3, "%sif (xxx) {\n", indentStr);
-							reindent(++indent);
-							break;
-					}
+					logMsg(3, "%sif (xxx) {\n", indentStr);
+					reindent(++indent);
 				}
 				break;
 			case INST_ELSE:
@@ -1013,23 +716,7 @@ static void scriptPrintInst(room_t *this)
 			case INST_DO_END:
 				{
 					reindent(--indent);
-					switch(inst->do_end.base.cond_func) {
-						case INST_IF_CK:
-							logMsg(3, "%s} while (CK flag 0x%02x object 0x%02x %s) {\n",
-								indentStr,
-								inst->do_end.check.value_flag,
-								inst->do_end.check.value_obj,
-								(inst->do_end.check.value_comp ? "on" : "off")
-							);
-							reindent(++indent);
-							break;
-						case INST_IF_CMP:
-							logMsg(3, "%s} while (CMP)\n", indentStr);
-							break;
-						default:
-							logMsg(3, "%s} while (xxx)\n", indentStr);
-							break;
-					}
+					logMsg(3, "%s} while (xxx)\n", indentStr);
 				}
 				break;
 			case INST_LINE_BEGIN:
@@ -1059,9 +746,10 @@ static void scriptPrintInst(room_t *this)
 					logMsg(3, "%s}\n", indentStr);
 				}
 				break;
-		default:
+/*		default:
 			logMsg(3, "Unknown opcode 0x%02x\n", inst->opcode);
 			break;
+*/
 	}
 }
 
