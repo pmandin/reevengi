@@ -47,6 +47,7 @@
 #define INST_SWITCH_END	0x17
 #define INST_FUNC	0x19
 #define INST_BREAK	0x1b
+#define INST_CUT_CHG	0x1d
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
 #define INST_CALC_ADD	0x20
@@ -73,6 +74,9 @@
 #define INST_BGM_CTL	0x78
 #define INST_EM_SET	0x7d
 #define INST_OM_SET	0x7f
+#define INST_PLC_DEST	0x80
+#define INST_PLC_MOTION	0x81
+#define INST_PLC_CNT	0x89
 #define INST_END_SCRIPT	0xff
 
 #define CONDITION_CK		0x4c
@@ -88,8 +92,6 @@
 #define INST_0E_LEN	2
 #define INST_18		0x18
 #define INST_18_LEN	8
-#define INST_1D		0x1d
-#define INST_1D_LEN	4
 #define INST_20		0x20
 #define INST_20_LEN	6
 #define INST_22		0x22
@@ -140,10 +142,6 @@
 #define INST_79_LEN	4
 #define INST_7B		0x7b
 #define INST_7B_LEN	6
-#define INST_80		0x80
-#define INST_80_LEN	4
-#define INST_81		0x81
-#define INST_81_LEN	8
 #define INST_82		0x82
 #define INST_82_LEN	10
 #define INST_83		0x83
@@ -156,8 +154,6 @@
 #define INST_87_LEN	2
 #define INST_88		0x88
 #define INST_88_LEN	4
-#define INST_89		0x89
-#define INST_89_LEN	2
 #define INST_8E		0x8e
 #define INST_8E_LEN	4
 #define INST_8F		0x8f
@@ -367,6 +363,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_SWITCH_END,	2},
 	{INST_FUNC,	2},
 	{INST_BREAK,	2},	
+	{INST_CUT_CHG,	6},
 	{INST_VALUE_SET,	4},
 	{INST_SET1,	4},
 
@@ -382,7 +379,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x40-0x4f */
 	{INST_CALC_END,	4},
 	{INST_CALC_BEGIN,	4},
-	{INST_WORK_SET,	4 /* or 8,12 ?*/},
+	{INST_WORK_SET,	4},
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
 
@@ -412,7 +409,10 @@ static const script_inst_len_t inst_length[]={
 	{INST_OM_SET,	40},
 
 	/* 0x80-0x8f */
-	{0x86,		16*8+10}
+	{INST_PLC_DEST,		4},
+	{INST_PLC_MOTION,	8},
+	{0x86,		16*8+10},
+	{INST_PLC_CNT,	2}
 };
 
 static char indentStr[256];
@@ -778,6 +778,18 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_ESPR_KILL:
 			logMsg(3, "%sESPR_KILL xxx\n", indentStr);
+			break;
+		case INST_CUT_CHG:
+			logMsg(3, "%sCUT_CHG xxx\n", indentStr);
+			break;
+		case INST_PLC_DEST:
+			logMsg(3, "%sPLC_DEST xxx\n", indentStr);
+			break;
+		case INST_PLC_MOTION:
+			logMsg(3, "%sPLC_MOTION xxx\n", indentStr);
+			break;
+		case INST_PLC_CNT:
+			logMsg(3, "%sPLC_CNT 0x%02x\n", indentStr, this->cur_inst[1]);
 			break;
 		default:
 			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
