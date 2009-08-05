@@ -503,7 +503,11 @@ static int scriptGetInstLen(room_t *this)
 			case INST_WORK_SET:
 				inst_len = 4;
 				if (this->cur_inst[3] & 0x80) {
-					inst_len = 8;
+					if ((this->cur_inst[3] & 7)==2) {
+						inst_len = 12;
+					} else {
+						inst_len = 8;
+					}
 				}
 				break;
 			case INST_SLEEP_1:
