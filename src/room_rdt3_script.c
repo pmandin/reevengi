@@ -45,14 +45,16 @@
 #define INST_SWITCH	0x14
 #define INST_CASE	0x15
 #define INST_SWITCH_END	0x17
+#define INST_GOTO	0x18
 #define INST_FUNC	0x19
 #define INST_BREAK	0x1b
-#define INST_CUT_CHG	0x1d
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
 #define INST_CALC_ADD	0x20
+#define INST_EVT_CUT	0x22
 #define INST_LINE_BEGIN	0x2d
 #define INST_LINE_MAIN	0x2e
+#define INST_LINE_END	0x2f
 #define INST_AHEAD_ROOM_SET	0x33
 #define INST_FLOOR_SET	0x3f
 #define INST_CALC_END	0x41
@@ -60,105 +62,44 @@
 #define INST_FADE_SET	0x46
 #define INST_WORK_SET	0x47
 #define INST_FLAG_SET	0x4d
+#define INST_CUT_CHG	0x50
+#define INST_CUT_AUTO	0x52
 #define INST_CUT_REPLACE	0x53
+#define INST_POS_SET	0x55
+#define INST_DIR_SET	0x56
+#define INST_RBJ_SET	0x5a
 #define INST_MESSAGE_ON	0x5b
 #define INST_DOOR_SET	0x61
 #define INST_AOT_SET	0x63
+#define INST_AOT_SET_4P	0x64
 #define INST_AOT_RESET	0x65
+#define INST_ITEM_AOT_SET	0x67
+#define INST_KAGE_SET	0x69
 #define INST_SUPER_SET	0x6a
+#define INST_SCA_ID_SET	0x6e
 #define INST_ESPR_ON	0x70
 #define INST_ESPR3D_ON2	0x73
 #define INST_ESPR_KILL	0x74
 #define INST_ESPR_KILL2	0x75
 #define INST_SE_ON	0x77
 #define INST_BGM_CTL	0x78
+#define INST_XA_ON	0x79
+#define INST_BGM_TBL_SET	0x7b
 #define INST_EM_SET	0x7d
 #define INST_OM_SET	0x7f
-#define INST_PLC_DEST	0x80
-#define INST_PLC_MOTION	0x81
+#define INST_PLC_MOTION	0x80
+#define INST_PLC_DEST	0x81
+#define INST_PLC_NECK	0x82
+#define INST_PLC_RET	0x83
+#define INST_PLC_FLG	0x84
+#define INST_PLC_STOP	0x87
+#define INST_PLC_ROT	0x88
 #define INST_PLC_CNT	0x89
 #define INST_END_SCRIPT	0xff
 
 #define CONDITION_CK		0x4c
 #define CONDITION_CMP		0x4e
 #define CONDITION_CC		0x1d
-
-/*
-#define INST_03		0x03
-#define INST_03_LEN	2
-#define INST_05		0x05
-#define INST_05_LEN	2
-#define INST_0E		0x0e
-#define INST_0E_LEN	2
-#define INST_18		0x18
-#define INST_18_LEN	8
-#define INST_20		0x20
-#define INST_20_LEN	6
-#define INST_22		0x22
-#define INST_22_LEN	2
-#define INST_2F		0x2f
-#define INST_2F_LEN	2
-#define INST_30		0x30
-#define INST_30_LEN	6
-#define INST_32		0x32
-#define INST_32_LEN	6
-#define INST_40		0x40
-#define INST_40_LEN	4
-#define INST_41		0x41
-#define INST_41_LEN	4
-#define INST_42		0x42
-#define INST_42_LEN	4
-#define INST_47		0x47
-#define INST_47_LEN	4
-#define INST_50		0x50
-#define INST_50_LEN	2
-#define INST_52		0x52
-#define INST_52_LEN	2
-#define INST_55		0x55
-#define INST_55_LEN	16
-#define INST_56		0x56
-#define INST_56_LEN	6
-#define INST_59		0x59
-#define INST_59_LEN	8
-#define INST_5A		0x5a
-#define INST_5A_LEN	2
-#define INST_60		0x60
-#define INST_60_LEN	2
-#define INST_62		0x62
-#define INST_62_LEN	0x72
-#define INST_64		0x64
-#define INST_64_LEN	0x1c
-#define INST_66		0x66
-#define INST_66_LEN	2
-#define INST_67		0x67
-#define INST_67_LEN	0x16
-#define INST_69		0x69
-#define INST_69_LEN	0x0e
-#define INST_6E		0x6e
-#define INST_6E_LEN	4
-#define INST_76		0x76
-#define INST_76_LEN	6
-#define INST_79		0x79
-#define INST_79_LEN	4
-#define INST_7B		0x7b
-#define INST_7B_LEN	6
-#define INST_82		0x82
-#define INST_82_LEN	10
-#define INST_83		0x83
-#define INST_83_LEN	2
-#define INST_84		0x84
-#define INST_84_LEN	2
-#define INST_85		0x85
-#define INST_85_LEN	8
-#define INST_87		0x87
-#define INST_87_LEN	2
-#define INST_88		0x88
-#define INST_88_LEN	4
-#define INST_8E		0x8e
-#define INST_8E_LEN	4
-#define INST_8F		0x8f
-#define INST_8F_LEN	4
-*/
 
 /*--- Types ---*/
 
@@ -295,9 +236,9 @@ typedef struct {
 	Uint16 p1, p2;
 } script_line_main_t;
 
-typedef union {
+typedef struct {
 	Uint8 opcode;
-	Uint8 unknown0;
+	Uint8 unknown;
 } script_do_end_t;	/* always followed by script_condition_t */
 
 typedef struct {
@@ -341,7 +282,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
 	{INST_NOP,	1},
 	{INST_RETURN,	2},
-	{INST_SLEEP_1,	2},
+	/*{INST_SLEEP_1,	2},*/
 	{0x03,		2},
 	{INST_EXEC,	sizeof(script_exec_t)},
 	{0x05,		2},
@@ -361,42 +302,57 @@ static const script_inst_len_t inst_length[]={
 	{INST_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
 	{INST_SWITCH_END,	2},
+	{0x18,		6},
 	{INST_FUNC,	2},
+	{0x1a,		4},
 	{INST_BREAK,	2},	
-	{INST_CUT_CHG,	6},
+	{0x1d,		4},
 	{INST_VALUE_SET,	4},
 	{INST_SET1,	4},
 
 	/* 0x20-0x2f */
 	{INST_CALC_ADD,	6},
+	{INST_EVT_CUT,	4},
 	{INST_LINE_BEGIN,	sizeof(script_line_begin_t)},
 	{INST_LINE_MAIN,	sizeof(script_line_main_t)},
+	{INST_LINE_END,		2},
 
 	/* 0x30-0x3f */
 	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
+	{0x3d,		2},
 	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
 
 	/* 0x40-0x4f */
+	{0x40,		4},
 	{INST_CALC_END,	4},
 	{INST_CALC_BEGIN,	4},
-	{INST_WORK_SET,	4},
+	/*{INST_WORK_SET,	4},*/
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
 
 	/* 0x50-0x5f */
+	{INST_CUT_CHG,	2},
 	{0x51,		4},
+	{INST_CUT_AUTO,		2},
 	{INST_CUT_REPLACE,	sizeof(script_cut_replace_t)},
+	{INST_POS_SET,		8},
+	{INST_DIR_SET,		8},
 	{0x57,		6},
 	{0x58,		6},
 	{0x59,		8},
+	{INST_RBJ_SET,		2},
 	{INST_MESSAGE_ON,	6},
 
 	/* 0x60-0x6f */
+	{0x60,			2},
 	{INST_DOOR_SET,	sizeof(script_make_door_t)},
 	{INST_AOT_SET,		20},
+	{INST_AOT_SET_4P,	28},
 	{INST_AOT_RESET,	10},
-	{0x67,			16},
+	{INST_ITEM_AOT_SET,	22},
+	{INST_KAGE_SET,	14},
 	{INST_SUPER_SET,	16},
+	{INST_SCA_ID_SET,	4},
 
 	/* 0x70-0x7f */
 	{INST_ESPR_ON,	16},
@@ -405,13 +361,20 @@ static const script_inst_len_t inst_length[]={
 	{INST_ESPR_KILL2,	2},
 	{INST_SE_ON,	12},
 	{INST_BGM_CTL,	6},
+	{INST_XA_ON,	4},
+	{INST_BGM_TBL_SET,	6},
 	{INST_EM_SET,	24},
 	{INST_OM_SET,	40},
 
 	/* 0x80-0x8f */
-	{INST_PLC_DEST,		4},
-	{INST_PLC_MOTION,	8},
+	{INST_PLC_MOTION,	4},
+	{INST_PLC_DEST,		8},
+	{INST_PLC_NECK,		10},
+	{INST_PLC_RET,		2},
+	{INST_PLC_FLG,		4},
 	{0x86,		16*8+10},
+	{INST_PLC_STOP,	2},
+	{INST_PLC_ROT,	4},
 	{INST_PLC_CNT,	2}
 };
 
@@ -536,6 +499,18 @@ static int scriptGetInstLen(room_t *this)
 					scriptGetConditionLen(
 						(script_condition_t *) (&this->cur_inst[sizeof(script_do_end_t)])
 					);
+				break;
+			case INST_WORK_SET:
+				inst_len = 4;
+				if (this->cur_inst[3] & 0x80) {
+					inst_len = 8;
+				}
+				break;
+			case INST_SLEEP_1:
+				inst_len = 2;
+				if (this->cur_inst[1] & 0x80) {
+					inst_len = 6;
+				}
 				break;
 			default:
 				break;
@@ -726,13 +701,16 @@ static void scriptPrintInst(room_t *this)
 			}
 			break;
 		case INST_LINE_BEGIN:
-			logMsg(3, "%slineStart 0x%02x %d\n", indentStr,
+			logMsg(3, "%sLINE_START 0x%02x %d\n", indentStr,
 				inst->line_begin.flag,
 				inst->line_begin.size
 			);
 			break;
 		case INST_LINE_MAIN:
-			logMsg(3, "%slineMain\n", indentStr);
+			logMsg(3, "%sLINE_MAIN\n", indentStr);
+			break;
+		case INST_LINE_END:
+			logMsg(3, "%sLINE_END\n", indentStr);
 			break;
 		case INST_FOR:
 			{
@@ -791,9 +769,54 @@ static void scriptPrintInst(room_t *this)
 		case INST_PLC_CNT:
 			logMsg(3, "%sPLC_CNT 0x%02x\n", indentStr, this->cur_inst[1]);
 			break;
-		default:
-			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
+		case INST_POS_SET:
+			logMsg(3, "%sPOS_SET xxx\n", indentStr);
 			break;
+		case INST_DIR_SET:
+			logMsg(3, "%sDIR_SET xxx\n", indentStr);
+			break;
+		case INST_CUT_AUTO:
+			logMsg(3, "%sCUT_AUTO xxx\n", indentStr);
+			break;
+		case INST_ESPR_ON:
+			logMsg(3, "%sESPR_ON xxx\n", indentStr);
+			break;
+		case INST_XA_ON:
+			logMsg(3, "%sXA_ON xxx\n", indentStr);
+			break;
+		case INST_SLEEP_W:
+			logMsg(3, "%sSLEEPW xxx\n", indentStr);
+			break;
+		case INST_ITEM_AOT_SET:
+			logMsg(3, "%sITEM_AOT_SET xxx\n", indentStr);
+			break;
+		case INST_GOTO:
+			logMsg(3, "%sGOTO xxx\n", indentStr);
+			break;
+		case INST_RBJ_SET:
+			logMsg(3, "%sRBJ_SET xxx\n", indentStr);
+			break;
+		case INST_AOT_SET_4P:
+			logMsg(3, "%sAOT_SET_4P xxx\n", indentStr);
+			break;
+		case INST_SCA_ID_SET:
+			logMsg(3, "%sSCA_ID_SET xxx\n", indentStr);
+			break;
+		case INST_KAGE_SET:
+			logMsg(3, "%sKAGE_SET xxx\n", indentStr);
+			break;
+		case INST_PLC_NECK:
+			logMsg(3, "%sPLC_NECK xxx\n", indentStr);
+			break;
+		case INST_EVT_CUT:
+			logMsg(3, "%sEVT_CUT xxx\n", indentStr);
+			break;
+		case INST_PLC_STOP:
+			logMsg(3, "%sPLC_STOP xxx\n", indentStr);
+			break;
+		/*default:
+			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
+			break;*/
 
 	}
 }
