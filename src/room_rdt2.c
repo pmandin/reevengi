@@ -23,6 +23,7 @@
 
 #include "room.h"
 #include "state.h"
+#include "room_rdt2.h"
 #include "room_rdt2_items.h"
 #include "room_rdt3_script.h"
 #include "log.h"
@@ -98,10 +99,10 @@ static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *r
 
 void room_rdt2_init(room_t *this)
 {
-	Uint8 *rdt_header = (Uint8 *) this->file;
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
 
 	if (this->file_length > 4) {
-		this->num_cameras = rdt_header[1];
+		this->num_cameras = rdt_header->num_cameras;
 		this->num_camswitches = rdt2_getNumCamswitches(this);
 		this->num_boundaries = rdt2_getNumBoundaries(this);
 
@@ -127,11 +128,11 @@ void room_rdt2_init(room_t *this)
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
 {
-	Uint32 *cams_offset, offset;
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
 	rdt_camera_pos_t *cam_array;
 	
-	cams_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+7*4]);
-	offset = SDL_SwapLE32(*cams_offset);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAMERAS]);
 	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
 
 	room_camera->from_x = SDL_SwapLE32(cam_array[num_camera].camera_from_x);
@@ -144,12 +145,12 @@ static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_cam
 
 static int rdt2_getNumCamswitches(room_t *this)
 {
-	Uint32 *camswitch_offset, offset;
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
 	rdt_camera_switch_t *camswitch_array;
 	int i=0, num_switches = 0, prev_from = -1;
 
-	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
-	offset = SDL_SwapLE32(*camswitch_offset);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAM_SWITCHES]);
 	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
@@ -173,12 +174,12 @@ static int rdt2_getNumCamswitches(room_t *this)
 
 static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch)
 {
-	Uint32 *camswitch_offset, offset;
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
 	rdt_camera_switch_t *camswitch_array;
 	int i=0, j=0, prev_from=-1;
 
-	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
-	offset = SDL_SwapLE32(*camswitch_offset);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAM_SWITCHES]);
 	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
@@ -215,12 +216,12 @@ static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t 
 
 static int rdt2_getNumBoundaries(room_t *this)
 {
-	Uint32 *camswitch_offset, offset;
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
 	rdt_camera_switch_t *camswitch_array;
 	int i=0, num_boundaries = 0, prev_from = -1;
 
-	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
-	offset = SDL_SwapLE32(*camswitch_offset);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAM_SWITCHES]);
 	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {
@@ -244,12 +245,12 @@ static int rdt2_getNumBoundaries(room_t *this)
 
 static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch)
 {
-	Uint32 *camswitch_offset, offset;
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
 	rdt_camera_switch_t *camswitch_array;
 	int i=0, j=0, prev_from=-1;
 
-	camswitch_offset = (Uint32 *) ( &((Uint8 *) this->file)[8+8*4]);
-	offset = SDL_SwapLE32(*camswitch_offset);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAM_SWITCHES]);
 	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(camswitch_array[i].const0) != 0xffff) {

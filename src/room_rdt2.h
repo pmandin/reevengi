@@ -24,6 +24,24 @@
 
 #include "room.h"
 
+/*--- Defines ---*/
+
+#define RDT2_OFFSET_CAMERAS	7
+#define RDT2_OFFSET_CAM_SWITCHES	8
+#define RDT2_OFFSET_TEXT_JAP	13
+#define RDT2_OFFSET_TEXT_ENG	14
+#define RDT2_OFFSET_INIT_SCRIPT	16
+#define RDT2_OFFSET_ANIMS	18
+
+/*--- Types ---*/
+
+typedef struct {
+	Uint8	unknown0;
+	Uint8	num_cameras;
+	Uint8	unknown1[6];
+	Uint32	offsets[22];
+} rdt2_header_t;
+
 /*--- Functions ---*/
 
 void room_rdt2_init(room_t *this);
