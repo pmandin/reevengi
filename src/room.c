@@ -27,6 +27,7 @@
 #include "render.h"
 #include "room.h"
 #include "state.h"
+#include "parameters.h"
 
 /*--- Defines ---*/
 
@@ -495,13 +496,15 @@ static void scriptDump(room_t *this)
 
 	inst = this->scriptPrivFirstInst(this);
 	while (inst) {
-		int i, inst_len;
+		if (params.verbose>4) {
+			int i, inst_len;
 
-		inst_len = this->scriptPrivGetInstLen(this);
-		for (i=0; i<inst_len; i++) {
-			logMsg(3, "%02x ", this->cur_inst[i]);
+			inst_len = this->scriptPrivGetInstLen(this);
+			for (i=0; i<inst_len; i++) {
+				logMsg(4, "%02x ", this->cur_inst[i]);
+			}
+			logMsg(4, "\n");
 		}
-		logMsg(3, "\n");
 
 		this->scriptPrivPrintInst(this);
 
