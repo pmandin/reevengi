@@ -208,34 +208,6 @@ static Uint8 *scriptFirstInst(room_t *this)
 	return this->cur_inst;
 }
 
-static void scriptPrintInst(room_t *this)
-{
-	if (!this) {
-		return;
-	}
-	if (!this->cur_inst) {
-		return;
-	}
-
-	switch(this->cur_inst[0]) {
-		case INST_NOP:
-			logMsg(3, "  nop\n");
-			break;
-		case INST_IF:
-			logMsg(3, "  if (xxx) {\n");
-			break;
-		case INST_ELSE:
-			logMsg(3, "  } else {\n");
-			break;
-		case INST_ENDIF:
-			logMsg(3, "  }\n");
-			break;
-		case INST_DOOR:
-			logMsg(3, "  create door\n");
-			break;
-	}
-}
-
 static int scriptGetInstLen(room_t *this)
 {
 	int i, inst_len = 0;
@@ -281,4 +253,32 @@ static int scriptGetInstLen(room_t *this)
 	}
 
 	return inst_len;
+}
+
+static void scriptPrintInst(room_t *this)
+{
+	if (!this) {
+		return;
+	}
+	if (!this->cur_inst) {
+		return;
+	}
+
+	switch(this->cur_inst[0]) {
+		case INST_NOP:
+			logMsg(3, "  nop\n");
+			break;
+		case INST_IF:
+			logMsg(3, "  if (xxx) {\n");
+			break;
+		case INST_ELSE:
+			logMsg(3, "  } else {\n");
+			break;
+		case INST_ENDIF:
+			logMsg(3, "  }\n");
+			break;
+		case INST_DOOR:
+			logMsg(3, "  create door\n");
+			break;
+	}
 }
