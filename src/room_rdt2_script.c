@@ -68,29 +68,43 @@ typedef struct {
 
 static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
-	{INST_NOP,	2},
+	{INST_NOP,	1},
 	{INST_RETURN,	2},
 	/*{INST_IF,	sizeof(script_if_t)},*/
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
 
 	/* 0x20-0x2f */
+	{0x21,		4},
 	{0x22,		4},
+	{0x29,		4},
 	{0x2c,		20},
 	{0x2d,		38},
-	{0x2e,		12},
+	{0x2e,		4/*12*/},
 
 	/* 0x30-0x3f */
+	{0x33,		8},
+	{0x37,		4},
+	{0x38,		4},
 	{0x3a,		16},
 	{INST_DOOR_SET,	32},
+	{0x3d,		14},
 
 	/* 0x40-0x4f */
 	{0x44,		22},
 	{0x46,		10},
+	{0x4b,		3},
 	{0x4e,		22},
 
+	/* 0x50-0x5f */
+	{0x51,		6},
+	{0x54,		22},
+	{0x5d,		2},
+
 	/* 0x60-0x6f */
-	{0x67,		28}
+	{0x67,		28},
+	{0x68,		40},
+	{0x6c,		2}
 };
 
 static char indentStr[256];
@@ -166,6 +180,12 @@ static int scriptGetConditionLen(script_condition_t *conditionPtr)
 	switch(conditionPtr->type) {
 		case 0x21:
 			inst_len = 4;
+			break;
+		case 0x23:
+			inst_len = 6;
+			break;
+		case 0x3e:
+			inst_len = 2;
 			break;
 		default:
 			logMsg(3, "Unknown condition type 0x%02x\n", conditionPtr->type);
