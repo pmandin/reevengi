@@ -34,6 +34,8 @@
 
 #define INST_DOOR_SET	0x3b
 
+#define INST_EM_SET	0x44
+
 /*--- Types ---*/
 
 typedef struct {
@@ -80,7 +82,7 @@ static const script_inst_len_t inst_length[]={
 	{0x29,		4},
 	{0x2c,		20},
 	{0x2d,		38},
-	{0x2e,		4/*12*/},
+	{0x2e,		4},
 
 	/* 0x30-0x3f */
 	{0x33,		8},
@@ -91,7 +93,7 @@ static const script_inst_len_t inst_length[]={
 	{0x3d,		14},
 
 	/* 0x40-0x4f */
-	{0x44,		22},
+	{INST_EM_SET,	22},
 	{0x46,		10},
 	{0x4b,		3},
 	{0x4e,		22},
@@ -291,6 +293,12 @@ static void scriptPrintInst(room_t *this)
 				reindent(--indent);
 				logMsg(3,"%s}\n", indentStr);
 			}
+			break;
+		case INST_DOOR_SET:
+			logMsg(3,"%sDOOR_SET xxx\n", indentStr);
+			break;
+		case INST_EM_SET:
+			logMsg(3,"%sEM_SET xxx\n", indentStr);
 			break;
 		/*default:
 			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
