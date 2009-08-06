@@ -31,7 +31,6 @@
 #define INST_SLEEP_1	0x02
 #define INST_EXEC	0x04
 #define INST_IF		0x06
-#define INST_IF_CC_LEN		(8+6)
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x09

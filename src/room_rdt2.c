@@ -24,7 +24,7 @@
 #include "room.h"
 #include "state.h"
 #include "room_rdt2.h"
-#include "room_rdt2_items.h"
+#include "room_rdt2_script.h"
 #include "room_rdt3_script.h"
 #include "log.h"
 
@@ -117,7 +117,7 @@ void room_rdt2_init(room_t *this)
 				room_rdt3_scriptInit(this);
 				break;
 			default:
-				room_rdt2_items_init(this);
+				room_rdt2_scriptInit(this);
 				break;
 		}
 	}
