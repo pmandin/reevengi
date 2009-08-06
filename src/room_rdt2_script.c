@@ -72,41 +72,98 @@ static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
 	{INST_NOP,	1},
 	{INST_RETURN,	2},
+	{0x02,		2},
+	{0x03,		2},
+	{0x04,		4},
+	{0x05,		2},
 	/*{INST_IF,	sizeof(script_if_t)},*/
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
+	{0x09,		4},
+	{0x0a,		2},
+	{0x0b,		2},
+	{0x0d,		2},
+	{0x0e,		2},
+	{0x0f,		2},
+
+	/* 0x10-0x1f */
+	{0x10,		2},
+	{0x11,		2},
+	/*{0x12,		2},*/
+	{0x13,		4},
+	{0x14,		2+4},
+	{0x16,		2},
+	{0x17,		8},
+	{0x18,		2},
+	{0x1a,		2},
+	{0x1b,		2},
+	{0x1c,		2},
+	{0x1d,		4},
 
 	/* 0x20-0x2f */
+	{0x20,		2},
 	{0x21,		4},
 	{0x22,		4},
+	{0x25,		2},
+	/*{0x26,		2},*/
+	{0x28,		4},
 	{0x29,		4},
+	{0x2b,		6},
 	{0x2c,		20},
 	{0x2d,		38},
 	{0x2e,		4},
 
 	/* 0x30-0x3f */
+	{0x32,		12},
 	{0x33,		8},
+	{0x34,		4},
+	{0x35,		2},
+	{0x36,		12},
 	{0x37,		4},
 	{0x38,		4},
+	{0x39,		6},
 	{0x3a,		16},
 	{INST_DOOR_SET,	32},
-	{0x3d,		14},
+	{0x3c,		16},
+	{0x3d,		4+8},
+	{0x3f,		4},
 
 	/* 0x40-0x4f */
+	{0x40,		8},
+	{0x41,		10},
 	{INST_EM_SET,	22},
 	{0x46,		10},
+	{0x47,		16},
 	{0x4b,		3},
+	{0x4c,		5},
 	{0x4e,		22},
 
 	/* 0x50-0x5f */
 	{0x51,		6},
 	{0x54,		22},
+	{0x57,		8},
+	{0x58,		4},
+	{0x59,		4},
+	{0x5b,		2},
 	{0x5d,		2},
+	{0x5e,		2},
+	{0x5f,		2},
 
 	/* 0x60-0x6f */
+	{0x60,		14},
+	{0x66,		2},
 	{0x67,		28},
 	{0x68,		40},
-	{0x6c,		2}
+	{0x6b,		6},
+	{0x6c,		2},
+	{0x6e,		6},
+
+	/* 0x70-0x7f */
+	{0x7a,		16},
+	{0x7b,		16},
+	
+	/* dummy, follow nop sometimes */
+	{0xfc,		1}
 };
 
 static char indentStr[256];
@@ -225,6 +282,12 @@ static int scriptGetInstLen(room_t *this)
 						(script_condition_t *) (&this->cur_inst[sizeof(script_if_t)])
 					);
 				break;
+			case 0x12:
+				inst_len = 2 +
+					scriptGetConditionLen(
+						(script_condition_t *) (&this->cur_inst[2])
+					);
+				break;
 			default:
 				break;
 		}
@@ -264,17 +327,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_NOP:
 			logMsg(3, "%snop\n", indentStr);
 			break;
-			case INST_RETURN:
-				if (indent>1) {
-					logMsg(3, "%sreturn\n", indentStr);
-				}
-				reindent(--indent);
-				logMsg(3, "%s}\n", indentStr);
-				if (indent==0) {
-					logMsg(3, "\nfunction Func%d()\n{\n", numFunc++);
-					reindent(++indent);
-				}
-				break;
+		case INST_RETURN:
+			logMsg(3, "%sreturn\n", indentStr);
+			reindent(--indent);
+			logMsg(3, "%s}\n", indentStr);
+			break;
 		case INST_IF:
 			{
 				logMsg(3, "%sif (xxx) {\n", indentStr);
