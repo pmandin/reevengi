@@ -328,7 +328,7 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x20-0x2f */
 	{INST_CALC_ADD,	6},
-	{0x21,		2}, /* maybe */
+	{0x21,		4}, /* maybe */
 	{INST_EVT_CUT,	4},
 	{0x24,		2}, /* maybe */
 	{0x25,		5}, /* maybe */
@@ -356,7 +356,7 @@ static const script_inst_len_t inst_length[]={
 	{0x40,		4},
 	{INST_CALC_END,	4},
 	{INST_CALC_BEGIN,	4},
-	{0x43,		2},	/* maybe */
+	{0x43,		6},	/* maybe */
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
 	{INST_WORK_SET,	3},
 	{0x48,		4},	/* maybe */
@@ -364,8 +364,9 @@ static const script_inst_len_t inst_length[]={
 	{0x4a,		2},	/* maybe */
 	{0x4b,		2},	/* maybe */
 	{0x4c,		4},	/* maybe */
-	{0x4e,		6},	/* maybe */
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
+	{0x4e,		6},	/* maybe */
+	{0x4f,		2},	/* maybe */
 
 	/* 0x50-0x5f */
 	{INST_CUT_CHG,	2},
@@ -399,6 +400,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_SUPER_SET,	16},
 	{0x6c,			2}, /* maybe */
 	{INST_SCA_ID_SET,	4},
+	{0x6f,			2}, /* maybe */
 
 	/* 0x70-0x7f */
 	{INST_ESPR_ON,	16},
@@ -428,7 +430,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_PLC_ROT,	4},
 	{INST_PLC_CNT,	2},
 	{0x8a,		2},	/* maybe */
-	{0x8b,		2},	/* maybe */
+	{0x8b,		1},	/* maybe */
+	{0x8c,		1},	/* maybe */
 	{0x8e,		2},	/* maybe */
 	{0x8f,		2}	/* maybe */
 };
