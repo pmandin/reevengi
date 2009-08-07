@@ -125,6 +125,15 @@ if test "x$WANT_MOVIES" = "xyes"; then
 	AC_DEFINE(ENABLE_MOVIES, 1, [Define if you want movie player])
 fi
 
+# Game script disassembly
+
+AC_ARG_ENABLE(script_disasm,
+	[  --enable-script-disasm  Enable script disassembly (default=yes)],
+	[WANT_SCRIPT_DISASM=$withval], [WANT_SCRIPT_DISASM=yes])
+if test "x$WANT_SCRIPT_DISASM" = "xyes"; then
+	AC_DEFINE(ENABLE_SCRIPT_DISASM, 1, [Define if you want script disassembly])
+fi
+
 # Outputs
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)

@@ -9,8 +9,10 @@
 
 #define ENABLE_OPENGL 1
 
+/*#define ENABLE_GAMMA 1*/
+
 /*#define ENABLE_MOVIES 1*/
 
-/*#define ENABLE_GAMMA 1*/
+#define ENABLE_SCRIPT_DISASM 1
 
 #endif /* CONFIG_H */

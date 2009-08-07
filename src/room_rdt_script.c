@@ -30,7 +30,7 @@
 #define INST_IF		0x01
 #define INST_ELSE	0x02
 #define INST_ENDIF	0x03
-#define INST_DOOR	0x0c
+#define INST_DOOR_SET	0x0c
 
 /*--- Types ---*/
 
@@ -91,9 +91,10 @@ static const script_inst_len_t inst_length[]={
 	{0x06,	2},
 	{0x07,	10},
 	{0x09,	2},
-	{INST_DOOR,	26},
+	{INST_DOOR_SET,	26},
 	{0x0d,	18},
 	{0x0f,	8},
+
 	{0x10,	10},
 	{0x12,	10},
 	{0x13,	4},
@@ -104,6 +105,7 @@ static const script_inst_len_t inst_length[]={
 	{0x1c,	10},
 	{0x1d,	6},
 	{0x1f,	28},
+
 	{0x20,	14},
 	{0x21,	18},
 	{0x23,	4},
@@ -111,6 +113,7 @@ static const script_inst_len_t inst_length[]={
 	{0x2a,	12},
 	{0x2b,	4},
 	{0x2f,	4},
+
 	{0x30,	12},
 	{0x31,	4},
 	{0x33,	12},
@@ -119,6 +122,7 @@ static const script_inst_len_t inst_length[]={
 	{0x3a,	4},
 	{0x3b,	6},
 	{0x3d,	12},
+
 	{0x41,	4},
 	{0x46,	4+(12*3)+4},
 	{0x47,	14},
@@ -239,8 +243,8 @@ static void scriptPrintInst(room_t *this)
 		case INST_ENDIF:
 			logMsg(3, "  }\n");
 			break;
-		case INST_DOOR:
-			logMsg(3, "  create door\n");
+		case INST_DOOR_SET:
+			logMsg(3, "  DOOR_SET\n");
 			break;
 	}
 }

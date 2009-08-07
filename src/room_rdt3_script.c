@@ -21,6 +21,10 @@
 
 #include <SDL.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "room.h"
 #include "room_rdt2.h"
 
@@ -50,7 +54,7 @@
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
 
-#define INST_CALC_ADD	0x20
+#define INST_CALC_OP	0x20
 #define INST_EVT_CUT	0x22
 #define INST_LINE_BEGIN	0x2d
 #define INST_LINE_MAIN	0x2e
@@ -59,8 +63,8 @@
 #define INST_AHEAD_ROOM_SET	0x33
 #define INST_FLOOR_SET	0x3f
 
-#define INST_CALC_END	0x41
-#define INST_CALC_BEGIN	0x42
+#define INST_CALC_STORE	0x41
+#define INST_CALC_LOAD	0x42
 #define INST_FADE_SET	0x46
 #define INST_WORK_SET	0x47
 #define INST_FLAG_SET	0x4d
@@ -260,27 +264,34 @@ typedef struct {
 	Uint16 count;
 } script_for_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown;
+	Uint8 object;
+} script_work_set_t;
+
 typedef union {
 	Uint8 opcode;
+	script_if_t	i_if;
+	script_else_t	i_else;
+	script_switch_t		i_switch;
+	script_case_t		i_case;
+	script_while_t		i_while;
+	script_do_end_t		i_end_do;
+	script_for_t		i_for;
 	script_func_t func;
 	script_sleepn_t sleepn;
 	script_set_flag_t set_flag;
-	script_make_door_t	make_door;
+	script_make_door_t	door_set;
 	script_floor_set_t	floor_set;
 	script_cut_replace_t	cut_replace;
-	script_if_t	begin_if;
-	script_else_t	else_if;
-	script_switch_t		switch_case;
-	script_case_t		case_case;
-	script_while_t		i_while;
 	script_fade_set_t	fade_set;
 	script_exec_t		exec;
 	script_set_t		set;
 	script_ahead_room_set_t	ahead_room_set;
 	script_line_begin_t	line_begin;
 	script_line_main_t	line_main;
-	script_do_end_t		do_end;
-	script_for_t		do_for;
+	script_work_set_t	work_set;
 } script_inst_t;
 
 typedef struct {
@@ -327,7 +338,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_SET1,	4},
 
 	/* 0x20-0x2f */
-	{INST_CALC_ADD,	6},
+	{INST_CALC_OP,	6},
 	{0x21,		4}, /* maybe */
 	{INST_EVT_CUT,	4},
 	{0x24,		2}, /* maybe */
@@ -354,11 +365,11 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x40-0x4f */
 	{0x40,		4},
-	{INST_CALC_END,	4},
-	{INST_CALC_BEGIN,	4},
+	{INST_CALC_STORE,	4},
+	{INST_CALC_LOAD,	4},
 	{0x43,		6},	/* maybe */
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
-	{INST_WORK_SET,	3},
+	{INST_WORK_SET,	sizeof(script_work_set_t)},
 	{0x48,		4},	/* maybe */
 	{0x49,		4},	/* maybe */
 	{0x4a,		2},	/* maybe */
@@ -436,8 +447,6 @@ static const script_inst_len_t inst_length[]={
 	{0x8f,		2}	/* maybe */
 };
 
-static char indentStr[256];
-
 /*--- Functions prototypes ---*/
 
 static Uint8 *scriptFirstInst(room_t *this);
@@ -446,7 +455,7 @@ static void scriptPrintInst(room_t *this);
 
 static int scriptGetConditionLen(script_condition_t *conditionPtr);
 
-static void reindent(int num_indent);
+static void scriptDisasmInit(void);
 
 /*--- Functions ---*/
 
@@ -499,6 +508,9 @@ static Uint8 *scriptFirstInst(room_t *this)
 
 	this->cur_inst_offset = SDL_SwapLE16(functionArrayPtr[0]);
 	this->cur_inst = (& ((Uint8 *) this->file)[offset + this->cur_inst_offset]);
+
+	scriptDisasmInit();
+
 	return this->cur_inst;
 }
 
@@ -581,21 +593,85 @@ static int scriptGetInstLen(room_t *this)
 	return inst_len;
 }
 
+/*
+ * --- Script disassembly ---
+ */
+
+#ifndef ENABLE_SCRIPT_DISASM
+
+static void scriptPrintInst(room_t *this)
+{
+}
+
+static void scriptDisasmInit(void)
+{
+}
+
+#else
+
+/*--- Types ---*/
+
+typedef struct {
+	Uint8 value;
+	char *name;
+} script_dump_t;
+
+/*--- Constants ---*/
+
+static const script_dump_t work_set_0[]={
+	{1, "PL_WK"},
+	{3, "EM_WK"},
+	{4, "OM_WK"}
+};
+
+/*--- Variables ---*/
+
+static int numFunc;
+static int indentLevel;
+
+static char strBuf[256];
+static char tmpBuf[256];
+
+/*--- Functions ---*/
+
 static void reindent(int num_indent)
 {
 	int i;
 
-	memset(indentStr, 0, sizeof(indentStr));
-	for (i=0; (i<num_indent) && (i<255); i++) {
-		indentStr[i<<1]=' ';
-		indentStr[(i<<1)+1]=' ';
+	memset(tmpBuf, 0, sizeof(tmpBuf));
+
+	for (i=0; (i<num_indent) && (i<sizeof(tmpBuf)-1); i++) {
+		tmpBuf[i<<1]=' ';
+		tmpBuf[(i<<1)+1]=' ';
 	}
+
+	strncat(strBuf, tmpBuf, sizeof(strBuf)-1);
+}
+
+static const char *getNameFromValue(int value, const script_dump_t *array, int num_array_items)
+{
+	int i;
+
+	for (i=0; i<num_array_items; i++) {
+		if (array[i].value == value) {
+			return array[i].name;
+		}
+	}
+
+	return NULL;
+}
+
+static void scriptDisasmInit(void)
+{
+	indentLevel = 0;
+	numFunc = 0;
 }
 
 static void scriptPrintInst(room_t *this)
 {
-	int indent = 0, numFunc = 0;
+	int i;
 	script_inst_t *inst;
+	const char *nameFromValue;
 
 	if (!this) {
 		return;
@@ -604,54 +680,196 @@ static void scriptPrintInst(room_t *this)
 		return;
 	}
 
-	reindent(indent);
-
 	inst = (script_inst_t *) this->cur_inst;
 
+	memset(strBuf, 0, sizeof(strBuf));
+
+	if ((indentLevel==0) && (inst->opcode!=0xff)) {
+		sprintf(strBuf, "func%02x() {\n", numFunc++);
+		++indentLevel;
+	}
+
 	switch(inst->opcode) {
+		/* 0x00-0x0f */
 		case INST_NOP:
-			logMsg(3, "%snop\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf, "nop\n");
 			break;
-			case INST_RETURN:
-				if (indent>1) {
-					logMsg(3, "%sreturn\n", indentStr);
-				}
-				reindent(--indent);
-				logMsg(3, "%s}\n", indentStr);
-				if (indent==0) {
-					logMsg(3, "\nfunction Func%d()\n{\n", numFunc++);
-					reindent(++indent);
-				}
-				break;
-		case INST_SLEEP_1:
-			logMsg(3, "%ssleep 1\n", indentStr);
-			break;
-		case INST_SLEEP_N:
-			{
-				script_sleepn_t sleepn;
-	
-				memcpy(&sleepn, inst, sizeof(script_sleepn_t));
-				logMsg(3, "%ssleep %d\n", indentStr, SDL_SwapLE16(sleepn.delay));
+		case INST_RETURN:
+			if (indentLevel>1) {
+				reindent(indentLevel);
+				strcat(strBuf, "return\n");
+			}
+			--indentLevel;
+			if (indentLevel==0) {
+				reindent(indentLevel);
+				strcat(strBuf, "}\n\n");
 			}
 			break;
+		case INST_SLEEP_1:
+			reindent(indentLevel);
+			strcat(strBuf, "sleep 1\n");
+			break;
+		case INST_EXEC:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "EVT_EXEC 0x%02x func%02x()\n",
+				inst->exec.mask, inst->exec.func[1]);
+			strcat(strBuf, tmpBuf);
+			break;
+/*
+		case INST_IF:
+		case INST_ELSE:
+		case INST_END_IF:
+*/
+		case INST_SLEEP_N:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_SLEEP_W:
+			reindent(indentLevel);
+			strcat(strBuf, "sleepw\n");
+			break;
+		case INST_FOR:
+			reindent(indentLevel++);
+			sprintf(tmpBuf, "for (%d) {\n", SDL_SwapLE16(inst->i_for.count));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_FOR_END:
+			reindent(--indentLevel);
+			strcat(strBuf, "}\n");
+			break;
+
+		/* 0x10-0x1f */
+/*
+		case INST_WHILE:
+		case INST_WHILE_END:
+		case INST_DO:
+		case INST_DO_END:
+		case INST_SWITCH:
+		case INST_CASE:
+		case INST_SWITCH_END:
+		case INST_GOTO:
+*/
 		case INST_FUNC:
-			logMsg(3, "%sFunc%02x()\n", indentStr, inst->func.num_func);
+			reindent(indentLevel);
+			sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_BREAK:
+			reindent(indentLevel);
+			strcat(strBuf, "break\n");
+			break;
+/*
+		case INST_BREAK:
+		case 0x1e:
+		case 0x1f:
+*/
+		/* 0x20-0x2f */
+		/* 0x30-0x3f */
+
+		case INST_AHEAD_ROOM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "AHEAD_ROOM_SET 0x%04x\n", SDL_SwapLE16(inst->ahead_room_set.value));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_FLOOR_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "FLOOR_SET xxx\n");
+			break;
+
+		/* 0x40-0x4f */
+
+		case INST_CALC_STORE:
+			reindent(indentLevel);
+			strcat(strBuf, "CALC_STORE xxx\n");
+			break;
+		case INST_CALC_LOAD:
+			reindent(indentLevel);
+			strcat(strBuf, "CALC_LOAD xxx\n");
+			break;
+		case INST_FADE_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "FADE_SET xxx\n");
+			break;
+		case INST_WORK_SET:
+			{
+				reindent(indentLevel);
+
+				nameFromValue = getNameFromValue(inst->work_set.unknown, work_set_0,
+					sizeof(work_set_0)/sizeof(script_dump_t));
+				if (nameFromValue) {
+					sprintf(tmpBuf, "WORK_SET %s 0x%02x\n", nameFromValue, inst->work_set.object);
+				} else {
+					sprintf(tmpBuf, "WORK_SET 0x%02x 0x%02x\n", inst->work_set.unknown, inst->work_set.object);
+				}
+				strcat(strBuf, tmpBuf);
+			}
 			break;
 		case INST_FLAG_SET:
-			logMsg(3, "%sFLAG_SET 0x%02x object 0x%02x %s\n", indentStr,
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SET 0x%02x object 0x%02x %s\n",
 				inst->set_flag.flag,
 				inst->set_flag.object,
 				(inst->set_flag.value ? "on" : "off"));
+			strcat(strBuf, tmpBuf);
 			break;
+
+		/* 0x50-0x5f */
+		/* 0x60-0x6f */
+
 		case INST_DOOR_SET:
-			logMsg(3, "%sDOOR_SET xxx\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf, "DOOR_SET xxx\n");
 			break;
-		case INST_FLOOR_SET:
-			logMsg(3, "%sFLR_SET %d %s\n", indentStr,
-				inst->floor_set.num_floor,
-				(inst->floor_set.value ? "on" : "off")
-			);
+		case INST_AOT_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "AOT_SET xxx\n");
 			break;
+		case INST_AOT_SET_4P:
+			reindent(indentLevel);
+			strcat(strBuf, "AOT_SET_4P xxx\n");
+			break;
+		case INST_AOT_RESET:
+			reindent(indentLevel);
+			strcat(strBuf, "AOT_RESET xxx\n");
+			break;
+		case INST_ITEM_AOT_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "ITEM_AOT_SET xxx\n");
+			break;
+		case INST_KAGE_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "KAGE_SET xxx\n");
+			break;
+		case INST_SUPER_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "SUPER_SET xxx\n");
+			break;
+		case INST_SCA_ID_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "SCA_ID_SET xxx\n");
+			break;
+
+		/* 0x70-0x7f */
+
+		case INST_BGM_CTL:
+			reindent(indentLevel);
+			strcat(strBuf, "BGM_CTL xxx\n");
+			break;
+		case INST_EM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "EM_SET xxx\n");
+			break;
+		case INST_OM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "OM_SET xxx\n");
+			break;
+
+		/* 0x80-0x8f */
+
+
+#if 0
 		case INST_CUT_REPLACE:
 			logMsg(3, "%sCUT_REPLACE 0x%02x 0x%02x\n", indentStr,
 				inst->cut_replace.before,
@@ -698,9 +916,6 @@ static void scriptPrintInst(room_t *this)
 				logMsg(3,"%s}\n", indentStr);
 			}
 			break;
-		case INST_BREAK:
-			logMsg(3,"%sbreak\n", indentStr);
-			break;
 		case INST_WHILE:
 			{
 				logMsg(3,"%swhile (xxx) {\n", indentStr);
@@ -713,16 +928,6 @@ static void scriptPrintInst(room_t *this)
 				logMsg(3,"%s}\n", indentStr);
 			}
 			break;
-		case INST_FADE_SET:
-			logMsg(3, "%sFADE_SET xxx\n", indentStr);
-			break;
-		case INST_EXEC:
-			logMsg(3, "%sEVT_EXEC flag 0x%02x Func%d()\n",
-				indentStr,
-				inst->exec.mask,
-				inst->exec.func[1]
-			);
-			break;
 		case INST_VALUE_SET:
 		case INST_SET1:
 			{
@@ -734,18 +939,6 @@ static void scriptPrintInst(room_t *this)
 					indentStr,
 					new_set.variable,
 					SDL_SwapLE16(new_set.value)
-				);
-			}
-			break;
-		case INST_AHEAD_ROOM_SET:
-			{
-				script_ahead_room_set_t ahead_room_set;
-
-				memcpy(&ahead_room_set, inst, sizeof(script_ahead_room_set_t));
-
-				logMsg(3, "%sAHEAD_ROOM_SET 0x%04x\n",
-					indentStr,
-					SDL_SwapLE16(ahead_room_set.value)
 				);
 			}
 			break;
@@ -773,44 +966,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_LINE_END:
 			logMsg(3, "%sLINE_END\n", indentStr);
 			break;
-		case INST_FOR:
-			{
-				script_for_t	do_for;
-			
-				memcpy(&do_for, inst, sizeof(script_for_t));
-				logMsg(3, "%sfor (%d) {\n", indentStr, SDL_SwapLE16(do_for.count));
-				reindent(++indent);
-			}
-			break;
-		case INST_FOR_END:
-			{
-				reindent(--indent);
-				logMsg(3, "%s}\n", indentStr);
-			}
-			break;
-		case INST_WORK_SET:
-			logMsg(3, "%sWORK_SET xxx\n", indentStr);
-			break;
-		case INST_AOT_SET:
-			logMsg(3, "%sAOT_SET xxx\n", indentStr);
-			break;
 		case INST_ESPR3D_ON2:
 			logMsg(3, "%sESPR3D_ON2 xxx\n", indentStr);
 			break;
 		case INST_ESPR_KILL2:
 			logMsg(3, "%sESPR_KILL2 %d\n", indentStr, this->cur_inst[1]);
-			break;
-		case INST_EM_SET:
-			logMsg(3, "%sEM_SET xxx\n", indentStr);
-			break;
-		case INST_OM_SET:
-			logMsg(3, "%sOM_SET xxx\n", indentStr);
-			break;
-		case INST_SUPER_SET:
-			logMsg(3, "%sSUPER_SET xxx\n", indentStr);
-			break;
-		case INST_BGM_CTL:
-			logMsg(3, "%sBGM_CTL xxx\n", indentStr);
 			break;
 		case INST_MESSAGE_ON:
 			logMsg(3, "%sMESSAGE_ON xxx\n", indentStr);
@@ -845,26 +1005,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_XA_ON:
 			logMsg(3, "%sXA_ON xxx\n", indentStr);
 			break;
-		case INST_SLEEP_W:
-			logMsg(3, "%sSLEEPW xxx\n", indentStr);
-			break;
-		case INST_ITEM_AOT_SET:
-			logMsg(3, "%sITEM_AOT_SET xxx\n", indentStr);
-			break;
 		case INST_GOTO:
 			logMsg(3, "%sGOTO xxx\n", indentStr);
 			break;
 		case INST_RBJ_SET:
 			logMsg(3, "%sRBJ_SET xxx\n", indentStr);
-			break;
-		case INST_AOT_SET_4P:
-			logMsg(3, "%sAOT_SET_4P xxx\n", indentStr);
-			break;
-		case INST_SCA_ID_SET:
-			logMsg(3, "%sSCA_ID_SET xxx\n", indentStr);
-			break;
-		case INST_KAGE_SET:
-			logMsg(3, "%sKAGE_SET xxx\n", indentStr);
 			break;
 		case INST_PLC_NECK:
 			logMsg(3, "%sPLC_NECK xxx\n", indentStr);
@@ -875,9 +1020,18 @@ static void scriptPrintInst(room_t *this)
 		case INST_PLC_STOP:
 			logMsg(3, "%sPLC_STOP xxx\n", indentStr);
 			break;
-		/*default:
-			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
-			break;*/
+#endif			
+		case INST_END_SCRIPT:
+			break;
+		default:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
+			strcat(strBuf, tmpBuf);
+			break;
 
 	}
+
+	logMsg(3, "%s", strBuf);
 }
+
+#endif /* ENABLE_SCRIPT_DISASM */
