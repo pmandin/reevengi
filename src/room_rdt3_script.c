@@ -294,7 +294,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
 	{INST_NOP,	1},
 	{INST_RETURN,	2},
-	/*{INST_SLEEP_1,	2},*/
+	{INST_SLEEP_1,	1},
 	{0x03,		2},
 	{INST_EXEC,	sizeof(script_exec_t)},
 	{0x05,		2},
@@ -358,7 +358,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_CALC_BEGIN,	4},
 	{0x43,		2},	/* maybe */
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
-	/*{INST_WORK_SET,	4},*/
+	{INST_WORK_SET,	3},
 	{0x48,		4},	/* maybe */
 	{0x49,		4},	/* maybe */
 	{0x4a,		2},	/* maybe */
@@ -422,9 +422,9 @@ static const script_inst_len_t inst_length[]={
 	{INST_PLC_MOTION,	4},
 	{INST_PLC_DEST,		8},
 	{INST_PLC_NECK,		10},
-	{INST_PLC_RET,		2},
+	{INST_PLC_RET,		1},
 	{INST_PLC_FLG,		4},
-	{INST_PLC_STOP,	2},
+	{INST_PLC_STOP,	1},
 	{INST_PLC_ROT,	4},
 	{INST_PLC_CNT,	2},
 	{0x8a,		2},	/* maybe */
@@ -569,30 +569,6 @@ static int scriptGetInstLen(room_t *this)
 					scriptGetConditionLen(
 						(script_condition_t *) (&this->cur_inst[sizeof(script_do_end_t)])
 					);
-				break;
-			case INST_WORK_SET:
-				inst_len = 4;
-				switch(this->cur_inst[3]) {
-					case 0x80:
-						inst_len = 8;
-						break;
-					case 0x82:
-						inst_len = 12;
-						break;
-				}
-				/*if (this->cur_inst[3] & 0x80) {
-					if ((this->cur_inst[3] & 7)==2) {
-						inst_len = 12;
-					} else {
-						inst_len = 8;
-					}
-				}*/
-				break;
-			case INST_SLEEP_1:
-				inst_len = 2;
-				if (this->cur_inst[1] & 0x80) {
-					inst_len = 6;
-				}
 				break;
 			default:
 				break;
