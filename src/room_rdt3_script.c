@@ -41,6 +41,7 @@
 #define INST_SLEEP_W	0x0b
 #define INST_FOR	0x0d
 #define INST_FOR_END	0x0f
+
 #define INST_WHILE	0x10
 #define INST_WHILE_END	0x11
 #define INST_DO		0x12
@@ -690,7 +691,9 @@ static void scriptPrintInst(room_t *this)
 	}
 
 	switch(inst->opcode) {
+
 		/* 0x00-0x0f */
+
 		case INST_NOP:
 			reindent(indentLevel);
 			strcat(strBuf, "nop\n");
@@ -716,11 +719,18 @@ static void scriptPrintInst(room_t *this)
 				inst->exec.mask, inst->exec.func[1]);
 			strcat(strBuf, tmpBuf);
 			break;
-/*
 		case INST_IF:
+			reindent(indentLevel);
+			strcat(strBuf, "if (xxx) {\n");
+			break;
 		case INST_ELSE:
+			reindent(indentLevel);
+			strcat(strBuf, "} else {\n");
+			break;
 		case INST_END_IF:
-*/
+			reindent(indentLevel);
+			strcat(strBuf, "}\n");
+			break;
 		case INST_SLEEP_N:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
@@ -741,16 +751,41 @@ static void scriptPrintInst(room_t *this)
 			break;
 
 		/* 0x10-0x1f */
-/*
+
 		case INST_WHILE:
+			reindent(indentLevel++);
+			strcat(strBuf, "while (xxx) {\n");
+			break;
 		case INST_WHILE_END:
+			reindent(--indentLevel);
+			strcat(strBuf, "}\n");
+			break;
 		case INST_DO:
+			reindent(indentLevel++);
+			strcat(strBuf, "do {\n");
+			break;
 		case INST_DO_END:
+			reindent(--indentLevel);
+			strcat(strBuf, "} while (xxx)\n");
+			break;
 		case INST_SWITCH:
+			reindent(indentLevel);
+			strcat(strBuf, "switch(xxx) {\n");
+			indentLevel += 2;
+			break;
 		case INST_CASE:
+			reindent(indentLevel-1);
+			strcat(strBuf, "case xxx:\n");
+			break;
 		case INST_SWITCH_END:
+			indentLevel -= 2;
+			reindent(indentLevel);
+			strcat(strBuf, "}\n");
+			break;
 		case INST_GOTO:
-*/
+			reindent(indentLevel);
+			strcat(strBuf, "goto xxx\n");
+			break;
 		case INST_FUNC:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
@@ -760,12 +795,35 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "break\n");
 			break;
-/*
-		case INST_BREAK:
 		case 0x1e:
 		case 0x1f:
-*/
+			reindent(indentLevel);
+			strcat(strBuf, "set xxx\n");
+			break;
+
 		/* 0x20-0x2f */
+
+		case INST_CALC_OP:
+			reindent(indentLevel);
+			strcat(strBuf, "CALC_OP xxx\n");
+			break;
+		case INST_EVT_CUT:
+			reindent(indentLevel);
+			strcat(strBuf, "EVT_CUT xxx\n");
+			break;
+		case INST_LINE_BEGIN:
+			reindent(indentLevel);
+			strcat(strBuf, "LINE_BEGIN xxx\n");
+			break;
+		case INST_LINE_MAIN:
+			reindent(indentLevel);
+			strcat(strBuf, "LINE_MAIN xxx\n");
+			break;
+		case INST_LINE_END:
+			reindent(indentLevel);
+			strcat(strBuf, "LINE_END xxx\n");
+			break;
+
 		/* 0x30-0x3f */
 
 		case INST_AHEAD_ROOM_SET:
@@ -816,6 +874,36 @@ static void scriptPrintInst(room_t *this)
 			break;
 
 		/* 0x50-0x5f */
+
+		case INST_CUT_CHG:
+			reindent(indentLevel);
+			strcat(strBuf, "CUT_CHG xxx\n");
+			break;
+		case INST_CUT_AUTO:
+			reindent(indentLevel);
+			strcat(strBuf, "CUT_AUTO xxx\n");
+			break;
+		case INST_CUT_REPLACE:
+			reindent(indentLevel);
+			strcat(strBuf, "CUT_REPLACE xxx\n");
+			break;
+		case INST_POS_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "POS_SET xxx\n");
+			break;
+		case INST_DIR_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "DIR_SET xxx\n");
+			break;
+		case INST_RBJ_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "RBJ_SET xxx\n");
+			break;
+		case INST_MESSAGE_ON:
+			reindent(indentLevel);
+			strcat(strBuf, "MESSAGE_ON xxx\n");
+			break;
+
 		/* 0x60-0x6f */
 
 		case INST_DOOR_SET:
@@ -853,9 +941,37 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x70-0x7f */
 
+		case INST_ESPR_ON:
+			reindent(indentLevel);
+			strcat(strBuf, "ESPR_ON xxx\n");
+			break;
+		case INST_ESPR3D_ON2:
+			reindent(indentLevel);
+			strcat(strBuf, "ESPR3D_ON2 xxx\n");
+			break;
+		case INST_ESPR_KILL:
+			reindent(indentLevel);
+			strcat(strBuf, "ESPR_KILL xxx\n");
+			break;
+		case INST_ESPR_KILL2:
+			reindent(indentLevel);
+			strcat(strBuf, "ESPR_KILL2 xxx\n");
+			break;
+		case INST_SE_ON:
+			reindent(indentLevel);
+			strcat(strBuf, "SE_ON xxx\n");
+			break;
 		case INST_BGM_CTL:
 			reindent(indentLevel);
 			strcat(strBuf, "BGM_CTL xxx\n");
+			break;
+		case INST_XA_ON:
+			reindent(indentLevel);
+			strcat(strBuf, "XA_ON xxx\n");
+			break;
+		case INST_BGM_TBL_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "BGM_TBL_SET xxx\n");
 			break;
 		case INST_EM_SET:
 			reindent(indentLevel);
@@ -868,159 +984,39 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x80-0x8f */
 
-
-#if 0
-		case INST_CUT_REPLACE:
-			logMsg(3, "%sCUT_REPLACE 0x%02x 0x%02x\n", indentStr,
-				inst->cut_replace.before,
-				inst->cut_replace.after
-			);
-			break;
-		case INST_IF:
-			{
-				logMsg(3, "%sif (xxx) {\n", indentStr);
-				reindent(++indent);
-			}
-			break;
-		case INST_ELSE:
-			{
-				reindent(--indent);
-				logMsg(3,"%s} else {\n", indentStr);
-				reindent(++indent);
-			}
-			break;
-		case INST_END_IF:
-			{
-				reindent(--indent);
-				logMsg(3,"%s}\n", indentStr);
-			}
-			break;
-		case INST_SWITCH:
-			{
-				logMsg(3,"%sswitch(object xxx) {\n", indentStr);
-				indent += 2;
-				reindent(indent);
-			}
-			break;
-		case INST_CASE:
-			{
-				reindent(--indent);
-				logMsg(3,"%scase xxx:\n", indentStr);
-				reindent(++indent);
-			}
-			break;
-		case INST_SWITCH_END:
-			{
-				indent -= 2;
-				reindent(indent);
-				logMsg(3,"%s}\n", indentStr);
-			}
-			break;
-		case INST_WHILE:
-			{
-				logMsg(3,"%swhile (xxx) {\n", indentStr);
-				reindent(++indent);
-			}
-			break;
-		case INST_WHILE_END:
-			{
-				reindent(--indent);
-				logMsg(3,"%s}\n", indentStr);
-			}
-			break;
-		case INST_VALUE_SET:
-		case INST_SET1:
-			{
-				script_set_t new_set;
-
-				memcpy(&new_set, inst, sizeof(script_set_t));
-
-				logMsg(3, "%svar%02x = 0x%04x\n",
-					indentStr,
-					new_set.variable,
-					SDL_SwapLE16(new_set.value)
-				);
-			}
-			break;
-		case INST_DO:
-			{
-				logMsg(3, "%sdo {\n", indentStr);
-				reindent(++indent);
-			}
-			break;
-		case INST_DO_END:
-			{
-				reindent(--indent);
-				logMsg(3, "%s} while (xxx)\n", indentStr);
-			}
-			break;
-		case INST_LINE_BEGIN:
-			logMsg(3, "%sLINE_START 0x%02x %d\n", indentStr,
-				inst->line_begin.flag,
-				inst->line_begin.size
-			);
-			break;
-		case INST_LINE_MAIN:
-			logMsg(3, "%sLINE_MAIN\n", indentStr);
-			break;
-		case INST_LINE_END:
-			logMsg(3, "%sLINE_END\n", indentStr);
-			break;
-		case INST_ESPR3D_ON2:
-			logMsg(3, "%sESPR3D_ON2 xxx\n", indentStr);
-			break;
-		case INST_ESPR_KILL2:
-			logMsg(3, "%sESPR_KILL2 %d\n", indentStr, this->cur_inst[1]);
-			break;
-		case INST_MESSAGE_ON:
-			logMsg(3, "%sMESSAGE_ON xxx\n", indentStr);
-			break;
-		case INST_ESPR_KILL:
-			logMsg(3, "%sESPR_KILL xxx\n", indentStr);
-			break;
-		case INST_CUT_CHG:
-			logMsg(3, "%sCUT_CHG xxx\n", indentStr);
+		case INST_PLC_MOTION:
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_MOTION xxx\n");
 			break;
 		case INST_PLC_DEST:
-			logMsg(3, "%sPLC_DEST xxx\n", indentStr);
-			break;
-		case INST_PLC_MOTION:
-			logMsg(3, "%sPLC_MOTION xxx\n", indentStr);
-			break;
-		case INST_PLC_CNT:
-			logMsg(3, "%sPLC_CNT 0x%02x\n", indentStr, this->cur_inst[1]);
-			break;
-		case INST_POS_SET:
-			logMsg(3, "%sPOS_SET xxx\n", indentStr);
-			break;
-		case INST_DIR_SET:
-			logMsg(3, "%sDIR_SET xxx\n", indentStr);
-			break;
-		case INST_CUT_AUTO:
-			logMsg(3, "%sCUT_AUTO xxx\n", indentStr);
-			break;
-		case INST_ESPR_ON:
-			logMsg(3, "%sESPR_ON xxx\n", indentStr);
-			break;
-		case INST_XA_ON:
-			logMsg(3, "%sXA_ON xxx\n", indentStr);
-			break;
-		case INST_GOTO:
-			logMsg(3, "%sGOTO xxx\n", indentStr);
-			break;
-		case INST_RBJ_SET:
-			logMsg(3, "%sRBJ_SET xxx\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_DEST xxx\n");
 			break;
 		case INST_PLC_NECK:
-			logMsg(3, "%sPLC_NECK xxx\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_NECK xxx\n");
 			break;
-		case INST_EVT_CUT:
-			logMsg(3, "%sEVT_CUT xxx\n", indentStr);
+		case INST_PLC_RET:
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_RET xxx\n");
+			break;
+		case INST_PLC_FLG:
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_FLG xxx\n");
 			break;
 		case INST_PLC_STOP:
-			logMsg(3, "%sPLC_STOP xxx\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_STOP xxx\n");
 			break;
-#endif			
+		case INST_PLC_ROT:
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_ROT xxx\n");
+			break;
+		case INST_PLC_CNT:
+			reindent(indentLevel);
+			strcat(strBuf, "PLC_CNT xxx\n");
+			break;
+
 		case INST_END_SCRIPT:
 			break;
 		default:
