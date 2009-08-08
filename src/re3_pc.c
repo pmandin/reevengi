@@ -180,12 +180,6 @@ int re3pc_load_jpg_bg(const char *filename)
 	src = FS_makeRWops(filename);
 	if (src) {
 		SDL_Surface *image;
-		/*game_state.num_cameras = 0x1c;*/
-
-		/*game_state.background_surf = IMG_Load_RW(src, 0);
-		if (game_state.background_surf) {
-			retval = 1;
-		}*/
 
 		image = IMG_Load_RW(src, 0);
 		if (image) {
