@@ -37,6 +37,8 @@
 #define MAP_COLOR_CAMSWITCH_ENABLED	0x00ffcc88
 #define MAP_COLOR_BOUNDARY_DISABLED	0x00660000
 #define MAP_COLOR_BOUNDARY_ENABLED	0x00ff0000
+#define MAP_COLOR_DOOR			0x0000cccc
+#define MAP_COLOR_WALLS			0x00ff00ff
 #define MAP_COLOR_PLAYER		0x0000ff00
 
 #define MAX(x,y) ((x)>(y)?(x):(y))
@@ -59,16 +61,19 @@ static void room_map_minMaxBoundaries(room_t *this);
 static void room_map_drawCameras(room_t *this);
 static void room_map_drawCamswitches(room_t *this);
 static void room_map_drawBoundaries(room_t *this);
+static void room_map_drawDoors(room_t *this);
 
 static void addDoor(room_t *this, room_door_t *door);
 static room_door_t *enterDoor(room_t *this, Sint16 x, Sint16 y);
 
 static Uint8 *scriptPrivFirstInst(room_t *this);
 static int scriptPrivGetInstLen(room_t *this);
+static void scriptPrivExecInst(room_t *this);
 static void scriptPrivPrintInst(room_t *this);
 
 static Uint8 *scriptNextInst(room_t *this);
 static void scriptDump(room_t *this);
+static void scriptExec(room_t *this);
 
 /*--- Functions ---*/
 
@@ -89,9 +94,11 @@ room_t *room_create(void *room_file, Uint32 length)
 
 	this->scriptPrivFirstInst = scriptPrivFirstInst;
 	this->scriptPrivGetInstLen = scriptPrivGetInstLen;
+	this->scriptPrivExecInst = scriptPrivExecInst;
 	this->scriptPrivPrintInst = scriptPrivPrintInst;
 
 	this->scriptDump = scriptDump;
+	this->scriptExec = scriptExec;
 
 	return this;
 }
@@ -226,10 +233,7 @@ void room_map_draw(room_t *this)
 	room_map_drawCamswitches(this);
 	room_map_drawCameras(this);
 
-	/* Draw items: objects, doors, enemies */
-	if (this->drawItems) {
-		(*this->drawItems)(this);
-	}
+	room_map_drawDoors(this);
 
 	render.pop_matrix();
 }
@@ -332,6 +336,66 @@ static void room_map_drawBoundaries(room_t *this)
 		}
 
 		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+	}
+}
+
+static void room_map_drawDoors(room_t *this)
+{
+	int i;
+
+	render.set_color(MAP_COLOR_DOOR);
+
+	for (i=0; i<this->num_doors; i++) {
+		room_door_t	*door = &this->doors[i];
+		vertex_t v[4];
+
+#if 1
+		v[0].x = door->x * 0.5f;
+		v[0].y = door->y * 0.5f;
+		v[0].z = 1;
+
+		v[1].x = (door->x+door->w) * 0.5f;
+		v[1].y = door->y * 0.5f;
+		v[1].z = 1;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = (door->x+door->w) * 0.5f;
+		v[0].y = (door->y+door->h) * 0.5f;
+		v[0].z = 1;
+
+		render.line(&v[0], &v[1]);
+
+		v[1].x = door->x * 0.5f;
+		v[1].y = (door->y+door->h) * 0.5f;
+		v[1].z = 1;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = door->x * 0.5f;
+		v[0].y = door->y * 0.5f;
+		v[0].z = 1;
+
+		render.line(&v[0], &v[1]);
+#else
+		v[0].x = door->x * 0.5f;
+		v[0].y = door->y * 0.5f;
+		v[0].z = 1;
+
+		v[1].x = (door->x+door->w) * 0.5f;
+		v[1].y = door->y * 0.5f;
+		v[1].z = 1;
+
+		v[2].x = (door->x+door->w) * 0.5f;
+		v[2].y = (door->y+door->h) * 0.5f;
+		v[2].z = 1;
+
+		v[3].x = door->x * 0.5f;
+		v[3].y = (door->y+door->h) * 0.5f;
+		v[3].z = 1;
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+#endif
 	}
 }
 
@@ -498,6 +562,10 @@ static int scriptPrivGetInstLen(room_t *this)
 	return 0;
 }
 
+static void scriptPrivExecInst(room_t *this)
+{
+}
+
 static void scriptPrivPrintInst(room_t *this)
 {
 }
@@ -554,6 +622,17 @@ static void scriptDump(room_t *this)
 		}
 
 		this->scriptPrivPrintInst(this);
+		inst = scriptNextInst(this);
+	}
+}
+
+static void scriptExec(room_t *this)
+{
+	Uint8 *inst;
+
+	inst = this->scriptPrivFirstInst(this);
+	while (inst) {
+		this->scriptPrivExecInst(this);
 		inst = scriptNextInst(this);
 	}
 }

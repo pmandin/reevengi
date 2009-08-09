@@ -39,16 +39,9 @@ typedef struct {
 } room_camswitch_t;
 
 typedef struct {
-	Sint16 x,y;	/* player pos */
-
-	Sint16 next_x,next_y,next_z,next_angle;
-	Uint8 next_stage,next_room,next_camera;
-} room_doorswitch_t;
-
-typedef struct {
 	Sint16 x,y,w,h;
 
-	Sint16 next_x,next_y,next_z,next_angle;
+	Sint16 next_x,next_y,next_z,next_dir;
 	Uint8 next_stage,next_room,next_camera;
 } room_door_t;
 
@@ -85,12 +78,11 @@ struct room_s {
 
 	Uint8 *(*scriptPrivFirstInst)(room_t *this);
 	int (*scriptPrivGetInstLen)(room_t *this);
+	void (*scriptPrivExecInst)(room_t *this);
 	void (*scriptPrivPrintInst)(room_t *this);
 
 	void (*scriptDump)(room_t *this);
-
-	/* Misc */
-	void (*drawItems)(room_t *this);
+	void (*scriptExec)(room_t *this);
 };
 
 /*--- Functions ---*/

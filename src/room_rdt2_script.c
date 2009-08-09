@@ -60,10 +60,29 @@ typedef struct {
 	Uint16 block_length;
 } script_else_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint8 id;
+	Uint8 unknown1[3];
+	Sint16 x,y,w,h;
+	Sint16 next_x,next_y,next_z;
+	Sint16 next_dir;
+	Uint8 next_stage,next_room,next_camera;
+	Uint8 unknown2;
+	Uint8 door_type;
+	Uint8 door_lock;
+	Uint8 unknown3;
+	Uint8 door_locked;
+	Uint8 door_key;
+	Uint8 unknown4;
+} script_door_set_t;
+
 typedef union {
 	Uint8 opcode;
 	script_if_t	i_if;
 	script_else_t	i_else;
+	script_door_set_t	door_set;
 } script_inst_t;
 
 typedef struct {
@@ -177,6 +196,7 @@ static char indentStr[256];
 
 static Uint8 *scriptFirstInst(room_t *this);
 static int scriptGetInstLen(room_t *this);
+static void scriptExecInst(room_t *this);
 static void scriptPrintInst(room_t *this);
 
 static int scriptGetConditionLen(script_condition_t *conditionPtr);
@@ -206,6 +226,7 @@ void room_rdt2_scriptInit(room_t *this)
 
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
+	this->scriptPrivExecInst = scriptExecInst;
 	this->scriptPrivPrintInst = scriptPrintInst;
 }
 
@@ -297,6 +318,45 @@ static int scriptGetInstLen(room_t *this)
 	}
 
 	return inst_len;
+}
+
+static void scriptExecInst(room_t *this)
+{
+	script_inst_t *inst;
+
+	if (!this) {
+		return;
+	}
+	if (!this->cur_inst) {
+		return;
+	}
+
+	inst = (script_inst_t *) this->cur_inst;
+
+	switch(inst->opcode) {
+		case INST_DOOR_SET:
+			{
+				script_door_set_t *doorSet = (script_door_set_t *) inst;
+				room_door_t roomDoor;
+
+				roomDoor.x = SDL_SwapLE16(doorSet->x);
+				roomDoor.y = SDL_SwapLE16(doorSet->y);
+				roomDoor.w = SDL_SwapLE16(doorSet->w);
+				roomDoor.h = SDL_SwapLE16(doorSet->h);
+
+				roomDoor.next_x = SDL_SwapLE16(doorSet->next_x);
+				roomDoor.next_y = SDL_SwapLE16(doorSet->next_y);
+				roomDoor.next_z = SDL_SwapLE16(doorSet->next_z);
+				roomDoor.next_dir = SDL_SwapLE16(doorSet->next_dir);
+
+				roomDoor.next_stage = doorSet->next_stage+1;
+				roomDoor.next_room = doorSet->next_room;
+				roomDoor.next_camera = doorSet->next_camera;
+
+				this->addDoor(this, &roomDoor);
+			}
+			break;
+	}
 }
 
 /*

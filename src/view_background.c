@@ -403,7 +403,7 @@ static void processEnterDoor(void)
 		player_x = door->next_x;
 		player_y = door->next_y;
 		player_z = door->next_z;
-		player_a = door->next_angle;
+		player_a = door->next_dir;
 
 		game_state.num_stage = door->next_stage;
 		game_state.num_room = door->next_room;

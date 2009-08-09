@@ -214,6 +214,7 @@ static void state_loadroom(void)
 			if (params.dump_script) {
 				game_state.room->scriptDump(game_state.room);
 			}
+			game_state.room->scriptExec(game_state.room);
 		}
 	}
 }
