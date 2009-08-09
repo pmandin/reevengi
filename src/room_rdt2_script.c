@@ -147,7 +147,7 @@ static const script_inst_len_t inst_length[]={
 	{0x38,		4},
 	{0x39,		6},
 	{0x3a,		16},
-	{INST_DOOR_SET,	32},
+	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{0x3c,		16},
 	{0x3d,		4+8},
 	{0x3f,		4},
