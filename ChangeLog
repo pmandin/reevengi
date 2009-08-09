@@ -1,5 +1,6 @@
 v 0.13
 
+- Dump room initialization script (see -dumpscript command).
 - Display doors and walls on map.
 - Can enter doors.
 

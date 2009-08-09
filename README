@@ -58,6 +58,9 @@ Use at your own risks.
 
 "-dither" to dither background image (in 8bits mode only).
 
+"-dumpscript" to display room script. Verbosity must be 1 or higher. Set to 2 to
+  also display corresponding byte codes.
+
 
 3 Controls
 ----------
