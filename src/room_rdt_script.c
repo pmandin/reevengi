@@ -27,6 +27,7 @@
 
 #include "room.h"
 #include "room_rdt.h"
+#include "state.h"
 #include "log.h"
 
 /*--- Defines ---*/
@@ -72,11 +73,80 @@ typedef struct {
 	Uint8 dummy;
 } script_endif_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Sint16 x,y,w,h;
+	Uint8 unknown0[5];
+	/*Uint8 unknown1;
+	Uint8 next_camera;*/		/* bits 2,1,0: camera */
+	Uint8 next_stage_and_room;	/* bits 7,6,5: stage, 4,3,2,1,0: room */
+	Sint16 next_x,next_y,next_z;
+	Sint16 next_dir;
+	Uint16 unknown2;
+} script_door_set_t;
+
+/*
+1000
+0c 00  8c 0a f4 01 a4 06 08 07  03 00 00 04 00 01  fc 21 00 00 dc 1e 00 04 00 81
+-> s1,r1,c4
+
+1010
+0c 00  b0 1d 14 1e 60 09 dc 05  00 00 00 04 00 00  ac 0d 00 00 28 0a 00 0c 00 81
+0c 01  b0 36 30 43 d0 07 dc 05  02 00 1d 05 ca 02  48 0d 00 00 f0 23 00 04 34 81
+0c 02  c8 4b 38 4a d0 07 8c 0a  01 00 00 01 00 03  60 09 00 00 e0 60 00 00 00 81
+0c 03  5c 12 c4 09 2d 0a 14 05  00 05 18 60 00 41  14 37 00 00 ec 2c 00 00 00 81
+-> s1,r0,c0
+-> s2,r1,c0
+
+1030
+0c 00  00 00 94 5c c4 09 34 08  02 00 00 01 00 01  38 4a 00 00 14 50 00 08 00 81
+0c 01  20 03 f4 01 80 0c c4 09  01 00 01 01 92 04  b8 3d 00 00 74 0e 00 04 fe 81
+0c 02  38 4a 24 45 c4 09 60 09  02 00 02 01 40 0c  20 35 00 00 e8 1c 00 08 00 81
+0c 03  4c 1d fc 3a fc 08 d0 07  03 00 00 04 40 0d  e0 15 00 00 f0 0a 00 0c 00 81
+0c 04  00 00 74 27 60 09 40 06  02 00 1c 03 cb 0e  e8 1c 00 00 cc 29 00 08 33 81
+-> s1,r1,c0   0000 0001 0000 0000
+-> s1,r4,c2   0000 0100 1001 0010
+-> s1,r12,c0  0000 1100 0100 0000
+-> s1,r13,c0
+
+1040
+0c 00  d0 39 04 10 b8 0b 1c 0c  02 00 01 01 92 03  b8 0b 00 00 b8 0b 00 0c ff 81
+0c 01  68 74 a0 0f a4 06 ac 0d  02 00 1f 05 86 0f  b0 36 00 00 b8 0b 00 0c 33 81
+0c 02  0c 7b 6c 07 fc 08 08 07  06 00 00 01 d3 10  00 00 00 00 00 00 00 00 ff 81
+0c 03  68 29 00 00 f0 0a fc 08  01 00 03 04 00 05  9c 18 00 00 14 37 00 04 00 81
+-> s1,r5,c2
+-> s1,r3,c0
+
+1050
+0c 00  b4 14 b0 36 f0 0a f0 0a  02 00 03 04 00 04  ec 2c 00 00 f0 0a 00 0c 00 81
+0c 01  70 7b 9c 18 d0 07 a0 0f  09 00 03 07 00 06  48 0d 00 00 68 42 00 00 00 81
+
+1060
+0c 00  7c 79 10 27 d0 07 b8 0b  06 00 04 07 00 07  8c 0a 00 00 c8 19 00 00 00 81
+-> s1,r7,c0
+0c 01  7c 79 a8 48 d0 07 b0 04  02 00 03 01 c5 11  f0 0a 00 00 f8 11 00 00 34 81
+-> s1,r0x11,c0
+0c 02  e8 03 98 3a 9e 07 d8 0e  06 00 03 07 00 05  b4 78 00 00 6c 20 00 08 00 81
+-> s1,r5,c0
+0c 03  08 39 20 03 50 14 98 08  02 00 03 01 c5 11  f0 0a 00 00 f8 11 00 00 34 81
+
+0c 04  f0 3c 1c 3e 54 0b 28 0a  00 04 16 60 00 43  cc 42 00 00 d4 62 00 0c 00 81
+-> s2,r3,c0 : 0x43 = 0x0100 0011
+
+room 3000
+0c 00  3c 5a 98 6c a4 06 d0 07  00 08 0f 40 00 01  80 57 00 00 10 0e 00 0c 00 81
+0c 01  00 00 00 00 01 00 01 00  01 06 15 40 00 02  4c 4f 00 00 5c 12 00 04 00 00
+0c 02  1c 57 80 0c 5c 12 04 10  0c 01 08 00 00 3b  08 20 00 00 0c 17 00 08 00 81
+0x3b = 0011 1011
+*/
+
 typedef union {
 	Uint8 opcode;
 	script_if_t	i_if;
 	script_else_t	i_else;
 	script_endif_t	i_endif;
+	script_door_set_t	door_set;
 } script_inst_t;
 
 typedef struct {
@@ -140,6 +210,7 @@ static const script_inst_len_t inst_length[]={
 static Uint8 *scriptFirstInst(room_t *this);
 static int scriptGetInstLen(room_t *this);
 static void scriptPrintInst(room_t *this);
+static void scriptExecInst(room_t *this);
 
 /*--- Functions ---*/
 
@@ -157,6 +228,7 @@ void room_rdt_scriptInit(room_t *this)
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
 	this->scriptPrivPrintInst = scriptPrintInst;
+	this->scriptPrivExecInst = scriptExecInst;
 }
 
 static Uint8 *scriptFirstInst(room_t *this)
@@ -224,6 +296,52 @@ static int scriptGetInstLen(room_t *this)
 	}
 
 	return inst_len;
+}
+
+static void scriptExecInst(room_t *this)
+{
+	script_inst_t *inst;
+
+	if (!this) {
+		return;
+	}
+	if (!this->cur_inst) {
+		return;
+	}
+
+	inst = (script_inst_t *) this->cur_inst;
+
+	switch(inst->opcode) {
+		case INST_DOOR_SET:
+			{
+				script_door_set_t *doorSet = (script_door_set_t *) inst;
+				room_door_t roomDoor;
+				int next_stage, next_room;
+
+				roomDoor.x = SDL_SwapLE16(doorSet->x);
+				roomDoor.y = SDL_SwapLE16(doorSet->y);
+				roomDoor.w = SDL_SwapLE16(doorSet->w);
+				roomDoor.h = SDL_SwapLE16(doorSet->h);
+
+				roomDoor.next_x = SDL_SwapLE16(doorSet->next_x);
+				roomDoor.next_y = SDL_SwapLE16(doorSet->next_y);
+				roomDoor.next_z = SDL_SwapLE16(doorSet->next_z);
+				roomDoor.next_dir = SDL_SwapLE16(doorSet->next_dir);
+
+				next_stage = doorSet->next_stage_and_room>>5;
+				if (next_stage==0) {
+					next_stage = 1;
+				}
+				roomDoor.next_stage = next_stage;
+
+				roomDoor.next_room = doorSet->next_stage_and_room & 31;
+
+				roomDoor.next_camera = 0/*doorSet->next_camera & 7*/;
+
+				this->addDoor(this, &roomDoor);
+			}
+			break;
+	}
 }
 
 /*
