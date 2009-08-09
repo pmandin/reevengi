@@ -60,6 +60,8 @@ static void room_map_drawCameras(room_t *this);
 static void room_map_drawCamswitches(room_t *this);
 static void room_map_drawBoundaries(room_t *this);
 
+static void addDoor(room_t *this, room_door_t *door);
+
 static Uint8 *scriptPrivFirstInst(room_t *this);
 static int scriptPrivGetInstLen(room_t *this);
 static void scriptPrivPrintInst(room_t *this);
@@ -81,6 +83,8 @@ room_t *room_create(void *room_file, Uint32 length)
 
 	this->shutdown = shutdown;
 
+	this->addDoor = addDoor;
+
 	this->scriptPrivFirstInst = scriptPrivFirstInst;
 	this->scriptPrivGetInstLen = scriptPrivGetInstLen;
 	this->scriptPrivPrintInst = scriptPrivPrintInst;
@@ -93,6 +97,10 @@ room_t *room_create(void *room_file, Uint32 length)
 static void shutdown(room_t *this)
 {
 	if (this) {
+		if (this->doors) {
+			free(this->doors);
+			this->doors = NULL;
+		}
 		if (this->file) {
 			free(this->file);
 			this->file = NULL;
@@ -443,6 +451,22 @@ int room_checkCamswitch(room_t *this, int num_camera, float x, float y)
 	return -1;
 }
 
+/* Door functions */
+
+static void addDoor(room_t *this, room_door_t *door)
+{
+	++this->num_doors;
+
+	this->doors = realloc(this->doors, this->num_doors * sizeof(room_door_t));
+	if (!this->doors) {
+		logMsg(0, "Can not allocate memory for door\n");
+		return;
+	}
+
+	memcpy(&this->doors[this->num_doors-1], door, sizeof(room_door_t));
+	logMsg(1, "Adding door %d\n", this->num_doors-1);
+}
+
 /* Script functions */
 
 static Uint8 *scriptPrivFirstInst(room_t *this)
@@ -479,7 +503,7 @@ static Uint8 *scriptNextInst(room_t *this)
 	this->cur_inst_offset += inst_len;	
 	if (this->script_length>0) {
 		if (this->cur_inst_offset>= this->script_length) {
-			logMsg(3, "End of script reached\n");
+			logMsg(1, "End of script reached\n");
 			return NULL;
 		}
 	}

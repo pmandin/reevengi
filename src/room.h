@@ -45,6 +45,13 @@ typedef struct {
 	Uint8 next_stage,next_room,next_camera;
 } room_doorswitch_t;
 
+typedef struct {
+	Sint16 x,y,w,h;
+
+	Sint16 next_x,next_y,next_z,next_angle;
+	Uint8 next_stage,next_room,next_camera;
+} room_door_t;
+
 typedef struct room_s room_t;
 
 struct room_s {
@@ -61,6 +68,12 @@ struct room_s {
 	void (*getCamera)(room_t *this, int num_camera, room_camera_t *room_camera);
 	void (*getCamswitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
+
+	/* Doors */
+	int num_doors;
+	room_door_t *doors;
+
+	void (*addDoor)(room_t *this, room_door_t *door);
 
 	/* Script execution */
 	Uint8 *cur_inst;
