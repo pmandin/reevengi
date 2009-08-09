@@ -496,18 +496,18 @@ static void scriptDump(room_t *this)
 
 	inst = this->scriptPrivFirstInst(this);
 	while (inst) {
-		if (params.verbose>=4) {
+		if (params.verbose>=2) {
 			int i, inst_len;
 
 			inst_len = this->scriptPrivGetInstLen(this);
 			if (inst_len==0) {
 				inst_len = 16;
 			}
-			logMsg(4, "0x%08x: ", this->cur_inst_offset);
+			logMsg(2, "0x%08x: ", this->cur_inst_offset);
 			for (i=0; i<inst_len; i++) {
-				logMsg(4, " %02x", this->cur_inst[i]);
+				logMsg(2, " %02x", this->cur_inst[i]);
 			}
-			logMsg(4, "\n");
+			logMsg(2, "\n");
 		}
 
 		this->scriptPrivPrintInst(this);

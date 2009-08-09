@@ -21,8 +21,13 @@
 
 #include <SDL.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "room.h"
 #include "room_rdt.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -147,7 +152,7 @@ void room_rdt_scriptInit(room_t *this)
 
 	this->script_length = SDL_SwapLE16(*init_script);
 
-	logMsg(3, "rdt1: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
+	logMsg(1, "rdt1: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
 
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
@@ -221,6 +226,18 @@ static int scriptGetInstLen(room_t *this)
 	return inst_len;
 }
 
+/*
+ * --- Script disassembly ---
+ */
+
+#ifndef ENABLE_SCRIPT_DISASM
+
+static void scriptPrintInst(room_t *this)
+{
+}
+
+#else
+
 static void scriptPrintInst(room_t *this)
 {
 	if (!this) {
@@ -232,19 +249,21 @@ static void scriptPrintInst(room_t *this)
 
 	switch(this->cur_inst[0]) {
 		case INST_NOP:
-			logMsg(3, "  nop\n");
+			logMsg(1, "  nop\n");
 			break;
 		case INST_IF:
-			logMsg(3, "  if (xxx) {\n");
+			logMsg(1, "  if (xxx) {\n");
 			break;
 		case INST_ELSE:
-			logMsg(3, "  } else {\n");
+			logMsg(1, "  } else {\n");
 			break;
 		case INST_ENDIF:
-			logMsg(3, "  }\n");
+			logMsg(1, "  }\n");
 			break;
 		case INST_DOOR_SET:
-			logMsg(3, "  DOOR_SET\n");
+			logMsg(1, "  DOOR_SET\n");
 			break;
 	}
 }
+
+#endif /* ENABLE_SCRIPT_DISASM */

@@ -479,7 +479,7 @@ void room_rdt3_scriptInit(room_t *this)
 		this->script_length = smaller_offset - offset;
 	}
 
-	logMsg(3, "rdt3: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
+	logMsg(2, "rdt3: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
 
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
@@ -720,15 +720,15 @@ static void scriptPrintInst(room_t *this)
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_IF:
-			reindent(indentLevel);
+			reindent(indentLevel++);
 			strcat(strBuf, "if (xxx) {\n");
 			break;
 		case INST_ELSE:
-			reindent(indentLevel);
+			reindent(--indentLevel);
 			strcat(strBuf, "} else {\n");
 			break;
 		case INST_END_IF:
-			reindent(indentLevel);
+			reindent(--indentLevel);
 			strcat(strBuf, "}\n");
 			break;
 		case INST_SLEEP_N:
@@ -1027,7 +1027,7 @@ static void scriptPrintInst(room_t *this)
 
 	}
 
-	logMsg(3, "%s", strBuf);
+	logMsg(1, "%s", strBuf);
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */

@@ -21,8 +21,13 @@
 
 #include <SDL.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "room.h"
 #include "room_rdt2.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -176,8 +181,6 @@ static void scriptPrintInst(room_t *this);
 
 static int scriptGetConditionLen(script_condition_t *conditionPtr);
 
-static void reindent(int num_indent);
-
 /*--- Functions ---*/
 
 void room_rdt2_scriptInit(room_t *this)
@@ -199,7 +202,7 @@ void room_rdt2_scriptInit(room_t *this)
 		this->script_length = smaller_offset - offset;
 	}
 
-	logMsg(3, "rdt2: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
+	logMsg(1, "rdt2: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
 
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
@@ -247,7 +250,7 @@ static int scriptGetConditionLen(script_condition_t *conditionPtr)
 			inst_len = 2;
 			break;
 		default:
-			logMsg(3, "Unknown condition type 0x%02x\n", conditionPtr->type);
+			logMsg(1, "Unknown condition type 0x%02x\n", conditionPtr->type);
 			break;
 	}
 
@@ -296,6 +299,18 @@ static int scriptGetInstLen(room_t *this)
 	return inst_len;
 }
 
+/*
+ * --- Script disassembly ---
+ */
+
+#ifndef ENABLE_SCRIPT_DISASM
+
+static void scriptPrintInst(room_t *this)
+{
+}
+
+#else
+
 static void reindent(int num_indent)
 {
 	int i;
@@ -325,37 +340,37 @@ static void scriptPrintInst(room_t *this)
 
 	switch(inst->opcode) {
 		case INST_NOP:
-			logMsg(3, "%snop\n", indentStr);
+			logMsg(1, "%snop\n", indentStr);
 			break;
 		case INST_RETURN:
-			logMsg(3, "%sreturn\n", indentStr);
+			logMsg(1, "%sreturn\n", indentStr);
 			reindent(--indent);
-			logMsg(3, "%s}\n", indentStr);
+			logMsg(1, "%s}\n", indentStr);
 			break;
 		case INST_IF:
 			{
-				logMsg(3, "%sif (xxx) {\n", indentStr);
+				logMsg(1, "%sif (xxx) {\n", indentStr);
 				reindent(++indent);
 			}
 			break;
 		case INST_ELSE:
 			{
 				reindent(--indent);
-				logMsg(3,"%s} else {\n", indentStr);
+				logMsg(1,"%s} else {\n", indentStr);
 				reindent(++indent);
 			}
 			break;
 		case INST_END_IF:
 			{
 				reindent(--indent);
-				logMsg(3,"%s}\n", indentStr);
+				logMsg(1,"%s}\n", indentStr);
 			}
 			break;
 		case INST_DOOR_SET:
-			logMsg(3,"%sDOOR_SET xxx\n", indentStr);
+			logMsg(1,"%sDOOR_SET xxx\n", indentStr);
 			break;
 		case INST_EM_SET:
-			logMsg(3,"%sEM_SET xxx\n", indentStr);
+			logMsg(1,"%sEM_SET xxx\n", indentStr);
 			break;
 		/*default:
 			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
@@ -363,3 +378,5 @@ static void scriptPrintInst(room_t *this)
 
 	}
 }
+
+#endif /* ENABLE_SCRIPT_DISASM */

@@ -133,6 +133,14 @@ int CheckParm(int argc,char **argv)
 		params.dithering = 1;
 	}
 
+#ifdef ENABLE_SCRIPT_DISASM
+	/*--- Check for script dump ---*/
+	p = ParmPresent("-dumpscript", argc, argv);
+	if (p) {
+		params.dump_script = 1;
+	}
+#endif
+
 	return 1;
 }
 
@@ -149,6 +157,9 @@ void DisplayUsage(void)
 		"  [-opengl] (enable opengl mode)\n"
 		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
 		"  [-dither] (enable dithering in 8 bits mode)\n"
+#ifdef ENABLE_SCRIPT_DISASM
+		"  [-dumpscript] (enable script dump when loading room)\n"
+#endif
 		"  [-help] (print this message)\n",
 		DEFAULT_BASEDIR,
 		DEFAULT_GAMMA,
