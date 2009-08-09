@@ -389,7 +389,7 @@ static void processPlayerMovement(void)
 
 static void processEnterDoor(void)
 {
-	room_doorswitch_t doorSwitch;
+	room_door_t *door;
 
 	if (!game_state.room) {
 		return;
@@ -398,17 +398,16 @@ static void processEnterDoor(void)
 		return;
 	}
 
-	doorSwitch.x = player_x;
-	doorSwitch.y = player_z;
-	if (game_state.room->enterDoor(game_state.room, &doorSwitch)) {
-		player_x = doorSwitch.next_x;
-		player_y = doorSwitch.next_y;
-		player_z = doorSwitch.next_z;
-		player_a = doorSwitch.next_angle;
+	door = game_state.room->enterDoor(game_state.room, player_x, player_z);
+	if (door) {
+		player_x = door->next_x;
+		player_y = door->next_y;
+		player_z = door->next_z;
+		player_a = door->next_angle;
 
-		game_state.num_stage = doorSwitch.next_stage;
-		game_state.num_room = doorSwitch.next_room;
-		game_state.num_camera = doorSwitch.next_camera;
+		game_state.num_stage = door->next_stage;
+		game_state.num_room = door->next_room;
+		game_state.num_camera = door->next_camera;
 
 		reload_room = 1;
 	}

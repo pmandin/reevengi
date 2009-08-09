@@ -60,7 +60,7 @@ struct room_s {
 
 	void (*shutdown)(room_t *this);
 
-	/* Camera, switches and boundaries */
+	/*--- Camera, switches and boundaries ---*/
 	int num_cameras;
 	int num_camswitches;
 	int num_boundaries;
@@ -69,13 +69,16 @@ struct room_s {
 	void (*getCamswitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
-	/* Doors */
+	/*--- Doors ---*/
 	int num_doors;
 	room_door_t *doors;
 
 	void (*addDoor)(room_t *this, room_door_t *door);
 
-	/* Script execution */
+	/* Return door entered, of NULL if none entered */
+	room_door_t *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
+
+	/*--- Script execution ---*/
 	Uint8 *cur_inst;
 	int cur_inst_offset;
 	int script_length;
@@ -88,7 +91,6 @@ struct room_s {
 
 	/* Misc */
 	void (*drawItems)(room_t *this);
-	int (*enterDoor)(room_t *this, room_doorswitch_t *doorswitch);
 };
 
 /*--- Functions ---*/

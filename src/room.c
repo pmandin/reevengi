@@ -61,6 +61,7 @@ static void room_map_drawCamswitches(room_t *this);
 static void room_map_drawBoundaries(room_t *this);
 
 static void addDoor(room_t *this, room_door_t *door);
+static room_door_t *enterDoor(room_t *this, Sint16 x, Sint16 y);
 
 static Uint8 *scriptPrivFirstInst(room_t *this);
 static int scriptPrivGetInstLen(room_t *this);
@@ -84,6 +85,7 @@ room_t *room_create(void *room_file, Uint32 length)
 	this->shutdown = shutdown;
 
 	this->addDoor = addDoor;
+	this->enterDoor = enterDoor;
 
 	this->scriptPrivFirstInst = scriptPrivFirstInst;
 	this->scriptPrivGetInstLen = scriptPrivGetInstLen;
@@ -465,6 +467,23 @@ static void addDoor(room_t *this, room_door_t *door)
 
 	memcpy(&this->doors[this->num_doors-1], door, sizeof(room_door_t));
 	logMsg(1, "Adding door %d\n", this->num_doors-1);
+}
+
+static room_door_t *enterDoor(room_t *this, Sint16 x, Sint16 y)
+{
+	int i;
+
+	for (i=0; i<this->num_doors; i++) {
+		room_door_t *door = &this->doors[i];
+
+		if ((x >= door->x) && (x <= door->x+door->w) &&
+		    (y >= door->y) && (y <= door->y+door->h))
+		{
+			return door;
+		}
+	}
+
+	return NULL;
 }
 
 /* Script functions */
