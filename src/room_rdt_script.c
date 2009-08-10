@@ -35,8 +35,9 @@
 #define INST_NOP	0x00
 #define INST_IF		0x01
 #define INST_ELSE	0x02
-#define INST_ENDIF	0x03
+#define INST_END_IF	0x03
 #define INST_DOOR_SET	0x0c
+#define INST_EM_SET	0x1b
 
 /*--- Types ---*/
 
@@ -86,61 +87,6 @@ typedef struct {
 	Uint16 unknown2;
 } script_door_set_t;
 
-/*
-1000
-0c 00  8c 0a f4 01 a4 06 08 07  03 00 00 04 00 01  fc 21 00 00 dc 1e 00 04 00 81
--> s1,r1,c4
-
-1010
-0c 00  b0 1d 14 1e 60 09 dc 05  00 00 00 04 00 00  ac 0d 00 00 28 0a 00 0c 00 81
-0c 01  b0 36 30 43 d0 07 dc 05  02 00 1d 05 ca 02  48 0d 00 00 f0 23 00 04 34 81
-0c 02  c8 4b 38 4a d0 07 8c 0a  01 00 00 01 00 03  60 09 00 00 e0 60 00 00 00 81
-0c 03  5c 12 c4 09 2d 0a 14 05  00 05 18 60 00 41  14 37 00 00 ec 2c 00 00 00 81
--> s1,r0,c0
--> s2,r1,c0
-
-1030
-0c 00  00 00 94 5c c4 09 34 08  02 00 00 01 00 01  38 4a 00 00 14 50 00 08 00 81
-0c 01  20 03 f4 01 80 0c c4 09  01 00 01 01 92 04  b8 3d 00 00 74 0e 00 04 fe 81
-0c 02  38 4a 24 45 c4 09 60 09  02 00 02 01 40 0c  20 35 00 00 e8 1c 00 08 00 81
-0c 03  4c 1d fc 3a fc 08 d0 07  03 00 00 04 40 0d  e0 15 00 00 f0 0a 00 0c 00 81
-0c 04  00 00 74 27 60 09 40 06  02 00 1c 03 cb 0e  e8 1c 00 00 cc 29 00 08 33 81
--> s1,r1,c0   0000 0001 0000 0000
--> s1,r4,c2   0000 0100 1001 0010
--> s1,r12,c0  0000 1100 0100 0000
--> s1,r13,c0
-
-1040
-0c 00  d0 39 04 10 b8 0b 1c 0c  02 00 01 01 92 03  b8 0b 00 00 b8 0b 00 0c ff 81
-0c 01  68 74 a0 0f a4 06 ac 0d  02 00 1f 05 86 0f  b0 36 00 00 b8 0b 00 0c 33 81
-0c 02  0c 7b 6c 07 fc 08 08 07  06 00 00 01 d3 10  00 00 00 00 00 00 00 00 ff 81
-0c 03  68 29 00 00 f0 0a fc 08  01 00 03 04 00 05  9c 18 00 00 14 37 00 04 00 81
--> s1,r5,c2
--> s1,r3,c0
-
-1050
-0c 00  b4 14 b0 36 f0 0a f0 0a  02 00 03 04 00 04  ec 2c 00 00 f0 0a 00 0c 00 81
-0c 01  70 7b 9c 18 d0 07 a0 0f  09 00 03 07 00 06  48 0d 00 00 68 42 00 00 00 81
-
-1060
-0c 00  7c 79 10 27 d0 07 b8 0b  06 00 04 07 00 07  8c 0a 00 00 c8 19 00 00 00 81
--> s1,r7,c0
-0c 01  7c 79 a8 48 d0 07 b0 04  02 00 03 01 c5 11  f0 0a 00 00 f8 11 00 00 34 81
--> s1,r0x11,c0
-0c 02  e8 03 98 3a 9e 07 d8 0e  06 00 03 07 00 05  b4 78 00 00 6c 20 00 08 00 81
--> s1,r5,c0
-0c 03  08 39 20 03 50 14 98 08  02 00 03 01 c5 11  f0 0a 00 00 f8 11 00 00 34 81
-
-0c 04  f0 3c 1c 3e 54 0b 28 0a  00 04 16 60 00 43  cc 42 00 00 d4 62 00 0c 00 81
--> s2,r3,c0 : 0x43 = 0x0100 0011
-
-room 3000
-0c 00  3c 5a 98 6c a4 06 d0 07  00 08 0f 40 00 01  80 57 00 00 10 0e 00 0c 00 81
-0c 01  00 00 00 00 01 00 01 00  01 06 15 40 00 02  4c 4f 00 00 5c 12 00 04 00 00
-0c 02  1c 57 80 0c 5c 12 04 10  0c 01 08 00 00 3b  08 20 00 00 0c 17 00 08 00 81
-0x3b = 0011 1011
-*/
-
 typedef union {
 	Uint8 opcode;
 	script_if_t	i_if;
@@ -160,7 +106,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_NOP,	2},
 	/*{INST_IF,	sizeof(script_if_t)},*/
 	{INST_ELSE,	sizeof(script_else_t)},
-	{INST_ENDIF,	sizeof(script_endif_t)},
+	{INST_END_IF,	sizeof(script_endif_t)},
 	{0x04,	4},
 	{0x05,	4},
 	{0x06,	2},
@@ -176,7 +122,7 @@ static const script_inst_len_t inst_length[]={
 	{0x14,	4},
 	{0x18,	26},
 	{0x19,	4},
-	{0x1b,	22},
+	{INST_EM_SET,	22},
 	{0x1c,	10},
 	{0x1d,	6},
 	{0x1f,	28},
@@ -211,6 +157,8 @@ static Uint8 *scriptFirstInst(room_t *this);
 static int scriptGetInstLen(room_t *this);
 static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
+
+static void scriptDisasmInit(void);
 
 /*--- Functions ---*/
 
@@ -248,6 +196,9 @@ static Uint8 *scriptFirstInst(room_t *this)
 
 	this->cur_inst_offset = 0;
 	this->cur_inst = (& ((Uint8 *) this->file)[offset+2]);
+
+	scriptDisasmInit();
+
 	return this->cur_inst;
 }
 
@@ -354,10 +305,44 @@ static void scriptPrintInst(room_t *this)
 {
 }
 
+static void scriptDisasmInit(void)
+{
+}
+
 #else
+
+/*--- Variables ---*/
+
+static int indentLevel;
+
+static char strBuf[256];
+static char tmpBuf[256];
+
+/*--- Functions ---*/
+
+static void reindent(int num_indent)
+{
+	int i;
+
+	memset(tmpBuf, 0, sizeof(tmpBuf));
+
+	for (i=0; (i<num_indent) && (i<sizeof(tmpBuf)-1); i++) {
+		tmpBuf[i<<1]=' ';
+		tmpBuf[(i<<1)+1]=' ';
+	}
+
+	strncat(strBuf, tmpBuf, sizeof(strBuf)-1);
+}
+
+static void scriptDisasmInit(void)
+{
+	indentLevel = 0;
+}
 
 static void scriptPrintInst(room_t *this)
 {
+	script_inst_t *inst;
+
 	if (!this) {
 		return;
 	}
@@ -365,23 +350,51 @@ static void scriptPrintInst(room_t *this)
 		return;
 	}
 
-	switch(this->cur_inst[0]) {
+	inst = (script_inst_t *) this->cur_inst;
+
+	memset(strBuf, 0, sizeof(strBuf));
+
+	switch(inst->opcode) {
+
+		/* 0x00-0x0f */
+
 		case INST_NOP:
-			logMsg(1, "  nop\n");
+			reindent(indentLevel);
+			strcat(strBuf, "nop\n");
 			break;
 		case INST_IF:
-			logMsg(1, "  if (xxx) {\n");
+			reindent(indentLevel++);
+			strcat(strBuf, "if (xxx) {\n");
 			break;
 		case INST_ELSE:
-			logMsg(1, "  } else {\n");
+			reindent(--indentLevel);
+			strcat(strBuf, "} else {\n");
 			break;
-		case INST_ENDIF:
-			logMsg(1, "  }\n");
+		case INST_END_IF:
+			reindent(--indentLevel);
+			strcat(strBuf, "}\n");
 			break;
 		case INST_DOOR_SET:
-			logMsg(1, "  DOOR_SET\n");
+			reindent(indentLevel);
+			strcat(strBuf, "DOOR_SET xxx\n");
 			break;
+
+		/* 0x10-0x1f */
+
+		case INST_EM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "EM_SET xxx\n");
+			break;
+
+		/*default:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
+			strcat(strBuf, tmpBuf);
+			break;*/
+
 	}
+
+	logMsg(1, "%s", strBuf);
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */

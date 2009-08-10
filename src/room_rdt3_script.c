@@ -1135,6 +1135,7 @@ static void scriptPrintInst(room_t *this)
 
 		case INST_END_SCRIPT:
 			break;
+
 		default:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);

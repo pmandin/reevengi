@@ -374,6 +374,10 @@ static void scriptPrintInst(room_t *this)
 {
 }
 
+static void scriptDisasmInit(void)
+{
+}
+
 #else
 
 /*--- Variables ---*/
@@ -426,8 +430,6 @@ static void scriptPrintInst(room_t *this)
 		++indentLevel;
 	}
 
-	inst = (script_inst_t *) this->cur_inst;
-
 	switch(inst->opcode) {
 
 		/* 0x00-0x0f */
@@ -459,14 +461,21 @@ static void scriptPrintInst(room_t *this)
 			reindent(--indentLevel);
 			strcat(strBuf, "}\n");
 			break;
+
+		/* 0x30-0x3f */
+
 		case INST_DOOR_SET:
 			reindent(indentLevel);
 			strcat(strBuf,"DOOR_SET xxx\n");
 			break;
+
+		/* 0x40-0x4f */
+
 		case INST_EM_SET:
 			reindent(indentLevel);
 			strcat(strBuf,"EM_SET xxx\n");
 			break;
+
 		/*default:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
