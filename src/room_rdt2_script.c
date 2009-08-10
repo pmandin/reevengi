@@ -201,6 +201,8 @@ static void scriptPrintInst(room_t *this);
 
 static int scriptGetConditionLen(script_condition_t *conditionPtr);
 
+static void scriptDisasmInit(void);
+
 /*--- Functions ---*/
 
 void room_rdt2_scriptInit(room_t *this)
@@ -253,6 +255,9 @@ static Uint8 *scriptFirstInst(room_t *this)
 
 	this->cur_inst_offset = SDL_SwapLE16(functionArrayPtr[0]);
 	this->cur_inst = (& ((Uint8 *) this->file)[offset + this->cur_inst_offset]);
+
+	scriptDisasmInit();
+
 	return this->cur_inst;
 }
 
@@ -371,20 +376,38 @@ static void scriptPrintInst(room_t *this)
 
 #else
 
+/*--- Variables ---*/
+
+static int numFunc;
+static int indentLevel;
+
+static char strBuf[256];
+static char tmpBuf[256];
+
+/*--- Functions ---*/
+
 static void reindent(int num_indent)
 {
 	int i;
 
-	memset(indentStr, 0, sizeof(indentStr));
-	for (i=0; (i<num_indent) && (i<255); i++) {
-		indentStr[i<<1]=' ';
-		indentStr[(i<<1)+1]=' ';
+	memset(tmpBuf, 0, sizeof(tmpBuf));
+
+	for (i=0; (i<num_indent) && (i<sizeof(tmpBuf)-1); i++) {
+		tmpBuf[i<<1]=' ';
+		tmpBuf[(i<<1)+1]=' ';
 	}
+
+	strncat(strBuf, tmpBuf, sizeof(strBuf)-1);
+}
+
+static void scriptDisasmInit(void)
+{
+	indentLevel = 0;
+	numFunc = 0;
 }
 
 static void scriptPrintInst(room_t *this)
 {
-	int indent = 0, numFunc = 0;
 	script_inst_t *inst;
 
 	if (!this) {
@@ -394,49 +417,65 @@ static void scriptPrintInst(room_t *this)
 		return;
 	}
 
-	reindent(indent);
+	inst = (script_inst_t *) this->cur_inst;
+
+	memset(strBuf, 0, sizeof(strBuf));
+
+	if ((indentLevel==0) && (inst->opcode!=0xff)) {
+		sprintf(strBuf, "func%02x() {\n", numFunc++);
+		++indentLevel;
+	}
 
 	inst = (script_inst_t *) this->cur_inst;
 
 	switch(inst->opcode) {
+
+		/* 0x00-0x0f */
+
 		case INST_NOP:
-			logMsg(1, "%snop\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf, "nop\n");
 			break;
 		case INST_RETURN:
-			logMsg(1, "%sreturn\n", indentStr);
-			reindent(--indent);
-			logMsg(1, "%s}\n", indentStr);
+			if (indentLevel>1) {
+				reindent(indentLevel);
+				strcat(strBuf, "return\n");
+			}
+			--indentLevel;
+			if (indentLevel==0) {
+				reindent(indentLevel);
+				strcat(strBuf, "}\n\n");
+			}
 			break;
 		case INST_IF:
-			{
-				logMsg(1, "%sif (xxx) {\n", indentStr);
-				reindent(++indent);
-			}
+			reindent(indentLevel++);
+			strcat(strBuf, "if (xxx) {\n");
 			break;
 		case INST_ELSE:
-			{
-				reindent(--indent);
-				logMsg(1,"%s} else {\n", indentStr);
-				reindent(++indent);
-			}
+			reindent(--indentLevel);
+			strcat(strBuf, "} else {\n");
 			break;
 		case INST_END_IF:
-			{
-				reindent(--indent);
-				logMsg(1,"%s}\n", indentStr);
-			}
+			reindent(--indentLevel);
+			strcat(strBuf, "}\n");
 			break;
 		case INST_DOOR_SET:
-			logMsg(1,"%sDOOR_SET xxx\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf,"DOOR_SET xxx\n");
 			break;
 		case INST_EM_SET:
-			logMsg(1,"%sEM_SET xxx\n", indentStr);
+			reindent(indentLevel);
+			strcat(strBuf,"EM_SET xxx\n");
 			break;
 		/*default:
-			logMsg(3, "Unknown opcode 0x%02x offset 0x%08x\n", inst->opcode, this->cur_inst_offset);
+			reindent(indentLevel);
+			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
+			strcat(strBuf, tmpBuf);
 			break;*/
 
 	}
+
+	logMsg(1, "%s", strBuf);
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */
