@@ -33,7 +33,8 @@
 #define INST_NOP	0x00
 #define INST_RETURN	0x01
 #define INST_SLEEP_1	0x02
-#define INST_EXEC	0x04
+#define INST_EVT_EXEC	0x04
+#define INST_EVT_KILL	0x05
 #define INST_IF		0x06
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
@@ -52,6 +53,7 @@
 #define INST_GOTO	0x18
 #define INST_FUNC	0x19
 #define INST_BREAK	0x1b
+#define INST_EVAL_CC	0x1d
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
 
@@ -61,20 +63,28 @@
 #define INST_LINE_MAIN	0x2e
 #define INST_LINE_END	0x2f
 
+#define INST_LIGHT_COLOR_SET	0x32
 #define INST_AHEAD_ROOM_SET	0x33
+#define INST_EVAL_BGM_TBL_CK	0x35
+#define INST_CHASER_ITEM_SET	0x3b
 #define INST_FLOOR_SET	0x3f
 
+#define INST_VAR_SET	0x40
 #define INST_CALC_STORE	0x41
 #define INST_CALC_LOAD	0x42
 #define INST_FADE_SET	0x46
 #define INST_WORK_SET	0x47
+#define INST_EVAL_CK	0x4c
 #define INST_FLAG_SET	0x4d
+#define INST_EVAL_CMP	0x4e
 
 #define INST_CUT_CHG	0x50
 #define INST_CUT_AUTO	0x52
 #define INST_CUT_REPLACE	0x53
 #define INST_POS_SET	0x55
 #define INST_DIR_SET	0x56
+#define INST_SET_VIB0	0x57
+#define INST_SET_VIB_FADE	0x59
 #define INST_RBJ_SET	0x5a
 #define INST_MESSAGE_ON	0x5b
 
@@ -108,10 +118,6 @@
 #define INST_PLC_CNT	0x89
 
 #define INST_END_SCRIPT	0xff
-
-#define CONDITION_CC		0x1d
-#define CONDITION_CK		0x4c
-#define CONDITION_CMP		0x4e
 
 /*--- Types ---*/
 
@@ -273,6 +279,12 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 num_var;
+	Sint16 value;
+} script_var_set_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 unknown;
 	Uint16 block_length;
 	Uint16 count;
@@ -306,6 +318,7 @@ typedef union {
 	script_line_begin_t	line_begin;
 	script_line_main_t	line_main;
 	script_work_set_t	work_set;
+	script_var_set_t	var_set;
 } script_inst_t;
 
 typedef struct {
@@ -321,9 +334,9 @@ static const script_inst_len_t inst_length[]={
 	{INST_RETURN,	2},
 	{INST_SLEEP_1,	1},
 	{0x03,		2},
-	{INST_EXEC,	sizeof(script_exec_t)},
-	{0x05,		2},
-	/*{INST_IF,	sizeof(script_if_t)},*/
+	{INST_EVT_EXEC,	sizeof(script_exec_t)},
+	{INST_EVT_KILL,	2},
+	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
 	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
@@ -334,10 +347,10 @@ static const script_inst_len_t inst_length[]={
 	{INST_FOR_END,	2},
 
 	/* 0x10-0x1f */
-	/*{INST_WHILE,	sizeof(script_while_t)},*/
+	{INST_WHILE,	sizeof(script_while_t)},
 	{INST_WHILE_END,	2},
 	{INST_DO,	4},
-	/*{INST_DO_END,	sizeof(script_do_end_t)},*/
+	{INST_DO_END,	sizeof(script_do_end_t)},
 	{INST_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
 	{0x16,		2},	/* maybe */
@@ -347,7 +360,7 @@ static const script_inst_len_t inst_length[]={
 	{0x1a,		4},
 	{INST_BREAK,	2},	
 	{0x1c,		2},	/* maybe */
-	{0x1d,		4},
+	{INST_EVAL_CC,	4},
 	{INST_VALUE_SET,	4},
 	{INST_SET1,	4},
 
@@ -367,18 +380,19 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x30-0x3f */
 	{0x30,		6},	/* maybe */
-	{0x32,		6},	/* maybe */
+	{INST_LIGHT_COLOR_SET,		6},
 	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
 	{0x34,		10},	/* maybe */
+	{INST_EVAL_BGM_TBL_CK,		6},
 	{0x37,		2},	/* maybe */
 	{0x38,		4},	/* maybe */
-	{0x3b,		4},	/* maybe */
+	{INST_CHASER_ITEM_SET,		4},	/* maybe */
 	{0x3d,		2},
 	{0x3e,		6},	/* maybe */
 	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
 
 	/* 0x40-0x4f */
-	{0x40,		4},
+	{INST_VAR_SET,		4},
 	{INST_CALC_STORE,	4},
 	{INST_CALC_LOAD,	4},
 	{0x43,		6},	/* maybe */
@@ -388,9 +402,9 @@ static const script_inst_len_t inst_length[]={
 	{0x49,		4},	/* maybe */
 	{0x4a,		2},	/* maybe */
 	{0x4b,		2},	/* maybe */
-	{0x4c,		4},	/* maybe */
+	{INST_EVAL_CK,	4},
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
-	{0x4e,		6},	/* maybe */
+	{INST_EVAL_CMP,	6},
 	{0x4f,		2},	/* maybe */
 
 	/* 0x50-0x5f */
@@ -401,9 +415,9 @@ static const script_inst_len_t inst_length[]={
 	{0x54,		4 /*12*/},	/* maybe */
 	{INST_POS_SET,		8},
 	{INST_DIR_SET,		8},
-	{0x57,		6},
+	{INST_SET_VIB0,		6},
 	{0x58,		6},
-	{0x59,		8},
+	{INST_SET_VIB_FADE,	8},
 	{INST_RBJ_SET,		2},
 	{INST_MESSAGE_ON,	6},
 	{0x5c,		2},	/* maybe */
@@ -530,6 +544,7 @@ static Uint8 *scriptFirstInst(room_t *this)
 	return this->cur_inst;
 }
 
+#if 0
 static int scriptGetConditionLen(script_condition_t *conditionPtr)
 {
 	int inst_len = 0;
@@ -544,7 +559,6 @@ static int scriptGetConditionLen(script_condition_t *conditionPtr)
 		case 0x6c:
 			inst_len = sizeof(script_condition_ck_t);
 			break;
-		case 0x35:
 		case 0x36:
 		case 0x43:
 		case CONDITION_CMP:
@@ -560,6 +574,7 @@ static int scriptGetConditionLen(script_condition_t *conditionPtr)
 
 	return inst_len;
 }
+#endif
 
 static int scriptGetInstLen(room_t *this)
 {
@@ -579,6 +594,7 @@ static int scriptGetInstLen(room_t *this)
 		}
 	}
 
+#if 0
 	/* Exceptions, variable lengths */
 	if (inst_len == 0) {
 		script_inst_t *cur_inst = (script_inst_t *) this->cur_inst;
@@ -605,6 +621,7 @@ static int scriptGetInstLen(room_t *this)
 				break;
 		}
 	}
+#endif
 
 	return inst_len;
 }
@@ -767,11 +784,15 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "sleep 1\n");
 			break;
-		case INST_EXEC:
+		case INST_EVT_EXEC:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "EVT_EXEC 0x%02x func%02x()\n",
 				inst->exec.mask, inst->exec.func[1]);
 			strcat(strBuf, tmpBuf);
+			break;
+		case INST_EVT_KILL:
+			reindent(indentLevel);
+			strcat(strBuf, "EVT_KILL xxx\n");
 			break;
 		case INST_IF:
 			reindent(indentLevel++);
@@ -849,6 +870,10 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "break\n");
 			break;
+		case INST_EVAL_CC:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_CC xxx\n");
+			break;
 		case 0x1e:
 		case 0x1f:
 			reindent(indentLevel);
@@ -880,10 +905,22 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x30-0x3f */
 
+		case INST_LIGHT_COLOR_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "LIGHT_COLOR_SET xxx\n");
+			break;
 		case INST_AHEAD_ROOM_SET:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "AHEAD_ROOM_SET 0x%04x\n", SDL_SwapLE16(inst->ahead_room_set.value));
 			strcat(strBuf, tmpBuf);
+			break;
+		case INST_EVAL_BGM_TBL_CK:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_BGM_TBL_CK xxx\n");
+			break;
+		case INST_CHASER_ITEM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "CHASER_ITEM_SET xxx\n");
 			break;
 		case INST_FLOOR_SET:
 			reindent(indentLevel);
@@ -892,6 +929,15 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x40-0x4f */
 
+		case INST_VAR_SET:
+			{
+				script_var_set_t *varSet = (script_var_set_t *) inst;
+
+				reindent(indentLevel);
+				sprintf(tmpBuf, "SET var%02x = %d\n", varSet->num_var, SDL_SwapLE16(varSet->value));
+				strcat(strBuf, tmpBuf);
+			}
+			break;
 		case INST_CALC_STORE:
 			reindent(indentLevel);
 			strcat(strBuf, "CALC_STORE xxx\n");
@@ -918,6 +964,10 @@ static void scriptPrintInst(room_t *this)
 				strcat(strBuf, tmpBuf);
 			}
 			break;
+		case INST_EVAL_CK:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_CK xxx\n");
+			break;
 		case INST_FLAG_SET:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "SET 0x%02x object 0x%02x %s\n",
@@ -925,6 +975,10 @@ static void scriptPrintInst(room_t *this)
 				inst->set_flag.object,
 				(inst->set_flag.value ? "on" : "off"));
 			strcat(strBuf, tmpBuf);
+			break;
+		case INST_EVAL_CMP:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_CMP xxx\n");
 			break;
 
 		/* 0x50-0x5f */
@@ -948,6 +1002,14 @@ static void scriptPrintInst(room_t *this)
 		case INST_DIR_SET:
 			reindent(indentLevel);
 			strcat(strBuf, "DIR_SET xxx\n");
+			break;
+		case INST_SET_VIB0:
+			reindent(indentLevel);
+			strcat(strBuf, "SET_VIB0 xxx\n");
+			break;
+		case INST_SET_VIB_FADE:
+			reindent(indentLevel);
+			strcat(strBuf, "SET_VIB_FADE xxx\n");
 			break;
 		case INST_RBJ_SET:
 			reindent(indentLevel);
