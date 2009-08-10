@@ -370,7 +370,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_EVT_CUT,	4},
 	{0x24,		2}, /* maybe */
 	{0x25,		5}, /* maybe */
-	{0x27,		4}, /* maybe */
+	{0x27,		6}, /* maybe */
 	{0x28,		14}, /* maybe */
 	{0x2a,		6}, /* maybe */
 	{0x2c,		4}, /* maybe */
