@@ -36,7 +36,10 @@
 #define INST_IF		0x01
 #define INST_ELSE	0x02
 #define INST_END_IF	0x03
+#define INST_EVAL_CK	0x04
+#define INST_EVAL_CMP	0x06
 #define INST_DOOR_SET	0x0c
+
 #define INST_EM_SET	0x1b
 
 /*--- Types ---*/
@@ -44,24 +47,6 @@
 typedef struct {
 	Uint8 opcode;
 	Uint8 block_length;
-} script_if_base_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 block_length;
-	Uint8 unknown[2];	/* [0] = 0x50,0x1a,0x07,0x21 */
-} script_if02_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 block_length;
-	Uint8 unknown[4];	/* [0] = 0x04,0x06 */
-} script_if04_t;
-
-typedef union {
-	script_if_base_t	base;
-	script_if02_t		if02;
-	script_if04_t		if04;
 } script_if_t;
 
 typedef struct {
@@ -73,6 +58,13 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 dummy;
 } script_endif_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 flag;
+	Uint8 object;
+	Uint8 value;
+} script_eval_ck_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -104,12 +96,12 @@ typedef struct {
 
 static const script_inst_len_t inst_length[]={
 	{INST_NOP,	2},
-	/*{INST_IF,	sizeof(script_if_t)},*/
+	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	sizeof(script_endif_t)},
-	{0x04,	4},
+	{INST_EVAL_CK,	sizeof(script_eval_ck_t)},
 	{0x05,	4},
-	{0x06,	2},
+	{INST_EVAL_CMP,	4},
 	{0x07,	10},
 	{0x09,	2},
 	{INST_DOOR_SET,	26},
@@ -220,6 +212,7 @@ static int scriptGetInstLen(room_t *this)
 		}
 	}
 
+#if 0
 	/* Exceptions, variable lengths */
 	if (inst_len == 0) {
 		switch (this->cur_inst[0]) {
@@ -245,6 +238,7 @@ static int scriptGetInstLen(room_t *this)
 				break;
 		}
 	}
+#endif
 
 	return inst_len;
 }
@@ -313,6 +307,7 @@ static void scriptDisasmInit(void)
 
 /*--- Variables ---*/
 
+/*static int numFunc;*/
 static int indentLevel;
 
 static char strBuf[256];
@@ -337,6 +332,7 @@ static void reindent(int num_indent)
 static void scriptDisasmInit(void)
 {
 	indentLevel = 0;
+	/*numFunc = 0;*/
 }
 
 static void scriptPrintInst(room_t *this)
@@ -353,6 +349,11 @@ static void scriptPrintInst(room_t *this)
 	inst = (script_inst_t *) this->cur_inst;
 
 	memset(strBuf, 0, sizeof(strBuf));
+
+	/*if ((indentLevel==0) && (inst->opcode!=0xff)) {
+		sprintf(strBuf, "func%02x() {\n", numFunc++);
+		++indentLevel;
+	}*/
 
 	switch(inst->opcode) {
 
@@ -374,6 +375,21 @@ static void scriptPrintInst(room_t *this)
 			reindent(--indentLevel);
 			strcat(strBuf, "}\n");
 			break;
+		case INST_EVAL_CK:
+			{
+				script_eval_ck_t *evalCk = (script_eval_ck_t *) inst;
+
+				reindent(indentLevel);
+				sprintf(tmpBuf, "EVAL_CK flag 0x%02x object 0x%02x %s\n",
+					evalCk->flag, evalCk->object,
+					evalCk->value ? "on" : "off");
+				strcat(strBuf, tmpBuf);
+			}
+			break;
+		case INST_EVAL_CMP:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_CMP xxx\n");
+			break;
 		case INST_DOOR_SET:
 			reindent(indentLevel);
 			strcat(strBuf, "DOOR_SET xxx\n");
@@ -386,11 +402,11 @@ static void scriptPrintInst(room_t *this)
 			strcat(strBuf, "EM_SET xxx\n");
 			break;
 
-		/*default:
+		default:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
 			strcat(strBuf, tmpBuf);
-			break;*/
+			break;
 
 	}
 
