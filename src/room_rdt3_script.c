@@ -482,8 +482,6 @@ static int scriptGetInstLen(room_t *this);
 static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
 
-static int scriptGetConditionLen(script_condition_t *conditionPtr);
-
 static void scriptDisasmInit(void);
 
 /*--- Functions ---*/
@@ -544,38 +542,6 @@ static Uint8 *scriptFirstInst(room_t *this)
 	return this->cur_inst;
 }
 
-#if 0
-static int scriptGetConditionLen(script_condition_t *conditionPtr)
-{
-	int inst_len = 0;
-
-	switch(conditionPtr->type) {
-		case 0x0e:
-		case 0x27:
-		case 0x6b:
-			inst_len = sizeof(script_condition_27_t);
-			break;
-		case CONDITION_CK:
-		case 0x6c:
-			inst_len = sizeof(script_condition_ck_t);
-			break;
-		case 0x36:
-		case 0x43:
-		case CONDITION_CMP:
-			inst_len = sizeof(script_condition_cmp_t);
-			break;
-		case CONDITION_CC:
-			inst_len = sizeof(script_condition_cc_t);
-			break;
-		default:
-			logMsg(3, "Unknown condition type 0x%02x\n", conditionPtr->type);
-			break;
-	}
-
-	return inst_len;
-}
-#endif
-
 static int scriptGetInstLen(room_t *this)
 {
 	int i, inst_len = 0;
@@ -593,35 +559,6 @@ static int scriptGetInstLen(room_t *this)
 			break;
 		}
 	}
-
-#if 0
-	/* Exceptions, variable lengths */
-	if (inst_len == 0) {
-		script_inst_t *cur_inst = (script_inst_t *) this->cur_inst;
-		switch(cur_inst->opcode) {
-			case INST_IF:
-				inst_len = sizeof(script_if_t) +
-					scriptGetConditionLen(
-						(script_condition_t *) (&this->cur_inst[sizeof(script_if_t)])
-					);
-				break;
-			case INST_WHILE:
-				inst_len = sizeof(script_while_t) +
-					scriptGetConditionLen(
-						(script_condition_t *) (&this->cur_inst[sizeof(script_while_t)])
-					);
-				break;
-			case INST_DO_END:
-				inst_len = sizeof(script_do_end_t) +
-					scriptGetConditionLen(
-						(script_condition_t *) (&this->cur_inst[sizeof(script_do_end_t)])
-					);
-				break;
-			default:
-				break;
-		}
-	}
-#endif
 
 	return inst_len;
 }
@@ -773,10 +710,8 @@ static void scriptPrintInst(room_t *this)
 			if (indentLevel>1) {
 				reindent(indentLevel);
 				strcat(strBuf, "return\n");
-			}
-			--indentLevel;
-			if (indentLevel==0) {
-				reindent(indentLevel);
+			} else {
+				reindent(--indentLevel);
 				strcat(strBuf, "}\n\n");
 			}
 			break;

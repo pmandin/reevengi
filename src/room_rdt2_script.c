@@ -33,9 +33,16 @@
 
 #define INST_NOP	0x00
 #define INST_RETURN	0x01
+#define INST_EVT_EXEC	0x04
 #define INST_IF		0x06
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
+#define INST_SLEEP_N	0x09
+
+#define INST_FUNC	0x18
+
+#define INST_EVAL_CK	0x21
+#define INST_EVAL_CMP	0x23
 
 #define INST_DOOR_SET	0x3b
 
@@ -62,6 +69,17 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 unknown;
+	Uint16 delay;
+} script_sleepn_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 num_func;
+} script_func_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 unknown0;
 	Uint8 id;
 	Uint8 unknown1[3];
@@ -82,6 +100,8 @@ typedef union {
 	Uint8 opcode;
 	script_if_t	i_if;
 	script_else_t	i_else;
+	script_sleepn_t	sleepn;
+	script_func_t	func;
 	script_door_set_t	door_set;
 } script_inst_t;
 
@@ -98,27 +118,27 @@ static const script_inst_len_t inst_length[]={
 	{INST_RETURN,	2},
 	{0x02,		2},
 	{0x03,		2},
-	{0x04,		4},
+	{INST_EVT_EXEC,	4},
 	{0x05,		2},
-	/*{INST_IF,	sizeof(script_if_t)},*/
+	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
-	{0x09,		4},
+	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
 	{0x0a,		2},
 	{0x0b,		2},
 	{0x0d,		2},
-	{0x0e,		2},
+	{0x0e,		16},
 	{0x0f,		2},
 
 	/* 0x10-0x1f */
 	{0x10,		2},
 	{0x11,		2},
-	/*{0x12,		2},*/
+	{0x12,		2},
 	{0x13,		4},
-	{0x14,		2+4},
+	{0x14,		2},
 	{0x16,		2},
 	{0x17,		8},
-	{0x18,		2},
+	{INST_FUNC,	sizeof(script_func_t)},
 	{0x1a,		2},
 	{0x1b,		2},
 	{0x1c,		2},
@@ -126,10 +146,12 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x20-0x2f */
 	{0x20,		2},
-	{0x21,		4},
+	{INST_EVAL_CK,	4},
 	{0x22,		4},
+	{INST_EVAL_CMP,	6},
+	{0x24,		4},
 	{0x25,		2},
-	/*{0x26,		2},*/
+	{0x26,		4},
 	{0x28,		4},
 	{0x29,		4},
 	{0x2b,		6},
@@ -149,7 +171,8 @@ static const script_inst_len_t inst_length[]={
 	{0x3a,		16},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{0x3c,		16},
-	{0x3d,		4+8},
+	{0x3d,		10},
+	{0x3e,		2},
 	{0x3f,		4},
 
 	/* 0x40-0x4f */
@@ -198,8 +221,6 @@ static Uint8 *scriptFirstInst(room_t *this);
 static int scriptGetInstLen(room_t *this);
 static void scriptExecInst(room_t *this);
 static void scriptPrintInst(room_t *this);
-
-static int scriptGetConditionLen(script_condition_t *conditionPtr);
 
 static void scriptDisasmInit(void);
 
@@ -261,28 +282,6 @@ static Uint8 *scriptFirstInst(room_t *this)
 	return this->cur_inst;
 }
 
-static int scriptGetConditionLen(script_condition_t *conditionPtr)
-{
-	int inst_len = 0;
-
-	switch(conditionPtr->type) {
-		case 0x21:
-			inst_len = 4;
-			break;
-		case 0x23:
-			inst_len = 6;
-			break;
-		case 0x3e:
-			inst_len = 2;
-			break;
-		default:
-			logMsg(1, "Unknown condition type 0x%02x\n", conditionPtr->type);
-			break;
-	}
-
-	return inst_len;
-}
-
 static int scriptGetInstLen(room_t *this)
 {
 	int i, inst_len = 0;
@@ -298,27 +297,6 @@ static int scriptGetInstLen(room_t *this)
 		if (inst_length[i].opcode == this->cur_inst[0]) {
 			inst_len = inst_length[i].length;
 			break;
-		}
-	}
-
-	/* Exceptions, variable lengths */
-	if (inst_len == 0) {
-		script_inst_t *cur_inst = (script_inst_t *) this->cur_inst;
-		switch(cur_inst->opcode) {
-			case INST_IF:
-				inst_len = sizeof(script_if_t) +
-					scriptGetConditionLen(
-						(script_condition_t *) (&this->cur_inst[sizeof(script_if_t)])
-					);
-				break;
-			case 0x12:
-				inst_len = 2 +
-					scriptGetConditionLen(
-						(script_condition_t *) (&this->cur_inst[2])
-					);
-				break;
-			default:
-				break;
 		}
 	}
 
@@ -442,12 +420,14 @@ static void scriptPrintInst(room_t *this)
 			if (indentLevel>1) {
 				reindent(indentLevel);
 				strcat(strBuf, "return\n");
-			}
-			--indentLevel;
-			if (indentLevel==0) {
-				reindent(indentLevel);
+			} else {
+				reindent(--indentLevel);
 				strcat(strBuf, "}\n\n");
 			}
+			break;
+		case INST_EVT_EXEC:
+			reindent(indentLevel);
+			strcat(strBuf, "EVT_EXEC xxx\n");
 			break;
 		case INST_IF:
 			reindent(indentLevel++);
@@ -460,6 +440,30 @@ static void scriptPrintInst(room_t *this)
 		case INST_END_IF:
 			reindent(--indentLevel);
 			strcat(strBuf, "}\n");
+			break;
+		case INST_SLEEP_N:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
+			strcat(strBuf, tmpBuf);
+			break;
+
+		/* 0x10-0x1f */
+
+		case INST_FUNC:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
+			strcat(strBuf, tmpBuf);
+			break;
+
+		/* 0x20-0x2f */
+
+		case INST_EVAL_CK:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_CK xxx\n");
+			break;
+		case INST_EVAL_CMP:
+			reindent(indentLevel);
+			strcat(strBuf, "EVAL_CMP xxx\n");
 			break;
 
 		/* 0x30-0x3f */
@@ -476,11 +480,11 @@ static void scriptPrintInst(room_t *this)
 			strcat(strBuf,"EM_SET xxx\n");
 			break;
 
-		/*default:
+		default:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
 			strcat(strBuf, tmpBuf);
-			break;*/
+			break;
 
 	}
 

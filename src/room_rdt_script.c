@@ -212,34 +212,6 @@ static int scriptGetInstLen(room_t *this)
 		}
 	}
 
-#if 0
-	/* Exceptions, variable lengths */
-	if (inst_len == 0) {
-		switch (this->cur_inst[0]) {
-			case INST_IF:
-				{
-					script_if02_t *i_if = (script_if02_t *) this->cur_inst;
-					if (i_if->unknown[0] == 0x50) {
-						inst_len = sizeof(script_if02_t);
-					} else if (i_if->unknown[0] == 0x1a) {
-						inst_len = sizeof(script_if02_t);
-					} else if (i_if->unknown[0] == 0x21) {
-						inst_len = sizeof(script_if02_t);
-					} else if (i_if->unknown[0] == 0x07) {
-						inst_len = sizeof(script_if02_t);
-					} else if (i_if->unknown[0] == 0x04) {
-						inst_len = sizeof(script_if04_t);
-					} else if (i_if->unknown[0] == 0x06) {
-						inst_len = sizeof(script_if04_t);
-					}
-				}
-				break;
-			default:
-				break;
-		}
-	}
-#endif
-
 	return inst_len;
 }
 
