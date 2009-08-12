@@ -45,6 +45,10 @@ typedef struct {
 	Uint8 next_stage,next_room,next_camera;
 } room_door_t;
 
+typedef struct {
+	Sint16 x,y,w,h;
+} room_obstacle_t;
+
 typedef struct room_s room_t;
 
 struct room_s {
@@ -70,6 +74,12 @@ struct room_s {
 
 	/* Return door entered, of NULL if none entered */
 	room_door_t *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
+
+	/*--- Obstacles ---*/
+	int num_obstacles;
+	room_obstacle_t *obstacles;
+	
+	void (*addObstacle)(room_t *this, room_obstacle_t *obstacle);
 
 	/*--- Script execution ---*/
 	Uint8 *cur_inst;
