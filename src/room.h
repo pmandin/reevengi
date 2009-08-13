@@ -49,6 +49,10 @@ typedef struct {
 	Sint16 x,y,w,h;
 } room_obstacle_t;
 
+typedef struct {
+	Sint16 x,y,w,h;
+} room_item_t;
+
 typedef struct room_s room_t;
 
 struct room_s {
@@ -74,6 +78,12 @@ struct room_s {
 
 	/* Return door entered, of NULL if none entered */
 	room_door_t *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
+
+	/*--- Items ---*/
+	int num_items;
+	room_item_t *items;
+	
+	void (*addItem)(room_t *this, room_item_t *item);
 
 	/*--- Obstacles ---*/
 	int num_obstacles;

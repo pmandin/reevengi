@@ -32,6 +32,8 @@
 
 /*--- Defines ---*/
 
+/* Instructions */
+
 #define INST_NOP	0x00
 #define INST_IF		0x01
 #define INST_ELSE	0x02
@@ -39,8 +41,17 @@
 #define INST_EVAL_CK	0x04
 #define INST_EVAL_CMP	0x06
 #define INST_DOOR_SET	0x0c
+#define INST_ITEM_SET	0x0d
 
 #define INST_EM_SET	0x1b
+
+/* Item types */
+
+#define ITEM_MESSAGE	0x02
+#define ITEM_TRIGGER	0x07	/* riddle, event, movable object */
+#define ITEM_BOX	0x08	/* deposit box */
+#define ITEM_OBJECT	0x09	/* pickable object */
+#define ITEM_TYPEWRITER	0x10
 
 /*--- Types ---*/
 
@@ -71,13 +82,19 @@ typedef struct {
 	Uint8 id;
 	Sint16 x,y,w,h;
 	Uint8 unknown0[5];
-	/*Uint8 unknown1;
-	Uint8 next_camera;*/		/* bits 2,1,0: camera */
 	Uint8 next_stage_and_room;	/* bits 7,6,5: stage, 4,3,2,1,0: room */
 	Sint16 next_x,next_y,next_z;
 	Sint16 next_dir;
 	Uint16 unknown2;
 } script_door_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Sint16 x,y,w,h;
+	Uint8 type;	/* 0x10: typewriter */
+	Uint8 unknown[7];
+} script_item_set_t;
 
 typedef union {
 	Uint8 opcode;
@@ -85,6 +102,7 @@ typedef union {
 	script_else_t	i_else;
 	script_endif_t	i_endif;
 	script_door_set_t	door_set;
+	script_item_set_t	item_set;
 } script_inst_t;
 
 typedef struct {
@@ -104,8 +122,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_EVAL_CMP,	4},
 	{0x07,	10},
 	{0x09,	2},
-	{INST_DOOR_SET,	26},
-	{0x0d,	18},
+	{INST_DOOR_SET,	sizeof(script_door_set_t)},
+	{INST_ITEM_SET,	sizeof(script_item_set_t)},
 	{0x0f,	8},
 
 	{0x10,	10},
@@ -196,7 +214,7 @@ static Uint8 *scriptFirstInst(room_t *this)
 
 static int scriptGetInstLen(room_t *this)
 {
-	int i, inst_len = 0;
+	int i;
 
 	if (!this) {
 		return 0;
@@ -207,12 +225,11 @@ static int scriptGetInstLen(room_t *this)
 
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
 		if (inst_length[i].opcode == this->cur_inst[0]) {
-			inst_len = inst_length[i].length;
-			break;
+			return inst_length[i].length;
 		}
 	}
 
-	return inst_len;
+	return 0;
 }
 
 static void scriptExecInst(room_t *this)
@@ -256,6 +273,19 @@ static void scriptExecInst(room_t *this)
 				roomDoor.next_camera = 0/*doorSet->next_camera & 7*/;
 
 				this->addDoor(this, &roomDoor);
+			}
+			break;
+		case INST_ITEM_SET:
+			{
+				script_item_set_t *itemSet = (script_item_set_t *) inst;
+				room_item_t item;
+
+				item.x = SDL_SwapLE16(itemSet->x);
+				item.y = SDL_SwapLE16(itemSet->y);
+				item.w = SDL_SwapLE16(itemSet->w);
+				item.h = SDL_SwapLE16(itemSet->h);
+
+				this->addItem(this, &item);
 			}
 			break;
 	}
@@ -365,6 +395,10 @@ static void scriptPrintInst(room_t *this)
 		case INST_DOOR_SET:
 			reindent(indentLevel);
 			strcat(strBuf, "DOOR_SET xxx\n");
+			break;
+		case INST_ITEM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "ITEM_SET xxx\n");
 			break;
 
 		/* 0x10-0x1f */

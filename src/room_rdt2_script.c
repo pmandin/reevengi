@@ -127,22 +127,23 @@ static const script_inst_len_t inst_length[]={
 	{0x0a,		2},
 	{0x0b,		2},
 	{0x0d,		2},
-	{0x0e,		16},
+	{0x0e,		2},
 	{0x0f,		2},
 
 	/* 0x10-0x1f */
 	{0x10,		2},
-	{0x11,		2},
+	{0x11,		4},
 	{0x12,		2},
 	{0x13,		4},
-	{0x14,		2},
+	{0x14,		2+4},
 	{0x16,		2},
-	{0x17,		8},
+	{0x17,		6},
 	{INST_FUNC,	sizeof(script_func_t)},
 	{0x1a,		2},
 	{0x1b,		2},
 	{0x1c,		2},
 	{0x1d,		4},
+	{0x1e,		8},
 
 	/* 0x20-0x2f */
 	{0x20,		2},
@@ -151,15 +152,17 @@ static const script_inst_len_t inst_length[]={
 	{INST_EVAL_CMP,	6},
 	{0x24,		4},
 	{0x25,		2},
-	{0x26,		4},
+	{0x26,		6},
 	{0x28,		4},
 	{0x29,		4},
 	{0x2b,		6},
 	{0x2c,		20},
 	{0x2d,		38},
 	{0x2e,		4},
+	{0x2f,		4},
 
 	/* 0x30-0x3f */
+	{0x30,		8},
 	{0x32,		12},
 	{0x33,		8},
 	{0x34,		4},
@@ -178,6 +181,8 @@ static const script_inst_len_t inst_length[]={
 	/* 0x40-0x4f */
 	{0x40,		8},
 	{0x41,		10},
+	{0x42,		4},
+	{0x43,		4},
 	{INST_EM_SET,	22},
 	{0x46,		10},
 	{0x47,		16},
@@ -189,7 +194,7 @@ static const script_inst_len_t inst_length[]={
 	{0x51,		6},
 	{0x54,		22},
 	{0x57,		8},
-	{0x58,		4},
+	{0x58,		8},
 	{0x59,		4},
 	{0x5b,		2},
 	{0x5d,		2},
@@ -198,9 +203,12 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x60-0x6f */
 	{0x60,		14},
+	{0x61,		4},
+	{0x63,		4},
 	{0x66,		2},
 	{0x67,		28},
 	{0x68,		40},
+	{0x6a,		6},
 	{0x6b,		6},
 	{0x6c,		2},
 	{0x6e,		6},
@@ -210,6 +218,7 @@ static const script_inst_len_t inst_length[]={
 	{0x7b,		16},
 	
 	/* dummy, follow nop sometimes */
+	{0x80,		1},
 	{0xfc,		1}
 };
 

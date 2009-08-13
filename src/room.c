@@ -38,7 +38,8 @@
 #define MAP_COLOR_BOUNDARY_DISABLED	0x00660000
 #define MAP_COLOR_BOUNDARY_ENABLED	0x00ff0000
 #define MAP_COLOR_DOOR			0x0000cccc
-#define MAP_COLOR_OBSTACLE		0x00ffff00
+#define MAP_COLOR_OBSTACLE		0x00cc0000
+#define MAP_COLOR_ITEM			0x00ffff00
 #define MAP_COLOR_WALLS			0x00ff00ff
 #define MAP_COLOR_PLAYER		0x0000ff00
 
@@ -64,11 +65,14 @@ static void room_map_drawCamswitches(room_t *this);
 static void room_map_drawBoundaries(room_t *this);
 static void room_map_drawDoors(room_t *this);
 static void room_map_drawObstacles(room_t *this);
+static void room_map_drawItems(room_t *this);
 
 static void addDoor(room_t *this, room_door_t *door);
 static room_door_t *enterDoor(room_t *this, Sint16 x, Sint16 y);
 
 static void addObstacle(room_t *this, room_obstacle_t *obstacle);
+
+static void addItem(room_t *this, room_item_t *obstacle);
 
 static Uint8 *scriptPrivFirstInst(room_t *this);
 static int scriptPrivGetInstLen(room_t *this);
@@ -98,6 +102,8 @@ room_t *room_create(void *room_file, Uint32 length)
 
 	this->addObstacle = addObstacle;
 
+	this->addItem = addItem;
+
 	this->scriptPrivFirstInst = scriptPrivFirstInst;
 	this->scriptPrivGetInstLen = scriptPrivGetInstLen;
 	this->scriptPrivExecInst = scriptPrivExecInst;
@@ -119,6 +125,10 @@ static void shutdown(room_t *this)
 		if (this->obstacles) {
 			free(this->obstacles);
 			this->obstacles = NULL;
+		}
+		if (this->items) {
+			free(this->items);
+			this->items = NULL;
 		}
 		if (this->file) {
 			free(this->file);
@@ -244,6 +254,7 @@ void room_map_draw(room_t *this)
 	room_map_drawCameras(this);
 
 	room_map_drawObstacles(this);
+	room_map_drawItems(this);
 	room_map_drawDoors(this);
 
 	render.pop_matrix();
@@ -470,6 +481,66 @@ static void room_map_drawObstacles(room_t *this)
 	}
 }
 
+static void room_map_drawItems(room_t *this)
+{
+	int i;
+
+	render.set_color(MAP_COLOR_ITEM);
+
+	for (i=0; i<this->num_items; i++) {
+		room_item_t	*item = &this->items[i];
+		vertex_t v[4];
+
+#if 1
+		v[0].x = item->x * 0.5f;
+		v[0].y = item->y * 0.5f;
+		v[0].z = 1;
+
+		v[1].x = (item->x+item->w) * 0.5f;
+		v[1].y = item->y * 0.5f;
+		v[1].z = 1;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = (item->x+item->w) * 0.5f;
+		v[0].y = (item->y+item->h) * 0.5f;
+		v[0].z = 1;
+
+		render.line(&v[0], &v[1]);
+
+		v[1].x = item->x * 0.5f;
+		v[1].y = (item->y+item->h) * 0.5f;
+		v[1].z = 1;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = item->x * 0.5f;
+		v[0].y = item->y * 0.5f;
+		v[0].z = 1;
+
+		render.line(&v[0], &v[1]);
+#else
+		v[0].x = item->x * 0.5f;
+		v[0].y = item->y * 0.5f;
+		v[0].z = 1;
+
+		v[1].x = (item->x+item->w) * 0.5f;
+		v[1].y = item->y * 0.5f;
+		v[1].z = 1;
+
+		v[2].x = (item->x+item->w) * 0.5f;
+		v[2].y = (item->y+item->h) * 0.5f;
+		v[2].z = 1;
+
+		v[3].x = item->x * 0.5f;
+		v[3].y = (item->y+item->h) * 0.5f;
+		v[3].z = 1;
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+#endif
+	}
+}
+
 void room_map_drawPlayer(float x, float y, float angle)
 {
 	vertex_t v[2];
@@ -635,6 +706,22 @@ static void addObstacle(room_t *this, room_obstacle_t *obstacle)
 
 	memcpy(&this->obstacles[this->num_obstacles-1], obstacle, sizeof(room_obstacle_t));
 	logMsg(1, "Adding obstacle %d\n", this->num_obstacles-1);
+}
+
+/* Items functions */
+
+static void addItem(room_t *this, room_item_t *item)
+{
+	++this->num_items;
+
+	this->items = realloc(this->items, this->num_items * sizeof(room_item_t));
+	if (!this->items) {
+		logMsg(0, "Can not allocate memory for obstacle\n");
+		return;
+	}
+
+	memcpy(&this->items[this->num_items-1], item, sizeof(room_item_t));
+	logMsg(1, "Adding item %d\n", this->num_items-1);
 }
 
 /* Script functions */
