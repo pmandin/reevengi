@@ -54,7 +54,7 @@
 /* Item types */
 
 #define ITEM_LIGHT	0x03
-#define ITEM_FLOWER	0x04
+#define ITEM_OBSTACLE	0x04
 #define ITEM_TYPEWRITER	0x09
 #define ITEM_BOX	0x0a
 #define ITEM_FIRE	0x0b
@@ -379,7 +379,16 @@ static void scriptExecInst(room_t *this)
 				item.w = SDL_SwapLE16(itemSet->w);
 				item.h = SDL_SwapLE16(itemSet->h);
 
-				/*if (itemSet->type == 0x0a)*/ {
+				if (itemSet->type == ITEM_OBSTACLE) {
+					room_obstacle_t obstacle;
+
+					obstacle.x = item.x;
+					obstacle.y = item.y;
+					obstacle.w = item.w;
+					obstacle.h = item.h;
+
+					this->addObstacle(this, &obstacle);
+				} else {
 					this->addItem(this, &item);
 				}
 			}
