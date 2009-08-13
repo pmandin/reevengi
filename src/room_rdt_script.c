@@ -48,9 +48,11 @@
 /* Item types */
 
 #define ITEM_MESSAGE	0x02
-#define ITEM_TRIGGER	0x07	/* riddle, event, movable object */
+#define ITEM_OBSTACLE	0x02
+#define ITEM_TRIGGER1	0x07	/* riddle, event, movable object */
 #define ITEM_BOX	0x08	/* deposit box */
 #define ITEM_OBJECT	0x09	/* pickable object */
+#define ITEM_TRIGGER2	0x09
 #define ITEM_TYPEWRITER	0x10
 
 /*--- Types ---*/

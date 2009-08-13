@@ -31,6 +31,8 @@
 
 /*--- Defines ---*/
 
+/* Instructions */
+
 #define INST_NOP	0x00
 #define INST_RETURN	0x01
 #define INST_EVT_EXEC	0x04
@@ -43,10 +45,19 @@
 
 #define INST_EVAL_CK	0x21
 #define INST_EVAL_CMP	0x23
+#define INST_ITEM_SET	0x2c
 
 #define INST_DOOR_SET	0x3b
 
 #define INST_EM_SET	0x44
+
+/* Item types */
+
+#define ITEM_LIGHT	0x03
+#define ITEM_FLOWER	0x04
+#define ITEM_TYPEWRITER	0x09
+#define ITEM_BOX	0x0a
+#define ITEM_FIRE	0x0b
 
 /*--- Types ---*/
 
@@ -80,6 +91,15 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 id;
+	Uint8 type;
+	Uint8 unknown0[3];
+	Sint16 x,y,w,h;
+	Uint16 unknown1[3];
+} script_item_set_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 unknown0;
 	Uint8 id;
 	Uint8 unknown1[3];
@@ -103,6 +123,7 @@ typedef union {
 	script_sleepn_t	sleepn;
 	script_func_t	func;
 	script_door_set_t	door_set;
+	script_item_set_t	item_set;
 } script_inst_t;
 
 typedef struct {
@@ -156,7 +177,7 @@ static const script_inst_len_t inst_length[]={
 	{0x28,		4},
 	{0x29,		4},
 	{0x2b,		6},
-	{0x2c,		20},
+	{INST_ITEM_SET,		sizeof(script_item_set_t)},
 	{0x2d,		38},
 	{0x2e,		4},
 	{0x2f,		4},
@@ -348,6 +369,21 @@ static void scriptExecInst(room_t *this)
 				this->addDoor(this, &roomDoor);
 			}
 			break;
+		case INST_ITEM_SET:
+			{
+				script_item_set_t *itemSet = (script_item_set_t *) inst;
+				room_item_t item;
+
+				item.x = SDL_SwapLE16(itemSet->x);
+				item.y = SDL_SwapLE16(itemSet->y);
+				item.w = SDL_SwapLE16(itemSet->w);
+				item.h = SDL_SwapLE16(itemSet->h);
+
+				/*if (itemSet->type == 0x0a)*/ {
+					this->addItem(this, &item);
+				}
+			}
+			break;
 	}
 }
 
@@ -473,6 +509,10 @@ static void scriptPrintInst(room_t *this)
 		case INST_EVAL_CMP:
 			reindent(indentLevel);
 			strcat(strBuf, "EVAL_CMP xxx\n");
+			break;
+		case INST_ITEM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "ITEM_SET xxx\n");
 			break;
 
 		/* 0x30-0x3f */
