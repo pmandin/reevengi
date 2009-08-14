@@ -158,7 +158,7 @@ static const script_inst_len_t inst_length[]={
 	{0x24,	4},
 	{0x25,	4},
 	{0x27,	2},
-	{0x28,	6},
+	/*{0x28,	6},*/
 	{0x29,	2},
 	{0x2a,	12},
 	{0x2b,	4},
@@ -169,7 +169,7 @@ static const script_inst_len_t inst_length[]={
 	{0x30,	12},
 	{0x31,	4},
 	{0x32,	4},
-	{0x33,	12},
+	/*{0x33,	12},*/
 	{0x34,	8},
 	{0x35,	4},
 	{0x36,	4},
@@ -189,7 +189,7 @@ static const script_inst_len_t inst_length[]={
 	{0x43,	4},
 	{0x44,	2},
 	{0x45,	2},
-	{0x46,	4+(12*3)},
+	/*{0x46,	4+(12*3)},*/
 	{0x47,	14},
 	{0x48,	2},
 	{0x49,	2},
@@ -269,6 +269,53 @@ static int scriptGetInstLen(room_t *this)
 		if (inst_length[i].opcode == this->cur_inst[0]) {
 			return inst_length[i].length;
 		}
+	}
+
+	/* Variable length instructions */
+	switch(this->cur_inst[0]) {
+		case 0x28:
+			switch(this->cur_inst[2]) {
+				case 0:
+				case 2:
+				case 3:
+				case 5:
+				case 9:
+				case 10:
+					return 6;
+				case 1:
+					return 8;
+				case 6:
+				case 8:
+					return 4;
+				case 4:
+				default:
+					break;
+			}
+			break;
+		case 0x33:
+			switch(this->cur_inst[1]) {
+				case 0:
+				case 4:
+				case 6:
+				case 7:
+					return 2;
+				case 1:
+				case 3:
+				case 5:
+				case 8:
+				case 9:
+				case 10:
+					return 4;
+				case 2:
+				default:
+					break;
+			}
+			break;
+		case 0x46:
+			/* room20f0 */
+			break;
+		default:
+			break;
 	}
 
 	return 0;
