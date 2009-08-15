@@ -189,7 +189,7 @@ static const script_inst_len_t inst_length[]={
 	{0x43,	4},
 	{0x44,	2},
 	{0x45,	2},
-	/*{0x46,	4+(12*3)},*/
+	{0x46,	2+(12*3)+6},
 	{0x47,	14},
 	{0x48,	2},
 	{0x49,	2},
@@ -310,9 +310,6 @@ static int scriptGetInstLen(room_t *this)
 				default:
 					break;
 			}
-			break;
-		case 0x46:
-			/* room20f0 */
 			break;
 		default:
 			break;
