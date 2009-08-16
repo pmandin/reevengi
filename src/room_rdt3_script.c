@@ -38,7 +38,7 @@
 #define INST_IF		0x06
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
-#define INST_SLEEP_N	0x09
+#define INST_SLEEP_N	0x0a
 #define INST_SLEEP_W	0x0b
 #define INST_FOR	0x0d
 #define INST_FOR_END	0x0f
@@ -163,8 +163,8 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 delay;
 	Uint8 unknown;
-	Uint16 delay;
 } script_sleepn_t;
 
 typedef struct {
@@ -237,8 +237,7 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown0[9];
-	Uint16 unknown1;
+	Uint8 unknown0[10];
 } script_fade_set_t;
 
 typedef struct {
@@ -339,11 +338,12 @@ static const script_inst_len_t inst_length[]={
 	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
+	{0x09,		1},
 	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
-	{0x0a,		2},	/* maybe */
-	{INST_SLEEP_W,	2},
-	{0x0c,		2},	/* maybe */
+	{INST_SLEEP_W,	1},
+	{0x0c,		1},
 	{INST_FOR,	sizeof(script_for_t)},
+	{0x0e,		5},
 	{INST_FOR_END,	2},
 
 	/* 0x10-0x1f */
@@ -353,66 +353,76 @@ static const script_inst_len_t inst_length[]={
 	{INST_DO_END,	sizeof(script_do_end_t)},
 	{INST_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
-	{0x16,		2},	/* maybe */
+	{0x16,		2},
 	{INST_SWITCH_END,	2},
 	{0x18,		6},
 	{INST_FUNC,	2},
 	{0x1a,		4},
 	{INST_BREAK,	2},	
-	{0x1c,		2},	/* maybe */
+	{0x1c,		1},
 	{INST_EVAL_CC,	4},
 	{INST_VALUE_SET,	4},
 	{INST_SET1,	4},
 
 	/* 0x20-0x2f */
 	{INST_CALC_OP,	6},
-	{0x21,		4}, /* maybe */
+	{0x21,		4},
 	{INST_EVT_CUT,	4},
-	{0x24,		2}, /* maybe */
-	{0x25,		5}, /* maybe */
-	{0x27,		6}, /* maybe */
-	{0x28,		14}, /* maybe */
-	{0x2a,		6}, /* maybe */
-	{0x2c,		4}, /* maybe */
+	{0x23,		1},
+	{0x24,		2},
+	{0x25,		4},
+	{0x26,		6},
+	{0x27,		1},
+	{0x28,		1},
+	{0x29,		8},
+	{0x2a,		6},
+	{0x2c,		2},
 	{INST_LINE_BEGIN,	sizeof(script_line_begin_t)},
 	{INST_LINE_MAIN,	sizeof(script_line_main_t)},
 	{INST_LINE_END,		2},
 
 	/* 0x30-0x3f */
-	{0x30,		6},	/* maybe */
+	{0x30,		6},
+	{0x31,		6},
 	{INST_LIGHT_COLOR_SET,		6},
 	{INST_AHEAD_ROOM_SET,	sizeof(script_ahead_room_set_t)},
-	{0x34,		10},	/* maybe */
+	{0x34,		10},
 	{INST_EVAL_BGM_TBL_CK,		6},
-	{0x37,		2},	/* maybe */
-	{0x38,		4},	/* maybe */
-	{INST_CHASER_ITEM_SET,		4},	/* maybe */
+	{0x36,		3},
+	{0x37,		2},
+	{0x38,		2},
+	{0x39,		16},
+	{0x3a,		16},
+	{INST_CHASER_ITEM_SET,		3},
+	{0x3c,		1},
 	{0x3d,		2},
-	{0x3e,		6},	/* maybe */
+	{0x3e,		2},
 	{INST_FLOOR_SET,	sizeof(script_floor_set_t)},
 
 	/* 0x40-0x4f */
 	{INST_VAR_SET,		4},
-	{INST_CALC_STORE,	4},
-	{INST_CALC_LOAD,	4},
-	{0x43,		6},	/* maybe */
+	{INST_CALC_STORE,	3},
+	{INST_CALC_LOAD,	3},
+	{0x43,		6},
+	{0x44,		6},
+	{0x45,		4},
 	{INST_FADE_SET,	sizeof(script_fade_set_t)},
 	{INST_WORK_SET,	sizeof(script_work_set_t)},
-	{0x48,		4},	/* maybe */
-	{0x49,		4},	/* maybe */
-	{0x4a,		2},	/* maybe */
-	{0x4b,		2},	/* maybe */
+	{0x48,		4},
+	{0x49,		1},
+	{0x4a,		1},
+	{0x4b,		1},
 	{INST_EVAL_CK,	4},
 	{INST_FLAG_SET,	sizeof(script_set_flag_t)},
 	{INST_EVAL_CMP,	6},
-	{0x4f,		2},	/* maybe */
+	{0x4f,		1},
 
 	/* 0x50-0x5f */
 	{INST_CUT_CHG,	2},
-	{0x51,		4},
+	{0x51,		1},
 	{INST_CUT_AUTO,		2},
 	{INST_CUT_REPLACE,	sizeof(script_cut_replace_t)},
-	{0x54,		4 /*12*/},	/* maybe */
+	{0x54,		4},
 	{INST_POS_SET,		8},
 	{INST_DIR_SET,		8},
 	{INST_SET_VIB0,		6},
@@ -420,43 +430,45 @@ static const script_inst_len_t inst_length[]={
 	{INST_SET_VIB_FADE,	8},
 	{INST_RBJ_SET,		2},
 	{INST_MESSAGE_ON,	6},
-	{0x5c,		2},	/* maybe */
-	{0x5d,		2},	/* maybe */
-	{0x5e,		4},	/* maybe */
-	{0x5f,		2},	/* maybe */
+	{0x5c,		2},
+	{0x5d,		1},
+	{0x5e,		3},
+	{0x5f,		2},
 
 	/* 0x60-0x6f */
-	{0x60,			2},
+	{0x60,			22},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
-	{0x62,			40},	/* maybe */
+	{0x62,			40},
 	{INST_AOT_SET,		20},
 	{INST_AOT_SET_4P,	28},
 	{INST_AOT_RESET,	10},
-	{0x66,			2 /*6*/}, /* maybe */
+	{0x66,			2},
 	{INST_ITEM_AOT_SET,	22},
-	{0x68,			30}, /* maybe */
+	{0x68,			30},
 	{INST_KAGE_SET,	14},
 	{INST_SUPER_SET,	16},
-	{0x6c,			2}, /* maybe */
+	{0x6b,			2},
+	{0x6c,			4},
+	{0x6d,			4},
 	{INST_SCA_ID_SET,	4},
-	{0x6f,			2}, /* maybe */
+	{0x6f,			2},
 
 	/* 0x70-0x7f */
 	{INST_ESPR_ON,	16},
-	{0x71, 18},	/* maybe */
-	{0x72, 22},	/* maybe */
+	{0x71, 		18},
+	{0x72, 		22},
 	{INST_ESPR3D_ON2,	24},
-	{INST_ESPR_KILL,	5 /*6*/ /*8*/},
+	{INST_ESPR_KILL,	5},
 	{INST_ESPR_KILL2,	2},
-	{0x76, 		3},	/* maybe */
+	{0x76, 		3},
 	{INST_SE_ON,	12},
 	{INST_BGM_CTL,	6},
 	{INST_XA_ON,	4},
-	{0x7a, 		2},	/* maybe */
+	{0x7a, 		2},
 	{INST_BGM_TBL_SET,	6},
-	{0x7c,			2}, /*maybe */
+	{0x7c,		1},
 	{INST_EM_SET,	24},
-	{0x7e,			2}, /*maybe */
+	{0x7e,		2},
 	{INST_OM_SET,	40},
 
 	/* 0x80-0x8f */
@@ -465,14 +477,16 @@ static const script_inst_len_t inst_length[]={
 	{INST_PLC_NECK,		10},
 	{INST_PLC_RET,		1},
 	{INST_PLC_FLG,		4},
+	{0x85,		2},
+	{0x86,		1},
 	{INST_PLC_STOP,	1},
 	{INST_PLC_ROT,	4},
 	{INST_PLC_CNT,	2},
-	{0x8a,		2},	/* maybe */
-	{0x8b,		1},	/* maybe */
-	{0x8c,		1},	/* maybe */
-	{0x8e,		2},	/* maybe */
-	{0x8f,		2}	/* maybe */
+	{0x8a,		1},
+	{0x8b,		1},
+	{0x8c,		1},
+	{0x8e,		4},
+	{0x8f,		2}
 };
 
 /*--- Functions prototypes ---*/
