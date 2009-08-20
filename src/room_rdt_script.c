@@ -38,7 +38,8 @@
 #define INST_IF		0x01
 #define INST_ELSE	0x02
 #define INST_END_IF	0x03
-#define INST_EVAL_CK	0x04
+#define INST_BIT_TEST	0x04
+#define INST_BIT_OP	0x05
 #define INST_EVAL_CMP	0x06
 #define INST_DOOR_SET	0x0c
 #define INST_ITEM_SET	0x0d
@@ -121,8 +122,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	sizeof(script_endif_t)},
-	{INST_EVAL_CK,	sizeof(script_eval_ck_t)},
-	{0x05,	4},
+	{INST_BIT_TEST,	sizeof(script_eval_ck_t)},
+	{INST_BIT_OP,	4},
 	{INST_EVAL_CMP,	4},
 	{0x07,	6},
 	{0x08,	4},
@@ -463,16 +464,20 @@ static void scriptPrintInst(room_t *this)
 			reindent(--indentLevel);
 			strcat(strBuf, "}\n");
 			break;
-		case INST_EVAL_CK:
+		case INST_BIT_TEST:
 			{
 				script_eval_ck_t *evalCk = (script_eval_ck_t *) inst;
 
 				reindent(indentLevel);
-				sprintf(tmpBuf, "EVAL_CK flag 0x%02x object 0x%02x %s\n",
+				sprintf(tmpBuf, "BIT_TEST flag 0x%02x object 0x%02x %s\n",
 					evalCk->flag, evalCk->object,
 					evalCk->value ? "on" : "off");
 				strcat(strBuf, tmpBuf);
 			}
+			break;
+		case INST_BIT_OP:
+			reindent(indentLevel);
+			strcat(strBuf, "BIT_OP xxx\n");
 			break;
 		case INST_EVAL_CMP:
 			reindent(indentLevel);
@@ -489,9 +494,17 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x10-0x1f */
 
+		case INST_ITEM_MODEL_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "ITEM_MODEL_SET xxx\n");
+			break;
 		case INST_EM_SET:
 			reindent(indentLevel);
 			strcat(strBuf, "EM_SET xxx\n");
+			break;
+		case INST_OM_SET:
+			reindent(indentLevel);
+			strcat(strBuf, "OM_SET xxx\n");
 			break;
 
 		default:
