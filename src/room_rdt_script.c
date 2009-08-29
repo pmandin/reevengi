@@ -40,10 +40,15 @@
 #define INST_END_IF	0x03
 #define INST_BIT_TEST	0x04
 #define INST_BIT_OP	0x05
-#define INST_EVAL_CMP	0x06
+#define INST_CMP06	0x06
+#define INST_CMP07	0x07
+#define INST_SET06	0x08
 #define INST_DOOR_SET	0x0c
 #define INST_ITEM_SET	0x0d
+#define INST_NOP0E	0x0e
 
+#define INST_CMP10	0x10
+#define INST_CMP11	0x11
 #define INST_ITEM_MODEL_SET	0x18
 #define INST_EM_SET	0x1b
 #define INST_OM_SET	0x1f
@@ -80,7 +85,7 @@ typedef struct {
 	Uint8 flag;
 	Uint8 object;
 	Uint8 value;
-} script_eval_ck_t;
+} script_bit_test_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -122,21 +127,21 @@ static const script_inst_len_t inst_length[]={
 	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	sizeof(script_endif_t)},
-	{INST_BIT_TEST,	sizeof(script_eval_ck_t)},
+	{INST_BIT_TEST,	sizeof(script_bit_test_t)},
 	{INST_BIT_OP,	4},
-	{INST_EVAL_CMP,	4},
-	{0x07,	6},
-	{0x08,	4},
+	{INST_CMP06,	4},
+	{INST_CMP07,	6},
+	{INST_SET06,	4},
 	{0x09,	2},
 	{0x0a,	2},
 	{0x0b,	4},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{INST_ITEM_SET,	sizeof(script_item_set_t)},
-	{0x0e,	2},
+	{INST_NOP0E,	2},
 	{0x0f,	8},
 
-	{0x10,	2},
-	{0x11,	2},
+	{INST_CMP10,	2},
+	{INST_CMP11,	2},
 	{0x12,	10},
 	{0x13,	4},
 	{0x14,	4},
@@ -457,7 +462,7 @@ static void scriptPrintInst(room_t *this)
 			strcat(strBuf, "if (xxx) {\n");
 			break;
 		case INST_ELSE:
-			reindent(--indentLevel);
+			reindent(indentLevel-1);
 			strcat(strBuf, "} else {\n");
 			break;
 		case INST_END_IF:
@@ -466,7 +471,7 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_BIT_TEST:
 			{
-				script_eval_ck_t *evalCk = (script_eval_ck_t *) inst;
+				script_bit_test_t *evalCk = (script_bit_test_t *) inst;
 
 				reindent(indentLevel);
 				sprintf(tmpBuf, "BIT_TEST flag 0x%02x object 0x%02x %s\n",
@@ -479,9 +484,17 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "BIT_OP xxx\n");
 			break;
-		case INST_EVAL_CMP:
+		case INST_CMP06:
 			reindent(indentLevel);
-			strcat(strBuf, "EVAL_CMP xxx\n");
+			strcat(strBuf, "OBJ06_TEST xxx\n");
+			break;
+		case INST_CMP07:
+			reindent(indentLevel);
+			strcat(strBuf, "OBJ07_TEST xxx\n");
+			break;
+		case INST_SET06:
+			reindent(indentLevel);
+			strcat(strBuf, "OBJ06_SET xxx\n");
 			break;
 		case INST_DOOR_SET:
 			reindent(indentLevel);
@@ -491,9 +504,21 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "ITEM_SET xxx\n");
 			break;
+		case INST_NOP0E:
+			reindent(indentLevel);
+			strcat(strBuf, "Nop\n");
+			break;
 
 		/* 0x10-0x1f */
 
+		case INST_CMP10:
+			reindent(indentLevel);
+			strcat(strBuf, "OBJ10_TEST xxx\n");
+			break;
+		case INST_CMP11:
+			reindent(indentLevel);
+			strcat(strBuf, "OBJ11_TEST xxx\n");
+			break;
 		case INST_ITEM_MODEL_SET:
 			reindent(indentLevel);
 			strcat(strBuf, "ITEM_MODEL_SET xxx\n");
