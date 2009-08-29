@@ -94,7 +94,7 @@ static int render_grid = 0;
 static int render_restore = 0;
 static int render_map = 0;
 
-static int refresh_player_pos = 0;
+static int refresh_player_pos = 1;
 static float player_x = 0, player_y = 0, player_z = 0;
 static float player_a = 0;
 static int player_moveforward = 0;
@@ -131,6 +131,7 @@ void view_background_input(SDL_Event *event)
 					game_state.num_stage = 7;
 				}
 				reload_room = 1;
+				refresh_player_pos = 1;
 				break;						
 			case KEY_STAGE_UP:
 				++game_state.num_stage;
@@ -138,10 +139,12 @@ void view_background_input(SDL_Event *event)
 					game_state.num_stage = 1;
 				}
 				reload_room = 1;
+				refresh_player_pos = 1;
 				break;						
 			case KEY_STAGE_RESET:
 				game_state.num_stage = 1;
 				reload_room = 1;
+				refresh_player_pos = 1;
 				break;						
 			case KEY_ROOM_DOWN:
 				--game_state.num_room;
@@ -149,6 +152,7 @@ void view_background_input(SDL_Event *event)
 					game_state.num_room = 0x1c;
 				}
 				reload_room = 1;
+				refresh_player_pos = 1;
 				break;						
 			case KEY_ROOM_UP:
 				++game_state.num_room;
@@ -156,10 +160,12 @@ void view_background_input(SDL_Event *event)
 					game_state.num_room = 0;
 				}
 				reload_room = 1;
+				refresh_player_pos = 1;
 				break;						
 			case KEY_ROOM_RESET:
 				game_state.num_room = 0;
 				reload_room = 1;
+				refresh_player_pos = 1;
 				break;						
 			case KEY_CAMERA_DOWN:
 				if (!game_state.room) {
@@ -315,7 +321,7 @@ void view_background_update(void)
 		game_state.load_room();
 		reload_room = 0;
 		reload_bg = 1;
-		refresh_player_pos = 1;
+		/*refresh_player_pos = 1;*/
 	}
 	if (reload_bg) {
 		game_state.load_background();
