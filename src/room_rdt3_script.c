@@ -27,6 +27,7 @@
 
 #include "room.h"
 #include "room_rdt2.h"
+#include "log.h"
 
 /*--- Defines ---*/
 

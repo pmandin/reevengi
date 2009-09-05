@@ -26,6 +26,7 @@
 #include "dither.h"
 #include "render.h"
 #include "draw.h"
+#include "draw_simple.h"
 
 /*--- Defines ---*/
 
