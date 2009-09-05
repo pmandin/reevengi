@@ -101,7 +101,7 @@ H		toggle background restoration display
 N		toggle map display.
 		Camera switches and boundary checks are enabled.
 		WHITE: camera, ORANGE: camera switch,
-		RED: boundary, GREEN ARROW: you.
+		RED: boundary, GREEN ARROW: you, BLUE: door.
 
 SPACE		refresh background, move player at current camera position
 U		Enter a door (only for RE2/RE3)
