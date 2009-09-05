@@ -331,6 +331,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\room_rdt2_script.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt3_script.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt_script.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\state.c"
 				>
 			</File>
@@ -510,6 +522,18 @@
 			</File>
 			<File
 				RelativePath="..\src\room_rdt2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt2_script.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt3_script.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\room_rdt_script.h"
 				>
 			</File>
 			<File
