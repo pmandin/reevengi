@@ -21,6 +21,11 @@
 #ifndef ROOM_H
 #define ROOM_H 1
 
+/*--- Defines ---*/
+
+#define ROOM_SCRIPT_INIT 0	/* Initialization script, run once */
+#define ROOM_SCRIPT_RUN	1	/* Running script, while the player is in the room */
+
 /*--- Types ---*/
 
 typedef struct {
@@ -96,13 +101,13 @@ struct room_s {
 	int cur_inst_offset;
 	int script_length;
 
-	Uint8 *(*scriptPrivFirstInst)(room_t *this);
+	Uint8 *(*scriptPrivFirstInst)(room_t *this, int num_script);
 	int (*scriptPrivGetInstLen)(room_t *this);
 	void (*scriptPrivExecInst)(room_t *this);
 	void (*scriptPrivPrintInst)(room_t *this);
 
-	void (*scriptDump)(room_t *this);
-	void (*scriptExec)(room_t *this);
+	void (*scriptDump)(room_t *this, int num_script);
+	void (*scriptExec)(room_t *this, int num_script);
 };
 
 /*--- Functions ---*/

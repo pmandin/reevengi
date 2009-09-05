@@ -58,7 +58,7 @@ Use at your own risks.
 
 "-dither" to dither background image (in 8bits mode only).
 
-"-dumpscript" to display room script. Verbosity must be 1 or higher. Set to 2 to
+"-dumpscript" to dump room scripts. Verbosity must be 1 or higher. Set to 2 to
   also display corresponding byte codes.
 
 
@@ -104,7 +104,7 @@ N		toggle map display.
 		RED: boundary, GREEN ARROW: you.
 
 SPACE		refresh background, move player at current camera position
-U		Enter a door
+U		Enter a door (only for RE2/RE3)
 Arrow keys	Move player
 Pageup/down	Move player up/down (Atari: use ClrHome/Insert)
 

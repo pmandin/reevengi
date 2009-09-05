@@ -491,7 +491,7 @@ static const script_inst_len_t inst_length[]={
 
 /*--- Functions prototypes ---*/
 
-static Uint8 *scriptFirstInst(room_t *this);
+static Uint8 *scriptFirstInst(room_t *this, int num_script);
 static int scriptGetInstLen(room_t *this);
 static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
@@ -502,54 +502,55 @@ static void scriptDisasmInit(void);
 
 void room_rdt3_scriptInit(room_t *this)
 {
-	int i;
-	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
-	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_INIT_SCRIPT]);
-	Uint32 smaller_offset = this->file_length;
-
-	/* Search smaller offset after script to calc length */
-	for (i=0; i<21; i++) {
-		Uint32 next_offset = SDL_SwapLE32(rdt_header->offsets[i]);
-		if ((next_offset>0) && (next_offset<smaller_offset) && (next_offset>offset)) {
-			smaller_offset = next_offset;
-		}
-	}
-
-	if (smaller_offset>offset) {
-		this->script_length = smaller_offset - offset;
-	}
-
-	logMsg(2, "rdt3: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
-
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
 	this->scriptPrivPrintInst = scriptPrintInst;
 	this->scriptPrivExecInst = scriptExecInst;
 }
 
-static Uint8 *scriptFirstInst(room_t *this)
+static Uint8 *scriptFirstInst(room_t *this, int num_script)
 {
 	rdt2_header_t *rdt_header;
-	Uint32 offset;
+	Uint32 offset, smaller_offset;
 	Uint16 *functionArrayPtr;
+	int i, room_script = RDT2_OFFSET_INIT_SCRIPT;
 
 	if (!this) {
 		return NULL;
 	}
-	if (this->script_length == 0) {
-		return NULL;
+	if (num_script == ROOM_SCRIPT_RUN) {
+		room_script = RDT2_OFFSET_ROOM_SCRIPT;
 	}
 
 	rdt_header = (rdt2_header_t *) this->file;
-	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_INIT_SCRIPT]);
+	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
 
-	/* Start of script is an array of offsets to the various script functions
-	 * The first offset also gives the first instruction to execute
-	 */
-	functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
+	this->script_length = this->cur_inst_offset = 0;
+	this->cur_inst = NULL;
 
-	this->cur_inst_offset = SDL_SwapLE16(functionArrayPtr[0]);
-	this->cur_inst = (& ((Uint8 *) this->file)[offset + this->cur_inst_offset]);
+	if (offset>0) {
+		/* Search smaller offset after script to calc length */
+		smaller_offset = this->file_length;
+		for (i=0; i<21; i++) {
+			Uint32 next_offset = SDL_SwapLE32(rdt_header->offsets[i]);
+			if ((next_offset>0) && (next_offset<smaller_offset) && (next_offset>offset)) {
+				smaller_offset = next_offset;
+			}
+		}
+		if (smaller_offset>offset) {
+			this->script_length = smaller_offset - offset;
+		}
+
+		/* Start of script is an array of offsets to the various script functions
+		 * The first offset also gives the first instruction to execute
+		 */
+		functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
+
+		this->cur_inst_offset = SDL_SwapLE16(functionArrayPtr[0]);
+		this->cur_inst = (& ((Uint8 *) this->file)[offset + this->cur_inst_offset]);
+	}
+
+	logMsg(1, "rdt3: Script %d at offset 0x%08x, length 0x%04x\n", num_script, offset, this->script_length);
 
 	scriptDisasmInit();
 

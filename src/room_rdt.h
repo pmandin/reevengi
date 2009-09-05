@@ -28,6 +28,7 @@
 
 #define RDT1_OFFSET_CAM_SWITCHES	0
 #define RDT1_OFFSET_INIT_SCRIPT		6
+#define RDT1_OFFSET_ROOM_SCRIPT		7
 
 /*--- Types ---*/
 

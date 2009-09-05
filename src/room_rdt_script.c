@@ -92,7 +92,7 @@ typedef struct {
 	Uint8 id;
 	Sint16 x,y,w,h;
 	Uint8 unknown0[5];
-	Uint8 next_stage_and_room;	/* bits 7,6,5: stage, 4,3,2,1,0: room */
+	Uint8 next_stage_and_room;	/* bits 7-5: stage, 4-0: room */
 	Sint16 next_x,next_y,next_z;
 	Sint16 next_dir;
 	Uint16 unknown2;
@@ -211,7 +211,7 @@ static const script_inst_len_t inst_length[]={
 
 /*--- Functions prototypes ---*/
 
-static Uint8 *scriptFirstInst(room_t *this);
+static Uint8 *scriptFirstInst(room_t *this, int num_script);
 static int scriptGetInstLen(room_t *this);
 static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
@@ -222,38 +222,36 @@ static void scriptDisasmInit(void);
 
 void room_rdt_scriptInit(room_t *this)
 {
-	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
-	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_INIT_SCRIPT]);
-	Uint16 *init_script = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
-	Uint8 *inst;
-
-	this->script_length = SDL_SwapLE16(*init_script);
-
-	logMsg(1, "rdt1: Init script at offset 0x%08x, length 0x%04x\n", offset, this->script_length);
-
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
 	this->scriptPrivPrintInst = scriptPrintInst;
 	this->scriptPrivExecInst = scriptExecInst;
 }
 
-static Uint8 *scriptFirstInst(room_t *this)
+static Uint8 *scriptFirstInst(room_t *this, int num_script)
 {
 	rdt1_header_t *rdt_header;
 	Uint32 offset;
+	int room_script = RDT1_OFFSET_INIT_SCRIPT;
+	Uint8 *scriptPtr;
 
 	if (!this) {
 		return NULL;
 	}
-	if (this->script_length == 0) {
-		return NULL;
+
+	if (num_script == ROOM_SCRIPT_RUN) {
+		room_script = RDT1_OFFSET_ROOM_SCRIPT;
 	}
 
 	rdt_header = (rdt1_header_t *) this->file;
-	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_INIT_SCRIPT]);
+	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
+	scriptPtr = & (((Uint8 *) this->file)[offset]);
 
+	this->script_length = SDL_SwapLE16(*((Uint16 *) scriptPtr));
 	this->cur_inst_offset = 0;
-	this->cur_inst = (& ((Uint8 *) this->file)[offset+2]);
+	this->cur_inst = &scriptPtr[2];
+
+	logMsg(1, "rdt1: Script %d at offset 0x%08x, length 0x%04x\n", num_script, offset, this->script_length);
 
 	scriptDisasmInit();
 

@@ -74,14 +74,14 @@ static void addObstacle(room_t *this, room_obstacle_t *obstacle);
 
 static void addItem(room_t *this, room_item_t *obstacle);
 
-static Uint8 *scriptPrivFirstInst(room_t *this);
+static Uint8 *scriptPrivFirstInst(room_t *this, int num_script);
 static int scriptPrivGetInstLen(room_t *this);
 static void scriptPrivExecInst(room_t *this);
 static void scriptPrivPrintInst(room_t *this);
 
 static Uint8 *scriptNextInst(room_t *this);
-static void scriptDump(room_t *this);
-static void scriptExec(room_t *this);
+static void scriptDump(room_t *this, int num_script);
+static void scriptExec(room_t *this, int num_script);
 
 /*--- Functions ---*/
 
@@ -726,7 +726,7 @@ static void addItem(room_t *this, room_item_t *item)
 
 /* Script functions */
 
-static Uint8 *scriptPrivFirstInst(room_t *this)
+static Uint8 *scriptPrivFirstInst(room_t *this, int num_script)
 {
 	return NULL;
 }
@@ -775,11 +775,11 @@ static Uint8 *scriptNextInst(room_t *this)
 	return this->cur_inst;
 }
 
-static void scriptDump(room_t *this)
+static void scriptDump(room_t *this, int num_script)
 {
 	Uint8 *inst;
 
-	inst = this->scriptPrivFirstInst(this);
+	inst = this->scriptPrivFirstInst(this, num_script);
 	while (inst) {
 		if (params.verbose>=2) {
 			int i, inst_len;
@@ -800,11 +800,11 @@ static void scriptDump(room_t *this)
 	}
 }
 
-static void scriptExec(room_t *this)
+static void scriptExec(room_t *this, int num_script)
 {
 	Uint8 *inst;
 
-	inst = this->scriptPrivFirstInst(this);
+	inst = this->scriptPrivFirstInst(this, num_script);
 	while (inst) {
 		this->scriptPrivExecInst(this);
 		inst = scriptNextInst(this);

@@ -211,10 +211,12 @@ static void state_loadroom(void)
 
 		if (game_state.room) {
 			room_map_init(game_state.room);
+			/* Dump scripts if wanted */
 			if (params.dump_script) {
-				game_state.room->scriptDump(game_state.room);
+				game_state.room->scriptDump(game_state.room, ROOM_SCRIPT_INIT);
+				game_state.room->scriptDump(game_state.room, ROOM_SCRIPT_RUN);
 			}
-			game_state.room->scriptExec(game_state.room);
+			game_state.room->scriptExec(game_state.room, ROOM_SCRIPT_INIT);
 		}
 	}
 }
