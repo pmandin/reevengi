@@ -326,6 +326,7 @@ static int scriptGetInstLen(room_t *this)
 
 static void scriptExecInst(room_t *this)
 {
+#if 0
 	script_inst_t *inst;
 
 	if (!this) {
@@ -381,6 +382,7 @@ static void scriptExecInst(room_t *this)
 			}
 			break;
 	}
+#endif
 }
 
 /*

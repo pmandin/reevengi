@@ -421,6 +421,7 @@ static void scriptExecInst(room_t *this)
 				this->addDoor(this, &roomDoor);
 			}
 			break;
+#if 0
 		case INST_ITEM_SET:
 			{
 				script_item_set_t *itemSet = (script_item_set_t *) inst;
@@ -445,6 +446,7 @@ static void scriptExecInst(room_t *this)
 				}
 			}
 			break;
+#endif
 	}
 }
 
