@@ -25,4 +25,7 @@
 
 void logMsg(int level, const char *msg, ...);
 
+/* Enable timing for log messages */
+void logEnableTicks(void);
+
 #endif /* LOG_H */

@@ -136,6 +136,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	atexit(SDL_Quit);
+	logEnableTicks();
 
 	/* Try to load OpenGL library first */
 	if (params.use_opengl) {
