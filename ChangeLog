@@ -1,5 +1,7 @@
 v 0.14
 
+- Add separate clock for engine, so loading times are not taken into account
+  for player movements.
 - Add timing in ms, in log file.
 
 v 0.13
