@@ -44,11 +44,16 @@ Uint32 clockGet(void)
 
 void clockPause(void)
 {
-	paused = 1;	
+	if (!paused) {
+		paused = 1;
+		running_time += SDL_GetTicks() - end_pause;
+	}
 }
 
 void clockUnpause(void)
 {
-	paused = 0;
-	end_pause = SDL_GetTicks();
+	if (paused) {
+		paused = 0;
+		end_pause = SDL_GetTicks();
+	}
 }
