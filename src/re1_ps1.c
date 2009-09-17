@@ -163,8 +163,11 @@ static void re1ps1_loadbackground(void)
 	}
 	sprintf(filepath, re1ps1_bg, is_shock, re1_stage, re1_stage, game_state.num_room);
 
-	logMsg(1, "bss: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE, row_offset) ? "done" : "failed");
+	logMsg(1, "bss: Start loading %s ...\n", filepath);
+
+	logMsg(1, "bss: %s loading %s ...\n",
+		background_bss_load(filepath, CHUNK_SIZE, row_offset) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -181,8 +184,11 @@ static void re1ps1_loadroom(void)
 	}
 	sprintf(filepath, re1ps1_room, is_shock, game_state.num_stage, game_state.num_stage, game_state.num_room);
 
-	logMsg(1, "rdt: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re1ps1_loadroom_rdt(filepath) ? "done" : "failed");
+	logMsg(1, "rdt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "rdt: %s loading %s ...\n",
+		re1ps1_loadroom_rdt(filepath) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -242,12 +248,16 @@ model_t *re1ps1_load_model(int num_model)
 	}
 	sprintf(filepath, filename, is_shock, num_model);
 
-	logMsg(1, "Loading model %s...", filepath);
+	logMsg(1, "emd: Start loading model %s ...\n", filepath);
+
 	emd = FS_Load(filepath, &emd_length);
 	if (emd) {
 		model = model_emd_load(emd, emd_length);
 	}	
-	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	logMsg(1, "emd: %s loading model %s ...\n",
+		model ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 	return model;

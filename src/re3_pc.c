@@ -165,8 +165,11 @@ void re3pc_loadbackground(void)
 	}
 	sprintf(filepath, re3pc_bg, game_state.num_stage, game_state.num_room, game_state.num_camera);
 
-	logMsg(1, "jpg: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re3pc_load_jpg_bg(filepath) ? "done" : "failed");
+	logMsg(1, "jpg: Start loading %s ...\n", filepath);
+
+	logMsg(1, "jpg: %s loading %s ...\n",
+		re3pc_load_jpg_bg(filepath) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -211,8 +214,11 @@ static void re3pc_loadroom(void)
 	}
 	sprintf(filepath, re3pc_room, game_lang, game_state.num_stage, game_state.num_room);
 
-	logMsg(1, "rdt: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re3pc_loadroom_rdt(filepath) ? "done" : "failed");
+	logMsg(1, "rdt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "rdt: %s loading %s ...\n",
+		re3pc_loadroom_rdt(filepath) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -269,7 +275,8 @@ model_t *re3pc_load_model(int num_model)
 	}
 	sprintf(filepath, re3pc_model, num_model, "emd");
 
-	logMsg(1, "Loading model %s...", filepath);
+	logMsg(1, "emd: Start loading model %s ...\n", filepath);
+
 	emd = FS_Load(filepath, &emd_length);
 	if (emd) {
 		sprintf(filepath, re3pc_model, num_model, "tim");
@@ -280,7 +287,10 @@ model_t *re3pc_load_model(int num_model)
 			free(emd);
 		}
 	}	
-	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	logMsg(1, "emd: %s loading model %s\n",
+		model ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 	return model;

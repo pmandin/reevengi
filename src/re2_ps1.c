@@ -971,8 +971,11 @@ static void re2ps1_loadbackground(void)
 	}
 	sprintf(filepath, file_bg, game_state.num_stage, game_state.num_room);
 
-	logMsg(1, "bss: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE, 0) ? "done" : "failed");
+	logMsg(1, "bss: Start loading %s ...\n", filepath);
+
+	logMsg(1, "bss: %s loading %s ...\n",
+		background_bss_load(filepath, CHUNK_SIZE, 0) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -993,8 +996,11 @@ static void re2ps1_loadroom(void)
 	}
 	sprintf(filepath, file_room, game_player, game_state.num_stage, game_state.num_room, game_player);
 
-	logMsg(1, "rdt: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re2ps1_loadroom_rdt(filepath) ? "done" : "failed");
+	logMsg(1, "rdt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "rdt: %s loading %s ...\n",
+		re2ps1_loadroom_rdt(filepath) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -1133,7 +1139,9 @@ model_t *re2ps1_load_model(int num_model)
 	sprintf(filepath, model_file,
 		game_player, num_file);
 
-	logMsg(1, "Loading model 0x%02x from %s...", num_model, filepath);
+	logMsg(1, "emd: Start loading model 0x%02x from %s ...\n",
+		num_model, filepath);
+
 	src = FS_makeRWops(filepath);	
 	if (src) {
 		src_tim = src_emd = NULL;
@@ -1160,7 +1168,10 @@ model_t *re2ps1_load_model(int num_model)
 
 		SDL_RWclose(src);
 	}
-	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	logMsg(1, "emd: %s loading model 0x%02x from %s ...\n",
+		model ? "Done" : "Failed",
+		num_model, filepath);
 
 	free(filepath);
 	return model;

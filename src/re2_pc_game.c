@@ -161,9 +161,12 @@ static void re2pcgame_loadbackground(void)
 		num_image = num_re2_images-1;
 	}
 
-	logMsg(1, "adt: Loading stage %d, room %d, camera %d ... ",
+	logMsg(1, "adt: Start loading stage %d, room %d, camera %d ...\n",
 		game_state.num_stage, game_state.num_room, game_state.num_camera);
-	logMsg(1, "%s\n", re2pcgame_load_image(num_image) ? "done" : "failed");
+
+	logMsg(1, "adt: %s loading stage %d, room %d, camera %d ...\n",
+		re2pcgame_load_image(num_image) ? "Done" : "Failed",
+		game_state.num_stage, game_state.num_room, game_state.num_camera);
 }
 
 static int re2pcgame_init_images(const char *filename)
@@ -263,8 +266,11 @@ static void re2pcgame_loadroom(void)
 	}
 	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.num_stage, game_state.num_room);
 
-	logMsg(1, "rdt: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re2pcgame_loadroom_rdt(filepath) ? "done" : "failed");
+	logMsg(1, "rdt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "rdt: %s loading %s ...\n",
+		re2pcgame_loadroom_rdt(filepath) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -315,7 +321,8 @@ model_t *re2pcgame_load_model(int num_model)
 		filepath[i] = toupper(filepath[i]);
 	}
 
-	logMsg(1, "Loading model %s...", filepath);
+	logMsg(1, "emd: Start loading model %s ...\n", filepath);
+
 	emd = FS_Load(filepath, &emd_length);
 	if (emd) {
 		sprintf(filepath, re2pcgame_model,
@@ -331,7 +338,10 @@ model_t *re2pcgame_load_model(int num_model)
 			free(emd);
 		}
 	}	
-	logMsg(1, "%s\n", model ? "done" : "failed");
+
+	logMsg(1, "emd: %s loading model %s ...\n",
+		model ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 	return model;

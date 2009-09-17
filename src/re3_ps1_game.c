@@ -106,8 +106,11 @@ static void re3ps1game_loadbackground(void)
 	}
 	sprintf(filepath, re3ps1game_bg, game_state.num_stage, game_state.num_stage, game_state.num_room);
 
-	logMsg(1, "bss: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", background_bss_load(filepath, CHUNK_SIZE, 0) ? "done" : "failed");
+	logMsg(1, "bss: Start loading %s ...\n", filepath);
+
+	logMsg(1, "bss: %s loading %s ...\n",
+		background_bss_load(filepath, CHUNK_SIZE, 0) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -123,8 +126,11 @@ static void re3ps1game_loadroom(void)
 	}
 	sprintf(filepath, re3ps1game_room, game_state.num_stage, game_state.num_stage, game_state.num_room);
 
-	logMsg(1, "ard: Loading %s ... ", filepath);
-	logMsg(1, "%s\n", re3ps1game_loadroom_ard(filepath) ? "done" : "failed");
+	logMsg(1, "ard: Start loading %s ...\n", filepath);
+
+	logMsg(1, "ard: %s loading %s ...\n",
+		re3ps1game_loadroom_ard(filepath) ? "Done" : "Failed",
+		filepath);
 
 	free(filepath);
 }
@@ -166,7 +172,7 @@ static int re3ps1game_loadroom_ard(const char *filename)
 		return 0;
 	}
 
-	logMsg(3, "Loading embedded RDT file from offset 0x%08x\n", offset);
+	logMsg(3, "ard: Loading embedded RDT file from offset 0x%08x\n", offset);
 	memcpy(file, &ard_file[offset], len);
 
 	game_state.room = room_create(file, len);
