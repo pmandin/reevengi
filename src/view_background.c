@@ -37,6 +37,7 @@
 #include "re2_ps1.h"
 #include "re3_pc.h"
 #include "re3_ps1_game.h"
+#include "clock.h"
 
 /*--- Defines ---*/
 
@@ -300,7 +301,7 @@ void view_background_input(SDL_Event *event)
 	}
 
 	if (start_movement) {
-		tick_movement = SDL_GetTicks();
+		tick_movement = clockGet();
 		playerstart_x = player_x;
 		playerstart_y = player_y;
 		playerstart_z = player_z;
@@ -317,25 +318,34 @@ void view_background_update(void)
 {
 	processPlayerMovement();
 
-	if (reload_room) {
-		game_state.load_room();
-		reload_room = 0;
-		reload_bg = 1;
-		/*refresh_player_pos = 1;*/
-	}
-	if (reload_bg) {
-		game_state.load_background();
-		reload_bg = 0;
-		refresh_bg = 1;
-	}
-	if (refresh_bg) {
-		render.initBackground(&video, game_state.back_surf);
-		refresh_bg = 0;
-	}
-	if (reload_model) {
-		render.set_texture(0, NULL);	/* To force reloading texture */
-		player_model = game_state.load_model(num_model);
-		reload_model = 0;
+	/* Pause game clock while loading stuff */
+	if (reload_room | reload_bg | refresh_bg | reload_model) {
+		clockPause();
+
+		if (reload_room) {
+			game_state.load_room();
+			reload_room = 0;
+			reload_bg = 1;
+			/*refresh_player_pos = 1;*/
+		}
+		if (reload_bg) {
+			game_state.load_background();
+			reload_bg = 0;
+			refresh_bg = 1;
+		}
+		if (refresh_bg) {
+			render.initBackground(&video, game_state.back_surf);
+			refresh_bg = 0;
+		}
+		if (reload_model) {
+			render.set_texture(0, NULL);	/* To force reloading texture */
+			player_model = game_state.load_model(num_model);
+			reload_model = 0;
+		}
+
+		clockUnpause();
+
+		logMsg(3, "clock: last paused duration: %.3f\n", clockPausedTime()/1000.0f);
 	}
 }
 
@@ -343,7 +353,7 @@ static void processPlayerMovement(void)
 {
 	float new_x, new_z;
 	int new_camera, was_inside, is_inside;
-	Uint32 tick_current = SDL_GetTicks();
+	Uint32 tick_current = clockGet();
 
 	was_inside = (room_checkBoundary(game_state.room, game_state.num_camera, player_x, player_z) == 0);
 

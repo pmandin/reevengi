@@ -25,9 +25,19 @@
 
 /*--- Functions prototypes ---*/
 
+/* Init clock */
 void clockInit(void);
+
+/* Get clock time */
 Uint32 clockGet(void);
+
+/* Pause clock */
 void clockPause(void);
+
+/* Unpause clock */
 void clockUnpause(void);
+
+/* Get last paused duration */
+Uint32 clockPausedTime(void);
 
 #endif /* CLOCK_H */

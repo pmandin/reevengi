@@ -22,7 +22,7 @@
 
 /*--- Variables ---*/
 
-static Uint32 running_time, end_pause;
+static Uint32 running_time, start_pause, end_pause;
 static int paused;
 
 /*--- Functions ---*/
@@ -30,7 +30,7 @@ static int paused;
 void clockInit(void)
 {
 	running_time = paused = 0;
-	end_pause = SDL_GetTicks();
+	start_pause = end_pause = SDL_GetTicks();
 }
 
 Uint32 clockGet(void)
@@ -46,7 +46,9 @@ void clockPause(void)
 {
 	if (!paused) {
 		paused = 1;
-		running_time += SDL_GetTicks() - end_pause;
+		start_pause = SDL_GetTicks();
+		/* end_pause is end of previous pause */
+		running_time += start_pause - end_pause;
 	}
 }
 
@@ -56,4 +58,13 @@ void clockUnpause(void)
 		paused = 0;
 		end_pause = SDL_GetTicks();
 	}
+}
+
+Uint32 clockPausedTime(void)
+{
+	if (paused) {
+		return 0;
+	}
+
+	return end_pause - start_pause;
 }
