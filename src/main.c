@@ -39,6 +39,7 @@
 #include "view_movie.h"
 #include "filesystem.h"
 #include "log.h"
+#include "clock.h"
 
 #include "video.h"
 #include "render.h"
@@ -169,6 +170,16 @@ int main(int argc, char **argv)
 	new_height = video.height;
 	switch_mode=1;
 
+	/* Init viewer */
+	switch(params.viewmode) {
+		case VIEWMODE_BACKGROUND:
+			clockInit();
+			break;
+		case VIEWMODE_MOVIE:
+			break;
+	}
+
+	/* Viewer loop */
 	quit = 0;
 	while (!quit) {
 		quit = viewer_loop();
@@ -178,6 +189,7 @@ int main(int argc, char **argv)
 #endif
 	}
 
+	/* Shutdown viewer */
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
 			break;

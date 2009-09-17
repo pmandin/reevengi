@@ -6,7 +6,7 @@ AM_CXXFLAGS = $(SDL_CFLAGS) $(AVCODEC_CFLAGS) $(AVFORMAT_CFLAGS) $(PHYSFS_CFLAGS
 LIBS = $(SDL_LIBS) $(SDLIMAGE_LIBS) $(PHYSFS_LIBS) $(ZLIB_LIBS) $(AVCODEC_LIBS) \
 	$(AVFORMAT_LIBS)
 
-reevengi_SOURCES = background_bss.c background_tim.c \
+reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	depack_adt.c depack_mdec.c depack_pak.c depack_vlc.c \
 	dirty_rects.c dither.c draw_sbuffer.c draw_simple.c dyngl.c \
 	filesystem.c idctfst.c log.c main.c matrix.c \
@@ -24,7 +24,7 @@ reevengi_SOURCES = background_bss.c background_tim.c \
 	video_surface.c video_surface_opengl.c \
 	view_background.c view_movie.c
 
-reevengi_headers = background_bss.h background_tim.h \
+reevengi_headers = background_bss.h background_tim.h clock.h \
 	depack_adt.h depack_mdec.h depack_pak.h depack_vlc.h \
 	dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h dyngl.h \
 	filesystem.h idctfst.h log.h matrix.h \
