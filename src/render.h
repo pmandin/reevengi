@@ -98,6 +98,10 @@ struct render_s {
 	void (*initBackground)(video_t *this, video_surface_t *source);
 	void (*drawBackground)(video_t *this);
 
+	/* Bitmap functions */
+	void (*bitmapUnscaled)(video_t *video, int x, int y);
+	void (*bitmapScaled)(video_t *video, int x, int y, int w, int h);
+
 	render_texture_t *texture;
 	int tex_pal;	/* Palette to use */
 };

@@ -83,6 +83,8 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
+void render_bitmap_opengl_init(render_t *render);
+
 /*--- Functions ---*/
 
 void render_opengl_init(render_t *render)
@@ -115,6 +117,8 @@ void render_opengl_init(render_t *render)
 
 	render->initBackground = render_background_init_opengl;
 	render->drawBackground = render_background_opengl;
+
+	render_bitmap_opengl_init(render);
 
 	render->texture = NULL;
 	render->tex_pal = 0;

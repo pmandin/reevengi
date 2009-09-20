@@ -16,6 +16,7 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	re2_pc_demo.c re2_pc_game.c re2_ps1.c \
 	re3_pc.c re3_ps1_game.c \
 	render_background.c render_background_opengl.c \
+	render_bitmap.c render_bitmap_opengl.c \
 	render.c render_opengl.c \
 	render_texture.c render_texture_opengl.c \
 	room.c room_rdt.c room_rdt_script.c \
