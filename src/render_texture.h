@@ -37,7 +37,7 @@ struct render_texture_s {
 	void (*download)(render_texture_t *this);
 
 	int w, h;		/* Dimension of image zone */
-	int pitchw, pitchh;	/* Dimension of bouding zone */
+	int pitchw, pitchh;	/* Dimension of bounding zone */
 	int pitch;
 	int num_palettes, paletted;
 	
