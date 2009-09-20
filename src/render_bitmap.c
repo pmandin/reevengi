@@ -58,9 +58,11 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	if (!tex)
 		return;
 
+	/* Generate a cached version of scaled texture */
+
 	/* Clip position to viewport */
 	x1 = MAX(x,video->viewport.x);
 	y1 = MAX(y,video->viewport.y);
-	w1 = MIN(x+w,video->viewport.x+video->viewport.w) - x1 + 1;
-	h1 = MIN(y+h,video->viewport.y+video->viewport.h) - y1 + 1;
+	w1 = MIN(x+w,video->viewport.x+video->viewport.w) - x1;
+	h1 = MIN(y+h,video->viewport.y+video->viewport.h) - y1;
 }

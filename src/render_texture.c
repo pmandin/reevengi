@@ -268,6 +268,10 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 static void shutdown(render_texture_t *texture)
 {
 	if (texture) {
+		if (texture->scaled) {
+			texture->scaled->shutdown(texture->scaled);
+			texture->scaled = NULL;
+		}
 		free(texture);
 	}
 }
