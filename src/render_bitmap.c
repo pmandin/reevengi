@@ -22,6 +22,11 @@
 #include "video.h"
 #include "render.h"
 
+/*--- Defines ---*/
+
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define MIN(x,y) ((x)<(y)?(x):(y))
+
 /*--- Functions prototypes ---*/
 
 static void bitmapUnscaled(video_t *video, int x, int y);
@@ -37,8 +42,25 @@ void render_bitmap_soft_init(render_t *render)
 
 static void bitmapUnscaled(video_t *video, int x, int y)
 {
+	render_texture_t *tex = render.texture;
+
+	if (!tex)
+		return;
+
+	bitmapScaled(video,x,y,tex->w,tex->h);
 }
 
 static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 {
+	render_texture_t *tex = render.texture;
+	int x1,y1, w1,h1;
+
+	if (!tex)
+		return;
+
+	/* Clip position to viewport */
+	x1 = MAX(x,video->viewport.x);
+	y1 = MAX(y,video->viewport.y);
+	w1 = MIN(x+w,video->viewport.x+video->viewport.w) - x1 + 1;
+	h1 = MIN(y+h,video->viewport.y+video->viewport.h) - y1 + 1;
 }

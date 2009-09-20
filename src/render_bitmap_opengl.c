@@ -41,6 +41,12 @@ void render_bitmap_opengl_init(render_t *render)
 
 static void bitmapUnscaled(video_t *video, int x, int y)
 {
+	render_texture_t *tex = render.texture;
+
+	if (!tex)
+		return;
+
+	bitmapScaled(video,x,y,tex->w,tex->h);
 }
 
 static void bitmapScaled(video_t *video, int x, int y, int w, int h)
