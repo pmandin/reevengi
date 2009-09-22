@@ -1,7 +1,7 @@
 /*
 	List for render textures
 
-	Copyright (C) 2008	Patrice Mandin
+	Copyright (C) 2009	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
