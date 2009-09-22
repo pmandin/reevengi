@@ -97,7 +97,6 @@ typedef struct {
 	void (*load_background)(void);
 	void (*load_room)(void);
 	model_t *(*load_model)(int num_model);
-	void (*download_textures)(void);
 	void (*shutdown)(void);
 } state_t;
 

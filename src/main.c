@@ -200,8 +200,8 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	list_render_texture_shutdown();
 	game_state.shutdown();
+	list_render_texture_shutdown();
 	video.shutDown(&video);
 	render.shutdown(&render);
 	FS_Shutdown();
@@ -292,7 +292,6 @@ static int viewer_loop(void)
 static void viewer_update(void)
 {
 	if (switch_mode) {
-		game_state.download_textures();
 		list_render_texture_download();
 		video.setVideoMode(&video, new_width, new_height, video.bpp);
 	}
