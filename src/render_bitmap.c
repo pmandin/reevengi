@@ -58,7 +58,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	if (!tex)
 		return;
 
-	/* Generate a cached version of scaled texture */
+	/* Generate a cached version of scaled texture, if dithering enabled */
 
 	/* Clip position to viewport */
 	x1 = MAX(x,video->viewport.x);

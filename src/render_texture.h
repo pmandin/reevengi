@@ -45,7 +45,7 @@ struct render_texture_s {
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
 
 	/* Cache for rescaled version */
-	render_texture_t *scaled;
+	struct render_texture_s *scaled;
 };
 
 /*--- Functions prototypes ---*/
