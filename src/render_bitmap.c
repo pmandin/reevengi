@@ -32,6 +32,8 @@
 static void bitmapUnscaled(video_t *video, int x, int y);
 static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
+static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
+
 static void create_scaled_version(video_t *video, render_texture_t *src, render_texture_t *dst);
 static void create_scaled_version8(render_texture_t *src, render_texture_t *dst);
 static void create_scaled_version16(render_texture_t *src, render_texture_t *dst);
@@ -60,20 +62,37 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 {
 	render_texture_t *tex = render.texture;
 	int x1,y1, w1,h1;
-	int create_scaled = 0, fill_scaled = 0;
 
 	if (!tex)
 		return;
 
-	/* Generate a cached version of texture scaled/dithered or both */
+	refresh_scaled_version(video, tex, w,h);
+
+	/* Clip position to viewport */
+	x1 = MAX(x,video->viewport.x);
+	y1 = MAX(y,video->viewport.y);
+	w1 = MIN(x+w,video->viewport.x+video->viewport.w) - x1;
+	h1 = MIN(y+h,video->viewport.y+video->viewport.h) - y1;
+
+	/* Use scaled version if available, to update screen */
 	if (tex->scaled) {
+		tex = tex->scaled;
+	}
+}
+
+static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
+{
+	int create_scaled = 0, fill_scaled = 0;
+
+	/* Generate a cached version of texture scaled/dithered or both */
+	if (texture->scaled) {
 		/* Recreate if different target size */		
-		if ((tex->scaled->w != w) || (tex->scaled->h != h)) {
-			/*tex->scaled->resize(w,h);*/
+		if ((texture->scaled->w != new_w) || (texture->scaled->h != new_h)) {
+			/*texture->scaled->resize(new_w,new_h);*/
 			fill_scaled = 1;
 		}
 	} else {
-		if ((tex->w != w) || (tex->h != h)) {
+		if ((texture->w != new_w) || (texture->h != new_h)) {
 			create_scaled = 1;
 		}
 		if (render.dithering && (video->bpp==8)) {
@@ -85,23 +104,13 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	if (create_scaled) {
 		fill_scaled = 1;	
 	}
+
 	/* Then redraw a scaled version */
 	if (fill_scaled) {
-		create_scaled_version(video, tex, tex->scaled);
+		create_scaled_version(video, texture, texture->scaled);
 		if (render.dithering && (video->bpp==8)) {
 			/* Dither scaled version */
 		}
-	}
-
-	/* Clip position to viewport */
-	x1 = MAX(x,video->viewport.x);
-	y1 = MAX(y,video->viewport.y);
-	w1 = MIN(x+w,video->viewport.x+video->viewport.w) - x1;
-	h1 = MIN(y+h,video->viewport.y+video->viewport.h) - y1;
-
-	/* Use scaled version if available, to update screen */
-	if (tex->scaled) {
-		tex = tex->scaled;
 	}
 }
 
