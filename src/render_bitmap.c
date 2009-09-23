@@ -95,20 +95,22 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		if ((texture->w != new_w) || (texture->h != new_h)) {
 			create_scaled = 1;
 		}
-		if (render.dithering && (video->bpp==8)) {
+		if (render.dithering) {
 			create_scaled = 1;
 		}
 	}
 
 	/* Create new render_texture, for scaled size */
 	if (create_scaled) {
+		/* texture->scaled = render_texture_create_copy(texture) */
+		/* texture->scaled->resize(new_w,new_h) */
 		fill_scaled = 1;	
 	}
 
 	/* Then redraw a scaled version */
 	if (fill_scaled) {
 		create_scaled_version(video, texture, texture->scaled);
-		if (render.dithering && (video->bpp==8)) {
+		if (render.dithering) {
 			/* Dither scaled version */
 		}
 	}
