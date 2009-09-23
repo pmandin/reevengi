@@ -61,22 +61,117 @@ static void bitmapUnscaled(video_t *video, int x, int y)
 static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 {
 	render_texture_t *tex = render.texture;
-	int x1,y1, w1,h1;
+	int src_x=0, src_y=0, dst_x=x, dst_y=y;
+	int i,j;
+	SDL_Surface *surf;
 
 	if (!tex)
 		return;
 
-	refresh_scaled_version(video, tex, w,h);
+	/* Clipping for out of bounds */
+	if ((x>=video->viewport.w) || (y>=video->viewport.h) || (x+w<0) || (y+h<0)) {
+		return;
+	}
 
-	/* Clip position to viewport */
-	x1 = MAX(x,video->viewport.x);
-	y1 = MAX(y,video->viewport.y);
-	w1 = MIN(x+w,video->viewport.x+video->viewport.w) - x1;
-	h1 = MIN(y+h,video->viewport.y+video->viewport.h) - y1;
+	refresh_scaled_version(video, tex, w,h);
 
 	/* Use scaled version if available, to update screen */
 	if (tex->scaled) {
 		tex = tex->scaled;
+	}
+
+	/* Clipping */
+	if (x<0) {
+		dst_x = 0;
+		src_x -= x;
+		w -= x;
+	}
+	if (y<0) {
+		dst_y = 0;
+		src_y -= y;
+		h -= y;
+	}
+	if (x+w>=video->viewport.w) {
+		w -= x+w - video->viewport.w;
+	}
+	if (y+h>=video->viewport.y+video->viewport.h) {
+		h -= y+h - video->viewport.h;
+	}
+	if ((w<=0) || (h<=0) || (src_x>=w) || (src_y>=h)) {
+		return;
+	}
+
+	dst_x += video->viewport.x;
+	dst_y += video->viewport.y;
+
+	surf = video->screen;
+
+	switch(video->bpp) {
+		case 8:
+			{
+				Uint8 *src = tex->pixels;
+				src += src_y * tex->pitch;
+				src += src_x;
+				Uint8 *dst = surf->pixels;
+				dst += dst_y * surf->pitch;
+				dst += dst_x;
+
+				for (j=0; j<h; j++) {
+					memcpy(dst, src, w);
+					src += tex->pitch;
+					dst += surf->pitch;
+				}
+			}
+			break;
+		case 15:
+		case 16:
+			{
+				Uint16 *src = (Uint16 *) tex->pixels;
+				src += src_y * (tex->pitch>>1);
+				src += src_x;
+				Uint16 *dst = (Uint16 *) surf->pixels;
+				dst += dst_y * (surf->pitch>>1);
+				dst += dst_x;
+
+				for (j=0; j<h; j++) {
+					memcpy(dst, src, w<<1);
+					src += tex->pitch>>1;
+					dst += surf->pitch>>1;
+				}
+			}
+			break;
+		case 24:
+			{
+				Uint8 *src = tex->pixels;
+				src += src_y * tex->pitch;
+				src += src_x;
+				Uint8 *dst = surf->pixels;
+				dst += dst_y * surf->pitch;
+				dst += dst_x;
+
+				for (j=0; j<h; j++) {
+					memcpy(dst, src, w*3);
+					src += tex->pitch;
+					dst += surf->pitch;
+				}
+			}
+			break;
+		case 32:
+			{
+				Uint16 *src = (Uint16 *) tex->pixels;
+				src += src_y * (tex->pitch>>2);
+				src += src_x;
+				Uint16 *dst = (Uint16 *) surf->pixels;
+				dst += dst_y * (surf->pitch>>2);
+				dst += dst_x;
+
+				for (j=0; j<h; j++) {
+					memcpy(dst, src, w<<2);
+					src += tex->pitch>>2;
+					dst += surf->pitch>>2;
+				}
+			}
+			break;
 	}
 }
 
