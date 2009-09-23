@@ -441,7 +441,9 @@ void view_background_draw(void)
 			0,0, video.width, video.height);
 	}
 
+	render.set_dithering(params.dithering);
 	render.drawBackground(&video);
+	render.set_dithering(0);
 
 	if (!game_state.room) {
 		return;

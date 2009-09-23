@@ -69,6 +69,7 @@ static void set_color(Uint32 color);
 static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
+static void set_dithering(int enable);
 static void set_color_from_texture(vertex_t *v1);
 
 static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx);
@@ -112,6 +113,7 @@ void render_opengl_init(render_t *render)
 	render->set_render = set_render;
 	render->set_texture = set_texture;
 	render->set_blending = set_blending;
+	render->set_dithering = set_dithering;
 
 	render->sortBackToFront = sortBackToFront;
 
@@ -232,6 +234,31 @@ static void set_color(Uint32 color)
 {
 	gl.Color4ub((color>>16) & 0xff, (color>>8) & 0xff,
 		color & 0xff, (color>>24) & 0xff);
+}
+
+static void set_blending(int enable)
+{
+	blending = enable;
+
+	if (enable) {
+		gl.Enable(GL_BLEND);
+		gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		gl.Enable(GL_ALPHA_TEST);
+		gl.AlphaFunc(GL_GREATER, 0.5f);
+	} else {
+		gl.Disable(GL_BLEND);
+		gl.Disable(GL_ALPHA_TEST);
+	}
+}
+
+static void set_dithering(int enable)
+{
+	if (enable) {
+		gl.Enable(GL_DITHER);
+	} else {
+		gl.Disable(GL_DITHER);
+	}
 }
 
 static void set_render(render_t *this, int num_render)
@@ -429,22 +456,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 /*
 	Textured triangles/quads
 */
-
-static void set_blending(int enable)
-{
-	blending = enable;
-
-	if (enable) {
-		gl.Enable(GL_BLEND);
-		gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		gl.Enable(GL_ALPHA_TEST);
-		gl.AlphaFunc(GL_GREATER, 0.5f);
-	} else {
-		gl.Disable(GL_BLEND);
-		gl.Disable(GL_ALPHA_TEST);
-	}
-}
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {

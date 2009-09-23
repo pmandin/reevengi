@@ -80,8 +80,10 @@ struct render_s {
 	void (*set_render)(render_t *this, int num_render);
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 	void (*set_blending)(int enable);
+	void (*set_dithering)(int enable);
 
 	int render_mode;
+	int dithering;
 
 	/* Misc functions */
 	void (*sortBackToFront)(int num_vtx, int *num_idx, vertex_t *vtx);
