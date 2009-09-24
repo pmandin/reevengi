@@ -270,7 +270,6 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	Uint16 *pal_header;
 	int num_colors, num_palettes, i,j, paletted, img_offset;
 	int w,h, wpot,hpot, tim_type;
-	render_texture_t *tex;
 	render_texture_gl_t *texgl;
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format;
@@ -328,8 +327,8 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	this->resize(this, w,h);
 
 	/* Fill palettes */
-	tex->paletted = paletted;
-	tex->num_palettes = paletted ? num_palettes : 0;
+	this->paletted = paletted;
+	this->num_palettes = paletted ? num_palettes : 0;
 
 	/* Copy palettes to video format */
 	if (paletted) {
@@ -344,9 +343,9 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				read_rgba(color, &r,&g,&b,&a);
 
 				if (params.use_opengl) {
-					tex->palettes[i][j] = (a<<24)|(r<<16)|(g<<8)|b;
+					this->palettes[i][j] = (a<<24)|(r<<16)|(g<<8)|b;
 				} else {
-					tex->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
+					this->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
 				}
 			}
 		}
@@ -357,7 +356,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 		case TIM_TYPE_4:
 			{
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
-				Uint8 *tex_pixels = tex->pixels;
+				Uint8 *tex_pixels = this->pixels;
 				for (i=0; i<h; i++) {
 					Uint8 *tex_line = tex_pixels;
 					for (j=0; j<w>>1; j++) {
@@ -365,18 +364,18 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 						*tex_line++ = color & 15;
 						*tex_line++ = (color>>4) & 15;
 					}
-					tex_pixels += tex->pitch;
+					tex_pixels += this->pitch;
 				}
 			}
 			break;
 		case TIM_TYPE_8:
 			{
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
-				Uint8 *tex_pixels = tex->pixels;
+				Uint8 *tex_pixels = this->pixels;
 				for (i=0; i<h; i++) {
 					memcpy(tex_pixels, src_pixels, w);
 					src_pixels += w;
-					tex_pixels += tex->pitch;
+					tex_pixels += this->pitch;
 				}
 			}
 			break;
@@ -394,7 +393,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				switch(bytesPerPixel) {
 					case 2:
 						{
-							Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+							Uint16 *tex_pixels = (Uint16 *) this->pixels;
 							for (i=0; i<h; i++) {
 								Uint16 *tex_line = tex_pixels;
 								for (j=0; j<w; j++) {
@@ -412,14 +411,14 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 										*tex_line++ = SDL_MapRGBA(fmt, r,g,b,a);
 									}
 								}
-								tex_pixels += tex->pitch>>1;
+								tex_pixels += this->pitch>>1;
 							}
 						}
 						break;
 					case 3:
 					case 4:
 						{
-							Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+							Uint32 *tex_pixels = (Uint32 *) this->pixels;
 							for (i=0; i<h; i++) {
 								Uint32 *tex_line = tex_pixels;
 								for (j=0; j<w; j++) {
@@ -430,7 +429,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 									
 									*tex_line++ = SDL_MapRGBA(fmt, r,g,b,a);
 								}
-								tex_pixels += tex->pitch>>1;
+								tex_pixels += this->pitch>>1;
 							}
 						}
 						break;
