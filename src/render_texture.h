@@ -41,8 +41,8 @@ struct render_texture_s {
 	void (*load_from_tim)(render_texture_t *this, void *tim_ptr);
 
 	int w, h;		/* Dimension of image zone */
+	int bpp, pitch;		/* Bytes per pixel, Line length */
 	int pitchw, pitchh;	/* Dimension of bounding zone */
-	int pitch;
 	int must_pot, num_palettes, paletted;
 	
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */

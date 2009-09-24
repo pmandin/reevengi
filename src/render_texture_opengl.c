@@ -75,6 +75,8 @@ render_texture_t *render_texture_gl_create(int must_pot)
 
 	tex->must_pot = must_pot;
 
+	tex->bpp = video.screen->format->BytesPerPixel;
+
 	for (i=0; i<MAX_TEX_PALETTE; i++) {
 		gl_tex->texture_id[i] = 0xffffffffUL;
 	}
@@ -218,19 +220,10 @@ static void resize(render_texture_t *this, int w, int h)
 		}
 	}
 
-	new_pitch = new_bound_w;
-	switch(video.bpp) {
-		case 15:
-		case 16:
-			new_pitch <<= 1;
-			break;
-		case 24:
-			new_pitch *= 3;
-			break;
-		case 32:
-			new_pitch <<= 2;
-			break;
-	}
+	logMsg(2, "texture: resize %dx%d to %dx%d\n",
+		this->pitchw,this->pitchh, new_bound_w,new_bound_h);
+
+	new_pitch = new_bound_w * this->bpp;
 
 	new_pixels = (Uint8 *) malloc(new_pitch * new_bound_h);
 	if (!new_pixels) {
@@ -324,8 +317,6 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 
 	logMsg(2, "texture: %dx%d, %d palettes * %d colors\n", w,h, num_palettes, num_colors);
 
-	this->resize(this, w,h);
-
 	/* Fill palettes */
 	this->paletted = paletted;
 	this->num_palettes = paletted ? num_palettes : 0;
@@ -350,6 +341,11 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 			}
 		}
 	}
+
+	if ((tim_type == TIM_TYPE_16) && params.use_opengl) {
+		this->bpp = 2;
+	}
+	this->resize(this, w,h);
 
 	/* Copy data */
 	switch(tim_type) {
