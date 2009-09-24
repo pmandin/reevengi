@@ -26,44 +26,144 @@
 #include "dither.h"
 #include "parameters.h"
 #include "log.h"
+#include "render_texture_list.h"
 
 /*--- Functions prototypes ---*/
 
-static void shutdown(render_texture_t *texture);
+static void shutdown(render_texture_t *this);
 
-static void upload(render_texture_t *texture, int num_pal);
-static void download(render_texture_t *texture);
+static void upload(render_texture_t *this, int num_pal);
+static void download(render_texture_t *this);
+
+static void resize(render_texture_t *this, int w, int h);
+static void load_from_tim(render_texture_t *this, void *tim_ptr);
+
+static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a);
+static int logbase2(int n);
 
 /*--- Functions ---*/
 
-static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
+render_texture_t *render_texture_create(int must_pot)
 {
-	int r1,g1,b1,a1;
+	render_texture_t *tex;
 
-	r1 = color & 31;
-	r1 = (r1<<3)|(r1>>2);
-
-	g1 = (color>>5) & 31;
-	g1 = (g1<<3)|(g1>>2);
-
-	b1 = (color>>10) & 31;
-	b1 = (b1<<3)|(b1>>2);
-
-	a1 = (color>>15) & 1;
-	if (r1+g1+b1 == 0) {
-		a1 = (a1 ? 0xff : 0);
-	} else {
-		a1 = 0xff;
+	tex = calloc(1, sizeof(render_texture_t));
+	if (!tex) {
+		fprintf(stderr, "Can not allocate memory for render_texture\n");
+		return NULL;
 	}
 
-	*r = r1;
-	*g = g1;
-	*b = b1;
-	*a = a1;
+	tex->shutdown = shutdown;
+	tex->upload = upload;
+	tex->download = download;
+	tex->resize = resize;
+	tex->load_from_tim = load_from_tim;
+
+	tex->must_pot = must_pot;
+
+	list_render_texture_add(tex);
+
+	return tex;
 }
 
-/* Load texture from a TIM image file as pointer */
-render_texture_t *render_texture_load_from_tim(void *tim_ptr)
+static void shutdown(render_texture_t *this)
+{
+	if (this) {
+		if (this->scaled) {
+			this->scaled->shutdown(this->scaled);
+			this->scaled = NULL;
+		}
+		list_render_texture_remove(this);
+		free(this);
+	}
+}
+
+static void upload(render_texture_t *this, int num_pal)
+{
+}
+
+static void download(render_texture_t *this)
+{
+}
+
+static void resize(render_texture_t *this, int w, int h)
+{
+	Uint8 *new_pixels;
+	int new_bound_w, new_bound_h;
+	int new_pitch;
+
+	if (!this) {
+		return;
+	}
+
+	/* We have enough room ? */
+	if ((w <= this->pitchw) && (h <= this->pitchh)) {
+		this->w = w;
+		this->h = h;
+		return;
+	}
+
+	/* Calc new bounding size */
+	new_bound_w = w;
+	new_bound_h = h;
+	if (this->must_pot) {
+		int potw = logbase2(new_bound_w);
+		int poth = logbase2(new_bound_h);
+		if (new_bound_w != (1<<potw)) {
+			new_bound_w = 1<<(potw+1);
+		}
+		if (new_bound_h != (1<<poth)) {
+			new_bound_h = 1<<(poth+1);
+		}
+	}
+
+	new_pitch = new_bound_w;
+	switch(video.bpp) {
+		case 15:
+		case 16:
+			new_pitch <<= 1;
+			break;
+		case 24:
+			new_pitch *= 3;
+			break;
+		case 32:
+			new_pitch <<= 2;
+			break;
+	}
+
+	new_pixels = (Uint8 *) malloc(new_pitch * new_bound_h);
+	if (!new_pixels) {
+		fprintf(stderr, "Can not allocate %d for render_texture pixels\n", new_pitch * new_bound_h);
+		return;
+	}
+
+	/* Copy old data, if any */
+	if (this->pixels) {
+		Uint8 *src = this->pixels;
+		Uint8 *dst = new_pixels;
+		int y;
+
+		for (y=0; y<h; y++) {
+			memcpy(dst, src, this->pitch);
+			src += this->pitch;
+			dst += new_pitch;
+		}
+
+		free(this->pixels);
+	}
+
+	this->pixels = new_pixels;
+	this->w = w;
+	this->h = h;
+
+	this->pitch = new_pitch;
+	this->pitchw = new_bound_w;
+	this->pitchh = new_bound_h;
+
+	this->download(this);
+}
+
+static void load_from_tim(render_texture_t *this, void *tim_ptr)
 {
 	tim_header_t *tim_header;
 	Uint16 *pal_header;
@@ -74,17 +174,21 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	SDL_PixelFormat *fmt = video.screen->format;
 	int bytes_per_pixel;
 
+	if (!this || !tim_ptr) {
+		return;
+	}
+
 	/* Read dimensions */
 	tim_header = (tim_header_t *) tim_ptr;
 	if (SDL_SwapLE32(tim_header->magic) != MAGIC_TIM) {
 		fprintf(stderr, "Not a TIM file\n");
-		return NULL;
+		return;
 	}
 
 	num_palettes = SDL_SwapLE16(tim_header->nb_palettes);
 	if (num_palettes>MAX_TEX_PALETTE) {
 		fprintf(stderr, "Does not support %d palettes per texture\n", num_palettes);
-		return NULL;
+		return;
 	}
 
 	num_colors = SDL_SwapLE16(tim_header->palette_colors);
@@ -118,38 +222,17 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 	}
 	if ((w==0) || (h==0)) {
 		fprintf(stderr, "Can not read image dimension\n");
-		return NULL;
+		return;
 	}
 
 	logMsg(2, "texture: %dx%d, %d palettes * %d colors\n", w,h, num_palettes, num_colors);
 
-	/* Align on POT size */
-	wpot = 2;
-	while (wpot<w) {
-		wpot <<= 1;
-	}	
-	hpot = 2;
-	while (hpot<h) {
-		hpot <<= 1;
-	}
+	this->resize(this, w,h);
 
-	/* Allocate memory */
-	tex = calloc(1, sizeof(render_texture_t) + wpot*hpot*bytes_per_pixel);
-	if (!tex) {
-		fprintf(stderr, "Can not allocate memory for texture\n");
-		return NULL;
-	}
-
+	/* Fill palettes */
 	tex->paletted = paletted;
 	tex->num_palettes = paletted ? num_palettes : 0;
-	tex->pitch = wpot*bytes_per_pixel;
-	tex->w = w;
-	tex->pitchw = wpot;
-	tex->h = h;
-	tex->pitchh = hpot;
-	tex->pixels = &((Uint8 *)tex)[sizeof(render_texture_t)];
 
-	/* Copy palettes to video format */
 	if (paletted) {
 		pal_header = & ((Uint16 *) tim_ptr)[sizeof(tim_header_t)/2];
 		for (i=0; i<num_palettes; i++) {
@@ -257,29 +340,41 @@ render_texture_t *render_texture_load_from_tim(void *tim_ptr)
 			}
 			break;
 	}
-
-	tex->shutdown = shutdown;
-	tex->upload = upload;
-	tex->download = download;
-
-	return tex;
 }
 
-static void shutdown(render_texture_t *texture)
+static int logbase2(int n)
 {
-	if (texture) {
-		if (texture->scaled) {
-			texture->scaled->shutdown(texture->scaled);
-			texture->scaled = NULL;
-		}
-		free(texture);
+	int r = 0;
+
+	while (n>>=1) {
+		++r;
 	}
+
+	return r;
 }
 
-static void upload(render_texture_t *texture, int num_pal)
+static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 {
-}
+	int r1,g1,b1,a1;
 
-static void download(render_texture_t *texture)
-{
+	r1 = color & 31;
+	r1 = (r1<<3)|(r1>>2);
+
+	g1 = (color>>5) & 31;
+	g1 = (g1<<3)|(g1>>2);
+
+	b1 = (color>>10) & 31;
+	b1 = (b1<<3)|(b1>>2);
+
+	a1 = (color>>15) & 1;
+	if (r1+g1+b1 == 0) {
+		a1 = (a1 ? 0xff : 0);
+	} else {
+		a1 = 0xff;
+	}
+
+	*r = r1;
+	*g = g1;
+	*b = b1;
+	*a = a1;
 }

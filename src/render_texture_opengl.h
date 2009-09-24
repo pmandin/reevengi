@@ -37,7 +37,7 @@ struct render_texture_gl_s {
 
 /*--- Functions prototypes ---*/
 
-/* Load texture from a TIM image file as pointer */
-render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr);
+/* Create a texture */
+render_texture_t *render_texture_gl_create(int must_pot);
 
 #endif /* RENDER_TEXTURE_OPENGL_H */

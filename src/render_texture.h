@@ -36,10 +36,14 @@ struct render_texture_s {
 	void (*upload)(render_texture_t *this, int num_pal);
 	void (*download)(render_texture_t *this);
 
+	void (*resize)(render_texture_t *this, int w, int h);
+
+	void (*load_from_tim)(render_texture_t *this, void *tim_ptr);
+
 	int w, h;		/* Dimension of image zone */
 	int pitchw, pitchh;	/* Dimension of bounding zone */
 	int pitch;
-	int num_palettes, paletted;
+	int must_pot, num_palettes, paletted;
 	
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
@@ -50,7 +54,7 @@ struct render_texture_s {
 
 /*--- Functions prototypes ---*/
 
-/* Load texture from a TIM image file as pointer */
-render_texture_t *render_texture_load_from_tim(void *tim_ptr);
+/* Create a texture */
+render_texture_t *render_texture_create(int must_pot);
 
 #endif /* RENDER_TEXTURE_H */

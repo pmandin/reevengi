@@ -27,7 +27,6 @@
 #include "model.h"
 #include "model_emd3.h"
 #include "log.h"
-#include "render_texture_list.h"
 
 /*--- Defines ---*/
 
@@ -149,9 +148,9 @@ model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 
 	emd_convert_endianness(model);
 
-	model->texture = render.textureFromTim(model->tim_file);
+	model->texture = render.createTexture(1);
 	if (model->texture) {
-		list_render_texture_add(model->texture);
+		model->texture->load_from_tim(model->texture, model->tim_file);
 	}
 
 	model->shutdown = model_emd3_shutdown;
@@ -170,7 +169,6 @@ static void model_emd3_shutdown(model_t *this)
 			free(this->tim_file);
 		}
 		if (this->texture) {
-			list_render_texture_remove(this->texture);
 			this->texture->shutdown(this->texture);
 		}
 		free(this);

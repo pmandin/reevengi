@@ -96,7 +96,7 @@ void render_opengl_init(render_t *render)
 	render->startFrame = render_startFrame;
 	render->endFrame = render_endFrame;
 
-	render->textureFromTim = render_texture_gl_load_from_tim;
+	render->createTexture = render_texture_gl_create;
 
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;

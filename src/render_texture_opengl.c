@@ -40,41 +40,231 @@
 
 /*--- Functions prototypes ---*/
 
-static void shutdown(render_texture_t *texture);
+static void shutdown(render_texture_t *this);
 
-static void upload(render_texture_t *texture, int num_pal);
-static void download(render_texture_t *texture);
+static void upload(render_texture_t *this, int num_pal);
+static void download(render_texture_t *this);
+
+static void resize(render_texture_t *this, int w, int h);
+static void load_from_tim(render_texture_t *this, void *tim_ptr);
+
+static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a);
+static int logbase2(int n);
 
 /*--- Functions ---*/
 
-static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
+render_texture_t *render_texture_gl_create(int must_pot)
 {
-	int r1,g1,b1,a1;
+	render_texture_gl_t *gl_tex;
+	render_texture_t *tex;
+	int i;
 
-	r1 = color & 31;
-	r1 = (r1<<3)|(r1>>2);
-
-	g1 = (color>>5) & 31;
-	g1 = (g1<<3)|(g1>>2);
-
-	b1 = (color>>10) & 31;
-	b1 = (b1<<3)|(b1>>2);
-
-	a1 = (color>>15) & 1;
-	if (r1+g1+b1 == 0) {
-		a1 = (a1 ? 0xff : 0);
-	} else {
-		a1 = 0xff;
+	gl_tex = calloc(1, sizeof(render_texture_gl_t));
+	if (!gl_tex) {
+		fprintf(stderr, "Can not allocate memory for render_texture\n");
+		return NULL;
 	}
 
-	*r = r1;
-	*g = g1;
-	*b = b1;
-	*a = a1;
+	tex = (render_texture_t *) gl_tex;
+
+	tex->shutdown = shutdown;
+	tex->upload = upload;
+	tex->download = download;
+	tex->resize = resize;
+	tex->load_from_tim = load_from_tim;
+
+	tex->must_pot = must_pot;
+
+	for (i=0; i<MAX_TEX_PALETTE; i++) {
+		gl_tex->texture_id[i] = 0xffffffffUL;
+	}
+
+	list_render_texture_add(tex);
+
+	return tex;
 }
 
-/* Load texture from a TIM image file as pointer */
-render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr)
+static void shutdown(render_texture_t *this)
+{
+	if (this) {
+		if (this->scaled) {
+			this->scaled->shutdown(this->scaled);
+			this->scaled = NULL;
+		}
+		list_render_texture_remove(this);
+		free(this);
+	}
+}
+
+static void upload(render_texture_t *this, int num_pal)
+{
+	render_texture_gl_t *texgl = (render_texture_gl_t *) this;
+	int i = this->paletted ? num_pal : 0;
+	GLenum internalFormat = GL_RGBA;
+	GLenum pixelType = GL_UNSIGNED_BYTE;
+	GLenum surfaceFormat = GL_RGBA;
+
+	/* Already uploaded ? */
+	if (texgl->texture_id[i] != 0xFFFFFFFFUL) {
+		gl.BindTexture(GL_TEXTURE_2D, texgl->texture_id[i]);
+		return;
+	}
+
+	/* Create new texture object, and upload texture */
+	gl.GenTextures(1, &texgl->texture_id[i]);
+
+	gl.BindTexture(GL_TEXTURE_2D, texgl->texture_id[i]);
+
+	/* Upload new palette */
+	if (this->paletted) {
+		surfaceFormat = GL_COLOR_INDEX;
+
+#if defined(GL_EXT_paletted_texture)
+		if (video.has_gl_ext_paletted_texture) {
+			Uint8 mapP[256*4];
+			Uint8 *pMap = mapP;
+
+			internalFormat = GL_COLOR_INDEX8_EXT;
+			for (i=0; i<256; i++) {
+				Uint32 color = this->palettes[num_pal][i];
+
+				*pMap++ = (color>>16) & 0xff;
+				*pMap++ = (color>>8) & 0xff;
+				*pMap++ = color & 0xff;
+				*pMap++ = (color>>24) & 0xff;
+			}
+			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
+				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
+		} else
+#endif
+		{
+			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
+
+			memset(mapR, 0, sizeof(mapR));
+			memset(mapG, 0, sizeof(mapG));
+			memset(mapB, 0, sizeof(mapB));
+			memset(mapA, 0, sizeof(mapA));
+			for (i=0; i<256; i++) {
+				Uint32 color = this->palettes[num_pal][i];
+
+				mapR[i] = ((color>>16) & 0xff) / 255.0;
+				mapG[i] = ((color>>8) & 0xff) / 255.0;
+				mapB[i] = (color & 0xff) / 255.0;
+				mapA[i] = ((color>>24) & 0xff) / 255.0;
+			}
+			gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_G, 256, mapG);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
+			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
+		}
+	} else {
+		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
+	}
+
+	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
+		this->pitchw, this->pitchh, 0,
+		surfaceFormat, pixelType, this->pixels
+	);
+
+	if (this->paletted) {
+		if (!video.has_gl_ext_paletted_texture) {
+			gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
+		}
+	}
+}
+
+static void download(render_texture_t *this)
+{
+	int i;
+	render_texture_gl_t *texgl = (render_texture_gl_t *) this;
+
+	for (i=0; i<MAX_TEX_PALETTE; i++) {
+		if (texgl->texture_id[i] != 0xFFFFFFFFUL) {
+			gl.DeleteTextures(1, &texgl->texture_id[i]);
+			texgl->texture_id[i] = 0xFFFFFFFFUL;
+		}
+	}	
+}
+
+static void resize(render_texture_t *this, int w, int h)
+{
+	Uint8 *new_pixels;
+	int new_bound_w, new_bound_h;
+	int new_pitch;
+
+	if (!this) {
+		return;
+	}
+
+	/* We have enough room ? */
+	if ((w <= this->pitchw) && (h <= this->pitchh)) {
+		this->w = w;
+		this->h = h;
+		return;
+	}
+
+	/* Calc new bounding size */
+	new_bound_w = w;
+	new_bound_h = h;
+	if (this->must_pot) {
+		int potw = logbase2(new_bound_w);
+		int poth = logbase2(new_bound_h);
+		if (new_bound_w != (1<<potw)) {
+			new_bound_w = 1<<(potw+1);
+		}
+		if (new_bound_h != (1<<poth)) {
+			new_bound_h = 1<<(poth+1);
+		}
+	}
+
+	new_pitch = new_bound_w;
+	switch(video.bpp) {
+		case 15:
+		case 16:
+			new_pitch <<= 1;
+			break;
+		case 24:
+			new_pitch *= 3;
+			break;
+		case 32:
+			new_pitch <<= 2;
+			break;
+	}
+
+	new_pixels = (Uint8 *) malloc(new_pitch * new_bound_h);
+	if (!new_pixels) {
+		fprintf(stderr, "Can not allocate %d for render_texture pixels\n", new_pitch * new_bound_h);
+		return;
+	}
+
+	/* Copy old data, if any */
+	if (this->pixels) {
+		Uint8 *src = this->pixels;
+		Uint8 *dst = new_pixels;
+		int y;
+
+		for (y=0; y<h; y++) {
+			memcpy(dst, src, this->pitch);
+			src += this->pitch;
+			dst += new_pitch;
+		}
+
+		free(this->pixels);
+	}
+
+	this->pixels = new_pixels;
+	this->w = w;
+	this->h = h;
+
+	this->pitch = new_pitch;
+	this->pitchw = new_bound_w;
+	this->pitchh = new_bound_h;
+
+	this->download(this);
+}
+
+static void load_from_tim(render_texture_t *this, void *tim_ptr)
 {
 	tim_header_t *tim_header;
 	Uint16 *pal_header;
@@ -90,13 +280,13 @@ render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr)
 	tim_header = (tim_header_t *) tim_ptr;
 	if (SDL_SwapLE32(tim_header->magic) != MAGIC_TIM) {
 		fprintf(stderr, "Not a TIM file\n");
-		return NULL;
+		return;
 	}
 
 	num_palettes = SDL_SwapLE16(tim_header->nb_palettes);
 	if (num_palettes>MAX_TEX_PALETTE) {
 		fprintf(stderr, "Does not support %d palettes per texture\n", num_palettes);
-		return NULL;
+		return;
 	}
 
 	num_colors = SDL_SwapLE16(tim_header->palette_colors);
@@ -130,41 +320,16 @@ render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr)
 	}
 	if ((w==0) || (h==0)) {
 		fprintf(stderr, "Can not read image dimension\n");
-		return NULL;
+		return;
 	}
 
 	logMsg(2, "texture: %dx%d, %d palettes * %d colors\n", w,h, num_palettes, num_colors);
 
-	/* Align on POT size */
-	wpot = 2;
-	while (wpot<w) {
-		wpot <<= 1;
-	}	
-	hpot = 2;
-	while (hpot<h) {
-		hpot <<= 1;
-	}
+	this->resize(this, w,h);
 
-	/* Allocate memory */
-	tex = calloc(1, sizeof(render_texture_gl_t) + wpot*hpot*bytes_per_pixel);
-	if (!tex) {
-		fprintf(stderr, "Can not allocate memory for texture\n");
-		return NULL;
-	}
-
-	texgl = (render_texture_gl_t *) tex;
-	for (i=0; i<MAX_TEX_PALETTE; i++) {
-		texgl->texture_id[i] = 0xFFFFFFFFUL;
-	}
-
+	/* Fill palettes */
 	tex->paletted = paletted;
 	tex->num_palettes = paletted ? num_palettes : 0;
-	tex->pitch = wpot*bytes_per_pixel;
-	tex->w = w;
-	tex->pitchw = wpot;
-	tex->h = h;
-	tex->pitchh = hpot;
-	tex->pixels = &((Uint8 *)tex)[sizeof(render_texture_gl_t)];
 
 	/* Copy palettes to video format */
 	if (paletted) {
@@ -275,111 +440,44 @@ render_texture_t *render_texture_gl_load_from_tim(void *tim_ptr)
 			break;
 	}
 
-	tex->shutdown = shutdown;
-	tex->upload = upload;
-	tex->download = download;
-
-	return tex;
+	this->download(this);
 }
 
-static void shutdown(render_texture_t *texture)
+static int logbase2(int n)
 {
-	if (texture) {
-		texture->download(texture);
+	int r = 0;
 
-		free((render_texture_gl_t *) texture);
+	while (n>>=1) {
+		++r;
 	}
+
+	return r;
 }
 
-static void upload(render_texture_t *texture, int num_pal)
+static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 {
-	render_texture_gl_t *texgl = (render_texture_gl_t *) texture;
-	int i = texture->paletted ? num_pal : 0;
-	GLenum internalFormat = GL_RGBA;
-	GLenum pixelType = GL_UNSIGNED_BYTE;
-	GLenum surfaceFormat = GL_RGBA;
+	int r1,g1,b1,a1;
 
-	/* Already uploaded ? */
-	if (texgl->texture_id[i] != 0xFFFFFFFFUL) {
-		gl.BindTexture(GL_TEXTURE_2D, texgl->texture_id[i]);
-		return;
-	}
+	r1 = color & 31;
+	r1 = (r1<<3)|(r1>>2);
 
-	/* Create new texture object, and upload texture */
-	gl.GenTextures(1, &texgl->texture_id[i]);
+	g1 = (color>>5) & 31;
+	g1 = (g1<<3)|(g1>>2);
 
-	gl.BindTexture(GL_TEXTURE_2D, texgl->texture_id[i]);
+	b1 = (color>>10) & 31;
+	b1 = (b1<<3)|(b1>>2);
 
-	/* Upload new palette */
-	if (texture->paletted) {
-		surfaceFormat = GL_COLOR_INDEX;
-
-#if defined(GL_EXT_paletted_texture)
-		if (video.has_gl_ext_paletted_texture) {
-			Uint8 mapP[256*4];
-			Uint8 *pMap = mapP;
-
-			internalFormat = GL_COLOR_INDEX8_EXT;
-			for (i=0; i<256; i++) {
-				Uint32 color = texture->palettes[num_pal][i];
-
-				*pMap++ = (color>>16) & 0xff;
-				*pMap++ = (color>>8) & 0xff;
-				*pMap++ = color & 0xff;
-				*pMap++ = (color>>24) & 0xff;
-			}
-			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
-				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
-		} else
-#endif
-		{
-			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
-
-			memset(mapR, 0, sizeof(mapR));
-			memset(mapG, 0, sizeof(mapG));
-			memset(mapB, 0, sizeof(mapB));
-			memset(mapA, 0, sizeof(mapA));
-			for (i=0; i<256; i++) {
-				Uint32 color = texture->palettes[num_pal][i];
-
-				mapR[i] = ((color>>16) & 0xff) / 255.0;
-				mapG[i] = ((color>>8) & 0xff) / 255.0;
-				mapB[i] = (color & 0xff) / 255.0;
-				mapA[i] = ((color>>24) & 0xff) / 255.0;
-			}
-			gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_G, 256, mapG);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
-		}
+	a1 = (color>>15) & 1;
+	if (r1+g1+b1 == 0) {
+		a1 = (a1 ? 0xff : 0);
 	} else {
-		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
+		a1 = 0xff;
 	}
 
-	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
-		texture->pitchw, texture->pitchh, 0,
-		surfaceFormat, pixelType, texture->pixels
-	);
-
-	if (texture->paletted) {
-		if (!video.has_gl_ext_paletted_texture) {
-			gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
-		}
-	}
-}
-
-static void download(render_texture_t *texture)
-{
-	int i;
-	render_texture_gl_t *texgl = (render_texture_gl_t *) texture;
-
-	for (i=0; i<MAX_TEX_PALETTE; i++) {
-		if (texgl->texture_id[i] != 0xFFFFFFFFUL) {
-			gl.DeleteTextures(1, &texgl->texture_id[i]);
-			texgl->texture_id[i] = 0xFFFFFFFFUL;
-		}
-	}	
+	*r = r1;
+	*g = g1;
+	*b = b1;
+	*a = a1;
 }
 
 #endif /* ENABLE_OPENGL */
