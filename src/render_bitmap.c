@@ -183,7 +183,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	if (texture->scaled) {
 		/* Recreate if different target size */		
 		if ((texture->scaled->w != new_w) || (texture->scaled->h != new_h)) {
-			/*texture->scaled->resize(new_w,new_h);*/
+			texture->scaled->resize(texture->scaled, new_w,new_h);
 			fill_scaled = 1;
 		}
 	} else {
@@ -197,9 +197,11 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 
 	/* Create new render_texture, for scaled size */
 	if (create_scaled) {
-		/* texture->scaled = render_texture_create_copy(texture) */
-		/* texture->scaled->resize(new_w,new_h) */
-		fill_scaled = 1;	
+		texture->scaled = render_texture_create(texture->must_pot);
+		if (texture->scaled) {
+			texture->scaled->resize(texture->scaled, new_w,new_h);
+			fill_scaled = 1;	
+		}
 	}
 
 	/* Then redraw a scaled version */
