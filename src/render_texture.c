@@ -138,7 +138,7 @@ static void resize(render_texture_t *this, int w, int h)
 		Uint8 *dst = new_pixels;
 		int y;
 
-		for (y=0; y<h; y++) {
+		for (y=0; y<this->h; y++) {
 			memcpy(dst, src, this->pitch);
 			src += this->pitch;
 			dst += new_pitch;
