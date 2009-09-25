@@ -352,7 +352,6 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 {
-	int x,y;
 	SDL_Surface *tmp_surf = NULL;
 
 	if (!this || !surf) {
@@ -364,13 +363,14 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	}
 	this->resize(this, surf->w,surf->h);
 
+	this->num_palettes = this->paletted = 0;
+
 	/* Init palette */
 	if ((surf->format->BitsPerPixel==8) && surf->format->palette) {
 		int i;
 		SDL_Palette *surf_palette = surf->format->palette;
 
-		this->num_palettes = 1;
-		this->paletted = 1;
+		this->num_palettes = this->paletted = 1;
 
 		for (i=0; i<surf->format->palette->ncolors; i++) {
 			int r,g,b,a;
@@ -400,6 +400,8 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	}
 
 	if (tmp_surf) {
+		int y;
+
 		switch(this->bpp) {
 			case 1:
 				{
