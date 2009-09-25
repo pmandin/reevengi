@@ -146,6 +146,7 @@ static void upload(render_texture_t *this, int num_pal)
 				gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
 				gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
 			}
+			break;
 		case 2:
 			pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
 			break;
