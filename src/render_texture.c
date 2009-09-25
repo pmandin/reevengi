@@ -35,7 +35,9 @@ static void shutdown(render_texture_t *this);
 static void upload(render_texture_t *this, int num_pal);
 static void download(render_texture_t *this);
 
+static void prepare_resize(render_texture_t *this, int *w, int *h);
 static void resize(render_texture_t *this, int w, int h);
+
 static void load_from_tim(render_texture_t *this, void *tim_ptr);
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf);
 
@@ -57,6 +59,7 @@ render_texture_t *render_texture_create(int must_pot)
 	tex->shutdown = shutdown;
 	tex->upload = upload;
 	tex->download = download;
+	tex->prepare_resize = prepare_resize;
 	tex->resize = resize;
 	tex->load_from_tim = load_from_tim;
 	tex->load_from_surf = load_from_surf;
@@ -90,6 +93,26 @@ static void download(render_texture_t *this)
 {
 }
 
+static void prepare_resize(render_texture_t *this, int *w, int *h)
+{
+	int new_bound_w = *w;
+	int new_bound_h = *h;
+
+	if (this->must_pot) {
+		int potw = logbase2(new_bound_w);
+		int poth = logbase2(new_bound_h);
+		if (new_bound_w != (1<<potw)) {
+			new_bound_w = 1<<(potw+1);
+		}
+		if (new_bound_h != (1<<poth)) {
+			new_bound_h = 1<<(poth+1);
+		}
+	}
+
+	*w = new_bound_w;
+	*h = new_bound_h;
+}
+
 static void resize(render_texture_t *this, int w, int h)
 {
 	Uint8 *new_pixels;
@@ -107,19 +130,9 @@ static void resize(render_texture_t *this, int w, int h)
 		return;
 	}
 
-	/* Calc new bounding size */
 	new_bound_w = w;
 	new_bound_h = h;
-	if (this->must_pot) {
-		int potw = logbase2(new_bound_w);
-		int poth = logbase2(new_bound_h);
-		if (new_bound_w != (1<<potw)) {
-			new_bound_w = 1<<(potw+1);
-		}
-		if (new_bound_h != (1<<poth)) {
-			new_bound_h = 1<<(poth+1);
-		}
-	}
+	this->prepare_resize(this, &new_bound_w, &new_bound_h);
 
 	logMsg(2, "texture: resize %dx%d to %dx%d\n",
 		this->pitchw,this->pitchh, new_bound_w,new_bound_h);

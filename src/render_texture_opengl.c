@@ -43,6 +43,10 @@
 static void upload(render_texture_t *this, int num_pal);
 static void download(render_texture_t *this);
 
+static void prepare_resize(render_texture_t *this, int *w, int *h);
+
+static int logbase2(int n);
+
 /*--- Functions ---*/
 
 render_texture_t *render_texture_gl_create(int must_pot)
@@ -66,6 +70,7 @@ render_texture_t *render_texture_gl_create(int must_pot)
 
 	tex->upload = upload;
 	tex->download = download;
+	tex->prepare_resize = prepare_resize;
 
 	gl_tex->textureTarget = GL_TEXTURE_2D;
 	for (i=0; i<MAX_TEX_PALETTE; i++) {
@@ -174,6 +179,68 @@ static void download(render_texture_t *this)
 			texgl->texture_id[i] = 0xFFFFFFFFUL;
 		}
 	}	
+}
+
+static void prepare_resize(render_texture_t *this, int *w, int *h)
+{
+	int new_bound_w = *w;
+	int new_bound_h = *h;
+	render_texture_gl_t *gl_this = (render_texture_gl_t *) this;
+
+	if (video.has_gl_arb_texture_non_power_of_two) {
+		gl_this->textureTarget = GL_TEXTURE_2D;
+		logMsg(2, "texture: arb_npot\n");
+	}
+#if defined(GL_ARB_texture_rectangle)
+	else if (video.has_gl_arb_texture_rectangle) {
+		gl_this->textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+		/*this->can_palette = 0;*/
+		logMsg(2, "texture: arb_rect\n");
+	}
+#endif
+#if defined(GL_EXT_texture_rectangle)
+	else if (video.has_gl_ext_texture_rectangle) {
+		gl_this->textureTarget = GL_TEXTURE_RECTANGLE_EXT;
+		/*this->can_palette = 0;*/
+		logMsg(2, "texture: ext_rect\n");
+	}
+#endif
+#if defined(GL_NV_texture_rectangle)
+	else if (video.has_gl_nv_texture_rectangle) {
+		gl_this->textureTarget = GL_TEXTURE_RECTANGLE_NV;
+		/*this->can_palette = 0;*/
+		logMsg(2, "texture: nv_rect\n");
+	}
+#endif
+	else {
+		this->must_pot = 1;
+		logMsg(2, "texture: must pot\n");
+	}
+
+	if (this->must_pot) {
+		int potw = logbase2(new_bound_w);
+		int poth = logbase2(new_bound_h);
+		if (new_bound_w != (1<<potw)) {
+			new_bound_w = 1<<(potw+1);
+		}
+		if (new_bound_h != (1<<poth)) {
+			new_bound_h = 1<<(poth+1);
+		}
+	}
+
+	*w = new_bound_w;
+	*h = new_bound_h;
+}
+
+static int logbase2(int n)
+{
+	int r = 0;
+
+	while (n>>=1) {
+		++r;
+	}
+
+	return r;
 }
 
 #endif /* ENABLE_OPENGL */

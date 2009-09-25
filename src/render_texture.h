@@ -36,7 +36,9 @@ struct render_texture_s {
 	void (*upload)(render_texture_t *this, int num_pal);
 	void (*download)(render_texture_t *this);
 
+	void (*prepare_resize)(render_texture_t *this, int *w, int *h);
 	void (*resize)(render_texture_t *this, int w, int h);
+
 	void (*load_from_tim)(render_texture_t *this, void *tim_ptr);
 	void (*load_from_surf)(render_texture_t *this, SDL_Surface *surf);
 
