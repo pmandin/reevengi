@@ -37,7 +37,6 @@ struct render_texture_s {
 	void (*download)(render_texture_t *this);
 
 	void (*resize)(render_texture_t *this, int w, int h);
-
 	void (*load_from_tim)(render_texture_t *this, void *tim_ptr);
 
 	int w, h;		/* Dimension of image zone */

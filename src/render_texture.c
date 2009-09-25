@@ -243,8 +243,17 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 		}
 	}
 
-	if ((tim_type == TIM_TYPE_16) && params.use_opengl) {
-		this->bpp = 2;
+	/* Set bpp from texture, before resize */
+	switch(tim_type) {
+		case TIM_TYPE_4:
+		case TIM_TYPE_8:
+			this->bpp = 1;
+			break;
+		case TIM_TYPE_16:
+			if (params.use_opengl) {
+				this->bpp = 2;
+			}
+			break;
 	}
 	this->resize(this, w,h);
 
