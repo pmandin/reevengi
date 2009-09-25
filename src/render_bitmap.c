@@ -197,6 +197,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 
 	/* Create new render_texture, for scaled size */
 	if (create_scaled) {
+		logMsg(2, "bitmap: create scaled version of texture\n");
 		texture->scaled = render_texture_create(0);
 		if (texture->scaled) {
 			texture->scaled->resize(texture->scaled, new_w,new_h);
@@ -206,8 +207,10 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 
 	/* Then redraw a scaled version */
 	if (fill_scaled) {
+		logMsg(2, "bitmap: fill scaled version of texture\n");
 		create_scaled_version(video, texture, texture->scaled);
 		if (render.dithering) {
+			logMsg(2, "bitmap: dither scaled version of texture\n");
 			/* Dither scaled version */
 		}
 	}

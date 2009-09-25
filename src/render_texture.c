@@ -481,6 +481,8 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		this->gmask = tmp_surf->format->Gmask;
 		this->bmask = tmp_surf->format->Bmask;
 		this->amask = tmp_surf->format->Amask;
+		logMsg(2, "texture: R=0x%08x, G=0x%08x, B=0x%08x, A=0x%08x\n",
+			this->rmask, this->gmask, this->bmask, this->amask);
 
 		switch(this->bpp) {
 			case 1:
