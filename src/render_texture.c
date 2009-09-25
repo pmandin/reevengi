@@ -388,6 +388,8 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		}
 	}
 
+	logMsg(2, "texture: %dx%d, %d palettes\n", this->w,this->h, this->num_palettes);
+
 	/* Copy data */
 	if (video.bpp == 8) {
 		tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);

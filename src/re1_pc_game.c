@@ -32,6 +32,7 @@
 #include "re1_pc_game.h"
 #include "parameters.h"
 #include "video.h"
+#include "render.h"
 #include "model_emd.h"
 #include "log.h"
 #include "background_tim.h"
@@ -191,6 +192,12 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 						video.convertSurface(game_state.back_surf);
 						retval = 1;
 					}
+
+					game_state.rt_back_surf = render.createTexture(0);
+					if (game_state.rt_back_surf) {
+						game_state.rt_back_surf->load_from_surf(game_state.rt_back_surf, image);
+					}
+
 					SDL_FreeSurface(image);
 				}
 
