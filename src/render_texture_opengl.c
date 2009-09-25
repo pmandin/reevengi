@@ -71,6 +71,7 @@ render_texture_t *render_texture_gl_create(int must_pot)
 	tex->upload = upload;
 	tex->download = download;
 	tex->prepare_resize = prepare_resize;
+	tex->must_pot = 0;
 
 	gl_tex->textureTarget = GL_TEXTURE_2D;
 	for (i=0; i<MAX_TEX_PALETTE; i++) {

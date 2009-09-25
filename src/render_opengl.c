@@ -501,12 +501,21 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.Enable(gl_tex->textureTarget);
 
 	gl.Begin(GL_TRIANGLES);
-	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
-	gl.Vertex3s(v1->x, v1->y, v1->z);
-	gl.TexCoord2f((float) v2->u / texture->pitchw, (float) v2->v / texture->pitchh);
-	gl.Vertex3s(v2->x, v2->y, v2->z);
-	gl.TexCoord2f((float) v3->u / texture->pitchw, (float) v3->v / texture->pitchh);
-	gl.Vertex3s(v3->x, v3->y, v3->z);
+	if (gl_tex->textureTarget == GL_TEXTURE_2D) {
+		gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
+		gl.Vertex3s(v1->x, v1->y, v1->z);
+		gl.TexCoord2f((float) v2->u / texture->pitchw, (float) v2->v / texture->pitchh);
+		gl.Vertex3s(v2->x, v2->y, v2->z);
+		gl.TexCoord2f((float) v3->u / texture->pitchw, (float) v3->v / texture->pitchh);
+		gl.Vertex3s(v3->x, v3->y, v3->z);
+	} else {
+		gl.TexCoord2s(v1->u, v1->v);
+		gl.Vertex3s(v1->x, v1->y, v1->z);
+		gl.TexCoord2s(v2->u, v2->v);
+		gl.Vertex3s(v2->x, v2->y, v2->z);
+		gl.TexCoord2s(v3->u, v3->v);
+		gl.Vertex3s(v3->x, v3->y, v3->z);
+	}
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);
@@ -535,14 +544,25 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Enable(gl_tex->textureTarget);
 
 	gl.Begin(GL_QUADS);
-	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
-	gl.Vertex3s(v1->x, v1->y, v1->z);
-	gl.TexCoord2f((float) v2->u / texture->pitchw, (float) v2->v / texture->pitchh);
-	gl.Vertex3s(v2->x, v2->y, v2->z);
-	gl.TexCoord2f((float) v3->u / texture->pitchw, (float) v3->v / texture->pitchh);
-	gl.Vertex3s(v3->x, v3->y, v3->z);
-	gl.TexCoord2f((float) v4->u / texture->pitchw, (float) v4->v / texture->pitchh);
-	gl.Vertex3s(v4->x, v4->y, v4->z);
+	if (gl_tex->textureTarget == GL_TEXTURE_2D) {
+		gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
+		gl.Vertex3s(v1->x, v1->y, v1->z);
+		gl.TexCoord2f((float) v2->u / texture->pitchw, (float) v2->v / texture->pitchh);
+		gl.Vertex3s(v2->x, v2->y, v2->z);
+		gl.TexCoord2f((float) v3->u / texture->pitchw, (float) v3->v / texture->pitchh);
+		gl.Vertex3s(v3->x, v3->y, v3->z);
+		gl.TexCoord2f((float) v4->u / texture->pitchw, (float) v4->v / texture->pitchh);
+		gl.Vertex3s(v4->x, v4->y, v4->z);
+	} else {
+		gl.TexCoord2s(v1->u, v1->v);
+		gl.Vertex3s(v1->x, v1->y, v1->z);
+		gl.TexCoord2s(v2->u, v2->v);
+		gl.Vertex3s(v2->x, v2->y, v2->z);
+		gl.TexCoord2s(v3->u, v3->v);
+		gl.Vertex3s(v3->x, v3->y, v3->z);
+		gl.TexCoord2s(v4->u, v4->v);
+		gl.Vertex3s(v4->x, v4->y, v4->z);
+	}
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);
