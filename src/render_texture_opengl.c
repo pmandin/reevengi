@@ -150,7 +150,12 @@ static void upload(render_texture_t *this, int num_pal)
 			}
 			break;
 		case 2:
-			pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
+			if (this->bmask == 31) {
+				pixelType = GL_UNSIGNED_SHORT_5_6_5;
+				surfaceFormat = GL_RGB;
+			} else {
+				pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
+			}
 			break;
 		case 3:
 			surfaceFormat = GL_RGB;

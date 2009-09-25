@@ -434,6 +434,7 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 				this->bmask = surf->format->Bmask;
 				this->amask = surf->format->Amask;
 			}
+			logMsg(2, "texture: created cached version\n");
 		}
 	} else {
 		if (params.use_opengl) {
