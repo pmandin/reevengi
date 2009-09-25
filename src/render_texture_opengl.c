@@ -185,7 +185,15 @@ static void prepare_resize(render_texture_t *this, int *w, int *h)
 {
 	int new_bound_w = *w;
 	int new_bound_h = *h;
+	int potw = logbase2(new_bound_w);
+	int poth = logbase2(new_bound_h);
 	render_texture_gl_t *gl_this = (render_texture_gl_t *) this;
+
+	if ((new_bound_w == (1<<potw)) && (new_bound_h == (1<<poth))) {
+		gl_this->textureTarget = GL_TEXTURE_2D;
+		logMsg(2, "texture: pot\n");
+		return;
+	}
 
 	if (video.has_gl_arb_texture_non_power_of_two) {
 		gl_this->textureTarget = GL_TEXTURE_2D;
@@ -218,8 +226,6 @@ static void prepare_resize(render_texture_t *this, int *w, int *h)
 	}
 
 	if (this->must_pot) {
-		int potw = logbase2(new_bound_w);
-		int poth = logbase2(new_bound_h);
 		if (new_bound_w != (1<<potw)) {
 			new_bound_w = 1<<(potw+1);
 		}
