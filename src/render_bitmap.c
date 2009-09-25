@@ -92,10 +92,10 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		h -= y;
 	}
 	if (x+w>=video->viewport.w) {
-		w -= x+w - video->viewport.w;
+		w = video->viewport.w - x;
 	}
-	if (y+h>=video->viewport.y+video->viewport.h) {
-		h -= y+h - video->viewport.h;
+	if (y+h>=video->viewport.h) {
+		h = video->viewport.h - y;
 	}
 	if ((w<=0) || (h<=0) || (src_x>=w) || (src_y>=h)) {
 		return;

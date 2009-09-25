@@ -37,6 +37,7 @@ static void download(render_texture_t *this);
 
 static void resize(render_texture_t *this, int w, int h);
 static void load_from_tim(render_texture_t *this, void *tim_ptr);
+static void load_from_surf(render_texture_t *this, SDL_Surface *surf);
 
 static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a);
 static int logbase2(int n);
@@ -58,6 +59,7 @@ render_texture_t *render_texture_create(int must_pot)
 	tex->download = download;
 	tex->resize = resize;
 	tex->load_from_tim = load_from_tim;
+	tex->load_from_surf = load_from_surf;
 
 	tex->must_pot = must_pot;
 
@@ -344,6 +346,111 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 			}
 			break;
 	}
+
+	this->download(this);
+}
+
+static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
+{
+	int x,y;
+	SDL_Surface *tmp_surf = NULL;
+
+	if (!this || !surf) {
+		return;
+	}
+
+	if (params.use_opengl) {
+		this->bpp = surf->format->BytesPerPixel;
+	}
+	this->resize(this, surf->w,surf->h);
+
+	/* Init palette */
+	if ((surf->format->BitsPerPixel==8) && surf->format->palette) {
+		int i;
+		SDL_Palette *surf_palette = surf->format->palette;
+
+		this->num_palettes = 1;
+		this->paletted = 1;
+
+		for (i=0; i<surf->format->palette->ncolors; i++) {
+			int r,g,b,a;
+
+			r = surf_palette->colors[i].r;
+			g = surf_palette->colors[i].g;
+			b = surf_palette->colors[i].b;
+			a = 0xff;
+
+			if (params.use_opengl) {
+				this->palettes[0][i] = (a<<24)|(r<<16)|(g<<8)|b;
+			} else {
+				this->palettes[0][i] = SDL_MapRGBA(surf->format, r,g,b,a);
+			}
+		}
+	}
+
+	/* Copy data */
+	if (video.bpp == 8) {
+		tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
+		if (tmp_surf) {
+			dither_setpalette(tmp_surf);
+			dither_copy(surf, tmp_surf);
+		}
+	} else {
+		tmp_surf = SDL_DisplayFormat(surf);
+	}
+
+	if (tmp_surf) {
+		switch(this->bpp) {
+			case 1:
+				{
+					Uint8 *src = tmp_surf->pixels;
+					Uint8 *dst = this->pixels;
+					for (y=0; y<this->h; y++) {
+						memcpy(dst, src, this->w);
+						src += tmp_surf->pitch;
+						dst += this->pitch;
+					}
+				}
+				break;
+			case 2:
+				{
+					Uint16 *src = (Uint16 *) tmp_surf->pixels;
+					Uint16 *dst = (Uint16 *) this->pixels;
+					for (y=0; y<this->h; y++) {
+						memcpy(dst, src, this->w<<1);
+						src += tmp_surf->pitch>>1;
+						dst += this->pitch>>1;
+					}
+				}
+				break;
+			case 3:
+				{
+					Uint8 *src = tmp_surf->pixels;
+					Uint8 *dst = this->pixels;
+					for (y=0; y<this->h; y++) {
+						memcpy(dst, src, this->w *3);
+						src += tmp_surf->pitch;
+						dst += this->pitch;
+					}
+				}
+				break;
+			case 4:
+				{
+					Uint32 *src = (Uint32 *) tmp_surf->pixels;
+					Uint32 *dst = (Uint32 *) this->pixels;
+					for (y=0; y<this->h; y++) {
+						memcpy(dst, src, this->w<<2);
+						src += tmp_surf->pitch>>2;
+						dst += this->pitch>>2;
+					}
+				}
+				break;
+		}
+
+		SDL_FreeSurface(tmp_surf);	
+	}
+
+	this->download(this);
 }
 
 static int logbase2(int n)

@@ -72,6 +72,7 @@ typedef struct {
 
 	/* Background image */
 	video_surface_t *back_surf;
+	render_texture_t *rt_back_surf;
 
 	/* List of movies */
 	char **movies_list;

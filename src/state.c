@@ -190,6 +190,10 @@ static void state_loadbackground(void)
 
 void state_unloadbackground(void)
 {
+	if (game_state.rt_back_surf) {
+		game_state.rt_back_surf->shutdown(game_state.rt_back_surf);
+		game_state.rt_back_surf = NULL;
+	}
 	if (game_state.back_surf) {
 		video.destroySurface(game_state.back_surf);
 		game_state.back_surf = NULL;
