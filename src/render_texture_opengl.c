@@ -98,50 +98,57 @@ static void upload(render_texture_t *this, int num_pal)
 	gl.BindTexture(texgl->textureTarget, texgl->texture_id[i]);
 
 	/* Upload new palette */
-	if (this->paletted) {
-		surfaceFormat = GL_COLOR_INDEX;
+	switch (this->bpp) {
+		case 1:
+			surfaceFormat = GL_COLOR_INDEX;
 
 #if defined(GL_EXT_paletted_texture)
-		if (video.has_gl_ext_paletted_texture) {
-			Uint8 mapP[256*4];
-			Uint8 *pMap = mapP;
+			if (video.has_gl_ext_paletted_texture) {
+				Uint8 mapP[256*4];
+				Uint8 *pMap = mapP;
 
-			internalFormat = GL_COLOR_INDEX8_EXT;
-			for (i=0; i<256; i++) {
-				Uint32 color = this->palettes[num_pal][i];
+				internalFormat = GL_COLOR_INDEX8_EXT;
+				for (i=0; i<256; i++) {
+					Uint32 color = this->palettes[num_pal][i];
 
-				*pMap++ = (color>>16) & 0xff;
-				*pMap++ = (color>>8) & 0xff;
-				*pMap++ = color & 0xff;
-				*pMap++ = (color>>24) & 0xff;
-			}
-			gl.ColorTableEXT(texgl->textureTarget, GL_RGBA, 256, 
-				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
-		} else
+					*pMap++ = (color>>16) & 0xff;
+					*pMap++ = (color>>8) & 0xff;
+					*pMap++ = color & 0xff;
+					*pMap++ = (color>>24) & 0xff;
+				}
+				gl.ColorTableEXT(texgl->textureTarget, GL_RGBA, 256, 
+					GL_RGBA, GL_UNSIGNED_BYTE, mapP);
+			} else
 #endif
-		{
-			GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
+			{
+				GLfloat mapR[256], mapG[256], mapB[256], mapA[256];
 
-			memset(mapR, 0, sizeof(mapR));
-			memset(mapG, 0, sizeof(mapG));
-			memset(mapB, 0, sizeof(mapB));
-			memset(mapA, 0, sizeof(mapA));
-			for (i=0; i<256; i++) {
-				Uint32 color = this->palettes[num_pal][i];
+				memset(mapR, 0, sizeof(mapR));
+				memset(mapG, 0, sizeof(mapG));
+				memset(mapB, 0, sizeof(mapB));
+				memset(mapA, 0, sizeof(mapA));
+				for (i=0; i<256; i++) {
+					Uint32 color = this->palettes[num_pal][i];
 
-				mapR[i] = ((color>>16) & 0xff) / 255.0;
-				mapG[i] = ((color>>8) & 0xff) / 255.0;
-				mapB[i] = (color & 0xff) / 255.0;
-				mapA[i] = ((color>>24) & 0xff) / 255.0;
+					mapR[i] = ((color>>16) & 0xff) / 255.0f;
+					mapG[i] = ((color>>8) & 0xff) / 255.0f;
+					mapB[i] = (color & 0xff) / 255.0f;
+					mapA[i] = ((color>>24) & 0xff) / 255.0f;
+				}
+				gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
+				gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
+				gl.PixelMapfv(GL_PIXEL_MAP_I_TO_G, 256, mapG);
+				gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
+				gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
 			}
-			gl.PixelTransferi(GL_MAP_COLOR, GL_TRUE);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_R, 256, mapR);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_G, 256, mapG);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_B, 256, mapB);
-			gl.PixelMapfv(GL_PIXEL_MAP_I_TO_A, 256, mapA);
-		}
-	} else {
-		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
+		case 2:
+			pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
+			break;
+		case 3:
+			surfaceFormat = GL_RGB;
+			break;
+		case 4:
+			break;
 	}
 
 	gl.TexImage2D(texgl->textureTarget,0, internalFormat,
@@ -149,7 +156,7 @@ static void upload(render_texture_t *this, int num_pal)
 		surfaceFormat, pixelType, this->pixels
 	);
 
-	if (this->paletted) {
+	if (this->bpp == 1) {
 		if (!video.has_gl_ext_paletted_texture) {
 			gl.PixelTransferi(GL_MAP_COLOR, GL_FALSE);
 		}
