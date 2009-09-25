@@ -187,15 +187,16 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 
 				image = background_tim_load(tim_src, row_offset);
 				if (image) {
-					game_state.back_surf = video.createSurfaceSu(image);
+					/*game_state.back_surf = video.createSurfaceSu(image);
 					if (game_state.back_surf) {
 						video.convertSurface(game_state.back_surf);
 						retval = 1;
-					}
+					}*/
 
 					game_state.rt_back_surf = render.createTexture(0);
 					if (game_state.rt_back_surf) {
 						game_state.rt_back_surf->load_from_surf(game_state.rt_back_surf, image);
+						retval = 1;
 					}
 
 					SDL_FreeSurface(image);
