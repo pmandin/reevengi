@@ -310,6 +310,11 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				/* With OpenGL, we can keep source in its proper format */
 				if (params.use_opengl) {
 					bytesPerPixel = 2;
+				} else {
+					this->rmask = fmt->Rmask;
+					this->gmask = fmt->Gmask;
+					this->bmask = fmt->Bmask;
+					this->amask = fmt->Amask;
 				}
 
 				switch(bytesPerPixel) {
@@ -367,12 +372,13 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 {
 	SDL_Surface *tmp_surf = NULL;
+	int free_tmp_surf = 1;
 
 	if (!this || !surf) {
 		return;
 	}
 
-	if (params.use_opengl) {
+	if (params.use_opengl || this->cacheable) {
 		this->bpp = surf->format->BytesPerPixel;
 	}
 	this->resize(this, surf->w,surf->h);
@@ -406,10 +412,18 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 
 	/* Copy data */
 	if (video.bpp == 8) {
-		tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
-		if (tmp_surf) {
-			dither_setpalette(tmp_surf);
-			dither_copy(surf, tmp_surf);
+		if (this->cacheable) {
+			/* Keep in original format */
+			tmp_surf = surf;
+			free_tmp_surf = 0;
+			logMsg(2, "texture: keep original format\n");
+		} else {
+			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
+			if (tmp_surf) {
+				dither_setpalette(tmp_surf);
+				dither_copy(surf, tmp_surf);
+			}
+			logMsg(2, "texture: converted to 8bits dither palette\n");
 		}
 	} else {
 		if (params.use_opengl) {
@@ -452,14 +466,21 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 			if (tmp_surf) {
 				SDL_BlitSurface(surf,NULL,tmp_surf,NULL);
 			}
+			logMsg(2, "texture: convert to OpenGL texture format\n");
 		} else {
 			/* Convert to video format */
 			tmp_surf = SDL_DisplayFormat(surf);
+			logMsg(2, "texture: convert to screen format\n");
 		}
 	}
 
 	if (tmp_surf) {
 		int y;
+
+		this->rmask = tmp_surf->format->Rmask;
+		this->gmask = tmp_surf->format->Gmask;
+		this->bmask = tmp_surf->format->Bmask;
+		this->amask = tmp_surf->format->Amask;
 
 		switch(this->bpp) {
 			case 1:
@@ -508,7 +529,9 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 				break;
 		}
 
-		SDL_FreeSurface(tmp_surf);	
+		if (free_tmp_surf) {
+			SDL_FreeSurface(tmp_surf);	
+		}
 	} else {
 		fprintf(stderr, "texture: no data uploaded\n");
 	}

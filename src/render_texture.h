@@ -57,6 +57,8 @@ struct render_texture_s {
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
 
+	Uint32 rmask,gmask,bmask,amask;
+
 	/* Cache for rescaled version */
 	struct render_texture_s *scaled;
 };

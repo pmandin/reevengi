@@ -197,7 +197,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 
 	/* Create new render_texture, for scaled size */
 	if (create_scaled) {
-		texture->scaled = render_texture_create(texture->must_pot);
+		texture->scaled = render_texture_create(0);
 		if (texture->scaled) {
 			texture->scaled->resize(texture->scaled, new_w,new_h);
 			fill_scaled = 1;	
