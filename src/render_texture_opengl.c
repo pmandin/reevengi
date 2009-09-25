@@ -88,14 +88,14 @@ static void upload(render_texture_t *this, int num_pal)
 
 	/* Already uploaded ? */
 	if (texgl->texture_id[i] != 0xFFFFFFFFUL) {
-		gl.BindTexture(GL_TEXTURE_2D, texgl->texture_id[i]);
+		gl.BindTexture(texgl->textureTarget, texgl->texture_id[i]);
 		return;
 	}
 
 	/* Create new texture object, and upload texture */
 	gl.GenTextures(1, &texgl->texture_id[i]);
 
-	gl.BindTexture(GL_TEXTURE_2D, texgl->texture_id[i]);
+	gl.BindTexture(texgl->textureTarget, texgl->texture_id[i]);
 
 	/* Upload new palette */
 	if (this->paletted) {
@@ -115,7 +115,7 @@ static void upload(render_texture_t *this, int num_pal)
 				*pMap++ = color & 0xff;
 				*pMap++ = (color>>24) & 0xff;
 			}
-			gl.ColorTableEXT(GL_TEXTURE_2D, GL_RGBA, 256, 
+			gl.ColorTableEXT(texgl->textureTarget, GL_RGBA, 256, 
 				GL_RGBA, GL_UNSIGNED_BYTE, mapP);
 		} else
 #endif
@@ -144,7 +144,7 @@ static void upload(render_texture_t *this, int num_pal)
 		pixelType = GL_UNSIGNED_SHORT_5_5_5_1;
 	}
 
-	gl.TexImage2D(GL_TEXTURE_2D,0, internalFormat,
+	gl.TexImage2D(texgl->textureTarget,0, internalFormat,
 		this->pitchw, this->pitchh, 0,
 		surfaceFormat, pixelType, this->pixels
 	);
