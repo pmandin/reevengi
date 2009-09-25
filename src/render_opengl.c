@@ -459,29 +459,35 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 static void set_texture(int num_pal, render_texture_t *render_tex)
 {
+	render_texture_gl_t *gl_tex;
+
 	render.tex_pal = num_pal;
 	render.texture = render_tex;
 
 	if (render_tex==NULL) {
 		return;
 	}
+	gl_tex = (render_texture_gl_t *) render_tex;
 
 	render_tex->upload(render_tex, num_pal);
 
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+ 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+ 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	render_texture_t *texture = render.texture;
+	render_texture_gl_t *gl_tex;	
 
 	if (!texture) {
 		return;
 	}
+	gl_tex = (render_texture_gl_t *) texture;
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
@@ -492,7 +498,7 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
-	gl.Enable(GL_TEXTURE_2D);
+	gl.Enable(gl_tex->textureTarget);
 
 	gl.Begin(GL_TRIANGLES);
 	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
@@ -503,17 +509,19 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.Vertex3s(v3->x, v3->y, v3->z);
 	gl.End();
 
-	gl.Disable(GL_TEXTURE_2D);
+	gl.Disable(gl_tex->textureTarget);
 	gl.Disable(GL_CULL_FACE);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
 	render_texture_t *texture = render.texture;
+	render_texture_gl_t *gl_tex;	
 
 	if (!texture) {
 		return;
 	}
+	gl_tex = (render_texture_gl_t *) texture;
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
@@ -524,7 +532,7 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Enable(GL_CULL_FACE);
 	gl.CullFace(GL_FRONT);
 
-	gl.Enable(GL_TEXTURE_2D);
+	gl.Enable(gl_tex->textureTarget);
 
 	gl.Begin(GL_QUADS);
 	gl.TexCoord2f((float) v1->u / texture->pitchw, (float) v1->v / texture->pitchh);
@@ -537,7 +545,7 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Vertex3s(v4->x, v4->y, v4->z);
 	gl.End();
 
-	gl.Disable(GL_TEXTURE_2D);
+	gl.Disable(gl_tex->textureTarget);
 	gl.Disable(GL_CULL_FACE);
 }
 
