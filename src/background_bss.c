@@ -98,7 +98,7 @@ static int background_mdec_load(SDL_RWops *src, int row_offset)
 	if (dstBuffer && dstBufLen) {
 		SDL_Surface *image = mdec_surface(dstBuffer, WIDTH, HEIGHT, row_offset);
 		if (image) {
-			game_state.background = render.createTexture(0);
+			game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
 			if (game_state.background) {
 				game_state.background->load_from_surf(game_state.background, image);
 				retval = 1;

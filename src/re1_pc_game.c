@@ -182,7 +182,7 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 			if (tim_src) {
 				SDL_Surface *image = background_tim_load(tim_src, row_offset);
 				if (image) {
-					game_state.background = render.createTexture(0);
+					game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
 					if (game_state.background) {
 						game_state.background->load_from_surf(game_state.background, image);
 						retval = 1;

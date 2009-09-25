@@ -49,13 +49,13 @@ static int logbase2(int n);
 
 /*--- Functions ---*/
 
-render_texture_t *render_texture_gl_create(int must_pot)
+render_texture_t *render_texture_gl_create(int flags)
 {
 	render_texture_gl_t *gl_tex;
 	render_texture_t *tex;
 	int i;
 
-	tex = render_texture_create(must_pot);
+	tex = render_texture_create(flags);
 	if (!tex) {
 		return NULL;
 	}
@@ -71,7 +71,8 @@ render_texture_t *render_texture_gl_create(int must_pot)
 	tex->upload = upload;
 	tex->download = download;
 	tex->prepare_resize = prepare_resize;
-	tex->must_pot = 0;
+
+	tex->must_pot = tex->cacheable = 0;
 
 	gl_tex->textureTarget = GL_TEXTURE_2D;
 	for (i=0; i<MAX_TEX_PALETTE; i++) {
@@ -109,7 +110,7 @@ static void upload(render_texture_t *this, int num_pal)
 			surfaceFormat = GL_COLOR_INDEX;
 
 #if defined(GL_EXT_paletted_texture)
-			if (video.has_gl_ext_paletted_texture) {
+			if (video.has_gl_ext_paletted_texture && (texgl->textureTarget==GL_TEXTURE_2D)) {
 				Uint8 mapP[256*4];
 				Uint8 *pMap = mapP;
 
@@ -189,6 +190,7 @@ static void prepare_resize(render_texture_t *this, int *w, int *h)
 	int new_bound_h = *h;
 	int potw = logbase2(new_bound_w);
 	int poth = logbase2(new_bound_h);
+	int must_pot = 0;
 	render_texture_gl_t *gl_this = (render_texture_gl_t *) this;
 
 	if ((new_bound_w == (1<<potw)) && (new_bound_h == (1<<poth))) {
@@ -223,11 +225,11 @@ static void prepare_resize(render_texture_t *this, int *w, int *h)
 	}
 #endif
 	else {
-		this->must_pot = 1;
+		must_pot = 1;
 		logMsg(2, "texture: must pot\n");
 	}
 
-	if (this->must_pot) {
+	if (must_pot) {
 		if (new_bound_w != (1<<potw)) {
 			new_bound_w = 1<<(potw+1);
 		}

@@ -142,7 +142,7 @@ model_t *model_emd_load(void *emd, Uint32 emd_length)
 
 	emd_convert_endianness(model);
 
-	model->texture = render.createTexture(1);
+	model->texture = render.createTexture(RENDER_TEXTURE_MUST_POT);
 	if (model->texture) {
 		model->texture->load_from_tim(model->texture, model->tim_file);
 	}

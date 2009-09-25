@@ -39,6 +39,6 @@ struct render_texture_gl_s {
 /*--- Functions prototypes ---*/
 
 /* Create a texture */
-render_texture_t *render_texture_gl_create(int must_pot);
+render_texture_t *render_texture_gl_create(int flags);
 
 #endif /* RENDER_TEXTURE_OPENGL_H */

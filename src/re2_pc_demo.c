@@ -126,7 +126,7 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 			if (dstBufLen == 320*256*2) {
 				SDL_Surface *image = adt_surface((Uint16 *) dstBuffer);
 				if (image) {
-					game_state.background = render.createTexture(0);
+					game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
 					if (game_state.background) {
 						game_state.background->load_from_surf(game_state.background, image);
 						retval = 1;

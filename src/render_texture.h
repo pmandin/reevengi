@@ -25,6 +25,12 @@
 
 #define MAX_TEX_PALETTE 8
 
+/* Texture must be POT sized */
+#define RENDER_TEXTURE_MUST_POT (1<<0)
+
+/* Texture may use a cached version for rescale/dithering */
+#define RENDER_TEXTURE_CACHEABLE (1<<1)
+
 /*--- Types ---*/
 
 typedef struct render_texture_s render_texture_t;
@@ -45,7 +51,8 @@ struct render_texture_s {
 	int w, h;		/* Dimension of image zone */
 	int bpp, pitch;		/* Bytes per pixel, Line length */
 	int pitchw, pitchh;	/* Dimension of bounding zone */
-	int must_pot, num_palettes, paletted;
+	Uint8 num_palettes, paletted;
+	Uint8 must_pot, cacheable;
 	
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
@@ -57,6 +64,6 @@ struct render_texture_s {
 /*--- Functions prototypes ---*/
 
 /* Create a texture */
-render_texture_t *render_texture_create(int must_pot);
+render_texture_t *render_texture_create(int flags);
 
 #endif /* RENDER_TEXTURE_H */

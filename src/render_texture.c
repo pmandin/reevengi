@@ -46,7 +46,7 @@ static int logbase2(int n);
 
 /*--- Functions ---*/
 
-render_texture_t *render_texture_create(int must_pot)
+render_texture_t *render_texture_create(int flags)
 {
 	render_texture_t *tex;
 
@@ -64,7 +64,8 @@ render_texture_t *render_texture_create(int must_pot)
 	tex->load_from_tim = load_from_tim;
 	tex->load_from_surf = load_from_surf;
 
-	tex->must_pot = must_pot;
+	tex->must_pot = flags & RENDER_TEXTURE_MUST_POT;
+	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
 
 	tex->bpp = video.screen->format->BytesPerPixel;
 
