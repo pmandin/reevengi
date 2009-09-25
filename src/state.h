@@ -71,8 +71,7 @@ typedef struct {
 	int num_camera;
 
 	/* Background image */
-	video_surface_t *back_surf;
-	render_texture_t *rt_back_surf;
+	render_texture_t *background;
 
 	/* List of movies */
 	char **movies_list;

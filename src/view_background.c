@@ -334,7 +334,7 @@ void view_background_update(void)
 			refresh_bg = 1;
 		}
 		if (refresh_bg) {
-			render.initBackground(&video, game_state.back_surf);
+			/*render.initBackground(&video, game_state.background);*/
 			refresh_bg = 0;
 		}
 		if (reload_model) {
@@ -441,15 +441,14 @@ void view_background_draw(void)
 			0,0, video.width, video.height);
 	}
 
-#if 0
 	render.set_dithering(params.dithering);
+#if 0
 	render.drawBackground(&video);
-	render.set_dithering(0);
 #else
-	render.set_texture(0, game_state.rt_back_surf);
+	render.set_texture(0, game_state.background);
 	render.bitmapScaled(&video, 0,0,video.viewport.w,video.viewport.h);
-	/*render.bitmapUnscaled(&video, 0,0);*/
 #endif
+	render.set_dithering(0);
 
 	if (!game_state.room) {
 		return;

@@ -178,36 +178,21 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 		pak_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			SDL_RWops *tim_src;
-			/*game_state.num_cameras = 8;*/
-			
-			tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
+			SDL_RWops *tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
 			if (tim_src) {
-				SDL_Surface *image;
-
-				image = background_tim_load(tim_src, row_offset);
+				SDL_Surface *image = background_tim_load(tim_src, row_offset);
 				if (image) {
-					/*game_state.back_surf = video.createSurfaceSu(image);
-					if (game_state.back_surf) {
-						video.convertSurface(game_state.back_surf);
-						retval = 1;
-					}*/
-
-					game_state.rt_back_surf = render.createTexture(0);
-					if (game_state.rt_back_surf) {
-						game_state.rt_back_surf->load_from_surf(game_state.rt_back_surf, image);
+					game_state.background = render.createTexture(0);
+					if (game_state.background) {
+						game_state.background->load_from_surf(game_state.background, image);
 						retval = 1;
 					}
-
 					SDL_FreeSurface(image);
 				}
-
 				SDL_FreeRW(tim_src);
 			}
-
 			free(dstBuffer);
 		}
-
 		SDL_RWclose(src);
 	}
 

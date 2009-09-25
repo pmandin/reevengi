@@ -33,6 +33,8 @@
 #include "model_emd2.h"
 #include "log.h"
 #include "room_rdt2.h"
+#include "video.h"
+#include "render.h"
 
 /*--- Defines ---*/
 
@@ -232,23 +234,17 @@ static int re2pcgame_load_image(int num_image)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			SDL_Surface *image;
-
-			/*game_state.num_cameras = 16;*/
-
-			image = adt_surface((Uint16 *) dstBuffer);
+			SDL_Surface *image = adt_surface((Uint16 *) dstBuffer);
 			if (image) {
-				game_state.back_surf = video.createSurfaceSu(image);
-				if (game_state.back_surf) {
-					video.convertSurface(game_state.back_surf);
+				game_state.background = render.createTexture(0);
+				if (game_state.background) {
+					game_state.background->load_from_surf(game_state.background, image);
 					retval = 1;
 				}
 				SDL_FreeSurface(image);
 			}
-
 			free(dstBuffer);
 		}
-
 		SDL_RWclose(src);
 	}
 

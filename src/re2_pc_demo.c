@@ -31,6 +31,7 @@
 #include "depack_adt.h"
 #include "parameters.h"
 #include "video.h"
+#include "render.h"
 #include "log.h"
 #include "model_emd2.h"
 #include "room_rdt2.h"
@@ -122,25 +123,19 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			/*game_state.num_cameras = 16;*/
-
 			if (dstBufLen == 320*256*2) {
-				SDL_Surface *image;
-
-				image = adt_surface((Uint16 *) dstBuffer);
+				SDL_Surface *image = adt_surface((Uint16 *) dstBuffer);
 				if (image) {
-					game_state.back_surf = video.createSurfaceSu(image);
-					if (game_state.back_surf) {
-						video.convertSurface(game_state.back_surf);
+					game_state.background = render.createTexture(0);
+					if (game_state.background) {
+						game_state.background->load_from_surf(game_state.background, image);
 						retval = 1;
 					}
 					SDL_FreeSurface(image);
 				}
 			}
-
 			free(dstBuffer);
 		}
-
 		SDL_RWclose(src);
 	}
 

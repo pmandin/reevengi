@@ -36,6 +36,7 @@
 #include "re3_pc.h"
 #include "parameters.h"
 #include "video.h"
+#include "render.h"
 #include "model_emd3.h"
 #include "log.h"
 #include "room_rdt2.h"
@@ -182,15 +183,14 @@ int re3pc_load_jpg_bg(const char *filename)
 	
 	src = FS_makeRWops(filename);
 	if (src) {
-		SDL_Surface *image;
-
-		image = IMG_Load_RW(src, 0);
+		SDL_Surface *image = IMG_Load_RW(src, 0);
 		if (image) {
-			game_state.back_surf = video.createSurfaceSu(image);
-			if (game_state.back_surf) {
-				video.convertSurface(game_state.back_surf);
+			game_state.background = render.createTexture(0);
+			if (game_state.background) {
+				game_state.background->load_from_surf(game_state.background, image);
 				retval = 1;
 			}
+
 			SDL_FreeSurface(image);
 		}
 
