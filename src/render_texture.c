@@ -23,6 +23,7 @@
 #include "background_tim.h"
 #include "render_texture.h"
 #include "video.h"
+#include "render.h"
 #include "dither.h"
 #include "parameters.h"
 #include "log.h"
@@ -372,7 +373,8 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 {
 	SDL_Surface *tmp_surf = NULL;
-	int free_tmp_surf = 1;
+	Uint8 *dst_pixels;
+	int dst_pitch;
 
 	if (!this || !surf) {
 		return;
@@ -411,19 +413,25 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	logMsg(2, "texture: %dx%d, %d bpp, %d palettes\n", this->w,this->h, surf->format->BitsPerPixel, this->num_palettes);
 
 	/* Copy data */
+	dst_pixels = this->pixels;
+	dst_pitch = this->pitch;
+
 	if (video.bpp == 8) {
+		tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
+		if (tmp_surf) {
+			dither_setpalette(tmp_surf);
+			dither_copy(surf, tmp_surf);
+		}
+		logMsg(2, "texture: converted to 8bits dither palette\n");
+
+		/* Create a version in video format */
 		if (this->cacheable) {
-			/* Keep in original format */
-			tmp_surf = surf;
-			free_tmp_surf = 0;
-			logMsg(2, "texture: keep original format\n");
-		} else {
-			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
-			if (tmp_surf) {
-				dither_setpalette(tmp_surf);
-				dither_copy(surf, tmp_surf);
+			this->scaled = render_texture_create(0);
+			if (this->scaled) {
+				this->scaled->resize(this->scaled, this->w,this->h);
+				dst_pixels = this->scaled->pixels;
+				dst_pitch = this->scaled->pitch;
 			}
-			logMsg(2, "texture: converted to 8bits dither palette\n");
 		}
 	} else {
 		if (params.use_opengl) {
@@ -488,52 +496,50 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 			case 1:
 				{
 					Uint8 *src = tmp_surf->pixels;
-					Uint8 *dst = this->pixels;
+					Uint8 *dst = dst_pixels;
 					for (y=0; y<this->h; y++) {
 						memcpy(dst, src, this->w);
 						src += tmp_surf->pitch;
-						dst += this->pitch;
+						dst += dst_pitch;
 					}
 				}
 				break;
 			case 2:
 				{
 					Uint16 *src = (Uint16 *) tmp_surf->pixels;
-					Uint16 *dst = (Uint16 *) this->pixels;
+					Uint16 *dst = (Uint16 *) dst_pixels;
 					for (y=0; y<this->h; y++) {
 						memcpy(dst, src, this->w<<1);
 						src += tmp_surf->pitch>>1;
-						dst += this->pitch>>1;
+						dst += dst_pitch>>1;
 					}
 				}
 				break;
 			case 3:
 				{
 					Uint8 *src = tmp_surf->pixels;
-					Uint8 *dst = this->pixels;
+					Uint8 *dst = dst_pixels;
 					for (y=0; y<this->h; y++) {
 						memcpy(dst, src, this->w *3);
 						src += tmp_surf->pitch;
-						dst += this->pitch;
+						dst += dst_pitch;
 					}
 				}
 				break;
 			case 4:
 				{
 					Uint32 *src = (Uint32 *) tmp_surf->pixels;
-					Uint32 *dst = (Uint32 *) this->pixels;
+					Uint32 *dst = (Uint32 *) dst_pixels;
 					for (y=0; y<this->h; y++) {
 						memcpy(dst, src, this->w<<2);
 						src += tmp_surf->pitch>>2;
-						dst += this->pitch>>2;
+						dst += dst_pitch>>2;
 					}
 				}
 				break;
 		}
 
-		if (free_tmp_surf) {
-			SDL_FreeSurface(tmp_surf);	
-		}
+		SDL_FreeSurface(tmp_surf);	
 	} else {
 		fprintf(stderr, "texture: no data uploaded\n");
 	}
