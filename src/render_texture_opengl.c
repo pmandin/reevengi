@@ -67,6 +67,7 @@ render_texture_t *render_texture_gl_create(int must_pot)
 	tex->upload = upload;
 	tex->download = download;
 
+	gl_tex->textureTarget = GL_TEXTURE_2D;
 	for (i=0; i<MAX_TEX_PALETTE; i++) {
 		gl_tex->texture_id[i] = 0xffffffffUL;
 	}

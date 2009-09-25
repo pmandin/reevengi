@@ -32,6 +32,7 @@ typedef struct render_texture_gl_s render_texture_gl_t;
 struct render_texture_gl_s {
 	render_texture_t render_texture;
 
+	GLenum textureTarget;
 	GLuint texture_id[MAX_TEX_PALETTE];
 };
 
