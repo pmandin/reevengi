@@ -379,10 +379,6 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		return;
 	}
 
-	if (params.use_opengl || this->cacheable) {
-		this->bpp = surf->format->BytesPerPixel;
-	}
-
 	/* Init palette */
 	this->num_palettes = this->paletted = 0;
 
