@@ -34,12 +34,6 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
 
-static void create_scaled_version(video_t *video, render_texture_t *src, render_texture_t *dst);
-static void create_scaled_version8(render_texture_t *src, render_texture_t *dst);
-static void create_scaled_version16(render_texture_t *src, render_texture_t *dst);
-static void create_scaled_version24(render_texture_t *src, render_texture_t *dst);
-static void create_scaled_version32(render_texture_t *src, render_texture_t *dst);
-
 /*--- Functions ---*/
 
 void render_bitmap_soft_init(render_t *render)
@@ -196,145 +190,146 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
 {
-#if 0
-	int create_scaled = 0, fill_scaled = 0;
+	int create_scaled = 0, new_bpp, x,y;
+	render_texture_t *src;
+	SDL_Surface *dst;
 
 	/* Generate a cached version of texture scaled/dithered or both */
 	if (texture->scaled) {
 		/* Recreate if different target size */		
 		if ((texture->scaled->w != new_w) || (texture->scaled->h != new_h)) {
-			/*texture->scaled->resize(texture->scaled, new_w,new_h);*/
-			fill_scaled = 1;
+			create_scaled = 1;
 		}
 	} else {
 		if ((texture->w != new_w) || (texture->h != new_h)) {
 			create_scaled = 1;
 		}
-		if (render.dithering) {
-			create_scaled = 1;
-		}
 	}
 
 	/* Create new render_texture, for scaled size */
-	if (create_scaled) {
-		logMsg(2, "bitmap: create scaled version of texture\n");
-		texture->scaled = render_texture_create(0);
-		if (texture->scaled) {
-			texture->scaled->resize(texture->scaled, new_w,new_h);
-			fill_scaled = 1;	
-		}
+	if (!create_scaled) {
+		return;
 	}
 
-	/* Then redraw a scaled version */
-	if (fill_scaled) {
-		logMsg(2, "bitmap: fill scaled version of texture\n");
-		create_scaled_version(video, texture, texture->scaled);
-		if (render.dithering) {
-			logMsg(2, "bitmap: dither scaled version of texture\n");
-			/* Dither scaled version */
-		}
+	/* Free old one */
+	if (texture->scaled) {
+		SDL_FreeSurface(texture->scaled);
+		texture->scaled = NULL;
 	}
-#endif
-}
 
-static void create_scaled_version(video_t *video, render_texture_t *src, render_texture_t *dst)
-{
-	switch(video->bpp) {
-		case 8:
-			create_scaled_version8(src, dst);
+	logMsg(2, "bitmap: create scaled version of texture\n");
+
+	new_bpp = 8;
+	switch(texture->bpp) {
+		case 2:
+			new_bpp = 16;
+		case 3:
+			new_bpp = 24;
+		case 4:
+			new_bpp = 32;
+	}
+
+	texture->scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, new_w,new_h,new_bpp,
+		texture->rmask,texture->gmask,texture->bmask,texture->amask);
+
+	if (!texture->scaled) {
+		fprintf(stderr, "bitmap: could not create scaled texture\n");
+		return;
+	}
+
+	if (new_bpp == 8) {
+		dither_setpalette(texture->scaled);
+	}
+
+	src = texture;
+	dst = texture->scaled;
+
+	logMsg(2, "bitmap: scale texture from %dx%d to %dx%d\n",
+		src->w,src->h, dst->w, dst->h);
+
+	switch(texture->bpp) {
+		case 1:
+			{
+				Uint8 *dst_line = dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint8 *dst_col = dst_line;
+					Uint8 *src_col = (Uint8 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * src->pitch;
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+
+						*dst_col++ = src_col[x1];
+					}
+					dst_line += dst->pitch;
+				}
+			}
 			break;
-		case 15:
-		case 16:
-			create_scaled_version16(src, dst);
+		case 2:
+			{
+				Uint16 *dst_line = (Uint16 *) dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint16 *dst_col = dst_line;
+					Uint16 *src_col = (Uint16 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * (src->pitch>>1);
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+
+						*dst_col++ = src_col[x1];
+					}
+					dst_line += dst->pitch>>1;
+				}
+			}
 			break;
-		case 24:
-			create_scaled_version24(src, dst);
+		case 3:
+			{
+				Uint8 *dst_line = (Uint8 *) dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint8 *dst_col = dst_line;
+					Uint8 *src_col = (Uint8 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * src->pitch;
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+						int src_pos = x1*3;
+
+						*dst_col++ = src_col[src_pos];
+						*dst_col++ = src_col[src_pos+1];
+						*dst_col++ = src_col[src_pos+2];
+					}
+					dst_line += dst->pitch;
+				}
+			}
 			break;
-		case 32:
-			create_scaled_version32(src, dst);
+		case 4:
+			{
+				Uint32 *dst_line = (Uint32 *) dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint32 *dst_col = dst_line;
+					Uint32 *src_col = (Uint32 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * (src->pitch>>2);
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+
+						*dst_col++ = src_col[x1];
+					}
+					dst_line += dst->pitch>>2;
+				}
+			}
 			break;
 	}
-}
 
-static void create_scaled_version8(render_texture_t *src, render_texture_t *dst)
-{
-	int x,y;
-	Uint8 *dst_line = dst->pixels;
-
-	for(y=0; y<dst->h; y++) {
-		Uint8 *dst_col = dst_line;
-		Uint8 *src_col = (Uint8 *) src->pixels;
-		int y1 = (y * src->h) / dst->h;
-
-		src_col += y1 * src->pitch;
-		for(x=0; x<dst->w; x++) {
-			int x1 = (x * src->w) / dst->w;
-
-			*dst_col++ = src_col[x1];
-		}
-		dst_line += dst->pitch;
-	}
-}
-
-static void create_scaled_version16(render_texture_t *src, render_texture_t *dst)
-{
-	int x,y;
-	Uint16 *dst_line = (Uint16 *) dst->pixels;
-
-	for(y=0; y<dst->h; y++) {
-		Uint16 *dst_col = dst_line;
-		Uint16 *src_col = (Uint16 *) src->pixels;
-		int y1 = (y * src->h) / dst->h;
-
-		src_col += y1 * (src->pitch>>1);
-		for(x=0; x<dst->w; x++) {
-			int x1 = (x * src->w) / dst->w;
-
-			*dst_col++ = src_col[x1];
-		}
-		dst_line += dst->pitch>>1;
-	}
-}
-
-static void create_scaled_version24(render_texture_t *src, render_texture_t *dst)
-{
-	int x,y;
-	Uint8 *dst_line = (Uint8 *) dst->pixels;
-
-	for(y=0; y<dst->h; y++) {
-		Uint8 *dst_col = dst_line;
-		Uint8 *src_col = (Uint8 *) src->pixels;
-		int y1 = (y * src->h) / dst->h;
-
-		src_col += y1 * src->pitch;
-		for(x=0; x<dst->w; x++) {
-			int x1 = (x * src->w) / dst->w;
-			int src_pos = x1*3;
-
-			*dst_col++ = src_col[src_pos];
-			*dst_col++ = src_col[src_pos+1];
-			*dst_col++ = src_col[src_pos+2];
-		}
-		dst_line += dst->pitch;
-	}
-}
-
-static void create_scaled_version32(render_texture_t *src, render_texture_t *dst)
-{
-	int x,y;
-	Uint32 *dst_line = (Uint32 *) dst->pixels;
-
-	for(y=0; y<dst->h; y++) {
-		Uint32 *dst_col = dst_line;
-		Uint32 *src_col = (Uint32 *) src->pixels;
-		int y1 = (y * src->h) / dst->h;
-
-		src_col += y1 * (src->pitch>>2);
-		for(x=0; x<dst->w; x++) {
-			int x1 = (x * src->w) / dst->w;
-
-			*dst_col++ = src_col[x1];
-		}
-		dst_line += dst->pitch>>2;
+	/* Dither if needed */
+	if ((texture->bpp == 1) && render.dithering) {
 	}
 }
