@@ -201,7 +201,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 			create_scaled = 1;
 		}
 	} else {
-		if ((texture->w != new_w) || (texture->h != new_h)) {
+		if ((texture->w != new_w) || (texture->h != new_h) || (video->screen->format->BytesPerPixel != texture->bpp)) {
 			create_scaled = 1;
 		}
 		if ((video->bpp == 8) && render.dithering) {
@@ -333,7 +333,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	}
 
 	/* Dither if needed */
-	if ((video->bpp == 8) && render.dithering) {
+	if (video->bpp == 8) {
 		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(SDL_SWSURFACE,
 			texture->scaled->w,texture->scaled->h,8, 0,0,0,0);
 		if (!dithered_surf) {
@@ -341,10 +341,14 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 			return;
 		}
 		
-		logMsg(2, "bitmap: creating dithered texture\n");
-
 		dither_setpalette(dithered_surf);
-		dither(texture->scaled, dithered_surf);
+		if (render.dithering) {
+			logMsg(2, "bitmap: creating dithered version of texture\n");
+			dither(texture->scaled, dithered_surf);
+		} else {
+			logMsg(2, "bitmap: creating 8bit version of texture\n");
+			dither_copy(texture->scaled, dithered_surf);
+		}
 		SDL_FreeSurface(texture->scaled);
 		texture->scaled = dithered_surf;
 	}
