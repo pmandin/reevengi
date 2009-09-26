@@ -405,65 +405,65 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	}
 
 	/* Copy data */
-	if (video.bpp == 8) {
-		if (this->cacheable) {
-			tmp_surf = surf;
-			free_tmp_surf = 0;
-			logMsg(2, "texture: keep texture in original format\n");
-		} else {
+	if (this->cacheable) {
+		tmp_surf = surf;
+		free_tmp_surf = 0;
+		logMsg(2, "texture: keep texture in original format\n");
+	} else {
+		if (video.bpp == 8) {
 			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
 			if (tmp_surf) {
 				dither_setpalette(tmp_surf);
 				dither_copy(surf, tmp_surf);
 			}
 			logMsg(2, "texture: converted to 8bits dither palette\n");
-		}
-	} else {
-		if (params.use_opengl) {
-			/* Convert to some compatible OpenGL texture format */
-			Uint32 rmask=0, gmask=0, bmask=0, amask=0;
-
-			switch(surf->format->BitsPerPixel) {
-				case 15:
-					rmask = 31<<11;
-					gmask = 31<<6;
-					bmask = 31<<1;
-					amask = 1;
-					break;
-				case 16:
-					rmask = 31<<11;
-					gmask = 63<<5;
-					bmask = 31;
-					break;
-				case 24:
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-					rmask = 255;
-					gmask = 255<<8;
-					bmask = 255<<16;
-#else
-					rmask = 255<<16;
-					gmask = 255<<8;
-					bmask = 255;
-#endif
-					break;
-				case 32:
-					rmask = 255;
-					gmask = 255<<8;
-					bmask = 255<<16;
-					amask = 255<<24;
-					break;
-			}
-
-			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,surf->format->BitsPerPixel,
-				rmask,gmask,bmask,amask);
-			if (tmp_surf) {
-				SDL_BlitSurface(surf,NULL,tmp_surf,NULL);
-			}
-			logMsg(2, "texture: convert to OpenGL texture format\n");
 		} else {
-			/* Convert to video format */
-			tmp_surf = SDL_DisplayFormat(surf);
-			logMsg(2, "texture: convert to screen format\n");
+			if (params.use_opengl) {
+				/* Convert to some compatible OpenGL texture format */
+				Uint32 rmask=0, gmask=0, bmask=0, amask=0;
+
+				switch(surf->format->BitsPerPixel) {
+					case 15:
+						rmask = 31<<11;
+						gmask = 31<<6;
+						bmask = 31<<1;
+						amask = 1;
+						break;
+					case 16:
+						rmask = 31<<11;
+						gmask = 63<<5;
+						bmask = 31;
+						break;
+					case 24:
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+						rmask = 255;
+						gmask = 255<<8;
+						bmask = 255<<16;
+#else
+						rmask = 255<<16;
+						gmask = 255<<8;
+						bmask = 255;
+#endif
+						break;
+					case 32:
+						rmask = 255;
+						gmask = 255<<8;
+						bmask = 255<<16;
+						amask = 255<<24;
+						break;
+				}
+
+				tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,surf->format->BitsPerPixel,
+					rmask,gmask,bmask,amask);
+				if (tmp_surf) {
+					SDL_BlitSurface(surf,NULL,tmp_surf,NULL);
+				}
+				logMsg(2, "texture: convert to OpenGL texture format\n");
+			} else {
+				/* Convert to video format */
+				tmp_surf = SDL_DisplayFormat(surf);
+				logMsg(2, "texture: convert to screen format\n");
+			}
 		}
 	}
 
