@@ -334,7 +334,9 @@ void view_background_update(void)
 			refresh_bg = 1;
 		}
 		if (refresh_bg) {
-			/*render.initBackground(&video, game_state.background);*/
+			video.dirty_rects[0]->setDirty(video.dirty_rects[0], 0,0, video.width, video.height);
+			video.dirty_rects[1]->setDirty(video.dirty_rects[1], 0,0, video.width, video.height);
+
 			refresh_bg = 0;
 		}
 		if (reload_model) {

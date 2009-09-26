@@ -19,6 +19,8 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <SDL.h>
+
 #include "video.h"
 #include "render.h"
 
@@ -33,7 +35,7 @@ static void bitmapUnscaled(video_t *video, int x, int y);
 static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
 static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
-static void bitmapScaledScDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
@@ -200,9 +202,68 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 	}
 }
 
-static void bitmapScaledScDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
-	SDL_BlitSurface(render.texture->scaled, src_rect, video->screen, dst_rect);
+	int x,y;
+
+	for (y=0; y<this->dirty_rects[this->numfb]->height; y++) {
+		int dst_y1, dst_y2;
+
+		/* Target destination of zoomed image */
+		dst_y1 = y<<4;
+		dst_y2 = (y+1)<<4;
+
+		/* Clip to viewport */
+		if (dst_y1<this->viewport.y) {
+			dst_y1 = this->viewport.y;
+		}
+		if (dst_y2>this->viewport.y+this->viewport.h) {
+			dst_y2 = this->viewport.y+this->viewport.h;
+		}
+
+		if (dst_y1>=dst_y2) {
+			continue;
+		}
+
+		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
+			int dst_x1, dst_x2;
+			SDL_Rect blt_src_rect, blt_dst_rect;
+
+			if (this->dirty_rects[this->numfb]->markers[y*this->dirty_rects[this->numfb]->width + x] == 0) {
+				continue;
+			}
+
+			/* 16x16 block */
+			dst_x1 = x<<4;
+			dst_x2 = (x+1)<<4;
+
+			/* Clip to viewport */
+			if (dst_x1<this->viewport.x) {
+				dst_x1 = this->viewport.x;
+			}
+			if (dst_x2>this->viewport.x+this->viewport.w) {
+				dst_x2 = this->viewport.x+this->viewport.w;
+			}
+
+			if (dst_x1>=dst_x2) {
+				continue;
+			}
+
+			blt_src_rect.x = dst_x1 - this->viewport.x;
+			blt_src_rect.y = dst_y1 - this->viewport.y;
+			blt_dst_rect.x = dst_x1;
+			blt_dst_rect.y = dst_y1;
+			blt_dst_rect.w = blt_src_rect.w = dst_x2-dst_x1;
+			blt_dst_rect.h = blt_src_rect.h = dst_y2-dst_y1;
+			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, this->screen, &blt_dst_rect);
+
+			this->upload_rects[this->numfb]->setDirty(this->upload_rects[this->numfb],
+				blt_dst_rect.x,blt_dst_rect.y,
+				blt_dst_rect.w,blt_dst_rect.h);
+		}
+	}
+
+	this->dirty_rects[this->numfb]->clear(this->dirty_rects[this->numfb]);
 }
 
 static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
