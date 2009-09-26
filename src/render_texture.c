@@ -373,7 +373,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 {
 	SDL_Surface *tmp_surf = NULL;
-	int free_tmp_surf = 1;
+	int free_tmp_surf = 1, y;
 
 	if (!this || !surf) {
 		return;
@@ -382,11 +382,10 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	if (params.use_opengl || this->cacheable) {
 		this->bpp = surf->format->BytesPerPixel;
 	}
-	this->resize(this, surf->w,surf->h);
-
-	this->num_palettes = this->paletted = 0;
 
 	/* Init palette */
+	this->num_palettes = this->paletted = 0;
+
 	if ((surf->format->BitsPerPixel==8) && surf->format->palette) {
 		int i;
 		SDL_Palette *surf_palette = surf->format->palette;
@@ -408,8 +407,6 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 			}
 		}
 	}
-
-	logMsg(2, "texture: %dx%d, %d bpp, %d palettes\n", this->w,this->h, surf->format->BitsPerPixel, this->num_palettes);
 
 	/* Copy data */
 	if (video.bpp == 8) {
@@ -474,68 +471,74 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		}
 	}
 
-	if (tmp_surf) {
-		int y;
-
-		this->rmask = tmp_surf->format->Rmask;
-		this->gmask = tmp_surf->format->Gmask;
-		this->bmask = tmp_surf->format->Bmask;
-		this->amask = tmp_surf->format->Amask;
-		logMsg(2, "texture: R=0x%08x, G=0x%08x, B=0x%08x, A=0x%08x\n",
-			this->rmask, this->gmask, this->bmask, this->amask);
-
-		switch(this->bpp) {
-			case 1:
-				{
-					Uint8 *src = tmp_surf->pixels;
-					Uint8 *dst = this->pixels;
-					for (y=0; y<this->h; y++) {
-						memcpy(dst, src, this->w);
-						src += tmp_surf->pitch;
-						dst += this->pitch;
-					}
-				}
-				break;
-			case 2:
-				{
-					Uint16 *src = (Uint16 *) tmp_surf->pixels;
-					Uint16 *dst = (Uint16 *) this->pixels;
-					for (y=0; y<this->h; y++) {
-						memcpy(dst, src, this->w<<1);
-						src += tmp_surf->pitch>>1;
-						dst += this->pitch>>1;
-					}
-				}
-				break;
-			case 3:
-				{
-					Uint8 *src = tmp_surf->pixels;
-					Uint8 *dst = this->pixels;
-					for (y=0; y<this->h; y++) {
-						memcpy(dst, src, this->w *3);
-						src += tmp_surf->pitch;
-						dst += this->pitch;
-					}
-				}
-				break;
-			case 4:
-				{
-					Uint32 *src = (Uint32 *) tmp_surf->pixels;
-					Uint32 *dst = (Uint32 *) this->pixels;
-					for (y=0; y<this->h; y++) {
-						memcpy(dst, src, this->w<<2);
-						src += tmp_surf->pitch>>2;
-						dst += this->pitch>>2;
-					}
-				}
-				break;
-		}
-
-		if (free_tmp_surf) {
-			SDL_FreeSurface(tmp_surf);	
-		}
-	} else {
+	if (!tmp_surf) {
 		fprintf(stderr, "texture: no data uploaded\n");
+		return;
+	}
+
+	this->bpp = tmp_surf->format->BytesPerPixel;
+	this->resize(this, tmp_surf->w,tmp_surf->h);
+
+	logMsg(2, "texture: %dx%d, %d bpp, %d palettes\n",
+		this->w,this->h, tmp_surf->format->BitsPerPixel, this->num_palettes);
+
+	this->rmask = tmp_surf->format->Rmask;
+	this->gmask = tmp_surf->format->Gmask;
+	this->bmask = tmp_surf->format->Bmask;
+	this->amask = tmp_surf->format->Amask;
+
+	logMsg(2, "texture: R=0x%08x, G=0x%08x, B=0x%08x, A=0x%08x\n",
+		this->rmask, this->gmask, this->bmask, this->amask);
+
+	switch(this->bpp) {
+		case 1:
+			{
+				Uint8 *src = tmp_surf->pixels;
+				Uint8 *dst = this->pixels;
+				for (y=0; y<this->h; y++) {
+					memcpy(dst, src, this->w);
+					src += tmp_surf->pitch;
+					dst += this->pitch;
+				}
+			}
+			break;
+		case 2:
+			{
+				Uint16 *src = (Uint16 *) tmp_surf->pixels;
+				Uint16 *dst = (Uint16 *) this->pixels;
+				for (y=0; y<this->h; y++) {
+					memcpy(dst, src, this->w<<1);
+					src += tmp_surf->pitch>>1;
+					dst += this->pitch>>1;
+				}
+			}
+			break;
+		case 3:
+			{
+				Uint8 *src = tmp_surf->pixels;
+				Uint8 *dst = this->pixels;
+				for (y=0; y<this->h; y++) {
+					memcpy(dst, src, this->w *3);
+					src += tmp_surf->pitch;
+					dst += this->pitch;
+				}
+			}
+			break;
+		case 4:
+			{
+				Uint32 *src = (Uint32 *) tmp_surf->pixels;
+				Uint32 *dst = (Uint32 *) this->pixels;
+				for (y=0; y<this->h; y++) {
+					memcpy(dst, src, this->w<<2);
+					src += tmp_surf->pitch>>2;
+					dst += this->pitch>>2;
+				}
+			}
+			break;
+	}
+
+	if (free_tmp_surf) {
+		SDL_FreeSurface(tmp_surf);	
 	}
 
 	this->download(this);

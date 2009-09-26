@@ -244,8 +244,8 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	src = texture;
 	dst = texture->scaled;
 
-	logMsg(2, "bitmap: scale texture from %dx%d to %dx%d\n",
-		src->w,src->h, dst->w, dst->h);
+	logMsg(2, "bitmap: scale texture %d bits from %dx%d to %dx%d\n",
+		texture->bpp*8, src->w,src->h, dst->w, dst->h);
 
 	switch(texture->bpp) {
 		case 1:
