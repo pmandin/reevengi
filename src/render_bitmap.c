@@ -204,6 +204,9 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		if ((texture->w != new_w) || (texture->h != new_h)) {
 			create_scaled = 1;
 		}
+		if ((video->bpp == 8) && render.dithering) {
+			create_scaled = 1;
+		}
 	}
 
 	/* Create new render_texture, for scaled size */
