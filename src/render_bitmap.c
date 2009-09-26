@@ -63,8 +63,6 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	render_texture_t *tex = render.texture;
 	int src_x=0, src_y=0, dst_x=x, dst_y=y;
 	int i,j;
-	Uint8 *src_pixels;
-	int src_pitch;
 	SDL_Surface *surf;
 
 	if (!tex)
@@ -95,19 +93,28 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		return;
 	}
 
-	refresh_scaled_version(video, tex, w,h);
-
-	/* Use scaled version if available, to update screen */
-	src_pixels = tex->pixels;
-	src_pitch = tex->pitch;
-	if (tex->scaled) {
-		src_pixels = tex->scaled->pixels;
-		src_pitch = tex->scaled->pitch;
-	}
-
 	dst_x += video->viewport.x;
 	dst_y += video->viewport.y;
 
+	/* Use scaled version if available, to update screen */
+	refresh_scaled_version(video, tex, w,h);
+
+	/* Copy from scaled version */
+	if (tex->scaled) {
+		SDL_Rect src_rect, dst_rect;
+
+		src_rect.x = src_x;
+		src_rect.y = src_y;
+		dst_rect.x = dst_x;
+		dst_rect.y = dst_y;
+		src_rect.w = dst_rect.w = w;
+		src_rect.h = dst_rect.h = h;
+
+		SDL_BlitSurface(tex->scaled, &src_rect, video->screen, &dst_rect);
+		return;
+	}
+
+	/* Copy from texture */
 	surf = video->screen;
 
 	if (SDL_MUSTLOCK(surf)) {
@@ -117,8 +124,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	switch(video->bpp) {
 		case 8:
 			{
-				Uint8 *src = src_pixels;
-				src += src_y * src_pitch;
+				Uint8 *src = tex->pixels;
+				src += src_y * tex->pitch;
 				src += src_x;
 				Uint8 *dst = surf->pixels;
 				dst += dst_y * surf->pitch;
@@ -126,7 +133,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 				for (j=0; j<h; j++) {
 					memcpy(dst, src, w);
-					src += src_pitch;
+					src += tex->pitch;
 					dst += surf->pitch;
 				}
 			}
@@ -134,8 +141,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		case 15:
 		case 16:
 			{
-				Uint16 *src = (Uint16 *) src_pixels;
-				src += src_y * (src_pitch>>1);
+				Uint16 *src = (Uint16 *) tex->pixels;
+				src += src_y * (tex->pitch>>1);
 				src += src_x;
 				Uint16 *dst = (Uint16 *) surf->pixels;
 				dst += dst_y * (surf->pitch>>1);
@@ -150,8 +157,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 			break;
 		case 24:
 			{
-				Uint8 *src = src_pixels;
-				src += src_y * src_pitch;
+				Uint8 *src = tex->pixels;
+				src += src_y * tex->pitch;
 				src += src_x;
 				Uint8 *dst = surf->pixels;
 				dst += dst_y * surf->pitch;
@@ -159,23 +166,23 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 				for (j=0; j<h; j++) {
 					memcpy(dst, src, w*3);
-					src += src_pitch;
+					src += tex->pitch;
 					dst += surf->pitch;
 				}
 			}
 			break;
 		case 32:
 			{
-				Uint16 *src = (Uint16 *) src_pixels;
-				src += src_y * (src_pitch>>2);
+				Uint32 *src = (Uint32 *) tex->pixels;
+				src += src_y * (tex->pitch>>2);
 				src += src_x;
-				Uint16 *dst = (Uint16 *) surf->pixels;
+				Uint32 *dst = (Uint32 *) surf->pixels;
 				dst += dst_y * (surf->pitch>>2);
 				dst += dst_x;
 
 				for (j=0; j<h; j++) {
 					memcpy(dst, src, w<<2);
-					src += src_pitch>>2;
+					src += tex->pitch>>2;
 					dst += surf->pitch>>2;
 				}
 			}
