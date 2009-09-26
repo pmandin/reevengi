@@ -154,7 +154,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 		this->has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);
 		logMsg(2, "GL_ARB_texture_rectangle: %d\n", this->has_gl_arb_texture_rectangle);
 
-		this->has_gl_ext_paletted_texture = (strstr(extensions, "GL_EXT_paletted_texture") != NULL);
+		this->has_gl_ext_paletted_texture = 0 /*(strstr(extensions, "GL_EXT_paletted_texture") != NULL)*/;
 		logMsg(2, "GL_EXT_paletted_texture: %d\n", this->has_gl_ext_paletted_texture);
 
 		this->has_gl_ext_texture_rectangle = (strstr(extensions, "GL_EXT_texture_rectangle") != NULL);
