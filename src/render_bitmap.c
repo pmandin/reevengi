@@ -32,8 +32,9 @@
 static void bitmapUnscaled(video_t *video, int x, int y);
 static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
-static void bitmapScaledNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
-static void bitmapScaledDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledScDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
 
@@ -102,25 +103,26 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	src_rect.h = dst_rect.h = h;
 
 	if (render.useDirtyRects) {
-		bitmapScaledDirty(video, &src_rect, &dst_rect);
+		if (render.texture->scaled) {
+			bitmapScaledScDirty(video, &src_rect, &dst_rect);
+		} else {		
+			bitmapScaledRtDirty(video, &src_rect, &dst_rect);
+		}
 	} else {
-		bitmapScaledNodirty(video, &src_rect, &dst_rect);
+		if (render.texture->scaled) {
+			SDL_BlitSurface(render.texture->scaled, &src_rect, video->screen, &dst_rect);
+		} else {
+			bitmapScaledRtNodirty(video, &src_rect, &dst_rect);
+		}
 	}
 }
 
-static void bitmapScaledNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
 	render_texture_t *tex = render.texture;
 	SDL_Surface *surf = video->screen;
 	int j;
 
-	/* Copy from scaled version */
-	if (tex->scaled) {
-		SDL_BlitSurface(tex->scaled, src_rect, surf, dst_rect);
-		return;
-	}
-
-	/* Copy from texture */
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_LockSurface(surf);
 	}
@@ -198,9 +200,14 @@ static void bitmapScaledNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *ds
 	}
 }
 
-static void bitmapScaledDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledScDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
-	bitmapScaledNodirty(video, src_rect, dst_rect);
+	SDL_BlitSurface(render.texture->scaled, src_rect, video->screen, dst_rect);
+}
+
+static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+{
+	bitmapScaledRtNodirty(video, src_rect, dst_rect);
 }
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
