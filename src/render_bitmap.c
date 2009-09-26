@@ -330,6 +330,19 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	}
 
 	/* Dither if needed */
-	if ((texture->bpp == 1) && render.dithering) {
+	if ((video->bpp == 8) && render.dithering) {
+		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(SDL_SWSURFACE,
+			texture->scaled->w,texture->scaled->h,8, 0,0,0,0);
+		if (!dithered_surf) {
+			fprintf(stderr, "bitmap: can not create dithered texture\n");
+			return;
+		}
+		
+		logMsg(2, "bitmap: creating dithered texture\n");
+
+		dither_setpalette(dithered_surf);
+		dither(texture->scaled, dithered_surf);
+		SDL_FreeSurface(texture->scaled);
+		texture->scaled = dithered_surf;
 	}
 }
