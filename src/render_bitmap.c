@@ -284,12 +284,13 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 			create_scaled = 1;
 		}
 	} else {
-		if ((texture->w != new_w) || (texture->h != new_h) || (video->screen->format->BytesPerPixel != texture->bpp)) {
-			create_scaled = 1;
-		}
-		if ((video->bpp == 8) && render.dithering) {
-			create_scaled = 1;
-		}
+		create_scaled = (texture->w != new_w) || (texture->h != new_h)
+			|| (video->screen->format->BytesPerPixel != texture->bpp)
+			|| (video->screen->format->Rmask != texture->rmask)
+			|| (video->screen->format->Gmask != texture->gmask)
+			|| (video->screen->format->Bmask != texture->bmask)
+			|| (video->screen->format->Amask != texture->amask)
+			|| ((video->bpp == 8) && render.dithering);
 	}
 
 	/* Create new render_texture, for scaled size */
