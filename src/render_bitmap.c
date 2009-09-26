@@ -75,17 +75,6 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		return;
 	}
 
-	refresh_scaled_version(video, tex, w,h);
-
-	/* Use scaled version if available, to update screen */
-	src_pixels = tex->pixels;
-	src_pitch = tex->pitch;
-	if (tex->scaled) {
-		src_pixels = tex->scaled->pixels;
-		src_pitch = tex->scaled->pitch;
-	}
-
-	/* Clipping */
 	if (x<0) {
 		dst_x = 0;
 		src_x -= x;
@@ -106,10 +95,24 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		return;
 	}
 
+	refresh_scaled_version(video, tex, w,h);
+
+	/* Use scaled version if available, to update screen */
+	src_pixels = tex->pixels;
+	src_pitch = tex->pitch;
+	if (tex->scaled) {
+		src_pixels = tex->scaled->pixels;
+		src_pitch = tex->scaled->pitch;
+	}
+
 	dst_x += video->viewport.x;
 	dst_y += video->viewport.y;
 
 	surf = video->screen;
+
+	if (SDL_MUSTLOCK(surf)) {
+		SDL_LockSurface(surf);
+	}
 
 	switch(video->bpp) {
 		case 8:
@@ -177,6 +180,10 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 				}
 			}
 			break;
+	}
+
+	if (SDL_MUSTLOCK(surf)) {
+		SDL_UnlockSurface(surf);
 	}
 }
 
