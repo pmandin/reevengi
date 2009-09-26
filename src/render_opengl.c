@@ -70,6 +70,7 @@ static void set_render(render_t *this, int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
 static void set_dithering(int enable);
+static void set_useDirtyRects(int enable);
 static void set_color_from_texture(vertex_t *v1);
 
 static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx);
@@ -114,6 +115,7 @@ void render_opengl_init(render_t *render)
 	render->set_texture = set_texture;
 	render->set_blending = set_blending;
 	render->set_dithering = set_dithering;
+	render->set_useDirtyRects = set_useDirtyRects;
 
 	render->sortBackToFront = sortBackToFront;
 
@@ -128,6 +130,7 @@ void render_opengl_init(render_t *render)
 	set_render(render, RENDER_WIREFRAME);
 	blending = 0;
 	gouraud = 0;
+	render->useDirtyRects = 0;
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -259,6 +262,10 @@ static void set_dithering(int enable)
 	} else {
 		gl.Disable(GL_DITHER);
 	}
+}
+
+static void set_useDirtyRects(int enable)
+{
 }
 
 static void set_render(render_t *this, int num_render)

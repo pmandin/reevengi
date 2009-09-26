@@ -32,6 +32,9 @@
 static void bitmapUnscaled(video_t *video, int x, int y);
 static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
+static void bitmapScaledNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
 
 /*--- Functions ---*/
@@ -54,13 +57,8 @@ static void bitmapUnscaled(video_t *video, int x, int y)
 
 static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 {
-	render_texture_t *tex = render.texture;
 	int src_x=0, src_y=0, dst_x=x, dst_y=y;
-	int i,j;
-	SDL_Surface *surf;
-
-	if (!tex)
-		return;
+	SDL_Rect src_rect, dst_rect;
 
 	/* Clipping for out of bounds */
 	if ((x>=video->viewport.w) || (y>=video->viewport.h) || (x+w<0) || (y+h<0)) {
@@ -90,27 +88,39 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	dst_x += video->viewport.x;
 	dst_y += video->viewport.y;
 
+	if (!render.texture)
+		return;
+
 	/* Use scaled version if available, to update screen */
-	refresh_scaled_version(video, tex, w,h);
+	refresh_scaled_version(video, render.texture, w,h);
+
+	src_rect.x = src_x;
+	src_rect.y = src_y;
+	dst_rect.x = dst_x;
+	dst_rect.y = dst_y;
+	src_rect.w = dst_rect.w = w;
+	src_rect.h = dst_rect.h = h;
+
+	if (render.useDirtyRects) {
+		bitmapScaledDirty(video, &src_rect, &dst_rect);
+	} else {
+		bitmapScaledNodirty(video, &src_rect, &dst_rect);
+	}
+}
+
+static void bitmapScaledNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+{
+	render_texture_t *tex = render.texture;
+	SDL_Surface *surf = video->screen;
+	int j;
 
 	/* Copy from scaled version */
 	if (tex->scaled) {
-		SDL_Rect src_rect, dst_rect;
-
-		src_rect.x = src_x;
-		src_rect.y = src_y;
-		dst_rect.x = dst_x;
-		dst_rect.y = dst_y;
-		src_rect.w = dst_rect.w = w;
-		src_rect.h = dst_rect.h = h;
-
-		SDL_BlitSurface(tex->scaled, &src_rect, video->screen, &dst_rect);
+		SDL_BlitSurface(tex->scaled, src_rect, surf, dst_rect);
 		return;
 	}
 
 	/* Copy from texture */
-	surf = video->screen;
-
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_LockSurface(surf);
 	}
@@ -119,14 +129,14 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		case 8:
 			{
 				Uint8 *src = tex->pixels;
-				src += src_y * tex->pitch;
-				src += src_x;
+				src += src_rect->y * tex->pitch;
+				src += src_rect->x;
 				Uint8 *dst = surf->pixels;
-				dst += dst_y * surf->pitch;
-				dst += dst_x;
+				dst += dst_rect->y * surf->pitch;
+				dst += dst_rect->x;
 
-				for (j=0; j<h; j++) {
-					memcpy(dst, src, w);
+				for (j=0; j<src_rect->h; j++) {
+					memcpy(dst, src, src_rect->w);
 					src += tex->pitch;
 					dst += surf->pitch;
 				}
@@ -136,14 +146,14 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		case 16:
 			{
 				Uint16 *src = (Uint16 *) tex->pixels;
-				src += src_y * (tex->pitch>>1);
-				src += src_x;
+				src += src_rect->y * (tex->pitch>>1);
+				src += src_rect->x;
 				Uint16 *dst = (Uint16 *) surf->pixels;
-				dst += dst_y * (surf->pitch>>1);
-				dst += dst_x;
+				dst += dst_rect->y * (surf->pitch>>1);
+				dst += dst_rect->x;
 
-				for (j=0; j<h; j++) {
-					memcpy(dst, src, w<<1);
+				for (j=0; j<src_rect->h; j++) {
+					memcpy(dst, src, src_rect->w<<1);
 					src += tex->pitch>>1;
 					dst += surf->pitch>>1;
 				}
@@ -152,14 +162,14 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		case 24:
 			{
 				Uint8 *src = tex->pixels;
-				src += src_y * tex->pitch;
-				src += src_x;
+				src += src_rect->y * tex->pitch;
+				src += src_rect->x;
 				Uint8 *dst = surf->pixels;
-				dst += dst_y * surf->pitch;
-				dst += dst_x;
+				dst += dst_rect->y * surf->pitch;
+				dst += dst_rect->x;
 
-				for (j=0; j<h; j++) {
-					memcpy(dst, src, w*3);
+				for (j=0; j<src_rect->h; j++) {
+					memcpy(dst, src, src_rect->w*3);
 					src += tex->pitch;
 					dst += surf->pitch;
 				}
@@ -168,14 +178,14 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		case 32:
 			{
 				Uint32 *src = (Uint32 *) tex->pixels;
-				src += src_y * (tex->pitch>>2);
-				src += src_x;
+				src += src_rect->y * (tex->pitch>>2);
+				src += src_rect->x;
 				Uint32 *dst = (Uint32 *) surf->pixels;
-				dst += dst_y * (surf->pitch>>2);
-				dst += dst_x;
+				dst += dst_rect->y * (surf->pitch>>2);
+				dst += dst_rect->x;
 
-				for (j=0; j<h; j++) {
-					memcpy(dst, src, w<<2);
+				for (j=0; j<src_rect->h; j++) {
+					memcpy(dst, src, src_rect->w<<2);
 					src += tex->pitch>>2;
 					dst += surf->pitch>>2;
 				}
@@ -186,6 +196,11 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_UnlockSurface(surf);
 	}
+}
+
+static void bitmapScaledDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+{
+	bitmapScaledNodirty(video, src_rect, dst_rect);
 }
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)

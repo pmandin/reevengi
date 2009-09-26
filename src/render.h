@@ -81,9 +81,11 @@ struct render_s {
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 	void (*set_blending)(int enable);
 	void (*set_dithering)(int enable);
+	void (*set_useDirtyRects)(int enable);
 
 	int render_mode;
 	int dithering;
+	int useDirtyRects;	/* For bitmap ops, only refresh dirty rects */
 
 	/* Misc functions */
 	void (*sortBackToFront)(int num_vtx, int *num_idx, vertex_t *vtx);
