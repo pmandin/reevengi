@@ -63,6 +63,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	render_texture_t *tex = render.texture;
 	int src_x=0, src_y=0, dst_x=x, dst_y=y;
 	int i,j;
+	Uint8 *src_pixels;
+	int src_pitch;
 	SDL_Surface *surf;
 
 	if (!tex)
@@ -76,8 +78,11 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	refresh_scaled_version(video, tex, w,h);
 
 	/* Use scaled version if available, to update screen */
+	src_pixels = tex->pixels;
+	src_pitch = tex->pitch;
 	if (tex->scaled) {
-		tex = tex->scaled;
+		src_pixels = tex->scaled->pixels;
+		src_pitch = tex->scaled->pitch;
 	}
 
 	/* Clipping */
@@ -109,8 +114,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	switch(video->bpp) {
 		case 8:
 			{
-				Uint8 *src = tex->pixels;
-				src += src_y * tex->pitch;
+				Uint8 *src = src_pixels;
+				src += src_y * src_pitch;
 				src += src_x;
 				Uint8 *dst = surf->pixels;
 				dst += dst_y * surf->pitch;
@@ -118,7 +123,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 				for (j=0; j<h; j++) {
 					memcpy(dst, src, w);
-					src += tex->pitch;
+					src += src_pitch;
 					dst += surf->pitch;
 				}
 			}
@@ -126,8 +131,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		case 15:
 		case 16:
 			{
-				Uint16 *src = (Uint16 *) tex->pixels;
-				src += src_y * (tex->pitch>>1);
+				Uint16 *src = (Uint16 *) src_pixels;
+				src += src_y * (src_pitch>>1);
 				src += src_x;
 				Uint16 *dst = (Uint16 *) surf->pixels;
 				dst += dst_y * (surf->pitch>>1);
@@ -142,8 +147,8 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 			break;
 		case 24:
 			{
-				Uint8 *src = tex->pixels;
-				src += src_y * tex->pitch;
+				Uint8 *src = src_pixels;
+				src += src_y * src_pitch;
 				src += src_x;
 				Uint8 *dst = surf->pixels;
 				dst += dst_y * surf->pitch;
@@ -151,15 +156,15 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 				for (j=0; j<h; j++) {
 					memcpy(dst, src, w*3);
-					src += tex->pitch;
+					src += src_pitch;
 					dst += surf->pitch;
 				}
 			}
 			break;
 		case 32:
 			{
-				Uint16 *src = (Uint16 *) tex->pixels;
-				src += src_y * (tex->pitch>>2);
+				Uint16 *src = (Uint16 *) src_pixels;
+				src += src_y * (src_pitch>>2);
 				src += src_x;
 				Uint16 *dst = (Uint16 *) surf->pixels;
 				dst += dst_y * (surf->pitch>>2);
@@ -167,7 +172,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 				for (j=0; j<h; j++) {
 					memcpy(dst, src, w<<2);
-					src += tex->pitch>>2;
+					src += src_pitch>>2;
 					dst += surf->pitch>>2;
 				}
 			}
@@ -177,13 +182,14 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
 {
+#if 0
 	int create_scaled = 0, fill_scaled = 0;
 
 	/* Generate a cached version of texture scaled/dithered or both */
 	if (texture->scaled) {
 		/* Recreate if different target size */		
 		if ((texture->scaled->w != new_w) || (texture->scaled->h != new_h)) {
-			texture->scaled->resize(texture->scaled, new_w,new_h);
+			/*texture->scaled->resize(texture->scaled, new_w,new_h);*/
 			fill_scaled = 1;
 		}
 	} else {
@@ -214,6 +220,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 			/* Dither scaled version */
 		}
 	}
+#endif
 }
 
 static void create_scaled_version(video_t *video, render_texture_t *src, render_texture_t *dst)

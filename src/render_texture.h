@@ -60,7 +60,7 @@ struct render_texture_s {
 	Uint32 rmask,gmask,bmask,amask;
 
 	/* Cache for rescaled version */
-	struct render_texture_s *scaled;
+	SDL_Surface *scaled;
 };
 
 /*--- Functions prototypes ---*/
