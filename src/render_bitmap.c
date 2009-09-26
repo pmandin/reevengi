@@ -167,10 +167,10 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 			{
 				Uint8 *src = tex->pixels;
 				src += src_rect->y * tex->pitch;
-				src += src_rect->x;
+				src += src_rect->x * 3;
 				Uint8 *dst = surf->pixels;
 				dst += dst_rect->y * surf->pitch;
-				dst += dst_rect->x;
+				dst += dst_rect->x * 3;
 
 				for (j=0; j<src_rect->h; j++) {
 					memcpy(dst, src, src_rect->w*3);
