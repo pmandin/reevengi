@@ -226,10 +226,13 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	switch(texture->bpp) {
 		case 2:
 			new_bpp = 16;
+			break;
 		case 3:
 			new_bpp = 24;
+			break;
 		case 4:
 			new_bpp = 32;
+			break;
 	}
 
 	texture->scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, new_w,new_h,new_bpp,
@@ -247,8 +250,8 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	src = texture;
 	dst = texture->scaled;
 
-	logMsg(2, "bitmap: scale texture %d bits from %dx%d to %dx%d\n",
-		texture->bpp*8, src->w,src->h, dst->w, dst->h);
+	logMsg(2, "bitmap: scale texture from %dx%dx%d to %dx%dx%d\n",
+		src->w,src->h,src->bpp*8, dst->w,dst->h,dst->format->BitsPerPixel);
 
 	switch(texture->bpp) {
 		case 1:
