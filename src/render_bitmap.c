@@ -213,12 +213,12 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 		dst_y1 = y<<4;
 		dst_y2 = (y+1)<<4;
 
-		/* Clip to viewport */
-		if (dst_y1<this->viewport.y) {
-			dst_y1 = this->viewport.y;
+		/* Clip to dst rect */
+		if (dst_y1<dst_rect->y) {
+			dst_y1 = dst_rect->y;
 		}
-		if (dst_y2>this->viewport.y+this->viewport.h) {
-			dst_y2 = this->viewport.y+this->viewport.h;
+		if (dst_y2>dst_rect->y+dst_rect->h) {
+			dst_y2 = dst_rect->y+dst_rect->h;
 		}
 
 		if (dst_y1>=dst_y2) {
@@ -237,20 +237,20 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 			dst_x1 = x<<4;
 			dst_x2 = (x+1)<<4;
 
-			/* Clip to viewport */
-			if (dst_x1<this->viewport.x) {
-				dst_x1 = this->viewport.x;
+			/* Clip to dst rect */
+			if (dst_x1<dst_rect->x) {
+				dst_x1 = dst_rect->x;
 			}
-			if (dst_x2>this->viewport.x+this->viewport.w) {
-				dst_x2 = this->viewport.x+this->viewport.w;
+			if (dst_x2>dst_rect->x+dst_rect->w) {
+				dst_x2 = dst_rect->x+dst_rect->w;
 			}
 
 			if (dst_x1>=dst_x2) {
 				continue;
 			}
 
-			blt_src_rect.x = dst_x1 - this->viewport.x;
-			blt_src_rect.y = dst_y1 - this->viewport.y;
+			blt_src_rect.x = src_rect->x + dst_x1;
+			blt_src_rect.y = src_rect->y + dst_y1;
 			blt_dst_rect.x = dst_x1;
 			blt_dst_rect.y = dst_y1;
 			blt_dst_rect.w = blt_src_rect.w = dst_x2-dst_x1;
