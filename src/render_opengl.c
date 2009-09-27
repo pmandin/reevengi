@@ -34,7 +34,6 @@
 
 #include "video.h"
 #include "render.h"
-#include "render_background_opengl.h"
 #include "render_texture_opengl.h"
 #include "matrix.h"
 
@@ -119,9 +118,6 @@ void render_opengl_init(render_t *render)
 
 	render->sortBackToFront = sortBackToFront;
 
-	render->initBackground = render_background_init_opengl;
-	render->drawBackground = render_background_opengl;
-
 	render_bitmap_opengl_init(render);
 
 	render->texture = NULL;
@@ -135,6 +131,7 @@ void render_opengl_init(render_t *render)
 
 static void render_opengl_shutdown(render_t *render)
 {
+	list_render_texture_shutdown();
 }
 
 static void render_resize(render_t *this, int w, int h)

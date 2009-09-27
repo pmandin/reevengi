@@ -99,9 +99,6 @@ struct render_s {
 	void (*triangle)(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-	void (*initBackground)(video_t *this, video_surface_t *source);
-	void (*drawBackground)(video_t *this);
-
 	/* Bitmap functions */
 	void (*bitmapUnscaled)(video_t *video, int x, int y);
 	void (*bitmapScaled)(video_t *video, int x, int y, int w, int h);

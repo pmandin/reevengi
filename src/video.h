@@ -44,12 +44,6 @@ struct video_s {
 
 	void (*initViewport)(video_t *this);
 
-	video_surface_t * (*createSurface)(int width, int height, int bpp);
-	video_surface_t * (*createSurfacePf)(int width, int height, SDL_PixelFormat *pixelFormat);
-	video_surface_t * (*createSurfaceSu)(SDL_Surface *surface);
-	void (*destroySurface)(video_surface_t *this);
-	void (*convertSurface)(video_surface_t *this);
-
 	/* OpenGL extensions */
 	int has_gl_arb_texture_non_power_of_two;
 	int has_gl_arb_texture_rectangle;

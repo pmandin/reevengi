@@ -201,7 +201,6 @@ int main(int argc, char **argv)
 	}
 
 	game_state.shutdown();
-	list_render_texture_shutdown();
 	video.shutDown(&video);
 	render.shutdown(&render);
 	FS_Shutdown();

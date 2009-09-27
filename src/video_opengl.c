@@ -29,7 +29,6 @@
 #include <SDL_opengl.h>
 
 #include "dyngl.h"
-#include "video_surface_opengl.h"
 
 #include "parameters.h"
 #include "video.h"
@@ -70,12 +69,6 @@ void video_opengl_init(video_t *this)
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
-
-	this->createSurface = video_surface_gl_create;
-	this->createSurfacePf = video_surface_gl_create_pf;
-	this->createSurfaceSu = video_surface_gl_create_su;
-	this->destroySurface = video_surface_gl_destroy;
-	this->convertSurface = video_surface_gl_convert;
 
 	/*if (!aspect_user) {
 		video_detect_aspect();

@@ -26,8 +26,6 @@
 #include <stdlib.h>
 #include <SDL.h>
 
-#include "video_surface.h"
-
 /*--- Function prototypes ---*/
 
 void view_background_input(SDL_Event *event);

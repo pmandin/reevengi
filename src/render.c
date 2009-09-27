@@ -20,7 +20,6 @@
 
 #include "video.h"
 #include "render.h"
-#include "render_background.h"
 #include "matrix.h"
 #include "draw.h"
 #include "draw_simple.h"
@@ -125,9 +124,6 @@ void render_soft_init(render_t *render)
 
 	render->sortBackToFront = sortBackToFront;
 
-	render->initBackground = render_background_init;
-	render->drawBackground = render_background;
-
 	render_bitmap_soft_init(render);
 
 	render->texture = NULL;
@@ -154,7 +150,7 @@ void render_soft_init(render_t *render)
 static void render_soft_shutdown(render_t *render)
 {
 	draw.shutdown(&draw);
-	render_background_shutdown();
+	list_render_texture_shutdown();
 }
 
 static void render_resize(render_t *this, int w, int h)

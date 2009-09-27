@@ -15,7 +15,6 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	re1_pc_game.c re1_ps1.c \
 	re2_pc_demo.c re2_pc_game.c re2_ps1.c \
 	re3_pc.c re3_ps1_game.c \
-	render_background.c render_background_opengl.c \
 	render_bitmap.c render_bitmap_opengl.c \
 	render.c render_opengl.c \
 	render_texture.c render_texture_opengl.c \
@@ -23,7 +22,6 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	room.c room_rdt.c room_rdt_script.c \
 	room_rdt2.c room_rdt2_script.c room_rdt3_script.c \
 	state.c video.c video_opengl.c \
-	video_surface.c video_surface_opengl.c \
 	view_background.c view_movie.c
 
 reevengi_headers = background_bss.h background_tim.h clock.h \
@@ -35,14 +33,12 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	re1_pc_game.h re1_ps1.h \
 	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
 	re3_pc.h re3_ps1_game.h \
-	render_background.h render_background_opengl.h \
 	render.h \
 	render_texture.h render_texture_opengl.h \
 	render_texture_list.h \
 	room.h room_rdt.h room_rdt_script.h \
 	room_rdt2.h room_rdt2_script.h room_rdt3_script.h \
 	state.h video.h \
-	video_surface.h video_surface_opengl.h \
 	view_background.h view_movie.h
 
 reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h

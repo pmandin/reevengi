@@ -61,12 +61,6 @@ void video_soft_init(video_t *this)
 
 	this->initViewport = initViewport;
 
-	this->createSurface = video_surface_create;
-	this->createSurfacePf = video_surface_create_pf;
-	this->createSurfaceSu = video_surface_create_su;
-	this->destroySurface = video_surface_destroy;
-	this->convertSurface = video_surface_convert;
-
 	if (!params.aspect_user) {
 		video_detect_aspect();
 	}
