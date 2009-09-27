@@ -36,7 +36,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
 static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
-static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
 
@@ -242,9 +242,112 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 	}
 }
 
-static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
-	bitmapScaledRtNodirty(video, src_rect, dst_rect);
+	SDL_Rect blt_src_rect, blt_dst_rect;
+	int x,y, j;
+	render_texture_t *tex = render.texture;
+	SDL_Surface *surf = this->screen;
+
+	for (y=0; y<this->dirty_rects[this->numfb]->height; y++) {
+		int num_rows = 16;
+
+		if (((y+1)<<4) > dst_rect->y+dst_rect->h) {
+			num_rows = dst_rect->y+dst_rect->h - (y<<4);
+		}
+
+		blt_src_rect.y = src_rect->y + (y<<4);
+		blt_dst_rect.y = y<<4;
+		blt_src_rect.h = blt_dst_rect.h = num_rows;
+
+		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
+			int num_cols = 16;
+
+			if (this->dirty_rects[this->numfb]->markers[y*this->dirty_rects[this->numfb]->width + x] == 0) {
+				continue;
+			}
+
+			if (((x+1)<<4) > dst_rect->x+dst_rect->w) {
+				num_cols = dst_rect->x+dst_rect->w - (x<<4);
+			}
+
+			blt_src_rect.x = src_rect->x + (x<<4);
+			blt_dst_rect.x = x<<4;
+			blt_src_rect.w = blt_dst_rect.w = num_cols;
+
+			switch(this->bpp) {
+				case 8:
+					{
+						Uint8 *src = tex->pixels;
+						src += blt_src_rect.y * tex->pitch;
+						src += blt_src_rect.x;
+						Uint8 *dst = surf->pixels;
+						dst += blt_dst_rect.y * surf->pitch;
+						dst += blt_dst_rect.x;
+
+						for (j=0; j<blt_src_rect.h; j++) {
+							memcpy(dst, src, blt_src_rect.w);
+							src += tex->pitch;
+							dst += surf->pitch;
+						}
+					}
+					break;
+				case 15:
+				case 16:
+					{
+						Uint16 *src = (Uint16 *) tex->pixels;
+						src += blt_src_rect.y * (tex->pitch>>1);
+						src += blt_src_rect.x;
+						Uint16 *dst = (Uint16 *) surf->pixels;
+						dst += blt_dst_rect.y * (surf->pitch>>1);
+						dst += blt_dst_rect.x;
+
+						for (j=0; j<blt_src_rect.h; j++) {
+							memcpy(dst, src, blt_src_rect.w<<1);
+							src += tex->pitch>>1;
+							dst += surf->pitch>>1;
+						}
+					}
+					break;
+				case 24:
+					{
+						Uint8 *src = tex->pixels;
+						src += blt_src_rect.y * tex->pitch;
+						src += blt_src_rect.x * 3;
+						Uint8 *dst = surf->pixels;
+						dst += blt_dst_rect.y * surf->pitch;
+						dst += blt_dst_rect.x * 3;
+
+						for (j=0; j<blt_src_rect.h; j++) {
+							memcpy(dst, src, blt_src_rect.w*3);
+							src += tex->pitch;
+							dst += surf->pitch;
+						}
+					}
+					break;
+				case 32:
+					{
+						Uint32 *src = (Uint32 *) tex->pixels;
+						src += blt_src_rect.y * (tex->pitch>>2);
+						src += blt_src_rect.x;
+						Uint32 *dst = (Uint32 *) surf->pixels;
+						dst += blt_dst_rect.y * (surf->pitch>>2);
+						dst += blt_dst_rect.x;
+
+						for (j=0; j<blt_src_rect.h; j++) {
+							memcpy(dst, src, blt_src_rect.w<<2);
+							src += tex->pitch>>2;
+							dst += surf->pitch>>2;
+						}
+					}
+					break;
+			}
+
+			this->upload_rects[this->numfb]->setDirty(this->upload_rects[this->numfb],
+				blt_dst_rect.x,blt_dst_rect.y,
+				blt_dst_rect.w,blt_dst_rect.h);
+		}
+	}
 }
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
