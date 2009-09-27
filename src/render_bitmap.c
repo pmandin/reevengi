@@ -104,17 +104,25 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	src_rect.w = dst_rect.w = w;
 	src_rect.h = dst_rect.h = h;
 
-	if (render.useDirtyRects) {
-		if (render.texture->scaled) {
+	if (render.texture->scaled) {
+		if (render.useDirtyRects) {
 			bitmapScaledScDirty(video, &src_rect, &dst_rect);
-		} else {		
-			bitmapScaledRtDirty(video, &src_rect, &dst_rect);
+		} else {
+			SDL_BlitSurface(render.texture->scaled, &src_rect, video->screen, &dst_rect);
 		}
 	} else {
-		if (render.texture->scaled) {
-			SDL_BlitSurface(render.texture->scaled, &src_rect, video->screen, &dst_rect);
+		if (SDL_MUSTLOCK(video->screen)) {
+			SDL_LockSurface(video->screen);
+		}
+
+		if (render.useDirtyRects) {
+			bitmapScaledRtDirty(video, &src_rect, &dst_rect);
 		} else {
 			bitmapScaledRtNodirty(video, &src_rect, &dst_rect);
+		}
+
+		if (SDL_MUSTLOCK(video->screen)) {
+			SDL_UnlockSurface(video->screen);
 		}
 	}
 }
@@ -124,10 +132,6 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 	render_texture_t *tex = render.texture;
 	SDL_Surface *surf = video->screen;
 	int j;
-
-	if (SDL_MUSTLOCK(surf)) {
-		SDL_LockSurface(surf);
-	}
 
 	switch(video->bpp) {
 		case 8:
@@ -196,10 +200,6 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 			}
 			break;
 	}
-
-	if (SDL_MUSTLOCK(surf)) {
-		SDL_UnlockSurface(surf);
-	}
 }
 
 static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
@@ -262,8 +262,6 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 				blt_dst_rect.w,blt_dst_rect.h);
 		}
 	}
-
-	this->dirty_rects[this->numfb]->clear(this->dirty_rects[this->numfb]);
 }
 
 static void bitmapScaledRtDirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)

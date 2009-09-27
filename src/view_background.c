@@ -452,6 +452,7 @@ void view_background_draw(void)
 	render.bitmapScaled(&video, 0,0,video.viewport.w,video.viewport.h);
 	render.set_useDirtyRects(0);
 #endif
+	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 	render.set_dithering(0);
 
 	if (!game_state.room) {
