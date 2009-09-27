@@ -204,57 +204,35 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 
 static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
+	SDL_Rect blt_src_rect, blt_dst_rect;
 	int x,y;
 
 	for (y=0; y<this->dirty_rects[this->numfb]->height; y++) {
-		int dst_y1, dst_y2;
+		int num_rows = 16;
 
-		/* Target destination of zoomed image */
-		dst_y1 = y<<4;
-		dst_y2 = (y+1)<<4;
-
-		/* Clip to dst rect */
-		if (dst_y1<dst_rect->y) {
-			dst_y1 = dst_rect->y;
-		}
-		if (dst_y2>dst_rect->y+dst_rect->h) {
-			dst_y2 = dst_rect->y+dst_rect->h;
+		if (((y+1)<<4) > dst_rect->y+dst_rect->h) {
+			num_rows = dst_rect->y+dst_rect->h - (y<<4);
 		}
 
-		if (dst_y1>=dst_y2) {
-			continue;
-		}
+		blt_src_rect.y = src_rect->y + (y<<4);
+		blt_dst_rect.y = y<<4;
+		blt_src_rect.h = blt_dst_rect.h = num_rows;
 
 		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
-			int dst_x1, dst_x2;
-			SDL_Rect blt_src_rect, blt_dst_rect;
+			int num_cols = 16;
 
 			if (this->dirty_rects[this->numfb]->markers[y*this->dirty_rects[this->numfb]->width + x] == 0) {
 				continue;
 			}
 
-			/* 16x16 block */
-			dst_x1 = x<<4;
-			dst_x2 = (x+1)<<4;
-
-			/* Clip to dst rect */
-			if (dst_x1<dst_rect->x) {
-				dst_x1 = dst_rect->x;
-			}
-			if (dst_x2>dst_rect->x+dst_rect->w) {
-				dst_x2 = dst_rect->x+dst_rect->w;
+			if (((x+1)<<4) > dst_rect->x+dst_rect->w) {
+				num_cols = dst_rect->x+dst_rect->w - (x<<4);
 			}
 
-			if (dst_x1>=dst_x2) {
-				continue;
-			}
+			blt_src_rect.x = src_rect->x + (x<<4);
+			blt_dst_rect.x = x<<4;
+			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
-			blt_src_rect.x = src_rect->x + dst_x1;
-			blt_src_rect.y = src_rect->y + dst_y1;
-			blt_dst_rect.x = dst_x1;
-			blt_dst_rect.y = dst_y1;
-			blt_dst_rect.w = blt_src_rect.w = dst_x2-dst_x1;
-			blt_dst_rect.h = blt_src_rect.h = dst_y2-dst_y1;
 			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, this->screen, &blt_dst_rect);
 
 			this->upload_rects[this->numfb]->setDirty(this->upload_rects[this->numfb],
