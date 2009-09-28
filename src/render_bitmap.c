@@ -63,10 +63,16 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	int src_x=0, src_y=0, dst_x=x, dst_y=y;
 	SDL_Rect src_rect, dst_rect;
 
+	if (!render.texture)
+		return;
+
 	/* Clipping for out of bounds */
 	if ((x>=video->viewport.w) || (y>=video->viewport.h) || (x+w<0) || (y+h<0)) {
 		return;
 	}
+
+	/* Use scaled version if available, to update screen */
+	refresh_scaled_version(video, render.texture, w,h);
 
 	if (x<0) {
 		dst_x = 0;
@@ -90,12 +96,6 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 	dst_x += video->viewport.x;
 	dst_y += video->viewport.y;
-
-	if (!render.texture)
-		return;
-
-	/* Use scaled version if available, to update screen */
-	refresh_scaled_version(video, render.texture, w,h);
 
 	src_rect.x = src_x;
 	src_rect.y = src_y;
