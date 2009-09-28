@@ -94,9 +94,6 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		return;
 	}
 
-	dst_x += video->viewport.x;
-	dst_y += video->viewport.y;
-
 	src_rect.x = src_x;
 	src_rect.y = src_y;
 	dst_rect.x = dst_x;
