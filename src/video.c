@@ -272,8 +272,8 @@ static void swapBuffers(video_t *this)
 	for (y=0; y<this->upload_rects[this->numfb]->height; y++) {
 		int num_rows = 16;
 
-		if (((y+1)<<4) > this->width) {
-			num_rows = this->width - (y<<4);
+		if (((y+1)<<4) > this->height) {
+			num_rows = this->height - (y<<4);
 		}
 
 		for (x=0; x<this->upload_rects[this->numfb]->width; x++) {
