@@ -23,7 +23,6 @@
 
 #include <SDL.h>
 
-#include "video_surface.h"
 #include "model.h"
 #include "room.h"
 

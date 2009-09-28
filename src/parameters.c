@@ -38,6 +38,9 @@
 #define DEFAULT_USE_OPENGL 0
 #define DEFAULT_ASPECT_X 4
 #define DEFAULT_ASPECT_Y 3
+#define DEFAULT_WIDTH 320
+#define DEFAULT_HEIGHT 240
+#define DEFAULT_BPP 16
 
 /*--- Global variables ---*/
 
@@ -50,6 +53,9 @@ params_t params = {
 	DEFAULT_USE_OPENGL,
 	DEFAULT_ASPECT_X,
 	DEFAULT_ASPECT_Y,
+	0,
+	0,
+	0,
 	0,
 	0
 };
@@ -133,6 +139,25 @@ int CheckParm(int argc,char **argv)
 		params.dithering = 1;
 	}
 
+	/*--- Check for video mode ---*/
+	p = ParmPresent("-width", argc, argv);
+	if (p && p < argc-1) {
+		params.width = atoi(argv[p+1]);
+	}
+
+	p = ParmPresent("-height", argc, argv);
+	if (p) {
+		params.height = atoi(argv[p+1]);
+	}
+
+	p = ParmPresent("-bpp", argc, argv);
+	if (p) {
+		params.bpp = atoi(argv[p+1]);
+		if (params.bpp<8) {
+			params.bpp = 8;
+		}
+	}
+
 #ifdef ENABLE_SCRIPT_DISASM
 	/*--- Check for script dump ---*/
 	p = ParmPresent("-dumpscript", argc, argv);
@@ -157,6 +182,9 @@ void DisplayUsage(void)
 		"  [-opengl] (enable opengl mode)\n"
 		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
 		"  [-dither] (enable dithering in 8 bits mode)\n"
+		"  [-width <w>] (width of video mode, default=%d)\n"
+		"  [-height <h>] (height of video mode, default=%d)\n"
+		"  [-bpp <b>] (bits per pixel for video mode, default=%d)\n"
 #ifdef ENABLE_SCRIPT_DISASM
 		"  [-dumpscript] (enable script dump when loading room)\n"
 #endif
@@ -165,6 +193,9 @@ void DisplayUsage(void)
 		DEFAULT_GAMMA,
 		DEFAULT_VERBOSE,
 		DEFAULT_ASPECT_X,
-		DEFAULT_ASPECT_Y
+		DEFAULT_ASPECT_Y,
+		DEFAULT_WIDTH,
+		DEFAULT_HEIGHT,
+		DEFAULT_BPP
 	);
 }

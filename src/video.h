@@ -21,7 +21,9 @@
 #ifndef VIDEO_H
 #define VIDEO_H 1
 
-#include "video_surface.h"
+#include "dirty_rects.h"
+
+/*--- Types ---*/
 
 typedef struct video_s video_t;
 

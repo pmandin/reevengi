@@ -40,6 +40,9 @@ typedef struct {
 	int aspect_user;	/* User gave us an aspect ratio */
 	int dithering;		/* Dithering enabled for 8 bit mode */
 	int dump_script;	/* Dump script when loading room */
+	int width;
+	int height;
+	int bpp;
 } params_t;
 
 /*--- Variables ---*/

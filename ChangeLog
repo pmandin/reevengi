@@ -3,6 +3,9 @@ v 0.14
 - Add separate clock for engine, so loading times are not taken into account
   for player movements.
 - Add timing in ms, in log file.
+- Heavy rewrite for texturing. The background image is processed with same stuff
+  as the model textures.
+- Can set width,height,bpp of video mode
 
 v 0.13
 

@@ -58,6 +58,12 @@ Use at your own risks.
 
 "-dither" to dither background image (in 8bits mode only).
 
+"-width <w>" to set width of video mode.
+
+"-height <h>" to set height of video mode.
+
+"-bpp <b>" to set bits per pixel for video mode.
+
 "-dumpscript" to dump room scripts. Verbosity must be 1 or higher. Set to 2 to
   also display corresponding byte codes.
 

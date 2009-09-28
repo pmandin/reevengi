@@ -61,8 +61,8 @@ void video_opengl_init(video_t *this)
 {
 	video_soft_init(this);
 
-	this->width = 640;
-	this->height = 480;
+	this->width = (params.width ? params.width : 640);
+	this->height = (params.height ? params.height : 480);
 	this->bpp = 0;
 	this->flags = SDL_OPENGL|SDL_RESIZABLE;
 

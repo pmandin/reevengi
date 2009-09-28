@@ -46,9 +46,10 @@ void video_soft_init(video_t *this)
 {
 	memset(this, 0, sizeof(video_t));
 
-	this->width = 320;
-	this->height = 240;
-	this->bpp = 16;
+	this->width = (params.width ? params.width : 320);
+	this->height = (params.height ? params.height : 240);
+	this->bpp = (params.bpp ? params.bpp : 16);
+
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
 	this->start_tick = SDL_GetTicks();
 
