@@ -270,25 +270,28 @@ static void swapBuffers(video_t *this)
 
 	i = 0;
 	for (y=0; y<this->upload_rects[this->numfb]->height; y++) {
+		int num_rows = 16;
+
+		if (((y+1)<<4) > this->width) {
+			num_rows = this->width - (y<<4);
+		}
+
 		for (x=0; x<this->upload_rects[this->numfb]->width; x++) {
-			int maxw = 1<<4, maxh = 1<<4;
+			int num_cols = 16;
 
 			if (this->upload_rects[this->numfb]->markers[y*this->upload_rects[this->numfb]->width + x] == 0) {
 				continue;
 			}
 
-			if (this->width - (x<<4) < (1<<4)) {
-				maxw = this->width - (x<<4);
-			}
-			if (this->height - (y<<4) < (1<<4)) {
-				maxh = this->height - (y<<4);
+			if (((x+1)<<4) > this->width) {
+				num_cols = this->width - (x<<4);
 			}
 
 			/* Add rectangle */
 			list_rects[i].x = x<<4;
 			list_rects[i].y = y<<4;
-			list_rects[i].w = maxw;
-			list_rects[i].h = maxh;
+			list_rects[i].w = num_cols;
+			list_rects[i].h = num_rows;
 			i++;
 		}
 	}
@@ -359,6 +362,10 @@ static void initViewport(video_t *this)
 		this->viewport.w = this->width;
 		this->viewport.h = scr_h;
 	}
+
+	logMsg(2, "video: viewport %d,%d %dx%d\n",
+		this->viewport.x, this->viewport.y,
+		this->viewport.w, this->viewport.h);
 
 	render.set_viewport(this->viewport.x, this->viewport.y,
 		this->viewport.w, this->viewport.h);
