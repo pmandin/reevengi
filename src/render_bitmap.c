@@ -215,7 +215,7 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 		}
 
 		blt_src_rect.y = src_rect->y + (y<<4);
-		blt_dst_rect.y = y<<4;
+		blt_dst_rect.y = dst_rect->y + (y<<4);
 		blt_src_rect.h = blt_dst_rect.h = num_rows;
 
 		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
@@ -230,7 +230,7 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 			}
 
 			blt_src_rect.x = src_rect->x + (x<<4);
-			blt_dst_rect.x = x<<4;
+			blt_dst_rect.x = dst_rect->x + (x<<4);
 			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
 			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, this->screen, &blt_dst_rect);
@@ -257,7 +257,7 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 		}
 
 		blt_src_rect.y = src_rect->y + (y<<4);
-		blt_dst_rect.y = y<<4;
+		blt_dst_rect.y = dst_rect->y + (y<<4);
 		blt_src_rect.h = blt_dst_rect.h = num_rows;
 
 		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
@@ -272,7 +272,7 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 			}
 
 			blt_src_rect.x = src_rect->x + (x<<4);
-			blt_dst_rect.x = x<<4;
+			blt_dst_rect.x = dst_rect->x + (x<<4);
 			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
 			switch(this->bpp) {
