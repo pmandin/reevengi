@@ -85,10 +85,10 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		h -= y;
 	}
 	if (x+w>=video->viewport.w) {
-		w = video->viewport.w - x;
+		w = video->viewport.x+video->viewport.w - x;
 	}
 	if (y+h>=video->viewport.h) {
-		h = video->viewport.h - y;
+		h = video->viewport.y+video->viewport.h - y;
 	}
 	if ((w<=0) || (h<=0) || (src_x>=w) || (src_y>=h)) {
 		return;
@@ -202,33 +202,29 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
 	SDL_Rect blt_src_rect, blt_dst_rect;
-	int x,y;
+	int x,y, dx,dy, num_rows=0, num_cols=0;
 
-	for (y=0; y<this->dirty_rects[this->numfb]->height; y++) {
-		int num_rows = 16;
+	for (y=0; y<dst_rect->h; y+=num_rows) {
+		blt_src_rect.y = src_rect->y + y;
+		blt_dst_rect.y = dst_rect->y + y;
 
-		if (((y+1)<<4) > dst_rect->y+dst_rect->h) {
-			num_rows = dst_rect->y+dst_rect->h - (y<<4);
-		}
+		dy = blt_dst_rect.y>>4;
+		num_rows = MIN(16 - (blt_dst_rect.y & 15), dst_rect->h - y);
 
-		blt_src_rect.y = src_rect->y + (y<<4);
-		blt_dst_rect.y = dst_rect->y + (y<<4);
 		blt_src_rect.h = blt_dst_rect.h = num_rows;
 
-		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
-			int num_cols = 16;
+		for (x=0; x<dst_rect->w; x+=num_cols) {
+			blt_src_rect.x = src_rect->x + x;
+			blt_dst_rect.x = dst_rect->x + x;
 
-			if (this->dirty_rects[this->numfb]->markers[y*this->dirty_rects[this->numfb]->width + x] == 0) {
+			dx = blt_dst_rect.x>>4;
+			num_cols = MIN(16 - (blt_dst_rect.x & 15), dst_rect->w - x);
+
+			blt_src_rect.w = blt_dst_rect.w = num_cols;
+
+			if (this->dirty_rects[this->numfb]->markers[dy*this->dirty_rects[this->numfb]->width + dx] == 0) {
 				continue;
 			}
-
-			if (((x+1)<<4) > dst_rect->x+dst_rect->w) {
-				num_cols = dst_rect->x+dst_rect->w - (x<<4);
-			}
-
-			blt_src_rect.x = src_rect->x + (x<<4);
-			blt_dst_rect.x = dst_rect->x + (x<<4);
-			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
 			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, this->screen, &blt_dst_rect);
 
@@ -242,35 +238,31 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
 	SDL_Rect blt_src_rect, blt_dst_rect;
-	int x,y, j;
+	int x,y, j, num_rows=0, num_cols=0, dx,dy;
 	render_texture_t *tex = render.texture;
 	SDL_Surface *surf = this->screen;
 
-	for (y=0; y<this->dirty_rects[this->numfb]->height; y++) {
-		int num_rows = 16;
+	for (y=0; y<dst_rect->h; y+=num_rows) {
+		blt_src_rect.y = src_rect->y + y;
+		blt_dst_rect.y = dst_rect->y + y;
 
-		if (((y+1)<<4) > dst_rect->y+dst_rect->h) {
-			num_rows = dst_rect->y+dst_rect->h - (y<<4);
-		}
+		dy = blt_dst_rect.y>>4;
+		num_rows = MIN(16 - (blt_dst_rect.y & 15), dst_rect->h - y);
 
-		blt_src_rect.y = src_rect->y + (y<<4);
-		blt_dst_rect.y = dst_rect->y + (y<<4);
 		blt_src_rect.h = blt_dst_rect.h = num_rows;
 
-		for (x=0; x<this->dirty_rects[this->numfb]->width; x++) {
-			int num_cols = 16;
+		for (x=0; x<dst_rect->w; x+=num_cols) {
+			blt_src_rect.x = src_rect->x + x;
+			blt_dst_rect.x = dst_rect->x + x;
 
-			if (this->dirty_rects[this->numfb]->markers[y*this->dirty_rects[this->numfb]->width + x] == 0) {
+			dx = blt_dst_rect.x>>4;
+			num_cols = MIN(16 - (blt_dst_rect.x & 15), dst_rect->w - x);
+
+			blt_src_rect.w = blt_dst_rect.w = num_cols;
+
+			if (this->dirty_rects[this->numfb]->markers[dy*this->dirty_rects[this->numfb]->width + dx] == 0) {
 				continue;
 			}
-
-			if (((x+1)<<4) > dst_rect->x+dst_rect->w) {
-				num_cols = dst_rect->x+dst_rect->w - (x<<4);
-			}
-
-			blt_src_rect.x = src_rect->x + (x<<4);
-			blt_dst_rect.x = dst_rect->x + (x<<4);
-			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
 			switch(this->bpp) {
 				case 8:
