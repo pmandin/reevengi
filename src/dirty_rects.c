@@ -22,6 +22,11 @@
 
 #include "dirty_rects.h"
 
+/*--- Defines ---*/
+
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define MIN(x,y) ((x)<(y)?(x):(y))
+
 /*--- Functions prototypes ---*/
 
 static void resize(dirty_rects_t *this, int w, int h);
@@ -107,11 +112,15 @@ static void setDirty(dirty_rects_t *this, int x, int y, int w, int h)
 	}
 	y2>>=4;
 
+	/* Clip */
+	x1 = MIN(this->width, MAX(x1,0));
+	y1 = MIN(this->height, MAX(y1,0));
+	x2 = MIN(this->width, MAX(x2,0));
+	y2 = MIN(this->height, MAX(y2,0));
+
 	for (y=y1; y<y2; y++) {
 		for(x=x1; x<x2; x++) {
-			if ((x>=0) && (x<this->width) && (y>=0) && (y<this->height)) {
-				this->markers[y*this->width+x]=1;
-			}
+			this->markers[y*this->width+x]=1;
 		}
 	}
 }
