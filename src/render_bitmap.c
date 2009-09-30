@@ -39,6 +39,8 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
+static void rescale_nearest(render_texture_t *src, SDL_Surface *dst);
+static void rescale_linear(render_texture_t *src, SDL_Surface *dst);
 
 /*--- Functions ---*/
 
@@ -399,13 +401,38 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		dither_setpalette(texture->scaled);
 	}
 
-	src = texture;
-	dst = texture->scaled;
+	rescale_nearest(texture, texture->scaled);
+
+	/* Dither if needed */
+	if (video->bpp == 8) {
+		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(SDL_SWSURFACE,
+			texture->scaled->w,texture->scaled->h,8, 0,0,0,0);
+		if (!dithered_surf) {
+			fprintf(stderr, "bitmap: can not create dithered texture\n");
+			return;
+		}
+		
+		dither_setpalette(dithered_surf);
+		if (render.dithering) {
+			logMsg(2, "bitmap: creating dithered version of texture\n");
+			dither(texture->scaled, dithered_surf);
+		} else {
+			logMsg(2, "bitmap: creating 8bit version of texture\n");
+			dither_copy(texture->scaled, dithered_surf);
+		}
+		SDL_FreeSurface(texture->scaled);
+		texture->scaled = dithered_surf;
+	}
+}
+
+static void rescale_nearest(render_texture_t *src, SDL_Surface *dst)
+{
+	int x,y;
 
 	logMsg(2, "bitmap: scale texture from %dx%dx%d to %dx%dx%d\n",
 		src->w,src->h,src->bpp*8, dst->w,dst->h,dst->format->BitsPerPixel);
 
-	switch(texture->bpp) {
+	switch(src->bpp) {
 		case 1:
 			{
 				Uint8 *dst_line = dst->pixels;
@@ -486,25 +513,9 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 			}
 			break;
 	}
-
-	/* Dither if needed */
-	if (video->bpp == 8) {
-		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(SDL_SWSURFACE,
-			texture->scaled->w,texture->scaled->h,8, 0,0,0,0);
-		if (!dithered_surf) {
-			fprintf(stderr, "bitmap: can not create dithered texture\n");
-			return;
-		}
-		
-		dither_setpalette(dithered_surf);
-		if (render.dithering) {
-			logMsg(2, "bitmap: creating dithered version of texture\n");
-			dither(texture->scaled, dithered_surf);
-		} else {
-			logMsg(2, "bitmap: creating 8bit version of texture\n");
-			dither_copy(texture->scaled, dithered_surf);
-		}
-		SDL_FreeSurface(texture->scaled);
-		texture->scaled = dithered_surf;
-	}
 }
+
+static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
+{
+}
+
