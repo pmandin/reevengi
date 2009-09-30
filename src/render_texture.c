@@ -70,6 +70,7 @@ render_texture_t *render_texture_create(int flags)
 
 	tex->bpp = video.screen->format->BytesPerPixel;
 	memcpy(&(tex->format), video.screen->format, sizeof(SDL_PixelFormat));
+	tex->format.palette = NULL;
 
 	list_render_texture_add(tex);
 
@@ -470,6 +471,7 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 
 	this->bpp = tmp_surf->format->BytesPerPixel;
 	memcpy(&(this->format), tmp_surf->format, sizeof(SDL_PixelFormat));
+	this->format.palette = NULL;
 
 	this->resize(this, tmp_surf->w,tmp_surf->h);
 
