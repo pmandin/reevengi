@@ -356,10 +356,10 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	} else {
 		create_scaled = (texture->w != new_w) || (texture->h != new_h)
 			|| (video->screen->format->BytesPerPixel != texture->bpp)
-			|| (video->screen->format->Rmask != texture->rmask)
-			|| (video->screen->format->Gmask != texture->gmask)
-			|| (video->screen->format->Bmask != texture->bmask)
-			|| (video->screen->format->Amask != texture->amask)
+			|| (video->screen->format->Rmask != texture->format.Rmask)
+			|| (video->screen->format->Gmask != texture->format.Gmask)
+			|| (video->screen->format->Bmask != texture->format.Bmask)
+			|| (video->screen->format->Amask != texture->format.Amask)
 			|| ((video->bpp == 8) && render.dithering);
 	}
 
@@ -390,7 +390,8 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	}
 
 	texture->scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, new_w,new_h,new_bpp,
-		texture->rmask,texture->gmask,texture->bmask,texture->amask);
+		texture->format.Rmask, texture->format.Gmask,
+		texture->format.Bmask, texture->format.Amask);
 
 	if (!texture->scaled) {
 		fprintf(stderr, "bitmap: could not create scaled texture\n");
@@ -517,5 +518,107 @@ static void rescale_nearest(render_texture_t *src, SDL_Surface *dst)
 
 static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 {
-}
+#if 0
+	int x,y;
+	Uint8 r,g,b;
+	SDL_PixelFormat fmt;
+	Uint32 u=0,v=0;
+	Uint32 du = (src->w * 65536) / dst->w;
+	Uint32 dv = (src->h * 65536) / dst->h;
 
+	logMsg(2, "bitmap: scale texture linearly from %dx%dx%d to %dx%dx%d\n",
+		src->w,src->h,src->bpp*8, dst->w,dst->h,dst->format->BitsPerPixel);
+
+	switch(src->bpp) {
+		case 1:
+			{
+				Uint8 *dst_line = dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint8 *dst_col = dst_line;
+					Uint8 *src_line_r0 = (Uint8 *) src->pixels;
+					Uint8 *src_line_r1 = src_line_r0;
+
+					src_line_r0 += (v>>16) * src->pitch;
+					src_line_r1 += ((v>>16)+1) * src->pitch;
+
+					for(x=0; x<dst->w; x++) {
+						Uint8 r[4],g[4],b[4];
+
+						SDL_GetRGB(src_line_r0[u>>16], &fmt, &r[0], &g[0], &b[0]);
+						SDL_GetRGB(src_line_r0[(u>>16)+1], &fmt, &r[1], &g[1], &b[1]);
+						SDL_GetRGB(src_line_r1[u>>16], &fmt, &r[2], &g[2], &b[2]);
+						SDL_GetRGB(src_line_r1[(u>>16)+1], &fmt, &r[3], &g[3], &b[3]);
+
+						/**dst_col++ = src_col[x1];*/
+
+						u += du;
+					}
+					dst_line += dst->pitch;
+					v += dv;
+				}
+			}
+			break;
+		case 2:
+			{
+				Uint16 *dst_line = (Uint16 *) dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint16 *dst_col = dst_line;
+					Uint16 *src_col = (Uint16 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * (src->pitch>>1);
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+
+						*dst_col++ = src_col[x1];
+					}
+					dst_line += dst->pitch>>1;
+				}
+			}
+			break;
+		case 3:
+			{
+				Uint8 *dst_line = (Uint8 *) dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint8 *dst_col = dst_line;
+					Uint8 *src_col = (Uint8 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * src->pitch;
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+						int src_pos = x1*3;
+
+						*dst_col++ = src_col[src_pos];
+						*dst_col++ = src_col[src_pos+1];
+						*dst_col++ = src_col[src_pos+2];
+					}
+					dst_line += dst->pitch;
+				}
+			}
+			break;
+		case 4:
+			{
+				Uint32 *dst_line = (Uint32 *) dst->pixels;
+
+				for(y=0; y<dst->h; y++) {
+					Uint32 *dst_col = dst_line;
+					Uint32 *src_col = (Uint32 *) src->pixels;
+					int y1 = (y * src->h) / dst->h;
+
+					src_col += y1 * (src->pitch>>2);
+					for(x=0; x<dst->w; x++) {
+						int x1 = (x * src->w) / dst->w;
+
+						*dst_col++ = src_col[x1];
+					}
+					dst_line += dst->pitch>>2;
+				}
+			}
+			break;
+	}
+#endif
+}

@@ -69,6 +69,7 @@ render_texture_t *render_texture_create(int flags)
 	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
 
 	tex->bpp = video.screen->format->BytesPerPixel;
+	memcpy(&(tex->format), video.screen->format, sizeof(SDL_PixelFormat));
 
 	list_render_texture_add(tex);
 
@@ -311,11 +312,6 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				/* With OpenGL, we can keep source in its proper format */
 				if (params.use_opengl) {
 					bytesPerPixel = 2;
-				} else {
-					this->rmask = fmt->Rmask;
-					this->gmask = fmt->Gmask;
-					this->bmask = fmt->Bmask;
-					this->amask = fmt->Amask;
 				}
 
 				switch(bytesPerPixel) {
@@ -473,18 +469,16 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	}
 
 	this->bpp = tmp_surf->format->BytesPerPixel;
+	memcpy(&(this->format), tmp_surf->format, sizeof(SDL_PixelFormat));
+
 	this->resize(this, tmp_surf->w,tmp_surf->h);
 
 	logMsg(2, "texture: %dx%d, %d bpp, %d palettes\n",
 		this->w,this->h, tmp_surf->format->BitsPerPixel, this->num_palettes);
 
-	this->rmask = tmp_surf->format->Rmask;
-	this->gmask = tmp_surf->format->Gmask;
-	this->bmask = tmp_surf->format->Bmask;
-	this->amask = tmp_surf->format->Amask;
-
 	logMsg(2, "texture: R=0x%08x, G=0x%08x, B=0x%08x, A=0x%08x\n",
-		this->rmask, this->gmask, this->bmask, this->amask);
+		this->format.Rmask, this->format.Gmask,
+		this->format.Bmask, this->format.Amask);
 
 	switch(this->bpp) {
 		case 1:
