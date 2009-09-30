@@ -29,8 +29,8 @@
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
 
-#define BILINEAR_FILTER(start,end,coef)	\
-	(start) + ((((end)-(start)) * ((coef) & 65535)) >> 16)
+/*#define BILINEAR_FILTER(start,end,coef)	\
+	(start) + ((((end)-(start)) * ((coef) & 65535)) >> 16)*/
 
 /*--- Functions prototypes ---*/
 
@@ -522,6 +522,11 @@ static void rescale_nearest(render_texture_t *src, SDL_Surface *dst)
 	}
 }
 
+static Sint32 BILINEAR_FILTER(Sint32 start, Sint32 end, Sint32 coef)
+{
+	return start+(((end-start)*(coef & 65535))>>16);
+}
+
 static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 {
 	int x,y, i;
@@ -547,7 +552,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 					Uint16 *src_line_r1 = src_line_r0;
 
 					src_line_r0 += (v>>16) * (src->pitch>>1);
-					src_line_r1 += ((v>>16)+1) * (src->pitch>>1);
+					src_line_r1 += MIN(src->h-1,((v>>16)+1)) * (src->pitch>>1);
 
 					u = 0;
 					for(x=0; x<dst->w; x++) {
@@ -555,19 +560,20 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 						Sint32 r[4], dr, dr_line0, dr_line1;
 						Sint32 g[4], dg, dg_line0, dg_line1;
 						Sint32 b[4], db, db_line0, db_line1;
+						int u1 = MIN(src->w-1, (u>>16)+1);
 
 						src_col[0] = &src_line_r0[u>>16];
-						src_col[1] = &src_line_r0[(u>>16)+1];
+						src_col[1] = &src_line_r0[u1];
 						src_col[2] = &src_line_r1[(u>>16)];
-						src_col[3] = &src_line_r1[(u>>16)+1];
+						src_col[3] = &src_line_r1[u1];
 
 						for (i=0; i<4; i++) {
-							Sint8 mr,mg,mb;
+							Uint8 mr,mg,mb;
 
 							SDL_GetRGB(*(src_col[i]), &(src->format), &mr, &mg, &mb);
-							r[i]= mr<<16;
-							g[i]= mg<<16;
-							b[i]= mb<<16;
+							r[i]= mr;
+							g[i]= mg;
+							b[i]= mb;
 						}
 
 						dr_line0 = BILINEAR_FILTER(r[0],r[1],u);
@@ -582,7 +588,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 						db_line1 = BILINEAR_FILTER(b[2],b[3],u);
 						db = BILINEAR_FILTER(db_line0, db_line1, v);
 
-						*dst_col++ = SDL_MapRGB(&(src->format), dr>>16,dg>>16,db>>16);
+						*dst_col++ = SDL_MapRGB(&(src->format), dr,dg,db);
 
 						u += du;
 					}
@@ -601,7 +607,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 					Uint8 *src_line_r1 = src_line_r0;
 
 					src_line_r0 += (v>>16) * src->pitch;
-					src_line_r1 += ((v>>16)+1) * src->pitch;
+					src_line_r1 += MIN(src->h-1,((v>>16)+1)) * src->pitch;
 
 					u = 0;
 					for(x=0; x<dst->w; x++) {
@@ -609,21 +615,23 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 						Sint32 r[4], dr, dr_line0, dr_line1;
 						Sint32 g[4], dg, dg_line0, dg_line1;
 						Sint32 b[4], db, db_line0, db_line1;
+						Uint32 color;
+						int u1 = MIN(src->w-1, (u>>16)+1);
 
 						src_col[0] = &src_line_r0[(u>>16)*3];
-						src_col[1] = &src_line_r0[((u>>16)+1)*3];
+						src_col[1] = &src_line_r0[u1*3];
 						src_col[2] = &src_line_r1[(u>>16)*3];
-						src_col[3] = &src_line_r1[((u>>16)+1)*3];
+						src_col[3] = &src_line_r1[u1*3];
 
 						for (i=0; i<4; i++) {
 							Uint8 mr,mg,mb;
 							Uint8 *src_pix = src_col[i];
-							Uint32 color = (src_pix[0]<<16)|(src_pix[1]<<8)|src_pix[2];
+							color = (src_pix[0]<<16)|(src_pix[1]<<8)|src_pix[2];
 
 							SDL_GetRGB(color, &(src->format), &mr, &mg, &mb);
-							r[i]= mr<<16;
-							g[i]= mg<<16;
-							b[i]= mb<<16;
+							r[i]= mr;
+							g[i]= mg;
+							b[i]= mb;
 						}
 
 						dr_line0 = BILINEAR_FILTER(r[0],r[1],u);
@@ -638,7 +646,10 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 						db_line1 = BILINEAR_FILTER(b[2],b[3],u);
 						db = BILINEAR_FILTER(db_line0, db_line1, v);
 
-						/* *dst_col++ = SDL_MapRGB(&(src->format), dr>>16,dg>>16,db>>16); */
+						color = SDL_MapRGB(&(src->format), dr,dg,db);
+						*dst_col++ = color>>16;
+						*dst_col++ = color>>8;
+						*dst_col++ = color;
 
 						u += du;
 					}
@@ -657,7 +668,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 					Uint32 *src_line_r1 = src_line_r0;
 
 					src_line_r0 += (v>>16) * (src->pitch>>2);
-					src_line_r1 += ((v>>16)+1) * (src->pitch>>2);
+					src_line_r1 += MIN(src->h-1,((v>>16)+1)) * (src->pitch>>2);
 
 					u = 0;
 					for(x=0; x<dst->w; x++) {
@@ -665,19 +676,20 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 						Sint32 r[4], dr, dr_line0, dr_line1;
 						Sint32 g[4], dg, dg_line0, dg_line1;
 						Sint32 b[4], db, db_line0, db_line1;
+						int u1 = MIN(src->w-1, (u>>16)+1);
 
 						src_col[0] = &src_line_r0[u>>16];
-						src_col[1] = &src_line_r0[(u>>16)+1];
+						src_col[1] = &src_line_r0[u1];
 						src_col[2] = &src_line_r1[(u>>16)];
-						src_col[3] = &src_line_r1[(u>>16)+1];
+						src_col[3] = &src_line_r1[u1];
 
 						for (i=0; i<4; i++) {
 							Uint8 mr,mg,mb;
 
 							SDL_GetRGB(*(src_col[i]), &(src->format), &mr, &mg, &mb);
-							r[i]= mr<<16;
-							g[i]= mg<<16;
-							b[i]= mb<<16;
+							r[i]= mr;
+							g[i]= mg;
+							b[i]= mb;
 						}
 
 						dr_line0 = BILINEAR_FILTER(r[0],r[1],u);
@@ -692,7 +704,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 						db_line1 = BILINEAR_FILTER(b[2],b[3],u);
 						db = BILINEAR_FILTER(db_line0, db_line1, v);
 
-						*dst_col++ = SDL_MapRGB(&(src->format), dr>>16,dg>>16,db>>16);
+						*dst_col++ = SDL_MapRGB(&(src->format), dr,dg,db);
 
 						u += du;
 					}
