@@ -794,7 +794,7 @@ __asm__ __volatile__ (
 	"roll	%7,d0\n\t"
 	"moveb	%1@(0,d0:w),d1\n\t"
 	"addl	%2,%5\n\t"
-	"moveb	%3@(2,d1:w*4),d1\n\t"
+	"moveb	%3@(3,d1:w*4),d1\n\t"
 	"movel	%5,d0\n\t"
 	"moveb	d1,%4@+\n\t"
 
