@@ -31,22 +31,12 @@ typedef struct {
 typedef struct draw_s draw_t;
 
 struct draw_s {
-	/*--- Variables ---*/
-	Uint32 draw_color;
-
-	/* texture */
-	int tex_num_pal;
-	render_texture_t *texture;
-
 	/*--- Functions ---*/
 	void (*shutdown)(draw_t *this);
 
 	void (*resize)(draw_t *this, int w, int h);
 	void (*startFrame)(draw_t *this);
 	void (*endFrame)(draw_t *this);
-
-	void (*setColor)(draw_t *this, Uint32 color);
-	void (*setTexture)(draw_t *this, int num_pal, render_texture_t *render_tex);
 
 	/* Wireframe */
 	void (*line)(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);

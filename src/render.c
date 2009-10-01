@@ -304,7 +304,11 @@ static void set_color(Uint32 color)
 	g = (color>>8) & 0xff;
 	b = color & 0xff;
 
-	draw.setColor(&draw, SDL_MapRGBA(surf->format, r,g,b,a));
+	if (video.bpp==8) {
+		render.color = dither_nearest_index(r,g,b);
+	} else {
+		render.color = SDL_MapRGBA(surf->format, r,g,b,a);
+	}
 }
 
 static void set_blending(int enable)
@@ -355,46 +359,34 @@ static Uint32 get_color_from_texture(vertex_t *v1)
 {
 	render_texture_t *texture = render.texture;
 	Uint32 color = 0xffffffff;
+	Uint8 r,g,b,a;
+	SDL_PixelFormat *fmt;
 
-	if (!texture || !video.screen) {
+	if (!texture) {
 		return color;
 	}
 
-	if (texture->paletted) {
-		Uint8 pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
-		
-		color = texture->palettes[render.tex_pal][pix];
-	} else {
-		SDL_Surface *surf = video.screen;
-
-		switch(surf->format->BytesPerPixel) {
-			case 2:
-				color = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
-				break;
-			case 3:
-				/* TODO */
-				break;
-			case 4:
-				color = ((Uint32 *) texture->pixels)[((texture->pitch>>2) * v1->v) + v1->u];
-				break;
-		}
+	fmt = &(texture->format);
+	switch(texture->bpp) {
+		case 1:
+			{
+				Uint8 pix = texture->pixels[(texture->pitch * v1->v) + v1->u];
+				color = texture->palettes[render.tex_pal][pix];
+				fmt = video.screen->format;
+			}
+			break;
+		case 2:
+			color = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v1->v) + v1->u];
+			break;
+		case 3:
+			/* TODO */
+			break;
+		case 4:
+			color = ((Uint32 *) texture->pixels)[((texture->pitch>>2) * v1->v) + v1->u];
+			break;
 	}
 
-	return color;
-}
-
-static Uint32 get_rgbaColor_from_drawColor(Uint32 color)
-{
-	Uint8 r,g,b,a;
-	SDL_Surface *surf;
-
-	if (!video.screen) {
-		return 0xffffffff;
-	}
-
-	surf = video.screen;
-	SDL_GetRGBA(color, surf->format, &r,&g,&b,&a);
-
+	SDL_GetRGBA(color, fmt, &r,&g,&b,&a);
 	return (a<<24)|(r<<16)|(g<<8)|b;
 }
 
@@ -492,7 +484,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	draw_vertex_t v[3];
 
 	if (render.texture) {
-		draw.setColor(&draw, get_color_from_texture(v1));
+		set_color(get_color_from_texture(v1));
 	}
 
 	memset(segment, 0, sizeof(float)*4*4);
@@ -535,7 +527,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	draw_vertex_t v[4];
 
 	if (render.texture) {
-		draw.setColor(&draw, get_color_from_texture(v1));
+		set_color(get_color_from_texture(v1));
 	}
 
 	memset(segment, 0, sizeof(float)*4*4);
@@ -591,10 +583,8 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	color = get_color_from_texture(v1);
 	if (!gouraud) {
-		draw.setColor(&draw, color);
+		set_color(color);
 	}
-
-	color = get_rgbaColor_from_drawColor(color);
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -608,7 +598,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[0].col[3] = (color>>24) & 0xff;
 
 	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v2));
+		color = get_color_from_texture(v2);
 	}
 	tri1[1].pos[0] = v2->x;
 	tri1[1].pos[1] = v2->y;
@@ -622,7 +612,7 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	tri1[1].col[3] = (color>>24) & 0xff;
 
 	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v3));
+		color = get_color_from_texture(v3);
 	}
 	tri1[2].pos[0] = v3->x;
 	tri1[2].pos[1] = v3->y;
@@ -677,10 +667,8 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	color = get_color_from_texture(v1);
 	if (!gouraud) {
-		draw.setColor(&draw, color);
+		set_color(color);
 	}
-
-	color = get_rgbaColor_from_drawColor(color);
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -694,7 +682,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[0].col[3] = (color>>24) & 0xff;
 
 	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v2));
+		color = get_color_from_texture(v2);
 	}
 	tri1[1].pos[0] = v2->x;
 	tri1[1].pos[1] = v2->y;
@@ -708,7 +696,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[1].col[3] = (color>>24) & 0xff;
 
 	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v3));
+		color = get_color_from_texture(v3);
 	}
 	tri1[2].pos[0] = v3->x;
 	tri1[2].pos[1] = v3->y;
@@ -722,7 +710,7 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	tri1[2].col[3] = (color>>24) & 0xff;
 
 	if (gouraud) {
-		color = get_rgbaColor_from_drawColor(get_color_from_texture(v4));
+		color = get_color_from_texture(v4);
 	}
 	tri1[3].pos[0] = v4->x;
 	tri1[3].pos[1] = v4->y;
@@ -776,8 +764,6 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 {
 	render.tex_pal = num_pal;
 	render.texture = render_tex;
-
-	draw.setTexture(&draw, num_pal, render_tex);
 }
 
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)

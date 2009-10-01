@@ -71,9 +71,6 @@ static void draw_resize(draw_t *this, int w, int h);
 static void draw_startFrame(draw_t *this);
 static void draw_endFrame(draw_t *this);
 
-static void draw_setColor(draw_t *this, Uint32 color);
-static void draw_setTexture(draw_t *this, int num_pal, render_texture_t *render_tex);
-
 static void draw_line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
 static void draw_triangle(draw_t *this, draw_vertex_t v[3]);
 static void draw_quad(draw_t *this, draw_vertex_t v[4]);
@@ -98,9 +95,6 @@ void draw_init_simple(draw_t *draw)
 	draw->resize = draw_resize;
 	draw->startFrame = draw_startFrame;
 	draw->endFrame = draw_endFrame;
-
-	draw->setColor = draw_setColor;
-	draw->setTexture = draw_setTexture;
 
 	draw->line = draw_line;
 	draw->triangle = draw_triangle;
@@ -132,33 +126,12 @@ static void draw_endFrame(draw_t *this)
 {
 }
 
-static void draw_setColor(draw_t *this, Uint32 color)
-{
-	SDL_Surface *surf = video.screen;
-
-	if (video.bpp==8) {
-		Uint8 r,g,b,a;
-		
-		SDL_GetRGBA(color, surf->format, &r,&g,&b,&a);
-		this->draw_color = dither_nearest_index(r,g,b);
-		return;
-	}
-
-	this->draw_color = color;
-}
-
-static void draw_setTexture(draw_t *this, int num_pal, render_texture_t *render_tex)
-{
-	this->tex_num_pal = num_pal;
-	this->texture = render_tex;
-}
-
 static void draw_line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2)
 {
 	SDL_Surface *surf = video.screen;
 	int tmp, x=0, y=0, dx,dy, sx,sy, pixx,pixy;
 	Uint8 *pixel;
-	Uint32 draw_color = this->draw_color;
+	Uint32 draw_color = render.color;
 
 	int x1 = v1->x;
 	int y1 = v1->y;
@@ -262,16 +235,9 @@ static void draw_line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2)
 /* Draw horizontal line */
 static void draw_hline(draw_t *this, int x1, int x2, int y)
 {
-	int tmp;
 	SDL_Surface *surf = video.screen;
 	Uint8 *src;
-	Uint32 draw_color = this->draw_color;
-
-	if (x1>x2) {
-		tmp = x1;
-		x1 = x2;
-		x2 = tmp;
-	}
+	Uint32 draw_color = render.color;
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
@@ -282,7 +248,7 @@ static void draw_hline(draw_t *this, int x1, int x2, int y)
 	src += x1 * surf->format->BytesPerPixel;
 	switch(surf->format->BytesPerPixel) {
 		case 1:
-			memset(src, x2-x1+1, draw_color);
+			memset(src, draw_color, x2-x1+1);
 			break;
 		case 2:
 			{
@@ -294,7 +260,21 @@ static void draw_hline(draw_t *this, int x1, int x2, int y)
 			}
 			break;
 		case 3:
-			/* FIXME */
+			{
+				Uint8 *src_line = (Uint8 *) src;
+
+				for (; x1<=x2; x1++) {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+					*src_line++ = draw_color>>16;
+					*src_line++ = draw_color>>8;
+					*src_line++ = draw_color;
+#else
+					*src_line++ = draw_color;
+					*src_line++ = draw_color>>8;
+					*src_line++ = draw_color>>16;
+#endif
+				}
+			}
 			break;
 		case 4:
 			{
@@ -314,15 +294,6 @@ static void draw_hline_gouraud(draw_t *this, int x1, int x2, int y, Uint32 c1, U
 	SDL_Surface *surf = video.screen;
 	Uint8 *src;
 	int r1,g1,b1, r2,g2,b2, dr,dg,db, dx,x;
-	Uint32 draw_color = this->draw_color;
-
-	if (x1>x2) {
-		int tmp;
-
-		tmp = x1;
-		x1 = x2;
-		x2 = tmp;
-	}
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
@@ -344,8 +315,16 @@ static void draw_hline_gouraud(draw_t *this, int x1, int x2, int y, Uint32 c1, U
 	src += x1 * surf->format->BytesPerPixel;
 	switch(surf->format->BytesPerPixel) {
 		case 1:
-			/* TODO: gouraud using 216 palette */
-			memset(src, dx, draw_color);
+			{
+				Uint8 *src_line = (Uint8 *) src;
+
+				for (x=0; x<dx; x++) {
+					int r = r1 + ((dr*x)/dx);
+					int g = g1 + ((dg*x)/dx);
+					int b = b1 + ((db*x)/dx);
+					*src_line++ = dither_nearest_index(r,g,b);
+				}
+			}
 			break;
 		case 2:
 			{
@@ -360,7 +339,21 @@ static void draw_hline_gouraud(draw_t *this, int x1, int x2, int y, Uint32 c1, U
 			}
 			break;
 		case 3:
-			/* FIXME */
+			{
+				Uint8 *src_line = (Uint8 *) src;
+
+				for (x=0; x<dx; x++) {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+					*src_line++ = r1 + ((dr*x)/dx);
+					*src_line++ = g1 + ((dg*x)/dx);
+					*src_line++ = b1 + ((db*x)/dx);
+#else
+					*src_line++ = b1 + ((db*x)/dx);
+					*src_line++ = g1 + ((dg*x)/dx);
+					*src_line++ = r1 + ((dr*x)/dx);
+#endif
+				}
+			}
 			break;
 		case 4:
 			{
@@ -383,16 +376,8 @@ static void draw_hline_tex(draw_t *this, int x1, int x2, int y, float tu1, float
 	SDL_Surface *surf = video.screen;
 	Uint8 *src;
 	float du,dv;
-	int dx,x, tex_num_pal = this->tex_num_pal;
-	render_texture_t *texture = this->texture; 
-
-	if (x1>x2) {
-		int tmp;
-
-		tmp = x1;
-		x1 = x2;
-		x2 = tmp;
-	}
+	int dx,x, tex_num_pal = render.tex_pal;
+	render_texture_t *texture = render.texture; 
 
 	x1 += video.viewport.x;
 	x2 += video.viewport.x;
@@ -407,7 +392,20 @@ static void draw_hline_tex(draw_t *this, int x1, int x2, int y, float tu1, float
 	src += x1 * surf->format->BytesPerPixel;
 	switch(surf->format->BytesPerPixel) {
 		case 1:
-			/* TODO */
+			{
+				Uint8 *src_line = (Uint8 *) src;
+
+				if (texture->paletted) {
+					Uint32 *palette = texture->palettes[tex_num_pal];
+					for (x=0; x<dx; x++) {
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
+						*src_line++ = palette[texture->pixels[v*texture->pitchw + u]];
+					}
+				} else {
+					/* TODO */
+				}
+			}
 			break;
 		case 2:
 			{
@@ -432,7 +430,45 @@ static void draw_hline_tex(draw_t *this, int x1, int x2, int y, float tu1, float
 			}
 			break;
 		case 3:
-			/* FIXME */
+			{
+				Uint8 *src_line = (Uint8 *) src;
+				Uint32 color;
+
+				if (texture->paletted) {
+					Uint32 *palette = texture->palettes[tex_num_pal];
+					for (x=0; x<dx; x++) {
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
+						color = palette[texture->pixels[v*texture->pitchw + u]];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+						*src_line++ = color>>16;
+						*src_line++ = color>>8;
+						*src_line++ = color;
+#else
+						*src_line++ = color;
+						*src_line++ = color>>8;
+						*src_line++ = color>>16;
+#endif
+					}
+				} else {
+					Uint16 *tex_pixels = (Uint16 *) texture->pixels;
+				
+					for (x=0; x<dx; x++) {
+						int u = (int) (tu1 + ((du*x)/dx));
+						int v = (int) (tv1 + ((dv*x)/dx));
+						color = tex_pixels[v*texture->pitchw + u];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+						*src_line++ = color>>16;
+						*src_line++ = color>>8;
+						*src_line++ = color;
+#else
+						*src_line++ = color;
+						*src_line++ = color>>8;
+						*src_line++ = color>>16;
+#endif
+					}
+				}
+			}
 			break;
 		case 4:
 			{
@@ -628,7 +664,11 @@ static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)
 	if (maxy>=video.viewport.h) {
 		maxy = video.viewport.h;
 	}
-	
+
+	if (SDL_MUSTLOCK(video.screen)) {
+		SDL_LockSurface(video.screen);
+	}
+
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].x[0];
 		int pmaxx = poly_hlines[y].x[1];
@@ -638,7 +678,14 @@ static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)
 		if (pmaxx>maxx) {
 			maxx = pmaxx;
 		}
+		if (pminx>pmaxx) {
+			continue;
+		}
 		draw_hline(this, pminx, pmaxx, y);
+	}
+
+	if (SDL_MUSTLOCK(video.screen)) {
+		SDL_UnlockSurface(video.screen);
 	}
 
 	/* Mark dirty rectangle */
@@ -745,6 +792,10 @@ static void draw_poly_gouraud(draw_t *this, vertexf_t *vtx, int num_vtx)
 		maxy = video.viewport.h;
 	}
 	
+	if (SDL_MUSTLOCK(video.screen)) {
+		SDL_LockSurface(video.screen);
+	}
+
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].x[0];
 		int pmaxx = poly_hlines[y].x[1];
@@ -754,9 +805,16 @@ static void draw_poly_gouraud(draw_t *this, vertexf_t *vtx, int num_vtx)
 		if (pmaxx>maxx) {
 			maxx = pmaxx;
 		}
+		if (pminx>pmaxx) {
+			continue;
+		}
 		draw_hline_gouraud(this,
 			pminx, pmaxx, y,
 			poly_hlines[y].c[0], poly_hlines[y].c[1]);
+	}
+
+	if (SDL_MUSTLOCK(video.screen)) {
+		SDL_UnlockSurface(video.screen);
 	}
 
 	/* Mark dirty rectangle */
@@ -772,7 +830,7 @@ static void draw_poly_tex(draw_t *this, vertexf_t *vtx, int num_vtx)
 	int minx = video.viewport.w, maxx = -1;
 	int y, p1, p2;
 
-	if (!this->texture) {
+	if (!render.texture) {
 		fprintf(stderr, "No active texture\n");
 		return;
 	}
@@ -863,6 +921,10 @@ static void draw_poly_tex(draw_t *this, vertexf_t *vtx, int num_vtx)
 		maxy = video.viewport.h;
 	}
 	
+	if (SDL_MUSTLOCK(video.screen)) {
+		SDL_LockSurface(video.screen);
+	}
+
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].x[0];
 		int pmaxx = poly_hlines[y].x[1];
@@ -872,11 +934,18 @@ static void draw_poly_tex(draw_t *this, vertexf_t *vtx, int num_vtx)
 		if (pmaxx>maxx) {
 			maxx = pmaxx;
 		}
+		if (pminx>pmaxx) {
+			continue;
+		}
 		draw_hline_tex(this,
 			pminx, pmaxx, y,
 			poly_hlines[y].tu[0], poly_hlines[y].tv[0],
 			poly_hlines[y].tu[1], poly_hlines[y].tv[1]
 		);
+	}
+
+	if (SDL_MUSTLOCK(video.screen)) {
+		SDL_UnlockSurface(video.screen);
 	}
 
 	/* Mark dirty rectangle */

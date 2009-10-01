@@ -193,6 +193,10 @@ static void draw_endFrame(draw_t *this)
 {
 	SDL_Surface *surf = video.screen;
 
+	if (SDL_MUSTLOCK(surf)) {
+		SDL_LockSurface(surf);
+	}
+
 	switch(render.render_mode) {
 		case RENDER_FILLED:
 			switch(surf->format->BytesPerPixel) {
@@ -242,6 +246,10 @@ static void draw_endFrame(draw_t *this)
 					break;
 			}
 			break;
+	}
+
+	if (SDL_MUSTLOCK(surf)) {
+		SDL_UnlockSurface(surf);
 	}
 }
 
@@ -1823,8 +1831,8 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	segment.id = sbuffer_seg_id++;
-	segment.tex_num_pal = this->tex_num_pal;
-	segment.texture = this->texture;
+	segment.tex_num_pal = render.tex_pal;
+	segment.texture = render.texture;
 
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;

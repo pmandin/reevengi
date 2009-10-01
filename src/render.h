@@ -102,6 +102,7 @@ struct render_s {
 	void (*bitmapUnscaled)(video_t *video, int x, int y);
 	void (*bitmapScaled)(video_t *video, int x, int y, int w, int h);
 
+	Uint32 color;	/* Active color */
 	render_texture_t *texture;
 	int tex_pal;	/* Palette to use */
 };
