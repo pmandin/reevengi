@@ -53,11 +53,12 @@ params_t params = {
 	DEFAULT_USE_OPENGL,
 	DEFAULT_ASPECT_X,
 	DEFAULT_ASPECT_Y,
-	0,
-	0,
-	0,
-	0,
-	0
+	0,	/* Dithering */
+	0,	/* Bilinear filtering */
+	0,	/* Dump script */
+	0,	/* Width */
+	0,	/* Height */
+	0	/* Bpp */
 };
 
 /*---- Variables ---*/
@@ -139,6 +140,12 @@ int CheckParm(int argc,char **argv)
 		params.dithering = 1;
 	}
 
+	/*--- Check for dithering ---*/
+	p = ParmPresent("-linear", argc, argv);
+	if (p) {
+		params.linear = 1;
+	}
+
 	/*--- Check for video mode ---*/
 	p = ParmPresent("-width", argc, argv);
 	if (p && p < argc-1) {
@@ -182,6 +189,7 @@ void DisplayUsage(void)
 		"  [-opengl] (enable opengl mode)\n"
 		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
 		"  [-dither] (enable dithering in 8 bits mode)\n"
+		"  [-linear] (enable bilinear filtering)\n"
 		"  [-width <w>] (width of video mode, default=%d)\n"
 		"  [-height <h>] (height of video mode, default=%d)\n"
 		"  [-bpp <b>] (bits per pixel for video mode, default=%d)\n"

@@ -56,7 +56,9 @@ Use at your own risks.
 
 "-help" displays a little help.
 
-"-dither" to dither background image (in 8bits mode only).
+"-dither" to dither background (software renderer 8bits mode only).
+
+"-linear" to scale background with bilinear filtering (software renderer only).
 
 "-width <w>" to set width of video mode.
 

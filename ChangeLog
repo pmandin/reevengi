@@ -6,6 +6,7 @@ v 0.14
 - Heavy rewrite for texturing. The background image is processed with same stuff
   as the model textures.
 - Can set width,height,bpp of video mode
+- Bilinear filtering for background.
 
 v 0.13
 

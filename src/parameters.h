@@ -38,7 +38,8 @@ typedef struct {
 	int aspect_x;		/* Aspect ratio */
 	int aspect_y;
 	int aspect_user;	/* User gave us an aspect ratio */
-	int dithering;		/* Dithering enabled for 8 bit mode */
+	int dithering;		/* Dither background enabled for 8 bit mode */
+	int linear;		/* Bilinear filtering for scaling background */
 	int dump_script;	/* Dump script when loading room */
 	int width;
 	int height;

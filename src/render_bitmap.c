@@ -23,6 +23,7 @@
 
 #include "video.h"
 #include "render.h"
+#include "parameters.h"
 
 /*--- Defines ---*/
 
@@ -407,8 +408,11 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		dither_setpalette(texture->scaled);
 	}
 
-	rescale_nearest(texture, texture->scaled);
-	/*rescale_linear(texture, texture->scaled);*/
+	if (params.linear) {
+		rescale_linear(texture, texture->scaled);
+	} else {
+		rescale_nearest(texture, texture->scaled);
+	}
 
 	/* Dither if needed */
 	if (video->bpp == 8) {
