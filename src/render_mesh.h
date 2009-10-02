@@ -31,8 +31,7 @@ enum {
 enum {
 	RENDER_ARRAY_VERTEX=0,
 	RENDER_ARRAY_NORMAL,
-	RENDER_ARRAY_TEXCOORD,
-	RENDER_ARRAY_TEXPAL
+	RENDER_ARRAY_TEXCOORD
 };
 
 /*--- Types ---*/
@@ -40,9 +39,9 @@ enum {
 typedef struct {
 	void *data;
 
-	int size;
-	int stride;
-	int free_data;	/* void *data was allocated by render_mesh_t object */
+	int size;	/* 2,3,4 */
+	int stride;	/* n */
+	int type;	/* byte, short */
 } render_array_t;
 
 typedef struct render_mesh_s render_mesh_t;
@@ -54,13 +53,14 @@ struct render_mesh_s {
 	void (*upload)(render_mesh_t *this);
 	void (*download)(render_mesh_t *this);
 
-	void (*setArray)(render_mesh_t *this, int data_size, int data_type,
+	void (*setArray)(render_mesh_t *this, int array_type, int size, int type,
 		int stride, void *data);
+	void (*drawTriangle)(render_mesh_t *this, int index[3]);
+	void (*drawQuad)(render_mesh_t *this, int index[4]);
 
-	render_array_t vertex;
-	render_array_t normal;
-	render_array_t texcoord;
-	render_array_t texpal;
+	render_array_t *vertex;
+	render_array_t *normal;
+	render_array_t *texcoord;
 };
 
 /*--- Functions prototypes ---*/
