@@ -17,6 +17,7 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	re3_pc.c re3_ps1_game.c \
 	render_bitmap.c render_bitmap_opengl.c \
 	render.c render_opengl.c \
+	render_mesh.c \
 	render_texture.c render_texture_opengl.c \
 	render_texture_list.c \
 	room.c room_rdt.c room_rdt_script.c \
@@ -34,6 +35,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
 	re3_pc.h re3_ps1_game.h \
 	render.h \
+	render_mesh.h \
 	render_texture.h render_texture_opengl.h \
 	render_texture_list.h \
 	room.h room_rdt.h room_rdt_script.h \
