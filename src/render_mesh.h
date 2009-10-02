@@ -21,6 +21,30 @@
 #ifndef RENDER_MESH_H
 #define RENDER_MESH_H 1
 
+/*--- Defines ---*/
+
+enum {
+	RENDER_ARRAY_BYTE=0,
+	RENDER_ARRAY_SHORT,
+};
+
+enum {
+	RENDER_ARRAY_VERTEX=0,
+	RENDER_ARRAY_NORMAL,
+	RENDER_ARRAY_TEXCOORD,
+	RENDER_ARRAY_TEXPAL
+};
+
+/*--- Types ---*/
+
+typedef struct {
+	void *data;
+
+	int size;
+	int stride;
+	int free_data;	/* void *data was allocated by render_mesh_t object */
+} render_array_t;
+
 typedef struct render_mesh_s render_mesh_t;
 
 struct render_mesh_s {
@@ -29,6 +53,14 @@ struct render_mesh_s {
 	/* Send/remove mesh from video card */
 	void (*upload)(render_mesh_t *this);
 	void (*download)(render_mesh_t *this);
+
+	void (*setArray)(render_mesh_t *this, int data_size, int data_type,
+		int stride, void *data);
+
+	render_array_t vertex;
+	render_array_t normal;
+	render_array_t texcoord;
+	render_array_t texpal;
 };
 
 /*--- Functions prototypes ---*/
