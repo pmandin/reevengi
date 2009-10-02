@@ -21,6 +21,11 @@
 #ifndef RENDER_SKEL_H
 #define RENDER_SKEL_H 1
 
+typedef struct {
+	Sint16 x,y,z;	/* Relative mesh position */
+	render_mesh_t *mesh;
+} render_skel_mesh_t;
+
 typedef struct render_skel_s render_skel_t;
 
 struct render_skel_s {
@@ -30,12 +35,13 @@ struct render_skel_s {
 	void (*upload)(render_skel_t *this);
 	void (*download)(render_skel_t *this);
 
-	void (*addMesh)(render_skel_t *this, render_mesh_t *mesh);
+	void (*addMesh)(render_skel_t *this, render_mesh_t *mesh,
+		Sint16 x, Sint16 y, Sint16 z);
 
 	void (*drawSkel)(render_skel_t *this);
 
 	int num_meshes;
-	render_mesh_t **meshes;
+	render_skel_mesh_t *meshes;
 
 	render_texture_t *texture;
 };

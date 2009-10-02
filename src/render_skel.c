@@ -35,7 +35,8 @@ static void shutdown(render_skel_t *this);
 static void upload(render_skel_t *this);
 static void download(render_skel_t *this);
 
-static void addMesh(render_skel_t *this, render_mesh_t *mesh);
+static void addMesh(render_skel_t *this, render_mesh_t *mesh,
+	Sint16 x, Sint16 y, Sint16 z);
 
 static void drawSkel(render_skel_t *this);
 
@@ -73,7 +74,7 @@ static void shutdown(render_skel_t *this)
 	}
 
 	for (i=0; i<this->num_meshes; i++) {
-		render_mesh_t *mesh = this->meshes[i];
+		render_mesh_t *mesh = this->meshes[i].mesh;
 
 		mesh->shutdown(mesh);
 	}	
@@ -86,7 +87,7 @@ static void upload(render_skel_t *this)
 	int i;
 
 	for (i=0; i<this->num_meshes; i++) {
-		render_mesh_t *mesh = this->meshes[i];
+		render_mesh_t *mesh = this->meshes[i].mesh;
 
 		mesh->upload(mesh);
 	}	
@@ -97,24 +98,31 @@ static void download(render_skel_t *this)
 	int i;
 
 	for (i=0; i<this->num_meshes; i++) {
-		render_mesh_t *mesh = this->meshes[i];
+		render_mesh_t *mesh = this->meshes[i].mesh;
 
 		mesh->download(mesh);
 	}	
 }
 
-static void addMesh(render_skel_t *this, render_mesh_t *mesh)
+static void addMesh(render_skel_t *this, render_mesh_t *mesh,
+	Sint16 x, Sint16 y, Sint16 z)
 {
-	render_mesh_t **new_meshes;
+	render_skel_mesh_t *new_meshes;
 	int num_meshes = this->num_meshes + 1;
 
-	new_meshes = (render_mesh_t **) realloc(this->meshes, num_meshes * sizeof(render_mesh_t *));
+	new_meshes = (render_skel_mesh_t *) realloc(this->meshes, num_meshes * sizeof(render_skel_mesh_t));
 	if (new_meshes) {
 		return;
 	}
 
 	this->meshes = new_meshes;
-	this->meshes[this->num_meshes++] = mesh;
+
+	this->meshes[this->num_meshes].x = x;
+	this->meshes[this->num_meshes].y = y;
+	this->meshes[this->num_meshes].z = z;
+	this->meshes[this->num_meshes].mesh = mesh;
+
+	this->num_meshes++;
 }
 
 static void drawSkel(render_skel_t *this)
@@ -122,8 +130,17 @@ static void drawSkel(render_skel_t *this)
 	int i;
 
 	for (i=0; i<this->num_meshes; i++) {
-		render_mesh_t *mesh = this->meshes[i];
+		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
-		mesh->drawMesh(mesh);
+		/*render.push_matrix();
+		render.translate(
+			skel_mesh->x,
+			skel_mesh->y,
+			skel_mesh->z
+		);*/
+
+		skel_mesh->mesh->drawMesh(skel_mesh->mesh);
+
+		/*render.pop_matrix();*/
 	}	
 }
