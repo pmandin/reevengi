@@ -34,9 +34,10 @@ static void download(render_mesh_t *this);
 
 static void setArray(render_mesh_t *this, int array_type, int size, int type,
 	int stride, void *data);
+static void setTriangleIndex(render_mesh_t *this, int *triangle_idx);
+static void setQuadIndex(render_mesh_t *this, int *quad_idx);
 
-static void drawTriangle(render_mesh_t *this, int index[3]);
-static void drawQuad(render_mesh_t *this, int index[4]);
+static void drawMesh(render_mesh_t *this);
 
 /*--- Functions ---*/
 
@@ -56,8 +57,9 @@ render_mesh_t *render_mesh_create(void)
 	mesh->download = download;
 
 	mesh->setArray = setArray;
-	mesh->drawTriangle = drawTriangle;
-	mesh->drawQuad = drawQuad;
+	mesh->setTriangleIndex = setTriangleIndex;
+	mesh->setQuadIndex = setQuadIndex;
+	mesh->drawMesh = drawMesh;
 
 	return mesh;
 }
@@ -78,6 +80,13 @@ static void shutdown(render_mesh_t *this)
 		free(this->texcoord->data);
 	}
 
+	if (this->triangles) {
+		free(this->triangles);
+	}
+	if (this->quads) {
+		free(this->quads);
+	}
+
 	free(this);
 }
 
@@ -92,7 +101,7 @@ static void download(render_mesh_t *this)
 static void setArray(render_mesh_t *this, int array_type, int size, int type,
 	int stride, void *data)
 {
-	render_array_t *array = NULL;
+	render_mesh_array_t *array = NULL;
 
 	switch(array_type) {
 		case RENDER_ARRAY_VERTEX:
@@ -119,110 +128,124 @@ static void setArray(render_mesh_t *this, int array_type, int size, int type,
 	array->stride = stride;
 }
 
-static void drawTriangle(render_mesh_t *this, int index[3])
+static void setTriangleIndex(render_mesh_t *this, int *triangle_idx)
 {
-	vertex_t v[3];
-	int i;
-
-	if (this->vertex->data) {
-		switch(this->vertex->type) {
-			case RENDER_ARRAY_BYTE:
-				{
-					Uint8 *src = (Sint8 *) this->vertex->data;
-					for (i=0; i<3; i++) {
-						v[i].x = src[(index[i]*this->vertex->stride)+0];
-						v[i].y = src[(index[i]*this->vertex->stride)+1];
-						v[i].z = src[(index[i]*this->vertex->stride)+2];
-					}
-				}
-				break;
-			case RENDER_ARRAY_SHORT:
-				{
-					Sint16 *src = (Sint16 *) this->vertex->data;
-					for (i=0; i<3; i++) {
-						v[i].x = src[(index[i]*this->vertex->stride)+0];
-						v[i].y = src[(index[i]*this->vertex->stride)+1];
-						v[i].z = src[(index[i]*this->vertex->stride)+2];
-					}
-				}
-				break;
-		}
-	}
-
-	if (this->texcoord->data) {
-		switch(this->texcoord->type) {
-			case RENDER_ARRAY_BYTE:
-				{
-					Uint8 *src = (Sint8 *) this->texcoord->data;
-					for (i=0; i<3; i++) {
-						v[i].u = src[(index[i]*this->texcoord->stride)+0];
-						v[i].v = src[(index[i]*this->texcoord->stride)+1];
-					}
-				}
-				break;
-			case RENDER_ARRAY_SHORT:
-				{
-					Sint16 *src = (Sint16 *) this->texcoord->data;
-					for (i=0; i<3; i++) {
-						v[i].u = src[(index[i]*this->texcoord->stride)+0];
-						v[i].v = src[(index[i]*this->texcoord->stride)+1];
-					}
-				}
-				break;
-		}
-	}
 }
 
-static void drawQuad(render_mesh_t *this, int index[4])
+static void setQuadIndex(render_mesh_t *this, int *quad_idx)
 {
-	vertex_t v[4];
-	int i;
+}
 
-	if (this->vertex->data) {
-		switch(this->vertex->type) {
-			case RENDER_ARRAY_BYTE:
-				{
-					Uint8 *src = (Sint8 *) this->vertex->data;
-					for (i=0; i<4; i++) {
-						v[i].x = src[(index[i]*this->vertex->stride)+0];
-						v[i].y = src[(index[i]*this->vertex->stride)+1];
-						v[i].z = src[(index[i]*this->vertex->stride)+2];
+static void drawMesh(render_mesh_t *this)
+{
+	int i;
+	vertex_t v[4];
+
+	for (i=0; i<this->num_tris; i++) {
+		int *tri = &(this->triangles[i*3]);
+
+		if (this->vertex->data) {
+			switch(this->vertex->type) {
+				case RENDER_ARRAY_BYTE:
+					{
+						Uint8 *src = (Sint8 *) this->vertex->data;
+						for (i=0; i<3; i++) {
+							v[i].x = src[(tri[i]*this->vertex->stride)+0];
+							v[i].y = src[(tri[i]*this->vertex->stride)+1];
+							v[i].z = src[(tri[i]*this->vertex->stride)+2];
+						}
 					}
-				}
-				break;
-			case RENDER_ARRAY_SHORT:
-				{
-					Sint16 *src = (Sint16 *) this->vertex->data;
-					for (i=0; i<4; i++) {
-						v[i].x = src[(index[i]*this->vertex->stride)+0];
-						v[i].y = src[(index[i]*this->vertex->stride)+1];
-						v[i].z = src[(index[i]*this->vertex->stride)+2];
+					break;
+				case RENDER_ARRAY_SHORT:
+					{
+						Sint16 *src = (Sint16 *) this->vertex->data;
+						for (i=0; i<3; i++) {
+							v[i].x = src[(tri[i]*this->vertex->stride)+0];
+							v[i].y = src[(tri[i]*this->vertex->stride)+1];
+							v[i].z = src[(tri[i]*this->vertex->stride)+2];
+						}
 					}
-				}
-				break;
+					break;
+			}
 		}
+
+		if (this->texcoord->data) {
+			switch(this->texcoord->type) {
+				case RENDER_ARRAY_BYTE:
+					{
+						Uint8 *src = (Sint8 *) this->texcoord->data;
+						for (i=0; i<3; i++) {
+							v[i].u = src[(tri[i]*this->texcoord->stride)+0];
+							v[i].v = src[(tri[i]*this->texcoord->stride)+1];
+						}
+					}
+					break;
+				case RENDER_ARRAY_SHORT:
+					{
+						Sint16 *src = (Sint16 *) this->texcoord->data;
+						for (i=0; i<3; i++) {
+							v[i].u = src[(tri[i]*this->texcoord->stride)+0];
+							v[i].v = src[(tri[i]*this->texcoord->stride)+1];
+						}
+					}
+					break;
+			}
+		}
+
+		render.triangle(&v[0], &v[1], &v[2]);
 	}
 
-	if (this->texcoord->data) {
-		switch(this->texcoord->type) {
-			case RENDER_ARRAY_BYTE:
-				{
-					Uint8 *src = (Sint8 *) this->texcoord->data;
-					for (i=0; i<4; i++) {
-						v[i].u = src[(index[i]*this->texcoord->stride)+0];
-						v[i].v = src[(index[i]*this->texcoord->stride)+1];
+	for (i=0; i<this->num_quads; i++) {
+		int *quad = &(this->quads[i*3]);
+
+		if (this->vertex->data) {
+			switch(this->vertex->type) {
+				case RENDER_ARRAY_BYTE:
+					{
+						Uint8 *src = (Sint8 *) this->vertex->data;
+						for (i=0; i<4; i++) {
+							v[i].x = src[(quad[i]*this->vertex->stride)+0];
+							v[i].y = src[(quad[i]*this->vertex->stride)+1];
+							v[i].z = src[(quad[i]*this->vertex->stride)+2];
+						}
 					}
-				}
-				break;
-			case RENDER_ARRAY_SHORT:
-				{
-					Sint16 *src = (Sint16 *) this->texcoord->data;
-					for (i=0; i<4; i++) {
-						v[i].u = src[(index[i]*this->texcoord->stride)+0];
-						v[i].v = src[(index[i]*this->texcoord->stride)+1];
+					break;
+				case RENDER_ARRAY_SHORT:
+					{
+						Sint16 *src = (Sint16 *) this->vertex->data;
+						for (i=0; i<4; i++) {
+							v[i].x = src[(quad[i]*this->vertex->stride)+0];
+							v[i].y = src[(quad[i]*this->vertex->stride)+1];
+							v[i].z = src[(quad[i]*this->vertex->stride)+2];
+						}
 					}
-				}
-				break;
+					break;
+			}
 		}
+
+		if (this->texcoord->data) {
+			switch(this->texcoord->type) {
+				case RENDER_ARRAY_BYTE:
+					{
+						Uint8 *src = (Sint8 *) this->texcoord->data;
+						for (i=0; i<4; i++) {
+							v[i].u = src[(quad[i]*this->texcoord->stride)+0];
+							v[i].v = src[(quad[i]*this->texcoord->stride)+1];
+						}
+					}
+					break;
+				case RENDER_ARRAY_SHORT:
+					{
+						Sint16 *src = (Sint16 *) this->texcoord->data;
+						for (i=0; i<4; i++) {
+							v[i].u = src[(quad[i]*this->texcoord->stride)+0];
+							v[i].v = src[(quad[i]*this->texcoord->stride)+1];
+						}
+					}
+					break;
+			}
+		}
+
+		render.quad(&v[0], &v[1], &v[2], &v[3]);
 	}
 }

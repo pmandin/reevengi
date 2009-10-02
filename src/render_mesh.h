@@ -39,10 +39,10 @@ enum {
 typedef struct {
 	void *data;
 
-	int size;	/* 2,3,4 */
 	int stride;	/* n */
+	int size;	/* 2,3,4 */
 	int type;	/* byte, short */
-} render_array_t;
+} render_mesh_array_t;
 
 typedef struct render_mesh_s render_mesh_t;
 
@@ -55,12 +55,20 @@ struct render_mesh_s {
 
 	void (*setArray)(render_mesh_t *this, int array_type, int size, int type,
 		int stride, void *data);
-	void (*drawTriangle)(render_mesh_t *this, int index[3]);
-	void (*drawQuad)(render_mesh_t *this, int index[4]);
+	void (*setTriangleIndex)(render_mesh_t *this, int *triangle_idx);
+	void (*setQuadIndex)(render_mesh_t *this, int *quad_idx);
 
-	render_array_t *vertex;
-	render_array_t *normal;
-	render_array_t *texcoord;
+	void (*drawMesh)(render_mesh_t *this);
+
+	render_mesh_array_t *vertex;
+	render_mesh_array_t *normal;
+	render_mesh_array_t *texcoord;
+
+	int num_tris;
+	int *triangles;	/* 3 * num_tris */
+
+	int num_quads;
+	int *quads;	/* 4 * num_tris */
 };
 
 /*--- Functions prototypes ---*/
