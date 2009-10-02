@@ -44,6 +44,20 @@ typedef struct {
 	int type;	/* byte, short */
 } render_mesh_array_t;
 
+typedef struct {
+	int v[3];
+	int n[3];
+	int tx[3];
+	int txpal;
+} render_mesh_tri_t;
+
+typedef struct {
+	int v[4];
+	int n[4];
+	int tx[4];
+	int txpal;
+} render_mesh_quad_t;
+
 typedef struct render_mesh_s render_mesh_t;
 
 struct render_mesh_s {
@@ -55,8 +69,8 @@ struct render_mesh_s {
 
 	void (*setArray)(render_mesh_t *this, int array_type, int size, int type,
 		int stride, void *data);
-	void (*setTriangleIndex)(render_mesh_t *this, int *triangle_idx);
-	void (*setQuadIndex)(render_mesh_t *this, int *quad_idx);
+	void (*addTriangle)(render_mesh_t *this, render_mesh_tri_t *tri);
+	void (*addQuad)(render_mesh_t *this, render_mesh_quad_t *quad);
 
 	void (*drawMesh)(render_mesh_t *this);
 
@@ -65,15 +79,17 @@ struct render_mesh_s {
 	render_mesh_array_t *texcoord;
 
 	int num_tris;
-	int *triangles;	/* 3 * num_tris */
+	render_mesh_tri_t *triangles;
 
 	int num_quads;
-	int *quads;	/* 4 * num_tris */
+	render_mesh_quad_t *quads;
+
+	render_texture_t *texture;
 };
 
 /*--- Functions prototypes ---*/
 
 /* Create a mesh */
-render_mesh_t *render_mesh_create(void);
+render_mesh_t *render_mesh_create(render_texture_t *texture);
 
 #endif /* RENDER_MESH_H */
