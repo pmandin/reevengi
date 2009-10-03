@@ -37,6 +37,7 @@ static void download(render_skel_t *this);
 
 static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	Sint16 x, Sint16 y, Sint16 z);
+static void setParent(render_skel_t *this, int parent, int child);
 
 static void drawSkel(render_skel_t *this);
 
@@ -58,6 +59,7 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 	skel->download = download;
 
 	skel->addMesh = addMesh;
+	skel->setParent = setParent;
 	skel->drawSkel = drawSkel;
 
 	skel->texture = texture;
@@ -121,8 +123,23 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	this->meshes[this->num_meshes].y = y;
 	this->meshes[this->num_meshes].z = z;
 	this->meshes[this->num_meshes].mesh = mesh;
+	this->meshes[this->num_meshes].parent = NULL;
 
 	this->num_meshes++;
+}
+
+static void setParent(render_skel_t *this, int parent, int child)
+{
+	render_skel_mesh_t *parent_mesh, *child_mesh;
+
+	if ((parent>=this->num_meshes) || (child>=this->num_meshes)) {
+		return;
+	}
+
+	parent_mesh = &(this->meshes[parent]);
+	child_mesh = &(this->meshes[child]);
+
+	child_mesh->parent = parent_mesh;
 }
 
 static void drawSkel(render_skel_t *this)
