@@ -81,6 +81,10 @@ static void shutdown(render_skel_t *this)
 		mesh->shutdown(mesh);
 	}	
 
+	if (this->meshes) {
+		free(this->meshes);
+	}
+
 	free(this);
 }
 
@@ -144,12 +148,12 @@ static void setParent(render_skel_t *this, int parent, int child)
 
 static void drawSkel(render_skel_t *this, render_skel_mesh_t *root)
 {
-	int i, j;
+	int i;
 
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
-		if (skel_mesh != root) {
+		if (skel_mesh->parent != root) {
 			continue;
 		}
 
