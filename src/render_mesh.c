@@ -159,7 +159,7 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 
 			switch(type) {
 				case RENDER_ARRAY_BYTE:
-					*dst++ = *srcItem;
+					*dst++ = ((Sint16) *srcItem) & 255;
 					break;
 				case RENDER_ARRAY_SHORT:
 					*dst++ = * ((Sint16 *)srcItem);
