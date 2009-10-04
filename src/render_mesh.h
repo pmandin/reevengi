@@ -72,7 +72,7 @@ struct render_mesh_s {
 	void (*download)(render_mesh_t *this);
 
 	void (*setArray)(render_mesh_t *this, int array_type, int components, int type,
-		int items, int stride, void *data);
+		int items, int stride, void *data, int byteswap);
 	void (*addTriangle)(render_mesh_t *this, render_mesh_tri_t *tri);
 	void (*addQuad)(render_mesh_t *this, render_mesh_quad_t *quad);
 

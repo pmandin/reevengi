@@ -35,7 +35,7 @@ static void upload(render_mesh_t *this);
 static void download(render_mesh_t *this);
 
 static void setArray(render_mesh_t *this, int array_type, int components, int type,
-	int items, int stride, void *data);
+	int items, int stride, void *data, int byteswap);
 static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri);
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad);
 
@@ -103,7 +103,7 @@ static void download(render_mesh_t *this)
 }
 
 static void setArray(render_mesh_t *this, int array_type, int components, int type,
-	int items, int stride, void *data)
+	int items, int stride, void *data, int byteswap)
 {
 	render_mesh_array_t *array;
 	void *new_data;
@@ -156,13 +156,18 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 		Uint8 *srcItem = src;
 		for (j=0; j<components; j++) {
 			Uint8 *srcComp = srcItem;
+			Uint16 srcValue;
 
 			switch(type) {
 				case RENDER_ARRAY_BYTE:
 					*dst++ = ((Sint16) *srcItem) & 255;
 					break;
 				case RENDER_ARRAY_SHORT:
-					*dst++ = * ((Sint16 *)srcItem);
+					srcValue = * ((Sint16 *)srcItem);
+					if (byteswap) {
+						srcValue = SDL_SwapLE16(srcValue);
+					}
+					*dst++ = srcValue;
 					break;
 			}
 
