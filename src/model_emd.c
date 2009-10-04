@@ -26,6 +26,8 @@
 #include "render.h"
 #include "model.h"
 #include "model_emd.h"
+#include "render_mesh.h"
+#include "render_skel.h"
 
 /*--- Defines ---*/
 
@@ -115,6 +117,8 @@ static void emd_add_mesh(model_t *this, int num_skel, int *num_idx, int *idx, ve
 	int x, int y, int z,
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data);
+
+static void emd_load_render_mesh(model_t *this);
 
 /*--- Functions ---*/
 
@@ -337,6 +341,128 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 		render.set_texture(emd_tri_idx[i].clutid & 3, this->texture);
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
+}
+
+static void emd_load_render_skel(model_t *this)
+{
+	Uint32 *hdr_offsets, skel_offset, mesh_offset;
+	int i,j;
+	emd_skel_header_t *emd_skel_header;
+	emd_skel_relpos_t *emd_skel_relpos;
+	emd_skel_data_t *emd_skel_data;
+	emd_mesh_header_t *emd_mesh_header;
+	emd_mesh_object_t *emd_mesh_object;
+	void *emd_file = this->emd_file;
+
+	render_skel_t *skeleton;
+
+	/* Directory offsets */
+	hdr_offsets = (Uint32 *)
+		(&((char *) emd_file)[this->emd_length-16]);
+
+	/* Offset 0: Skeleton */
+	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
+
+	emd_skel_header = (emd_skel_header_t *)
+		(&((char *) emd_file)[skel_offset]);
+	emd_skel_relpos = (emd_skel_relpos_t *)
+		(&((char *) emd_file)[skel_offset+sizeof(emd_skel_header_t)]);
+	emd_skel_data = (emd_skel_data_t *)
+		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
+
+	skeleton = render_skel_create(this->texture);
+	if (!skeleton) {
+		fprintf(stderr, "Can not create skeleton\n");
+		return;
+	}
+
+	/* Offset 2: Mesh data */
+	mesh_offset = SDL_SwapLE32(hdr_offsets[EMD_MESHES]);
+	emd_mesh_header = (emd_mesh_header_t *)
+		(&((char *) emd_file)[mesh_offset]);
+
+	mesh_offset += sizeof(emd_mesh_header_t);
+	emd_mesh_object = (emd_mesh_object_t *)
+		(&((char *) emd_file)[mesh_offset]);
+
+	for (i=0; i<SDL_SwapLE32(emd_mesh_header->num_objects); i++) {
+		emd_vertex_t *emd_vtx;
+		emd_triangle_t *emd_tri_idx;
+		Uint16 *txcoordPtr, *txcoords;
+
+		render_mesh_t *mesh = render_mesh_create(this->texture);
+		if (!mesh) {
+			fprintf(stderr, "Can not create mesh\n");
+			break;
+		}
+
+		/* Vertex array */
+		emd_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.vtx_offset)]);
+
+		mesh->setArray(mesh, RENDER_ARRAY_VERTEX, 3, RENDER_ARRAY_SHORT,
+			SDL_SwapLE32(emd_mesh_object->triangles.vtx_count), sizeof(emd_vertex_t),
+			emd_vtx,
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			1
+#else
+			0
+#endif
+			);
+
+		/* Normal array */
+		emd_vtx = (emd_vertex_t *)
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.nor_offset)]);
+
+		mesh->setArray(mesh, RENDER_ARRAY_NORMAL, 3, RENDER_ARRAY_SHORT,
+			SDL_SwapLE32(emd_mesh_object->triangles.nor_count), sizeof(emd_vertex_t),
+			emd_vtx,
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			1
+#else
+			0
+#endif
+			);
+
+		/* Texcoord array */
+		txcoordPtr = (Uint16 *) malloc(6*sizeof(Uint16)*SDL_SwapLE32(emd_mesh_object->triangles.mesh_count));
+		if (!txcoordPtr) {
+			fprintf(stderr, "Can not allocate memory for txcoords\n");
+			mesh->shutdown(mesh);
+			break;
+		}
+
+		emd_tri_idx = (emd_triangle_t *)
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.mesh_offset)]);
+
+		txcoords = txcoordPtr;
+		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.mesh_count); j++) {
+			int page = (SDL_SwapLE16(emd_tri_idx[j].page)<<1) & 0xff;
+
+			*txcoords++ = emd_tri_idx[j].tu0 + page;
+			*txcoords++ = emd_tri_idx[j].tv0;
+			*txcoords++ = emd_tri_idx[j].tu1 + page;
+			*txcoords++ = emd_tri_idx[j].tv1;
+			*txcoords++ = emd_tri_idx[j].tu2 + page;
+			*txcoords++ = emd_tri_idx[j].tv2;
+		}
+
+		mesh->setArray(mesh, RENDER_ARRAY_TEXCOORD, 2, RENDER_ARRAY_SHORT,
+			3*SDL_SwapLE32(emd_mesh_object->triangles.mesh_count), sizeof(Uint16)*6,
+			txcoordPtr, 0);
+
+		free(txcoordPtr);
+
+		/* Triangles */
+
+
+		/* Add mesh to skeleton */
+		skeleton->addMesh(skeleton, mesh, 0,0,0);
+
+		emd_mesh_object++;
+	}
+
+	skeleton->shutdown(skeleton);
 }
 
 /*--- Convert EMD file (little endian) to big endian ---*/
