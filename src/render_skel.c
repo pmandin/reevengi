@@ -40,7 +40,7 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 static void setParent(render_skel_t *this, int parent, int child);
 
 static void drawSkel(render_skel_t *this);
-static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *root);
+static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *parent);
 
 /*--- Functions ---*/
 
@@ -86,6 +86,11 @@ static void shutdown(render_skel_t *this)
 		free(this->meshes);
 	}
 
+	/* TODO: enable when render_skel is completed and in use
+	if (this->texture) {
+		this->texture->shutdown(this->texture);
+	}*/
+
 	free(this);
 }
 
@@ -98,6 +103,8 @@ static void upload(render_skel_t *this)
 
 		mesh->upload(mesh);
 	}	
+
+	/* Texture reuploaded on render.set_texture() call */
 }
 
 static void download(render_skel_t *this)
@@ -109,6 +116,10 @@ static void download(render_skel_t *this)
 
 		mesh->download(mesh);
 	}	
+
+	if (this->texture) {
+		this->texture->download(this->texture);
+	}
 }
 
 static void addMesh(render_skel_t *this, render_mesh_t *mesh,
@@ -177,14 +188,14 @@ static void drawSkel(render_skel_t *this)
 	}	
 }
 
-static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *root)
+static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *parent)
 {
 	int i;
 
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
-		if (skel_mesh->parent != root) {
+		if (skel_mesh->parent != parent) {
 			continue;
 		}
 
