@@ -21,6 +21,8 @@
 #ifndef RENDER_MESH_H
 #define RENDER_MESH_H 1
 
+#include <SDL.h>
+
 /*--- Defines ---*/
 
 enum {
@@ -39,15 +41,17 @@ enum {
 typedef struct {
 	void *data;
 
-	int stride;	/* n */
-	int size;	/* 2,3,4 */
-	int type;	/* byte, short */
+	int items;	/* number of items */
+	int stride;	/* size of an item */
+
+	int components;	/* number ofcomponents per item: 2,3,4 */
+	int type;	/* size of a component: byte, short */
 } render_mesh_array_t;
 
 typedef struct {
-	int v[3];
-	int n[3];
-	int tx[3];
+	Uint32 v[3];
+	Uint32 n[3];
+	Uint32 tx[3];
 	int txpal;
 } render_mesh_tri_t;
 
@@ -67,16 +71,16 @@ struct render_mesh_s {
 	void (*upload)(render_mesh_t *this);
 	void (*download)(render_mesh_t *this);
 
-	void (*setArray)(render_mesh_t *this, int array_type, int size, int type,
-		int stride, void *data);
+	void (*setArray)(render_mesh_t *this, int array_type, int components, int type,
+		int items, int stride, void *data);
 	void (*addTriangle)(render_mesh_t *this, render_mesh_tri_t *tri);
 	void (*addQuad)(render_mesh_t *this, render_mesh_quad_t *quad);
 
 	void (*drawMesh)(render_mesh_t *this);
 
-	render_mesh_array_t *vertex;
-	render_mesh_array_t *normal;
-	render_mesh_array_t *texcoord;
+	render_mesh_array_t vertex;
+	render_mesh_array_t normal;
+	render_mesh_array_t texcoord;
 
 	int num_tris;
 	render_mesh_tri_t *triangles;
