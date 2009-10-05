@@ -188,10 +188,23 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 		return;
 	}
 
+	/*printf("render_mesh: %d triangles\n", num_tris);*/
+
 	memcpy(&(new_tris[this->num_tris]), tri, sizeof(render_mesh_tri_t));
 
 	this->num_tris++;
 	this->triangles = new_tris;
+
+	/*{
+		int i;
+
+		for (i=0; i<this->num_tris; i++) {
+			printf("render_mesh: tri %d: txi: %d,%d,%d\n",i,
+				this->triangles[i].tx[0],
+				this->triangles[i].tx[1],
+				this->triangles[i].tx[2]);
+		}
+	}*/
 }
 
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
@@ -204,7 +217,9 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 		return;
 	}
 
-	memcpy(&(new_quads[this->num_tris]), quad, sizeof(render_mesh_quad_t));
+	/*printf("render_mesh: %d quads\n", num_quads);*/
+
+	memcpy(&(new_quads[this->num_quads]), quad, sizeof(render_mesh_quad_t));
 
 	this->num_quads++;
 	this->quads = new_quads;
@@ -237,9 +252,9 @@ static void drawMesh(render_mesh_t *this)
 						Sint16 *src = (Sint16 *) this->vertex.data;
 						printf("mesh:   %d %d\n",tri->v[j],this->vertex.stride);
 						for (j=0; j<3; j++) {
-							v[j].x = src[(tri->v[j]*this->vertex.stride)+0];
-							v[j].y = src[(tri->v[j]*this->vertex.stride)+1];
-							v[j].z = src[(tri->v[j]*this->vertex.stride)+2];
+							v[j].x = src[(tri->v[j]*(this->vertex.stride>>1))+0];
+							v[j].y = src[(tri->v[j]*(this->vertex.stride>>1))+1];
+							v[j].z = src[(tri->v[j]*(this->vertex.stride>>1))+2];
 						}
 					}
 					break;
@@ -260,10 +275,10 @@ static void drawMesh(render_mesh_t *this)
 				case RENDER_ARRAY_SHORT:
 					{
 						Sint16 *src = (Sint16 *) this->texcoord.data;
-						printf("mesh:   %d %d\n",tri->tx[j],this->texcoord.stride);
+						/*printf("mesh:   %d %d\n",tri->tx[j],this->texcoord.stride);*/
 						for (j=0; j<3; j++) {
-							v[j].u = src[(tri->tx[j]*this->texcoord.stride)+0];
-							v[j].v = src[(tri->tx[j]*this->texcoord.stride)+1];
+							v[j].u = src[(tri->tx[j]*(this->texcoord.stride>>1))+0];
+							v[j].v = src[(tri->tx[j]*(this->texcoord.stride>>1))+1];
 						}
 					}
 					break;
