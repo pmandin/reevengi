@@ -39,8 +39,8 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	Sint16 x, Sint16 y, Sint16 z);
 static void setParent(render_skel_t *this, int parent, int child);
 
-static void drawSkel(render_skel_t *this);
-static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *parent);
+static void draw(render_skel_t *this);
+static void drawChild(render_skel_t *this, render_skel_mesh_t *parent);
 
 /*--- Functions ---*/
 
@@ -61,7 +61,7 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 
 	skel->addMesh = addMesh;
 	skel->setParent = setParent;
-	skel->drawSkel = drawSkel;
+	skel->draw = draw;
 
 	skel->texture = texture;
 
@@ -158,7 +158,7 @@ static void setParent(render_skel_t *this, int parent, int child)
 	child_mesh->parent = parent_mesh;
 }
 
-static void drawSkel(render_skel_t *this)
+static void draw(render_skel_t *this)
 {
 	int i;
 
@@ -182,13 +182,13 @@ static void drawSkel(render_skel_t *this)
 		skel_mesh->mesh->drawMesh(skel_mesh->mesh);
 
 		/* Draw children, relative to parent */
-		drawSkelChild(this, skel_mesh);
+		drawChild(this, skel_mesh);
 
 		render.pop_matrix();
 	}	
 }
 
-static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *parent)
+static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 {
 	int i;
 
@@ -210,7 +210,7 @@ static void drawSkelChild(render_skel_t *this, render_skel_mesh_t *parent)
 		skel_mesh->mesh->drawMesh(skel_mesh->mesh);
 
 		/* Draw children, relative to parent */
-		drawSkelChild(this, skel_mesh);
+		drawChild(this, skel_mesh);
 
 		render.pop_matrix();
 	}	

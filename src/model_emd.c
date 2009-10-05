@@ -118,7 +118,9 @@ static void emd_add_mesh(model_t *this, int num_skel, int *num_idx, int *idx, ve
 	emd_skel_relpos_t *emd_skel_relpos,
 	emd_skel_data_t *emd_skel_data);
 
-static void emd_load_render_mesh(model_t *this);
+static render_skel_t *emd_load_render_skel(model_t *this);
+static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t *skel_data,
+	int num_mesh);
 
 /*--- Functions ---*/
 
@@ -154,20 +156,28 @@ model_t *model_emd_load(void *emd, Uint32 emd_length)
 	model->shutdown = model_emd_shutdown;
 	model->draw = model_emd_draw;
 
+	model->skeleton = emd_load_render_skel(model);
+
 	return model;
 }
 
 static void model_emd_shutdown(model_t *this)
 {
-	if (this) {
-		if (this->emd_file) {
-			free(this->emd_file);
-		}
-		if (this->texture) {
-			this->texture->shutdown(this->texture);
-		}
-		free(this);
+	if (!this) {
+		return;
 	}
+
+	if (this->emd_file) {
+		free(this->emd_file);
+	}
+	if (this->skeleton) {
+		this->skeleton->shutdown(this->skeleton);
+	}
+	if (this->texture) {
+		this->texture->shutdown(this->texture);
+	}
+
+	free(this);
 }
 
 static void model_emd_draw(model_t *this)
@@ -343,7 +353,7 @@ static void emd_draw_mesh(model_t *this, int num_mesh)
 	}
 }
 
-static void emd_load_render_skel(model_t *this)
+static render_skel_t *emd_load_render_skel(model_t *this)
 {
 	Uint32 *hdr_offsets, skel_offset, mesh_offset;
 	int i,j;
@@ -475,13 +485,36 @@ static void emd_load_render_skel(model_t *this)
 		}
 
 		/* Add mesh to skeleton */
-		skeleton->addMesh(skeleton, mesh, 0,0,0);
+		skeleton->addMesh(skeleton, mesh,
+			SDL_SwapLE16(emd_skel_relpos[j].x),
+			SDL_SwapLE16(emd_skel_relpos[j].y),
+			SDL_SwapLE16(emd_skel_relpos[j].z));
 
 		emd_mesh_object++;
 	}
 
-	skeleton->shutdown(skeleton);
+	/* Define hierarchy */
+	emd_load_render_skel_hierarchy(skeleton, emd_skel_data, 0);
+
+	return skeleton;
 }
+
+static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t *skel_data,
+	int num_mesh)
+{
+	int i;
+	Uint8 *mesh_numbers = (Uint8 *) skel_data;
+
+	for (i=0; i<SDL_SwapLE16(skel_data[num_mesh].num_mesh); i++) {
+		int child = mesh_numbers[SDL_SwapLE16(skel_data[num_mesh].offset)+i];
+
+		/*printf("parent %d -> child %d\n",num_mesh, child);*/
+		skel->setParent(skel, num_mesh, child);
+
+		emd_load_render_skel_hierarchy(skel, skel_data, child);
+	}
+}
+
 
 /*--- Convert EMD file (little endian) to big endian ---*/
 

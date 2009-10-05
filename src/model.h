@@ -24,6 +24,8 @@
 #include <SDL.h>
 
 #include "render_texture.h"
+#include "render_mesh.h"
+#include "render_skel.h"
 
 /*--- Types ---*/
 
@@ -38,6 +40,8 @@ struct model_s {
 
 	void *tim_file;
 	int tim_length;
+
+	render_skel_t *skeleton;
 
 	render_texture_t *texture;
 };
