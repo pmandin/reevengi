@@ -129,7 +129,8 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	int num_meshes = this->num_meshes + 1;
 
 	new_meshes = (render_skel_mesh_t *) realloc(this->meshes, num_meshes * sizeof(render_skel_mesh_t));
-	if (new_meshes) {
+	if (!new_meshes) {
+		fprintf(stderr, "Can not allocate memory for mesh\n");
 		return;
 	}
 
@@ -164,12 +165,16 @@ static void draw(render_skel_t *this)
 
 	this->upload(this);
 
+	printf("skel: draw %d meshes\n", this->num_meshes);
+
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
 		if (skel_mesh->parent) {
 			continue;
 		}
+
+		printf("skel: draw mesh %d\n", i);
 
 		render.push_matrix();
 		render.translate(
@@ -198,6 +203,8 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 		if (skel_mesh->parent != parent) {
 			continue;
 		}
+
+		printf("skel: draw mesh %d\n", i);
 
 		render.push_matrix();
 		render.translate(
