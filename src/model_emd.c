@@ -454,7 +454,25 @@ static void emd_load_render_skel(model_t *this)
 		free(txcoordPtr);
 
 		/* Triangles */
+		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.mesh_count); j++) {
+			render_mesh_tri_t	mesh_tri;
+			
+			mesh_tri.v[0] = SDL_SwapLE16(emd_tri_idx[j].v0);
+			mesh_tri.v[1] = SDL_SwapLE16(emd_tri_idx[j].v1);
+			mesh_tri.v[2] = SDL_SwapLE16(emd_tri_idx[j].v2);
 
+			mesh_tri.n[0] = SDL_SwapLE16(emd_tri_idx[j].n0);
+			mesh_tri.n[1] = SDL_SwapLE16(emd_tri_idx[j].n1);
+			mesh_tri.n[2] = SDL_SwapLE16(emd_tri_idx[j].n2);
+
+			mesh_tri.tx[0] = j*3;
+			mesh_tri.tx[1] = j*3+1;
+			mesh_tri.tx[2] = j*3+2;
+
+			mesh_tri.txpal = SDL_SwapLE16(emd_tri_idx[j].clutid) & 3;
+
+			mesh->addTriangle(mesh, &mesh_tri);
+		}
 
 		/* Add mesh to skeleton */
 		skeleton->addMesh(skeleton, mesh, 0,0,0);

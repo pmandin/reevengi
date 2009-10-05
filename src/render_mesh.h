@@ -49,17 +49,17 @@ typedef struct {
 } render_mesh_array_t;
 
 typedef struct {
-	Uint32 v[3];
-	Uint32 n[3];
-	Uint32 tx[3];
-	int txpal;
+	Uint16 v[3];
+	Uint16 n[3];
+	Uint16 tx[3];
+	Uint16 txpal;
 } render_mesh_tri_t;
 
 typedef struct {
-	int v[4];
-	int n[4];
-	int tx[4];
-	int txpal;
+	Uint16 v[4];
+	Uint16 n[4];
+	Uint16 tx[4];
+	Uint16 txpal;
 } render_mesh_quad_t;
 
 typedef struct render_mesh_s render_mesh_t;
