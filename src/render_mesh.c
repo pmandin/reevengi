@@ -129,6 +129,7 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 			break;
 		case RENDER_ARRAY_TEXCOORD:
 			array = &(this->texcoord);
+			/*printf("txcoord: %d %d %d\n", item_size, stride, src_comp_size);*/
 			break;
 		default:
 			fprintf(stderr, "Invalid array %d\n", array_type);
@@ -167,6 +168,9 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 					if (byteswap) {
 						srcValue = SDL_SwapLE16(srcValue);
 					}
+					/*if (RENDER_ARRAY_TEXCOORD == array_type) {
+						printf("txcoord %d,%d: %d\n",i,j,srcValue);
+					}*/
 					*dst++ = srcValue;
 					break;
 			}
@@ -230,10 +234,13 @@ static void drawMesh(render_mesh_t *this)
 	int i, j;
 	vertex_t v[4];
 
-	printf("mesh: %d triangles\n", this->num_tris);
+	/*printf("mesh: %d triangles\n", this->num_tris);*/
 
 	for (i=0; i<this->num_tris; i++) {
 		render_mesh_tri_t *tri = &(this->triangles[i]);
+
+		/*printf("render_mesh: tri %d: txi: %d,%d,%d (%d)\n",
+			i, tri->tx[0], tri->tx[1], tri->tx[2], this->texcoord.stride);*/
 
 		if (this->vertex.data) {
 			switch(this->vertex.type) {
@@ -250,7 +257,6 @@ static void drawMesh(render_mesh_t *this)
 				case RENDER_ARRAY_SHORT:
 					{
 						Sint16 *src = (Sint16 *) this->vertex.data;
-						printf("mesh:   %d %d\n",tri->v[j],this->vertex.stride);
 						for (j=0; j<3; j++) {
 							v[j].x = src[(tri->v[j]*(this->vertex.stride>>1))+0];
 							v[j].y = src[(tri->v[j]*(this->vertex.stride>>1))+1];
@@ -275,11 +281,14 @@ static void drawMesh(render_mesh_t *this)
 				case RENDER_ARRAY_SHORT:
 					{
 						Sint16 *src = (Sint16 *) this->texcoord.data;
-						/*printf("mesh:   %d %d\n",tri->tx[j],this->texcoord.stride);*/
 						for (j=0; j<3; j++) {
 							v[j].u = src[(tri->tx[j]*(this->texcoord.stride>>1))+0];
 							v[j].v = src[(tri->tx[j]*(this->texcoord.stride>>1))+1];
 						}
+						/*printf("%d: %d,%d %d,%d %d,%d\n", i,
+							v[0].u,v[0].v,
+							v[1].u,v[1].v,
+							v[2].u,v[2].v);*/
 					}
 					break;
 			}
@@ -287,11 +296,11 @@ static void drawMesh(render_mesh_t *this)
 
 		/*printf("mesh:  %d set texture\n", i);*/
 		render.set_texture(tri->txpal, this->texture);
-		printf("mesh:  %d draw triangle\n", i);
+		/*printf("mesh:  %d draw triangle\n", i);*/
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
 
-	printf("mesh: %d quads\n", this->num_quads);
+	/*printf("mesh: %d quads\n", this->num_quads);*/
 
 	for (i=0; i<this->num_quads; i++) {
 		render_mesh_quad_t *quad = &(this->quads[i]);

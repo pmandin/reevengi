@@ -457,20 +457,20 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			*txcoords++ = emd_tri_idx[j].tu2 + page;
 			*txcoords++ = emd_tri_idx[j].tv2;
 
-			/*printf(" %d,%d %d,%d %d,%d\n",
+			/*printf("%d: %d,%d %d,%d %d,%d\n",j,
 				txcoords[-6],txcoords[-5],
 				txcoords[-4],txcoords[-3],
 				txcoords[-1],txcoords[-1]);*/
 		}
 
 		mesh->setArray(mesh, RENDER_ARRAY_TEXCOORD, 2, RENDER_ARRAY_SHORT,
-			3*SDL_SwapLE32(emd_mesh_object->triangles.mesh_count), sizeof(Uint16)*6,
+			3*SDL_SwapLE32(emd_mesh_object->triangles.mesh_count), sizeof(Uint16)*2,
 			txcoordPtr, 0);
 
 		free(txcoordPtr);
 
 		/* Triangles */
-		printf("mesh %d: %d triangles\n", i,SDL_SwapLE32(emd_mesh_object->triangles.mesh_count));
+		/*printf("mesh %d: %d triangles\n", i,SDL_SwapLE32(emd_mesh_object->triangles.mesh_count));*/
 
 		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.mesh_count); j++) {
 			render_mesh_tri_t	mesh_tri;
@@ -499,6 +499,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			SDL_SwapLE16(emd_skel_relpos[j].z));
 
 		emd_mesh_object++;
+		/*break;*/
 	}
 
 	/* Define hierarchy */

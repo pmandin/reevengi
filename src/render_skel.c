@@ -165,7 +165,7 @@ static void draw(render_skel_t *this)
 
 	this->upload(this);
 
-	printf("skel: draw %d meshes\n", this->num_meshes);
+	/*printf("skel: draw %d meshes\n", this->num_meshes);*/
 
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
@@ -174,7 +174,7 @@ static void draw(render_skel_t *this)
 			continue;
 		}
 
-		printf("skel: draw mesh %d\n", i);
+		/*printf("skel: draw mesh %d\n", i);*/
 
 		render.push_matrix();
 		render.translate(
@@ -204,7 +204,7 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 			continue;
 		}
 
-		printf("skel: draw mesh %d\n", i);
+		/*printf("skel: draw mesh %d\n", i);*/
 
 		render.push_matrix();
 		render.translate(

@@ -561,9 +561,10 @@ static void drawPlayer(void)
 
 	if (player_model) {
 		render.set_blending(1);
-		if (player_model->skeleton) {
+		/*if (player_model->skeleton) {
 			player_model->skeleton->draw(player_model->skeleton);
-		} else {
+		} else*/
+		{
 			player_model->draw(player_model);
 		}
 		render.set_blending(0);
