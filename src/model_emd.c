@@ -494,9 +494,9 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 
 		/* Add mesh to skeleton */
 		skeleton->addMesh(skeleton, mesh,
-			SDL_SwapLE16(emd_skel_relpos[j].x),
-			SDL_SwapLE16(emd_skel_relpos[j].y),
-			SDL_SwapLE16(emd_skel_relpos[j].z));
+			SDL_SwapLE16(emd_skel_relpos[i].x),
+			SDL_SwapLE16(emd_skel_relpos[i].y),
+			SDL_SwapLE16(emd_skel_relpos[i].z));
 
 		emd_mesh_object++;
 		/*break;*/
@@ -517,7 +517,7 @@ static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t 
 	for (i=0; i<SDL_SwapLE16(skel_data[num_mesh].num_mesh); i++) {
 		int child = mesh_numbers[SDL_SwapLE16(skel_data[num_mesh].offset)+i];
 
-		/*printf("parent %d -> child %d\n",num_mesh, child);*/
+		/*printf("render_skel: parent %d -> child %d\n",num_mesh, child);*/
 		skel->setParent(skel, num_mesh, child);
 
 		emd_load_render_skel_hierarchy(skel, skel_data, child);
