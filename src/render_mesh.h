@@ -76,7 +76,7 @@ struct render_mesh_s {
 	void (*addTriangle)(render_mesh_t *this, render_mesh_tri_t *tri);
 	void (*addQuad)(render_mesh_t *this, render_mesh_quad_t *quad);
 
-	void (*drawMesh)(render_mesh_t *this);
+	void (*draw)(render_mesh_t *this);
 
 	render_mesh_array_t vertex;
 	render_mesh_array_t normal;

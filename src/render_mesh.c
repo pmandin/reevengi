@@ -39,7 +39,7 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri);
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad);
 
-static void drawMesh(render_mesh_t *this);
+static void draw(render_mesh_t *this);
 
 /*--- Functions ---*/
 
@@ -61,7 +61,7 @@ render_mesh_t *render_mesh_create(render_texture_t *texture)
 	mesh->setArray = setArray;
 	mesh->addTriangle = addTriangle;
 	mesh->addQuad = addQuad;
-	mesh->drawMesh = drawMesh;
+	mesh->draw = draw;
 
 	mesh->texture = texture;
 
@@ -229,7 +229,7 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 	this->quads = new_quads;
 }
 
-static void drawMesh(render_mesh_t *this)
+static void draw(render_mesh_t *this)
 {
 	int i, j;
 	vertex_t v[4];
