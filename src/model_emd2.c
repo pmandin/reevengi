@@ -565,7 +565,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.tex_offset)]);
 
 		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.mesh_count); j++) {
-			int page = (SDL_SwapLE16(emd_tri_tex[j].page)<<1) & 0xff;
+			int page = (SDL_SwapLE16(emd_tri_tex[j].page) & 0xff)<<1;
 
 			*txcoords++ = emd_tri_tex[j].u0 + page;
 			*txcoords++ = emd_tri_tex[j].v0;
@@ -579,7 +579,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quads.tex_offset)]);
 
 		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quads.mesh_count); j++) {
-			int page = (SDL_SwapLE16(emd_quad_tex[j].page)<<1) & 0xff;
+			int page = (SDL_SwapLE16(emd_quad_tex[j].page) & 0xff)<<1;
 
 			*txcoords++ = emd_quad_tex[j].u0 + page;
 			*txcoords++ = emd_quad_tex[j].v0;
