@@ -179,18 +179,24 @@ model_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 
 static void model_emd2_shutdown(model_t *this)
 {
-	if (this) {
-		if (this->emd_file) {
-			free(this->emd_file);
-		}
-		if (this->tim_file) {
-			free(this->tim_file);
-		}
-		if (this->texture) {
-			this->texture->shutdown(this->texture);
-		}
-		free(this);
+	if (!this) {
+		return;
 	}
+
+	if (this->emd_file) {
+		free(this->emd_file);
+	}
+	if (this->tim_file) {
+		free(this->tim_file);
+	}
+	if (this->texture) {
+		this->texture->shutdown(this->texture);
+	}
+	if (this->skeleton) {
+		this->skeleton->shutdown(this->skeleton);
+	}
+
+	free(this);
 }
 
 static void model_emd2_draw(model_t *this)
