@@ -146,8 +146,6 @@ model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	model->tim_file = tim;
 	model->tim_length = tim_length;
 
-	emd_convert_endianness(model);
-
 	model->texture = render.createTexture(RENDER_TEXTURE_MUST_POT);
 	if (model->texture) {
 		model->texture->load_from_tim(model->texture, model->tim_file);
@@ -155,6 +153,8 @@ model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 
 	model->shutdown = model_emd3_shutdown;
 	model->draw = model_emd3_draw;
+
+	emd_convert_endianness(model);
 
 	return model;
 }
