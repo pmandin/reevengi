@@ -191,6 +191,9 @@ static void draw(render_skel_t *this)
 		drawChild(this, skel_mesh);
 
 		render.pop_matrix();
+
+		/* Only draw first parent object */
+		/*break;*/
 	}
 }
 
