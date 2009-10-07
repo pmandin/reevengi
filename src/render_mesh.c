@@ -129,7 +129,6 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 			break;
 		case RENDER_ARRAY_TEXCOORD:
 			array = &(this->texcoord);
-			/*printf("txcoord: %d %d %d\n", item_size, stride, src_comp_size);*/
 			break;
 		default:
 			fprintf(stderr, "Invalid array %d\n", array_type);
@@ -168,9 +167,6 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 					if (byteswap) {
 						srcValue = SDL_SwapLE16(srcValue);
 					}
-					/*if (RENDER_ARRAY_TEXCOORD == array_type) {
-						printf("txcoord %d,%d: %d\n",i,j,srcValue);
-					}*/
 					*dst++ = srcValue;
 					break;
 			}
@@ -192,23 +188,10 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 		return;
 	}
 
-	/*printf("render_mesh: %d triangles\n", num_tris);*/
-
 	memcpy(&(new_tris[this->num_tris]), tri, sizeof(render_mesh_tri_t));
 
 	this->num_tris++;
 	this->triangles = new_tris;
-
-	/*{
-		int i;
-
-		for (i=0; i<this->num_tris; i++) {
-			printf("render_mesh: tri %d: txi: %d,%d,%d\n",i,
-				this->triangles[i].tx[0],
-				this->triangles[i].tx[1],
-				this->triangles[i].tx[2]);
-		}
-	}*/
 }
 
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
@@ -221,8 +204,6 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 		return;
 	}
 
-	/*printf("render_mesh: %d quads\n", num_quads);*/
-
 	memcpy(&(new_quads[this->num_quads]), quad, sizeof(render_mesh_quad_t));
 
 	this->num_quads++;
@@ -234,13 +215,8 @@ static void draw(render_mesh_t *this)
 	int i, j;
 	vertex_t v[4];
 
-	/*printf("mesh: %d triangles\n", this->num_tris);*/
-
 	for (i=0; i<this->num_tris; i++) {
 		render_mesh_tri_t *tri = &(this->triangles[i]);
-
-		/*printf("render_mesh: tri %d: txi: %d,%d,%d (%d)\n",
-			i, tri->tx[0], tri->tx[1], tri->tx[2], this->texcoord.stride);*/
 
 		if (this->vertex.data) {
 			switch(this->vertex.type) {
@@ -285,22 +261,14 @@ static void draw(render_mesh_t *this)
 							v[j].u = src[(tri->tx[j]*(this->texcoord.stride>>1))+0];
 							v[j].v = src[(tri->tx[j]*(this->texcoord.stride>>1))+1];
 						}
-						/*printf("%d: %d,%d %d,%d %d,%d\n", i,
-							v[0].u,v[0].v,
-							v[1].u,v[1].v,
-							v[2].u,v[2].v);*/
 					}
 					break;
 			}
 		}
 
-		/*printf("mesh:  %d set texture\n", i);*/
 		render.set_texture(tri->txpal, this->texture);
-		/*printf("mesh:  %d draw triangle\n", i);*/
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
-
-	/*printf("mesh: %d quads\n", this->num_quads);*/
 
 	for (i=0; i<this->num_quads; i++) {
 		render_mesh_quad_t *quad = &(this->quads[i]);
@@ -321,9 +289,9 @@ static void draw(render_mesh_t *this)
 					{
 						Sint16 *src = (Sint16 *) this->vertex.data;
 						for (j=0; j<4; j++) {
-							v[j].x = src[(quad->v[j]*this->vertex.stride)+0];
-							v[j].y = src[(quad->v[j]*this->vertex.stride)+1];
-							v[j].z = src[(quad->v[j]*this->vertex.stride)+2];
+							v[j].x = src[(quad->v[j]*(this->vertex.stride>>1))+0];
+							v[j].y = src[(quad->v[j]*(this->vertex.stride>>1))+1];
+							v[j].z = src[(quad->v[j]*(this->vertex.stride>>1))+2];
 						}
 					}
 					break;
@@ -345,17 +313,15 @@ static void draw(render_mesh_t *this)
 					{
 						Sint16 *src = (Sint16 *) this->texcoord.data;
 						for (j=0; j<4; j++) {
-							v[j].u = src[(quad->tx[j]*this->texcoord.stride)+0];
-							v[j].v = src[(quad->tx[j]*this->texcoord.stride)+1];
+							v[j].u = src[(quad->tx[j]*(this->texcoord.stride>>1))+0];
+							v[j].v = src[(quad->tx[j]*(this->texcoord.stride>>1))+1];
 						}
 					}
 					break;
 			}
 		}
 
-		/*printf("mesh:  %d set texture\n", i);*/
 		render.set_texture(quad->txpal, this->texture);
-		/*printf("mesh:  %d draw quad\n", i);*/
-		render.quad(&v[0], &v[1], &v[2], &v[3]);
+		render.quad(&v[0], &v[1], &v[3], &v[2]);
 	}
 }

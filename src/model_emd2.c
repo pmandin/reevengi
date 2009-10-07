@@ -167,9 +167,10 @@ model_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	model->draw = model_emd2_draw;
 
 	model->skeleton = emd_load_render_skel(model);
-	if (model->skeleton) {
+	/*if (model->skeleton) {
 		model->skeleton->shutdown(model->skeleton);
-	}
+		model->skeleton = NULL;
+	}*/
 
 	emd_convert_endianness(model);
 
@@ -497,15 +498,15 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		}
 
 		curVtx = vtxPtr;
-		for (i=0; i<SDL_SwapLE32(emd_mesh_object->triangles.vtx_count); i++) {
-			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[i].x);
-			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[i].y);
-			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[i].z);
+		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.vtx_count); j++) {
+			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[j].x);
+			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[j].y);
+			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[j].z);
 		}
-		for (i=0; i<SDL_SwapLE32(emd_mesh_object->quads.vtx_count); i++) {
-			*curVtx++ = SDL_SwapLE16(emd_quad_vtx[i].x);
-			*curVtx++ = SDL_SwapLE16(emd_quad_vtx[i].y);
-			*curVtx++ = SDL_SwapLE16(emd_quad_vtx[i].z);
+		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quads.vtx_count); j++) {
+			*curVtx++ = SDL_SwapLE16(emd_quad_vtx[j].x);
+			*curVtx++ = SDL_SwapLE16(emd_quad_vtx[j].y);
+			*curVtx++ = SDL_SwapLE16(emd_quad_vtx[j].z);
 		}
 
 		mesh->setArray(mesh, RENDER_ARRAY_VERTEX, 3, RENDER_ARRAY_SHORT,
@@ -531,18 +532,18 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		}
 
 		curNor = norPtr;
-		for (i=0; i<SDL_SwapLE32(emd_mesh_object->triangles.nor_count); i++) {
-			*curNor++ = SDL_SwapLE16(emd_tri_nor[i].x);
-			*curNor++ = SDL_SwapLE16(emd_tri_nor[i].y);
-			*curNor++ = SDL_SwapLE16(emd_tri_nor[i].z);
+		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.nor_count); j++) {
+			*curNor++ = SDL_SwapLE16(emd_tri_nor[j].x);
+			*curNor++ = SDL_SwapLE16(emd_tri_nor[j].y);
+			*curNor++ = SDL_SwapLE16(emd_tri_nor[j].z);
 		}
-		for (i=0; i<SDL_SwapLE32(emd_mesh_object->quads.nor_count); i++) {
-			*curNor++ = SDL_SwapLE16(emd_quad_nor[i].x);
-			*curNor++ = SDL_SwapLE16(emd_quad_nor[i].y);
-			*curNor++ = SDL_SwapLE16(emd_quad_nor[i].z);
+		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quads.nor_count); j++) {
+			*curNor++ = SDL_SwapLE16(emd_quad_nor[j].x);
+			*curNor++ = SDL_SwapLE16(emd_quad_nor[j].y);
+			*curNor++ = SDL_SwapLE16(emd_quad_nor[j].z);
 		}
 
-		mesh->setArray(mesh, RENDER_ARRAY_VERTEX, 3, RENDER_ARRAY_SHORT,
+		mesh->setArray(mesh, RENDER_ARRAY_NORMAL, 3, RENDER_ARRAY_SHORT,
 			num_vtx, 3*sizeof(Uint16),
 			norPtr, 0);
 
@@ -552,7 +553,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		num_tx = SDL_SwapLE32(emd_mesh_object->triangles.mesh_count)*3
 			+ SDL_SwapLE32(emd_mesh_object->quads.mesh_count)*4;
 
-		txcoordPtr = (Uint16 *) malloc(sizeof(Uint16)*num_tx);
+		txcoordPtr = (Uint16 *) malloc(2*sizeof(Uint16)*num_tx);
 		if (!txcoordPtr) {
 			fprintf(stderr, "Can not allocate memory for txcoords\n");
 			mesh->shutdown(mesh);
@@ -599,6 +600,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		/* Triangles */
 		emd_tri_idx = (emd_triangle_t *)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.mesh_offset)]);
+
 		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.mesh_count); j++) {
 			render_mesh_tri_t	mesh_tri;
 			
@@ -626,9 +628,10 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 
 		emd_quad_idx = (emd_quad_t *)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quads.mesh_offset)]);
+
 		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quads.mesh_count); j++) {
 			render_mesh_quad_t	mesh_quad;
-			
+
 			mesh_quad.v[0] = start_vtx + SDL_SwapLE16(emd_quad_idx[j].v0);
 			mesh_quad.v[1] = start_vtx + SDL_SwapLE16(emd_quad_idx[j].v1);
 			mesh_quad.v[2] = start_vtx + SDL_SwapLE16(emd_quad_idx[j].v2);
@@ -642,7 +645,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			mesh_quad.tx[0] = start_tx + j*4;
 			mesh_quad.tx[1] = start_tx + j*4+1;
 			mesh_quad.tx[2] = start_tx + j*4+2;
-			mesh_quad.tx[2] = start_tx + j*4+3;
+			mesh_quad.tx[3] = start_tx + j*4+3;
 
 			mesh_quad.txpal = SDL_SwapLE16(emd_quad_tex[j].clutid) & 3;
 

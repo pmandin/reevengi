@@ -165,17 +165,12 @@ static void draw(render_skel_t *this)
 
 	this->upload(this);
 
-	/*printf("skel: draw root\n");*/
-
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
 		if (skel_mesh->parent) {
 			continue;
 		}
-
-		/*printf("skel: draw mesh %d (%d,%d,%d)\n", i,
-			skel_mesh->x, skel_mesh->y, skel_mesh->z);*/
 
 		render.push_matrix();
 		render.translate(
@@ -192,8 +187,8 @@ static void draw(render_skel_t *this)
 
 		render.pop_matrix();
 
-		/* Only draw first parent object */
-		/*break;*/
+		/* FIXME: Only draw first parent object */
+		break;
 	}
 }
 
@@ -201,17 +196,12 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 {
 	int i;
 
-	/*printf("skel: draw children of 0x%08x\n", parent);*/
-
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
 		if (skel_mesh->parent != parent) {
 			continue;
 		}
-
-		/*printf("skel: draw mesh %d (%d,%d,%d)\n", i,
-			skel_mesh->x, skel_mesh->y, skel_mesh->z);*/
 
 		render.push_matrix();
 		render.translate(
