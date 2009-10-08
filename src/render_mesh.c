@@ -142,7 +142,7 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 
 	new_data = realloc(array->data, item_size * items);
 	if (!new_data) {
-		fprintf(stderr, "Can not allocate memory for new array data\n");
+		fprintf(stderr, "render_mesh: Can not allocate %d bytes of memory for new array data\n", item_size * items);
 		return;
 	}
 
