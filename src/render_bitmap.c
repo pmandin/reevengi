@@ -24,6 +24,8 @@
 #include "video.h"
 #include "render.h"
 #include "parameters.h"
+#include "log.h"
+#include "dither.h"
 
 /*--- Defines ---*/
 
@@ -45,8 +47,6 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
 static void rescale_nearest(render_texture_t *src, SDL_Surface *dst);
 static void rescale_linear(render_texture_t *src, SDL_Surface *dst);
-
-static int get_rgb_from_palette(int i, Uint8 *r, Uint8 *g, Uint8 *b);
 
 /*--- Functions ---*/
 
@@ -349,9 +349,7 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 
 static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
 {
-	int create_scaled = 0, new_bpp, x,y;
-	render_texture_t *src;
-	SDL_Surface *dst;
+	int create_scaled = 0, new_bpp;
 
 	/* Generate a cached version of texture scaled/dithered or both */
 	if (texture->scaled) {
@@ -534,7 +532,6 @@ static Sint32 BILINEAR_FILTER(Sint32 start, Sint32 end, Sint32 coef)
 static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 {
 	int x,y, i;
-	Uint8 r,g,b;
 	Sint32 u=0,v=0;
 	Sint32 du = (src->w * 65536) / dst->w;
 	Sint32 dv = (src->h * 65536) / dst->h;

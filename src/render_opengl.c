@@ -36,6 +36,7 @@
 #include "render.h"
 #include "render_texture_opengl.h"
 #include "matrix.h"
+#include "render_texture_list.h"
 
 /*--- Variables ---*/
 

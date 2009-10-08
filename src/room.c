@@ -28,6 +28,7 @@
 #include "room.h"
 #include "state.h"
 #include "parameters.h"
+#include "log.h"
 
 /*--- Defines ---*/
 

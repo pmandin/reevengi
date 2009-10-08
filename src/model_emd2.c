@@ -454,7 +454,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 	skeleton = render_skel_create(this->texture);
 	if (!skeleton) {
 		fprintf(stderr, "Can not create skeleton\n");
-		return;
+		return NULL;
 	}
 
 	/* Offset 7: Mesh data */

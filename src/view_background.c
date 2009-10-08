@@ -38,6 +38,7 @@
 #include "re3_pc.h"
 #include "re3_ps1_game.h"
 #include "clock.h"
+#include "log.h"
 
 /*--- Defines ---*/
 

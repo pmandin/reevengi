@@ -110,10 +110,10 @@ static void download(render_mesh_t *this)
 static void setArray(render_mesh_t *this, int array_type, int components, int type,
 	int items, int stride, void *data, int byteswap)
 {
-	render_mesh_array_t *array;
+	render_mesh_array_t *array = NULL;
 	void *new_data;
 	int i,j, item_size = components, dst_type = type;
-	int src_comp_size = 1, dst_comp_size = 2;
+	int src_comp_size = 1;
 	Uint8 *src;
 	Sint16 *dst;
 
@@ -160,7 +160,6 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 	for (i=0; i<items; i++) {
 		Uint8 *srcItem = src;
 		for (j=0; j<components; j++) {
-			Uint8 *srcComp = srcItem;
 			Uint16 srcValue;
 
 			switch(type) {

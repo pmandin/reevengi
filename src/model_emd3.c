@@ -439,7 +439,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 	skeleton = render_skel_create(this->texture);
 	if (!skeleton) {
 		fprintf(stderr, "Can not create skeleton\n");
-		return;
+		return NULL;
 	}
 
 	/* Offset 14: Mesh data */
@@ -452,14 +452,11 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		(&((char *) emd_file)[mesh_offset]);
 
 	for (i=0; i<SDL_SwapLE32(emd_mesh_header->num_objects); i++) {
-		emd_vertex_t *emd_tri_vtx, *emd_quad_vtx;
-		emd_vertex_t *emd_tri_nor, *emd_quad_nor;
+		emd_vertex_t *emd_tri_vtx;
 		emd_triangle_t *emd_tri_idx;
 		emd_quad_t *emd_quad_idx;
 		Uint16 *txcoordPtr, *txcoords;
-		Uint16 *vtxPtr, *curVtx;
-		Uint16 *norPtr, *curNor;
-		int num_tri, num_quad, num_vtx, num_tx, start_tx;
+		int num_tri, num_quad, num_tx, start_tx;
 
 		render_mesh_t *mesh = render_mesh_create(this->texture);
 		if (!mesh) {

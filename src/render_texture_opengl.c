@@ -37,6 +37,7 @@
 #include "dither.h"
 #include "parameters.h"
 #include "log.h"
+#include "render_texture_list.h"
 
 /*--- Functions prototypes ---*/
 
