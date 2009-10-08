@@ -475,60 +475,30 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		emd_tri_vtx = (emd_vertex_t *)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->vtx_offset)]);
 
-		num_vtx = SDL_SwapLE32(emd_mesh_object->vtx_count);
-
-		vtxPtr = (Uint16 *) malloc(3*sizeof(Uint16)*num_vtx);
-		if (!vtxPtr) {
-			fprintf(stderr, "Can not allocate memory for vertex array\n");
-			mesh->shutdown(mesh);
-			break;
-		}
-
-		curVtx = vtxPtr;
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->vtx_count); j++) {
-			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[j].x);
-			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[j].y);
-			*curVtx++ = SDL_SwapLE16(emd_tri_vtx[j].z);
-		}
-
 		mesh->setArray(mesh, RENDER_ARRAY_VERTEX, 3, RENDER_ARRAY_SHORT,
-			num_vtx, 3*sizeof(Uint16),
-			vtxPtr, 0);
+			SDL_SwapLE32(emd_mesh_object->vtx_count), sizeof(emd_vertex_t),
+			emd_tri_vtx,
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			1
+#else
+			0
+#endif
+			);
 
-		free(vtxPtr);
-
-		/* Normal array */
 #if 0
+		/* Normal array */
 		emd_tri_nor = (emd_vertex_t *)
-			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->triangles.nor_offset)]);
-
-		num_vtx = SDL_SwapLE32(emd_mesh_object->triangles.nor_count) +
-			SDL_SwapLE32(emd_mesh_object->quads.nor_count);
-
-		norPtr = (Uint16 *) malloc(3*sizeof(Uint16)*num_vtx);
-		if (!norPtr) {
-			fprintf(stderr, "Can not allocate memory for normal array\n");
-			mesh->shutdown(mesh);
-			break;
-		}
-
-		curNor = norPtr;
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->triangles.nor_count); j++) {
-			*curNor++ = SDL_SwapLE16(emd_tri_nor[j].x);
-			*curNor++ = SDL_SwapLE16(emd_tri_nor[j].y);
-			*curNor++ = SDL_SwapLE16(emd_tri_nor[j].z);
-		}
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quads.nor_count); j++) {
-			*curNor++ = SDL_SwapLE16(emd_quad_nor[j].x);
-			*curNor++ = SDL_SwapLE16(emd_quad_nor[j].y);
-			*curNor++ = SDL_SwapLE16(emd_quad_nor[j].z);
-		}
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->nor_offset)]);
 
 		mesh->setArray(mesh, RENDER_ARRAY_NORMAL, 3, RENDER_ARRAY_SHORT,
-			num_vtx, 3*sizeof(Uint16),
-			norPtr, 0);
-
-		free(norPtr);
+			SDL_SwapLE32(emd_mesh_object->vtx_count), sizeof(emd_vertex_t),
+			norPtr,
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			1
+#else
+			0
+#endif
+			);
 #endif
 
 		/* Texcoord array */
