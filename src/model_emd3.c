@@ -160,13 +160,9 @@ model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	model->shutdown = model_emd3_shutdown;
 	model->draw = model_emd3_draw;
 
-	emd_convert_endianness(model);
-
 	model->skeleton = emd_load_render_skel(model);
-	/*if (model->skeleton) {
-		model->skeleton->shutdown(model->skeleton);
-		model->skeleton = NULL;
-	}*/
+
+	emd_convert_endianness(model);
 
 	return model;
 }

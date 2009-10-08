@@ -168,10 +168,6 @@ model_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	model->draw = model_emd2_draw;
 
 	model->skeleton = emd_load_render_skel(model);
-	/*if (model->skeleton) {
-		model->skeleton->shutdown(model->skeleton);
-		model->skeleton = NULL;
-	}*/
 
 	emd_convert_endianness(model);
 
