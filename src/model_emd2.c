@@ -28,6 +28,7 @@
 #include "model_emd2.h"
 #include "render_mesh.h"
 #include "render_skel.h"
+#include "log.h"
 
 /*--- Defines ---*/
 
@@ -442,7 +443,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 	emd_header = (emd_header_t *) emd_file;
 
 	hdr_offsets = (Uint32 *)
-		(&((char *) emd_file)[emd_header->offset]);
+		(&((char *) emd_file)[SDL_SwapLE32(emd_header->offset)]);
 
 	/* Offset 2: Skeleton */
 	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
