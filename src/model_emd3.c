@@ -455,7 +455,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 	emd_mesh_object = (emd_mesh_object_t *)
 		(&((char *) emd_file)[mesh_offset]);
 
-	for (i=0; i<SDL_SwapLE32(emd_mesh_header->num_objects)>>1; i++) {
+	for (i=0; i<SDL_SwapLE32(emd_mesh_header->num_objects); i++) {
 		emd_vertex_t *emd_tri_vtx, *emd_quad_vtx;
 		emd_vertex_t *emd_tri_nor, *emd_quad_nor;
 		emd_triangle_t *emd_tri_idx;
