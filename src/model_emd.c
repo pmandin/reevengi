@@ -156,7 +156,7 @@ model_t *model_emd_load(void *emd, Uint32 emd_length)
 
 	model->skeleton = emd_load_render_skel(model);
 
-	emd_convert_endianness(model);
+	/*emd_convert_endianness(model);*/
 
 	return model;
 }
