@@ -92,16 +92,14 @@ typedef struct {
 	Uint16	dummy0;
 	Uint16	nor_offset;
 	Uint16	dummy1;
-	Uint8	vtx_count;
-	Uint8	dummy2[3];
+	Uint16	vtx_count;
+	Uint16	dummy2;
 	Uint16	tri_offset;
 	Uint16	dummy3;
 	Uint16	quad_offset;
 	Uint16	dummy4;
-	Uint8	tri_count;
-	Uint8	dummy5;
-	Uint8	quad_count;
-	Uint8	dummy6;
+	Uint16	tri_count;
+	Uint16	quad_count;
 } emd_mesh_object_t;
 
 typedef struct {
@@ -163,6 +161,8 @@ model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_len
 	model->skeleton = emd_load_render_skel(model);
 
 	emd_convert_endianness(model);
+
+	logMsg(2, "emd3: model loaded\n");
 
 	return model;
 }
@@ -459,7 +459,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		Uint16 *txcoordPtr, *txcoords;
 		Uint16 *vtxPtr, *curVtx;
 		Uint16 *norPtr, *curNor;
-		int num_vtx, num_tx, start_tx;
+		int num_tri, num_quad, num_vtx, num_tx, start_tx;
 
 		render_mesh_t *mesh = render_mesh_create(this->texture);
 		if (!mesh) {
@@ -467,12 +467,21 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			break;
 		}
 
+		num_tri = SDL_SwapLE16(emd_mesh_object->tri_count);
+		if (num_tri == SDL_SwapLE16(emd_mesh_object->tri_offset)) {
+			num_tri = 0;
+		}
+		num_quad = SDL_SwapLE16(emd_mesh_object->quad_count);
+		if (num_quad > 0x100) {
+			num_quad = 0;
+		}
+
 		/* Vertex array */
 		emd_tri_vtx = (emd_vertex_t *)
-			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->vtx_offset)]);
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE16(emd_mesh_object->vtx_offset)]);
 
 		mesh->setArray(mesh, RENDER_ARRAY_VERTEX, 3, RENDER_ARRAY_SHORT,
-			SDL_SwapLE32(emd_mesh_object->vtx_count), sizeof(emd_vertex_t),
+			SDL_SwapLE16(emd_mesh_object->vtx_count), sizeof(emd_vertex_t),
 			emd_tri_vtx,
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 			1
@@ -484,10 +493,10 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 #if 0
 		/* Normal array */
 		emd_tri_nor = (emd_vertex_t *)
-			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->nor_offset)]);
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE16(emd_mesh_object->nor_offset)]);
 
 		mesh->setArray(mesh, RENDER_ARRAY_NORMAL, 3, RENDER_ARRAY_SHORT,
-			SDL_SwapLE32(emd_mesh_object->vtx_count), sizeof(emd_vertex_t),
+			SDL_SwapLE16(emd_mesh_object->vtx_count), sizeof(emd_vertex_t),
 			norPtr,
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 			1
@@ -498,8 +507,8 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 #endif
 
 		/* Texcoord array */
-		num_tx = SDL_SwapLE32(emd_mesh_object->tri_count)*3
-			+ SDL_SwapLE32(emd_mesh_object->quad_count)*4;
+		num_tx = num_tri*3
+			+ num_quad*4;
 
 		txcoordPtr = (Uint16 *) malloc(2*sizeof(Uint16)*num_tx);
 		if (!txcoordPtr) {
@@ -510,9 +519,9 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		txcoords = txcoordPtr;
 
 		emd_tri_idx = (emd_triangle_t *)
-			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->tri_offset)]);
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE16(emd_mesh_object->tri_offset)]);
 
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->tri_count); j++) {
+		for (j=0; j<num_tri; j++) {
 			int page = (SDL_SwapLE16(emd_tri_idx[j].page) & 0xff)<<1;
 
 			*txcoords++ = emd_tri_idx[j].tu0 + page;
@@ -524,9 +533,9 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		}
 
 		emd_quad_idx = (emd_quad_t *)
-			(&((char *) emd_file)[mesh_offset+SDL_SwapLE32(emd_mesh_object->quad_offset)]);
+			(&((char *) emd_file)[mesh_offset+SDL_SwapLE16(emd_mesh_object->quad_offset)]);
 
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quad_count); j++) {
+		for (j=0; j<num_quad; j++) {
 			int page = (SDL_SwapLE16(emd_quad_idx[j].page) & 0xff)<<1;
 
 			*txcoords++ = emd_quad_idx[j].tu0 + page;
@@ -546,7 +555,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		free(txcoordPtr);
 
 		/* Triangles */
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->tri_count); j++) {
+		for (j=0; j<num_tri; j++) {
 			render_mesh_tri_t	mesh_tri;
 			
 			mesh_tri.v[0] = SDL_SwapLE16(emd_tri_idx[j].v0);
@@ -567,9 +576,9 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		}
 
 		/* Quads */
-		start_tx = SDL_SwapLE32(emd_mesh_object->tri_count)*3;
+		start_tx = num_tri*3;
 
-		for (j=0; j<SDL_SwapLE32(emd_mesh_object->quad_count); j++) {
+		for (j=0; j<num_quad; j++) {
 			render_mesh_quad_t	mesh_quad;
 
 			mesh_quad.v[0] = SDL_SwapLE16(emd_quad_idx[j].v0);
