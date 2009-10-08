@@ -682,9 +682,11 @@ static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t 
 	for (i=0; i<SDL_SwapLE16(skel_data[num_mesh].num_mesh); i++) {
 		int child = mesh_numbers[SDL_SwapLE16(skel_data[num_mesh].offset)+i];
 
-		skel->setParent(skel, num_mesh, child);
+		if (num_mesh != child) {
+			skel->setParent(skel, num_mesh, child);
 
-		emd_load_render_skel_hierarchy(skel, skel_data, child);
+			emd_load_render_skel_hierarchy(skel, skel_data, child);
+		}
 	}
 }
 
