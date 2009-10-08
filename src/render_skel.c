@@ -149,7 +149,7 @@ static void setParent(render_skel_t *this, int parent, int child)
 {
 	render_skel_mesh_t *parent_mesh, *child_mesh;
 
-	if ((parent>=this->num_meshes) || (child>=this->num_meshes)) {
+	if ((parent>=this->num_meshes) || (child>=this->num_meshes) || (parent==child)) {
 		return;
 	}
 
