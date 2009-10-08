@@ -26,6 +26,7 @@
 #include "render_mesh.h"
 #include "video.h"
 #include "render.h"
+#include "log.h"
 
 /*--- Functions prototypes ---*/
 
@@ -65,6 +66,8 @@ render_mesh_t *render_mesh_create(render_texture_t *texture)
 
 	mesh->texture = texture;
 
+	logMsg(1, "render_mesh: mesh 0x%p created\n", mesh);
+
 	return mesh;
 }
 
@@ -90,6 +93,8 @@ static void shutdown(render_mesh_t *this)
 	if (this->quads) {
 		free(this->quads);
 	}
+
+	logMsg(1, "render_mesh: mesh 0x%p destroyed\n", this);
 
 	free(this);
 }

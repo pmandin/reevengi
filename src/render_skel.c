@@ -27,6 +27,7 @@
 #include "render_skel.h"
 #include "video.h"
 #include "render.h"
+#include "log.h"
 
 /*--- Functions prototypes ---*/
 
@@ -65,6 +66,8 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 
 	skel->texture = texture;
 
+	logMsg(1, "render_skel: skel 0x%p created\n", skel);
+
 	return skel;
 }
 
@@ -90,6 +93,8 @@ static void shutdown(render_skel_t *this)
 	if (this->texture) {
 		this->texture->shutdown(this->texture);
 	}*/
+
+	logMsg(1, "render_skel: skel 0x%p destroyed\n", this);
 
 	free(this);
 }
@@ -134,6 +139,8 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 		return;
 	}
 
+	logMsg(1, "render_skel: skel 0x%p, adding mesh 0x%p\n", this, mesh);
+
 	this->meshes = new_meshes;
 
 	this->meshes[this->num_meshes].x = x;
@@ -153,6 +160,8 @@ static void setParent(render_skel_t *this, int parent, int child)
 		return;
 	}
 
+	logMsg(2, "render_skel: skel 0x%p, setting mesh %d as parent for mesh %d\n", this, parent, child);
+
 	parent_mesh = &(this->meshes[parent]);
 	child_mesh = &(this->meshes[child]);
 
@@ -171,6 +180,8 @@ static void draw(render_skel_t *this)
 		if (skel_mesh->parent) {
 			continue;
 		}
+
+		logMsg(2, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
 
 		render.push_matrix();
 		render.translate(
@@ -202,6 +213,8 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 		if (skel_mesh->parent != parent) {
 			continue;
 		}
+
+		logMsg(2, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
 
 		render.push_matrix();
 		render.translate(
