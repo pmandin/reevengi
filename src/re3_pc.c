@@ -283,9 +283,10 @@ render_skel_t *re3pc_load_model(int num_model)
 		tim = FS_Load(filepath, &tim_length);
 		if (tim) {
 			model = model_emd3_load(emd, tim, emd_length, tim_length);
-		} else {
-			free(emd);
+
+			free(tim);
 		}
+		free(emd);
 	}	
 
 	logMsg(1, "emd: %s loading model %s\n",

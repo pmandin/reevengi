@@ -1151,19 +1151,18 @@ render_skel_t *re2ps1_load_model(int num_model)
 		timBuf = malloc(tim_length);
 		if (timBuf) {
 			SDL_RWread(src, timBuf, tim_length, 1);
-		}
 
-		/* Read EMD file */
-		SDL_RWseek(src, emd_offset, RW_SEEK_SET);
-		emdBuf = malloc(emd_length);
-		if (emdBuf) {
-			SDL_RWread(src, emdBuf, emd_length, 1);
-		} else {
+			/* Read EMD file */
+			SDL_RWseek(src, emd_offset, RW_SEEK_SET);
+			emdBuf = malloc(emd_length);
+			if (emdBuf) {
+				SDL_RWread(src, emdBuf, emd_length, 1);
+
+				model = model_emd2_load(emdBuf, timBuf, emd_length, tim_length);
+
+				free(emdBuf);
+			}
 			free(timBuf);
-		}
-
-		if (emdBuf && timBuf) {
-			model = model_emd2_load(emdBuf, timBuf, emd_length, tim_length);
 		}
 
 		SDL_RWclose(src);

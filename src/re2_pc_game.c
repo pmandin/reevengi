@@ -330,9 +330,9 @@ render_skel_t *re2pcgame_load_model(int num_model)
 		tim = FS_Load(filepath, &tim_length);
 		if (tim) {
 			model = model_emd2_load(emd, tim, emd_length, tim_length);
-		} else {
-			free(emd);
+			free(tim);
 		}
+		free(emd);
 	}	
 
 	logMsg(1, "emd: %s loading model %s ...\n",
