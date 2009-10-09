@@ -113,7 +113,7 @@ static int re3pc_load_jpg_bg(const char *filename);
 static void re3pc_loadroom(void);
 static int re3pc_loadroom_rdt(const char *filename);
 
-static model_t *re3pc_load_model(int num_model);
+static render_skel_t *re3pc_load_model(int num_model);
 
 /*--- Functions ---*/
 
@@ -244,10 +244,10 @@ static int re3pc_loadroom_rdt(const char *filename)
 	return 1;
 }
 
-model_t *re3pc_load_model(int num_model)
+render_skel_t *re3pc_load_model(int num_model)
 {
 	char *filepath;
-	model_t *model = NULL;
+	render_skel_t *model = NULL;
 	void *emd, *tim;
 	PHYSFS_sint64 emd_length, tim_length;
 

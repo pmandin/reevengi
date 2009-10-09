@@ -922,7 +922,7 @@ static int re2ps1_parse_ems(int num_model,
 	const re2ps1_ems_t *ems, int ems_size,
 	int *num_tim, int *num_emd);
 
-static model_t *re2ps1_load_model(int num_model);
+static render_skel_t *re2ps1_load_model(int num_model);
 
 /*--- Functions ---*/
 
@@ -1055,10 +1055,10 @@ static int re2ps1_parse_ems(int num_model,
 	return num_parsed;
 }
 
-model_t *re2ps1_load_model(int num_model)
+render_skel_t *re2ps1_load_model(int num_model)
 {
 	char *filepath;
-	model_t *model = NULL;
+	render_skel_t *model = NULL;
 	SDL_RWops *src, *src_emd, *src_tim;
 	int num_file = game_player;
 	int num_tim = -1, num_emd = -1;

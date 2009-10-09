@@ -22,11 +22,8 @@
 #ifndef MODEL_EMD3
 #define MODEL_EMD3 1
 
-#include "video.h"
-#include "model.h"
-
 /*--- Functions ---*/
 
-model_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_length);
+render_skel_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_length);
 
 #endif /* MODEL_EMD3 */

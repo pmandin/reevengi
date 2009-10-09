@@ -23,8 +23,9 @@
 
 #include <SDL.h>
 
-#include "model.h"
 #include "room.h"
+#include "render_texture.h"
+#include "render_skel.h"
 
 /*--- Enums ---*/
 
@@ -53,7 +54,7 @@ enum {
 
 typedef struct {
 	int num_model;
-	model_t *model;
+	render_skel_t	*model;
 } model_item_t;
 
 typedef struct {
@@ -89,13 +90,13 @@ typedef struct {
 	/*--- Private functions, for backend ---*/
 	void (*priv_load_background)(void);
 	void (*priv_load_room)(void);
-	model_t *(*priv_load_model)(int num_model);
+	render_skel_t *(*priv_load_model)(int num_model);
 	void (*priv_shutdown)(void);
 
 	/*--- Functions ---*/
 	void (*load_background)(void);
 	void (*load_room)(void);
-	model_t *(*load_model)(int num_model);
+	render_skel_t *(*load_model)(int num_model);
 	void (*shutdown)(void);
 } state_t;
 

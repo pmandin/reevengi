@@ -66,7 +66,7 @@ render_mesh_t *render_mesh_create(render_texture_t *texture)
 
 	mesh->texture = texture;
 
-	logMsg(1, "render_mesh: mesh 0x%p created\n", mesh);
+	logMsg(2, "render_mesh: mesh 0x%p created\n", mesh);
 
 	return mesh;
 }
@@ -94,7 +94,7 @@ static void shutdown(render_mesh_t *this)
 		free(this->quads);
 	}
 
-	logMsg(1, "render_mesh: mesh 0x%p destroyed\n", this);
+	logMsg(2, "render_mesh: mesh 0x%p destroyed\n", this);
 
 	free(this);
 }

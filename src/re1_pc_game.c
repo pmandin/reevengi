@@ -28,7 +28,6 @@
 #include "filesystem.h"
 #include "state.h"
 #include "depack_pak.h"
-#include "model.h"
 #include "re1_pc_game.h"
 #include "parameters.h"
 #include "video.h"
@@ -93,7 +92,7 @@ static int re1pcgame_load_pak_bg(const char *filename, int row_offset);
 static void re1pcgame_loadroom(void);
 static int re1pcgame_loadroom_rdt(const char *filename);
 
-static model_t *re1pcgame_load_model(int num_model);
+static render_skel_t *re1pcgame_load_model(int num_model);
 
 /*--- Functions ---*/
 
@@ -240,11 +239,11 @@ static int re1pcgame_loadroom_rdt(const char *filename)
 	return 1;
 }
 
-model_t *re1pcgame_load_model(int num_model)
+render_skel_t *re1pcgame_load_model(int num_model)
 {
 	char *filepath;
 	const char *filename = re1pcgame_model1;
-	model_t *model = NULL;
+	render_skel_t *model = NULL;
 	void *emd;
 	PHYSFS_sint64 emd_length;
 

@@ -66,7 +66,7 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 
 	skel->texture = texture;
 
-	logMsg(1, "render_skel: skel 0x%p created\n", skel);
+	logMsg(2, "render_skel: skel 0x%p created\n", skel);
 
 	return skel;
 }
@@ -89,12 +89,11 @@ static void shutdown(render_skel_t *this)
 		free(this->meshes);
 	}
 
-	/* TODO: enable when render_skel is completed and in use
 	if (this->texture) {
 		this->texture->shutdown(this->texture);
-	}*/
+	}
 
-	logMsg(1, "render_skel: skel 0x%p destroyed\n", this);
+	logMsg(2, "render_skel: skel 0x%p destroyed\n", this);
 
 	free(this);
 }
@@ -139,7 +138,7 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 		return;
 	}
 
-	logMsg(1, "render_skel: skel 0x%p, adding mesh 0x%p\n", this, mesh);
+	logMsg(3, "render_skel: skel 0x%p, adding mesh 0x%p\n", this, mesh);
 
 	this->meshes = new_meshes;
 
@@ -160,7 +159,7 @@ static void setParent(render_skel_t *this, int parent, int child)
 		return;
 	}
 
-	logMsg(2, "render_skel: skel 0x%p, setting mesh %d as parent for mesh %d\n", this, parent, child);
+	logMsg(3, "render_skel: skel 0x%p, setting mesh %d as parent for mesh %d\n", this, parent, child);
 
 	parent_mesh = &(this->meshes[parent]);
 	child_mesh = &(this->meshes[child]);
@@ -181,7 +180,7 @@ static void draw(render_skel_t *this)
 			continue;
 		}
 
-		logMsg(2, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
+		logMsg(3, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
 
 		render.push_matrix();
 		render.translate(
@@ -214,7 +213,7 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 			continue;
 		}
 
-		logMsg(2, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
+		logMsg(3, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
 
 		render.push_matrix();
 		render.translate(

@@ -29,7 +29,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	depack_adt.h depack_mdec.h depack_pak.h depack_vlc.h \
 	dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h dyngl.h \
 	filesystem.h idctfst.h log.h matrix.h \
-	model.h model_emd.h model_emd2.h model_emd3.h \
+	model_emd.h model_emd2.h model_emd3.h \
 	parameters.h physfsrwops.h \
 	re1_pc_game.h re1_ps1.h \
 	re2_pc_demo.h re2_pc_game.h re2_ps1.h \

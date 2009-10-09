@@ -113,7 +113,7 @@ static int re2pcgame_load_image(int num_image);
 static void re2pcgame_loadroom(void);
 static int re2pcgame_loadroom_rdt(const char *filename);
 
-model_t *re2pcgame_load_model(int num_model);
+render_skel_t *re2pcgame_load_model(int num_model);
 
 /*--- Functions ---*/
 
@@ -292,10 +292,10 @@ static int re2pcgame_loadroom_rdt(const char *filename)
 	return 1;
 }
 
-model_t *re2pcgame_load_model(int num_model)
+render_skel_t *re2pcgame_load_model(int num_model)
 {
 	char *filepath;
-	model_t *model = NULL;
+	render_skel_t *model = NULL;
 	void *emd, *tim;
 	PHYSFS_sint64 emd_length, tim_length;
 	int i;

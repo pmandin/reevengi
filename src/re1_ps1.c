@@ -24,7 +24,6 @@
 #include <stdlib.h>
 
 #include "filesystem.h"
-#include "model.h"
 #include "state.h"
 #include "re1_ps1.h"
 #include "background_bss.h"
@@ -97,7 +96,7 @@ static void re1ps1_loadbackground(void);
 static void re1ps1_loadroom(void);
 static int re1ps1_loadroom_rdt(const char *filename);
 
-model_t *re1ps1_load_model(int num_model);
+render_skel_t *re1ps1_load_model(int num_model);
 
 /*--- Functions ---*/
 
@@ -214,12 +213,12 @@ static int re1ps1_loadroom_rdt(const char *filename)
 	return 1;
 }
 
-model_t *re1ps1_load_model(int num_model)
+render_skel_t *re1ps1_load_model(int num_model)
 {
 	char *filepath;
 	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	const char *filename = re1ps1_model1;
-	model_t *model = NULL;
+	render_skel_t *model = NULL;
 	void *emd;
 	PHYSFS_sint64 emd_length;
 

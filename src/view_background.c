@@ -28,7 +28,6 @@
 #include "video.h"
 #include "render.h"
 #include "parameters.h"
-#include "model.h"
 #include "room.h"
 #include "re1_pc_game.h"
 #include "re1_ps1.h"
@@ -90,7 +89,7 @@ static int refresh_bg = 1;
 static int reload_model = 1;
 
 static int num_model = 0;
-static model_t *player_model = NULL;
+static render_skel_t *player_model = NULL;
 
 static int render_grid = 0;
 static int render_restore = 0;
@@ -562,12 +561,7 @@ static void drawPlayer(void)
 
 	if (player_model) {
 		render.set_blending(1);
-		if (player_model->skeleton) {
-			player_model->skeleton->draw(player_model->skeleton);
-		} else
-		{
-			player_model->draw(player_model);
-		}
+		player_model->draw(player_model);
 		render.set_blending(0);
 #if 0
 	} else {

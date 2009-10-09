@@ -22,12 +22,8 @@
 #ifndef MODEL_EMD
 #define MODEL_EMD 1
 
-#include <SDL.h>
-
-#include "model.h"
-
 /*--- Functions ---*/
 
-model_t *model_emd_load(void *emd, Uint32 emd_length);
+render_skel_t *model_emd_load(void *emd, Uint32 emd_length);
 
 #endif /* MODEL_EMD */

@@ -23,9 +23,10 @@
 #include <SDL.h>
 #include <physfs.h>
 
+#include "video.h"
+#include "render.h"
 #include "state.h"
 #include "parameters.h"
-#include "video.h"
 
 /*--- Types ---*/
 
@@ -117,7 +118,7 @@ static void state_unloadbackground(void);
 static void state_loadroom(void);
 static void state_unloadroom(void);
 
-static model_t *state_loadmodel(int num_model);
+static render_skel_t *state_loadmodel(int num_model);
 
 static void state_unloadmodels(void);
 
@@ -223,7 +224,7 @@ static void state_unloadroom(void)
 	}
 }
 
-model_t *state_loadmodel(int num_model)
+render_skel_t *state_loadmodel(int num_model)
 {
 	int i;
 
@@ -254,7 +255,7 @@ static void state_unloadmodels(void)
 	int i;
 
 	for (i=0; i<game_state.model_list_count; i++) {
-		model_t *model = game_state.model_list[i].model;
+		render_skel_t *model = game_state.model_list[i].model;
 		if (model) {
 			model->shutdown(model);
 			game_state.model_list[i].num_model = -1;
