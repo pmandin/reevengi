@@ -517,7 +517,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE16(emd_mesh_object->tri_offset)]);
 
 		for (j=0; j<num_tri; j++) {
-			int page = (SDL_SwapLE16(emd_tri_idx[j].page) & 0xff)<<1;
+			int page = (emd_tri_idx[j].page & 0xff)<<1;
 
 			*txcoords++ = emd_tri_idx[j].tu0 + page;
 			*txcoords++ = emd_tri_idx[j].tv0;
@@ -531,7 +531,7 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 			(&((char *) emd_file)[mesh_offset+SDL_SwapLE16(emd_mesh_object->quad_offset)]);
 
 		for (j=0; j<num_quad; j++) {
-			int page = (SDL_SwapLE16(emd_quad_idx[j].page) & 0xff)<<1;
+			int page = (emd_quad_idx[j].page & 0xff)<<1;
 
 			*txcoords++ = emd_quad_idx[j].tu0 + page;
 			*txcoords++ = emd_quad_idx[j].tv0;
@@ -553,19 +553,19 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		for (j=0; j<num_tri; j++) {
 			render_mesh_tri_t	mesh_tri;
 			
-			mesh_tri.v[0] = SDL_SwapLE16(emd_tri_idx[j].v0);
-			mesh_tri.v[1] = SDL_SwapLE16(emd_tri_idx[j].v1);
-			mesh_tri.v[2] = SDL_SwapLE16(emd_tri_idx[j].v2);
+			mesh_tri.v[0] = emd_tri_idx[j].v0;
+			mesh_tri.v[1] = emd_tri_idx[j].v1;
+			mesh_tri.v[2] = emd_tri_idx[j].v2;
 
-			/*mesh_tri.n[0] = SDL_SwapLE16(emd_tri_idx[j].n0);
-			mesh_tri.n[1] = SDL_SwapLE16(emd_tri_idx[j].n1);
-			mesh_tri.n[2] = SDL_SwapLE16(emd_tri_idx[j].n2);*/
+			/*mesh_tri.n[0] = emd_tri_idx[j].n0;
+			mesh_tri.n[1] = emd_tri_idx[j].n1;
+			mesh_tri.n[2] = emd_tri_idx[j].n2;*/
 
 			mesh_tri.tx[0] = j*3;
 			mesh_tri.tx[1] = j*3+1;
 			mesh_tri.tx[2] = j*3+2;
 
-			mesh_tri.txpal = SDL_SwapLE16(emd_tri_idx[j].clutid) & 3;
+			mesh_tri.txpal = emd_tri_idx[j].clutid & 3;
 
 			mesh->addTriangle(mesh, &mesh_tri);
 		}
@@ -576,22 +576,22 @@ static render_skel_t *emd_load_render_skel(model_t *this)
 		for (j=0; j<num_quad; j++) {
 			render_mesh_quad_t	mesh_quad;
 
-			mesh_quad.v[0] = SDL_SwapLE16(emd_quad_idx[j].v0);
-			mesh_quad.v[1] = SDL_SwapLE16(emd_quad_idx[j].v1);
-			mesh_quad.v[2] = SDL_SwapLE16(emd_quad_idx[j].v2);
-			mesh_quad.v[3] = SDL_SwapLE16(emd_quad_idx[j].v3);
+			mesh_quad.v[0] = emd_quad_idx[j].v0;
+			mesh_quad.v[1] = emd_quad_idx[j].v1;
+			mesh_quad.v[2] = emd_quad_idx[j].v2;
+			mesh_quad.v[3] = emd_quad_idx[j].v3;
 
-			/*mesh_quad.n[0] = SDL_SwapLE16(emd_quad_idx[j].n0);
-			mesh_quad.n[1] = SDL_SwapLE16(emd_quad_idx[j].n1);
-			mesh_quad.n[2] = SDL_SwapLE16(emd_quad_idx[j].n2);
-			mesh_quad.n[3] = SDL_SwapLE16(emd_quad_idx[j].n3);*/
+			/*mesh_quad.n[0] = emd_quad_idx[j].n0;
+			mesh_quad.n[1] = emd_quad_idx[j].n1;
+			mesh_quad.n[2] = emd_quad_idx[j].n2;
+			mesh_quad.n[3] = emd_quad_idx[j].n3;*/
 
 			mesh_quad.tx[0] = start_tx + j*4;
 			mesh_quad.tx[1] = start_tx + j*4+1;
 			mesh_quad.tx[2] = start_tx + j*4+2;
 			mesh_quad.tx[3] = start_tx + j*4+3;
 
-			mesh_quad.txpal = SDL_SwapLE16(emd_quad_idx[j].clutid) & 3;
+			mesh_quad.txpal = emd_quad_idx[j].clutid & 3;
 
 			mesh->addQuad(mesh, &mesh_quad);
 		}
