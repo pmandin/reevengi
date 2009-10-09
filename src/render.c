@@ -25,6 +25,7 @@
 #include "draw_simple.h"
 #include "draw_sbuffer.h"
 #include "render_texture_list.h"
+#include "render_skel_list.h"
 #include "dither.h"
 
 /*--- Defines ---*/
@@ -153,6 +154,7 @@ static void render_soft_shutdown(render_t *render)
 {
 	draw.shutdown(&draw);
 	list_render_texture_shutdown();
+	list_render_skel_shutdown();
 }
 
 static void render_resize(render_t *this, int w, int h)

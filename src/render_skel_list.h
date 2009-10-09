@@ -1,5 +1,5 @@
 /*
-	List for render textures
+	List for render models
 
 	Copyright (C) 2009	Patrice Mandin
 
@@ -18,23 +18,23 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RENDER_TEXTURE_LIST_H
-#define RENDER_TEXTURE_LIST_H 1
+#ifndef RENDER_SKEL_LIST_H
+#define RENDER_SKEL_LIST_H 1
 
-#include "render_texture.h"
+#include "render_skel.h"
 
 /*--- Functions prototypes ---*/
 
-/* Add a texture to the list */
-void list_render_texture_add(render_texture_t *texture);
+/* Add a skel to the list */
+void list_render_skel_add(render_skel_t *skel);
 
-/* Remove texture from list */
-void list_render_texture_remove(render_texture_t *texture);
+/* Remove skel from list */
+void list_render_skel_remove(render_skel_t *skel);
 
-/* Download all textures for video hardware */
-void list_render_texture_download(void);
+/* Download all skels for video hardware */
+void list_render_skel_download(void);
 
-/* Shutdown list of textures */
-void list_render_texture_shutdown(void);
+/* Shutdown list of skels */
+void list_render_skel_shutdown(void);
 
-#endif /* RENDER_TEXTURE_LIST_H */
+#endif /* RENDER_SKEL_LIST_H */

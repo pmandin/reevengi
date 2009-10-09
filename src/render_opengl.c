@@ -37,6 +37,7 @@
 #include "render_texture_opengl.h"
 #include "matrix.h"
 #include "render_texture_list.h"
+#include "render_skel_list.h"
 
 /*--- Variables ---*/
 
@@ -133,6 +134,7 @@ void render_opengl_init(render_t *render)
 static void render_opengl_shutdown(render_t *render)
 {
 	list_render_texture_shutdown();
+	list_render_skel_shutdown();
 }
 
 static void render_resize(render_t *this, int w, int h)

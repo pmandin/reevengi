@@ -28,6 +28,7 @@
 #include "video.h"
 #include "render.h"
 #include "log.h"
+#include "render_skel_list.h"
 
 /*--- Functions prototypes ---*/
 
@@ -68,6 +69,8 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 
 	logMsg(2, "render_skel: skel 0x%p created\n", skel);
 
+	list_render_skel_add(skel);
+
 	return skel;
 }
 
@@ -94,6 +97,8 @@ static void shutdown(render_skel_t *this)
 	}
 
 	logMsg(2, "render_skel: skel 0x%p destroyed\n", this);
+
+	list_render_skel_remove(this);
 
 	free(this);
 }

@@ -39,8 +39,8 @@
 #include "filesystem.h"
 #include "log.h"
 #include "clock.h"
-#include "render_texture.h"
 #include "render_texture_list.h"
+#include "render_skel_list.h"
 
 #include "video.h"
 #include "render.h"
@@ -291,6 +291,7 @@ static void viewer_update(void)
 {
 	if (switch_mode) {
 		list_render_texture_download();
+		list_render_skel_download();
 		video.setVideoMode(&video, new_width, new_height, video.bpp);
 	}
 
