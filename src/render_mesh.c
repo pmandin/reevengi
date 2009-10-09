@@ -216,7 +216,7 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 
 static void draw(render_mesh_t *this)
 {
-	int i, j;
+	int i, j, prevpal=-1;
 	vertex_t v[4];
 
 	for (i=0; i<this->num_tris; i++) {
@@ -270,7 +270,10 @@ static void draw(render_mesh_t *this)
 			}
 		}
 
-		render.set_texture(tri->txpal, this->texture);
+		if (tri->txpal != prevpal) {
+			render.set_texture(tri->txpal, this->texture);
+			prevpal = tri->txpal;
+		}
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
 
@@ -325,7 +328,10 @@ static void draw(render_mesh_t *this)
 			}
 		}
 
-		render.set_texture(quad->txpal, this->texture);
+		if (quad->txpal != prevpal) {
+			render.set_texture(quad->txpal, this->texture);
+			prevpal = quad->txpal;
+		}
 		render.quad(&v[0], &v[1], &v[3], &v[2]);
 	}
 }
