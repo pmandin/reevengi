@@ -234,7 +234,6 @@ static void draw(render_mesh_t *this)
 		return;
 	}
 
-	logMsg(2, "render_mesh_gl: draw list %d\n", gl_mesh->num_list);
 	if (gl_mesh->num_list == INVALID_LIST) {
 		this->upload(this);
 	}

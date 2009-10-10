@@ -142,9 +142,10 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 		case 8:
 			{
 				Uint8 *src = tex->pixels;
+				Uint8 *dst = surf->pixels;
+
 				src += src_rect->y * tex->pitch;
 				src += src_rect->x;
-				Uint8 *dst = surf->pixels;
 				dst += dst_rect->y * surf->pitch;
 				dst += dst_rect->x;
 
@@ -159,9 +160,10 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 		case 16:
 			{
 				Uint16 *src = (Uint16 *) tex->pixels;
+				Uint16 *dst = (Uint16 *) surf->pixels;
+
 				src += src_rect->y * (tex->pitch>>1);
 				src += src_rect->x;
-				Uint16 *dst = (Uint16 *) surf->pixels;
 				dst += dst_rect->y * (surf->pitch>>1);
 				dst += dst_rect->x;
 
@@ -175,9 +177,10 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 		case 24:
 			{
 				Uint8 *src = tex->pixels;
+				Uint8 *dst = surf->pixels;
+
 				src += src_rect->y * tex->pitch;
 				src += src_rect->x * 3;
-				Uint8 *dst = surf->pixels;
 				dst += dst_rect->y * surf->pitch;
 				dst += dst_rect->x * 3;
 
@@ -191,9 +194,10 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 		case 32:
 			{
 				Uint32 *src = (Uint32 *) tex->pixels;
+				Uint32 *dst = (Uint32 *) surf->pixels;
+
 				src += src_rect->y * (tex->pitch>>2);
 				src += src_rect->x;
-				Uint32 *dst = (Uint32 *) surf->pixels;
 				dst += dst_rect->y * (surf->pitch>>2);
 				dst += dst_rect->x;
 
@@ -276,9 +280,10 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 				case 8:
 					{
 						Uint8 *src = tex->pixels;
+						Uint8 *dst = surf->pixels;
+
 						src += blt_src_rect.y * tex->pitch;
 						src += blt_src_rect.x;
-						Uint8 *dst = surf->pixels;
 						dst += blt_dst_rect.y * surf->pitch;
 						dst += blt_dst_rect.x;
 
@@ -293,9 +298,10 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 				case 16:
 					{
 						Uint16 *src = (Uint16 *) tex->pixels;
+						Uint16 *dst = (Uint16 *) surf->pixels;
+
 						src += blt_src_rect.y * (tex->pitch>>1);
 						src += blt_src_rect.x;
-						Uint16 *dst = (Uint16 *) surf->pixels;
 						dst += blt_dst_rect.y * (surf->pitch>>1);
 						dst += blt_dst_rect.x;
 
@@ -309,9 +315,10 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 				case 24:
 					{
 						Uint8 *src = tex->pixels;
+						Uint8 *dst = surf->pixels;
+
 						src += blt_src_rect.y * tex->pitch;
 						src += blt_src_rect.x * 3;
-						Uint8 *dst = surf->pixels;
 						dst += blt_dst_rect.y * surf->pitch;
 						dst += blt_dst_rect.x * 3;
 
@@ -325,9 +332,10 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 				case 32:
 					{
 						Uint32 *src = (Uint32 *) tex->pixels;
+						Uint32 *dst = (Uint32 *) surf->pixels;
+
 						src += blt_src_rect.y * (tex->pitch>>2);
 						src += blt_src_rect.x;
-						Uint32 *dst = (Uint32 *) surf->pixels;
 						dst += blt_dst_rect.y * (surf->pitch>>2);
 						dst += blt_dst_rect.x;
 

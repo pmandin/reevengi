@@ -78,7 +78,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	gl.LoadIdentity();
 	if (gl_tex->textureTarget != GL_TEXTURE_2D) {
 		/* Rescale to width/height range */
-		gl.Scalef(tex->w, tex->h, 1.0f);
+		gl.Scalef((float) tex->w, (float) tex->h, 1.0f);
 	} else {
 		/* Rescale to 0-1 range */
 		gl.Scalef((float) tex->w / tex->pitchw,
@@ -88,7 +88,7 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
 	/*gl.Translatef(0.375f, 0.375f, 0.0f);*/
-	gl.Scalef(video->width, video->height, 1.0f);
+	gl.Scalef((float) video->width, (float) video->height, 1.0f);
 
 	gl.Begin(GL_QUADS);
 		gl.TexCoord2f(0.0f, 0.0f);
