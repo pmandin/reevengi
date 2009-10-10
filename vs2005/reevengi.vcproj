@@ -191,6 +191,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\clock.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\depack_adt.c"
 				>
 			</File>
@@ -299,11 +303,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\render_background.c"
+				RelativePath="..\src\render_bitmap.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\render_background_opengl.c"
+				RelativePath="..\src\render_bitmap_opengl.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_mesh.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_mesh_opengl.c"
 				>
 			</File>
 			<File
@@ -311,7 +323,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\render_skel.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_skel_list.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\render_texture.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_texture_list.c"
 				>
 			</File>
 			<File
@@ -355,14 +379,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\video_surface.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\video_surface_opengl.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\view_background.c"
 				>
 			</File>
@@ -382,6 +398,10 @@
 			</File>
 			<File
 				RelativePath="..\src\background_tim.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\clock.h"
 				>
 			</File>
 			<File
@@ -497,15 +517,27 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\render_background.h"
+				RelativePath="..\src\render_mesh.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\render_background_opengl.h"
+				RelativePath="..\src\render_mesh_opengl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_skel.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_skel_list.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\render_texture.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_texture_list.h"
 				>
 			</File>
 			<File
@@ -542,14 +574,6 @@
 			</File>
 			<File
 				RelativePath="..\src\video.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\video_surface.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\video_surface_opengl.h"
 				>
 			</File>
 			<File
