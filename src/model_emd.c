@@ -156,7 +156,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
 
-	skeleton = render_skel_create(texture);
+	skeleton = render.createSkel(texture);
 	if (!skeleton) {
 		fprintf(stderr, "Can not create skeleton\n");
 		return NULL;

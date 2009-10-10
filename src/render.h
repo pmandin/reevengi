@@ -23,6 +23,7 @@
 
 #include "render_texture.h"
 #include "render_mesh.h"
+#include "render_skel.h"
 
 /*--- Defines ---*/
 
@@ -59,6 +60,7 @@ struct render_s {
 
 	render_texture_t *(*createTexture)(int flags);
 	render_mesh_t *(*createMesh)(render_texture_t *texture);
+	render_skel_t *(*createSkel)(render_texture_t *texture);
 
 	void (*set_viewport)(int x, int y, int w, int h);
 	void (*set_projection)(float angle, float aspect,
