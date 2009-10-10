@@ -22,9 +22,6 @@
 #ifndef RENDER_TEXTURE_OPENGL_H
 #define RENDER_TEXTURE_OPENGL_H 1
 
-#include <SDL.h>
-#include <SDL_opengl.h>
-
 /*--- Types ---*/
 
 typedef struct render_texture_gl_s render_texture_gl_t;
