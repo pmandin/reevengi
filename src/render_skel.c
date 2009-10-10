@@ -107,6 +107,8 @@ static void upload(render_skel_t *this)
 {
 	int i;
 
+	logMsg(2, "render_skel: upload\n");
+
 	for (i=0; i<this->num_meshes; i++) {
 		render_mesh_t *mesh = this->meshes[i].mesh;
 
@@ -119,6 +121,8 @@ static void upload(render_skel_t *this)
 static void download(render_skel_t *this)
 {
 	int i;
+
+	logMsg(2, "render_skel: download\n");
 
 	for (i=0; i<this->num_meshes; i++) {
 		render_mesh_t *mesh = this->meshes[i].mesh;
@@ -176,7 +180,7 @@ static void draw(render_skel_t *this)
 {
 	int i;
 
-	this->upload(this);
+	/*this->upload(this);*/
 
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
