@@ -23,10 +23,7 @@
 
 /*--- Includes ---*/
 
-#include <SDL.h>
 #include <physfs.h>
-
-/*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 

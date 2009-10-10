@@ -21,8 +21,6 @@
 #ifndef DITHER_H
 #define DITHER_H 1
 
-#include <SDL.h>
-
 /*--- Functions prototypes ---*/
 
 /* Set 216 color palette */

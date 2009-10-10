@@ -21,9 +21,8 @@
 #ifndef DEPACK_ADT_H
 #define DEPACK_ADT_H
 
-#include <SDL.h>
-
 void adt_depack(SDL_RWops *src, Uint8 **dstPointer, int *dstLength);
+
 SDL_Surface *adt_surface(Uint16 *source);
 
 #endif /* DEPACK_ADT_H */

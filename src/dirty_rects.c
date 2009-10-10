@@ -19,6 +19,7 @@
 */
 
 #include <stdlib.h>
+#include <SDL.h>
 
 #include "dirty_rects.h"
 

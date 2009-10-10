@@ -21,8 +21,6 @@
 #ifndef BACKGROUND_TIM_H
 #define BACKGROUND_TIM_H 1
 
-#include <SDL.h>
-
 /*--- Defines ---*/
 
 #define MAGIC_TIM	0x10

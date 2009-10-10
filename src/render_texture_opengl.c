@@ -67,6 +67,8 @@ render_texture_t *render_texture_gl_create(int flags)
 		return NULL;
 	}
 
+	list_render_texture_remove(tex);
+
 	tex = (render_texture_t *) gl_tex;
 
 	tex->upload = upload;
@@ -80,7 +82,6 @@ render_texture_t *render_texture_gl_create(int flags)
 		gl_tex->texture_id[i] = 0xffffffffUL;
 	}
 
-	list_render_texture_remove(tex);
 	list_render_texture_add((render_texture_t *) gl_tex);
 
 	return tex;

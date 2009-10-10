@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL.h>
+
 #include "filesystem.h"
 #include "state.h"
 #include "re1_ps1.h"

@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <SDL.h>
+
 #include "video.h"
 #include "render.h"
 #include "matrix.h"
