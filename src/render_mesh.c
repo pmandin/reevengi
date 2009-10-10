@@ -196,6 +196,8 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 
 	this->num_tris++;
 	this->triangles = new_tris;
+
+	/* TODO: sort per texture palette index */
 }
 
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
@@ -212,6 +214,8 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 
 	this->num_quads++;
 	this->quads = new_quads;
+
+	/* TODO: sort per texture palette index */
 }
 
 static void draw(render_mesh_t *this)
