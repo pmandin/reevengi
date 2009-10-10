@@ -52,14 +52,15 @@ dirty_rects_t *dirty_rects_create(int w, int h)
 
 void dirty_rects_destroy(dirty_rects_t *this)
 {
-	if (this) {
-		if (this->markers) {
-			free(this->markers);
-			this->markers = NULL;
-		}
-		this->width = 0;
-		this->height = 0;
+	if (!this) {
+		return;
+
+	if (this->markers) {
+		free(this->markers);
+		this->markers = NULL;
 	}
+
+	free(this);
 }
 
 /*--- Private functions ---*/

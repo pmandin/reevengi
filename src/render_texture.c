@@ -79,14 +79,21 @@ render_texture_t *render_texture_create(int flags)
 
 static void shutdown(render_texture_t *this)
 {
-	if (this) {
-		if (this->scaled) {
-			SDL_FreeSurface(this->scaled);
-			this->scaled = NULL;
-		}
-		list_render_texture_remove(this);
-		free(this);
+	if (!this) {
+		return;
 	}
+
+	if (this->scaled) {
+		SDL_FreeSurface(this->scaled);
+		this->scaled = NULL;
+	}
+	if (this->pixels) {
+		free(this->pixels);
+		this->pixels = NULL;
+	}
+
+	list_render_texture_remove(this);
+	free(this);
 }
 
 static void upload(render_texture_t *this, int num_pal)
