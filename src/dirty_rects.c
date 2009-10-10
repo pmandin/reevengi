@@ -54,6 +54,7 @@ void dirty_rects_destroy(dirty_rects_t *this)
 {
 	if (!this) {
 		return;
+	}
 
 	if (this->markers) {
 		free(this->markers);
@@ -84,10 +85,7 @@ static void resize(dirty_rects_t *this, int w, int h)
 	this->width = w;
 	this->height = h;
 
-	if (this->markers) {
-		free(this->markers);
-	}
-	this->markers = (Uint8 *) malloc(w*h*sizeof(Uint8));
+	this->markers = (Uint8 *) realloc(this->markers, w*h*sizeof(Uint8));
 
 	setDirty(this, 0,0,w<<4,h<<4);
 }
