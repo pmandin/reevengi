@@ -47,6 +47,7 @@ struct render_skel_s {
 	void (*setParent)(render_skel_t *this, int parent, int child);
 
 	void (*draw)(render_skel_t *this);
+	void (*drawChild)(render_skel_t *this, render_skel_mesh_t *parent);
 
 	int num_meshes;
 	render_skel_mesh_t *meshes;

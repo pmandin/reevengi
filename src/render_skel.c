@@ -64,6 +64,7 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 	skel->addMesh = addMesh;
 	skel->setParent = setParent;
 	skel->draw = draw;
+	skel->drawChild = drawChild;
 
 	skel->texture = texture;
 
@@ -180,16 +181,12 @@ static void draw(render_skel_t *this)
 {
 	int i;
 
-	/*this->upload(this);*/
-
 	for (i=0; i<this->num_meshes; i++) {
 		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
 
 		if (skel_mesh->parent) {
 			continue;
 		}
-
-		logMsg(3, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
 
 		render.push_matrix();
 		render.translate(
@@ -202,7 +199,7 @@ static void draw(render_skel_t *this)
 		skel_mesh->mesh->draw(skel_mesh->mesh);
 
 		/* Draw children, relative to parent */
-		drawChild(this, skel_mesh);
+		this->drawChild(this, skel_mesh);
 
 		render.pop_matrix();
 
@@ -222,8 +219,6 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 			continue;
 		}
 
-		logMsg(3, "render_skel: skel 0x%p, drawing mesh %d\n", this, i);
-
 		render.push_matrix();
 		render.translate(
 			skel_mesh->x,
@@ -235,7 +230,7 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 		skel_mesh->mesh->draw(skel_mesh->mesh);
 
 		/* Draw children, relative to parent */
-		drawChild(this, skel_mesh);
+		this->drawChild(this, skel_mesh);
 
 		render.pop_matrix();
 	}
