@@ -91,122 +91,52 @@ static void upload(render_mesh_t *this)
 
 	gl_mesh->num_list = gl.GenLists(1);	
 
+	gl.EnableClientState(GL_VERTEX_ARRAY);
+	gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);
+
 	gl.NewList(gl_mesh->num_list, GL_COMPILE);
 
-	for (i=0; i<this->num_tris; i++) {
-		render_mesh_tri_t *tri = &(this->triangles[i]);
+	gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);
+	gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);
 
-		if (this->vertex.data) {
-			switch(this->vertex.type) {
-				case RENDER_ARRAY_BYTE:
-					{
-						Uint8 *src = (Uint8 *) this->vertex.data;
-						for (j=0; j<3; j++) {
-							v[j].x = src[(tri->v[j]*this->vertex.stride)+0];
-							v[j].y = src[(tri->v[j]*this->vertex.stride)+1];
-							v[j].z = src[(tri->v[j]*this->vertex.stride)+2];
-						}
-					}
-					break;
-				case RENDER_ARRAY_SHORT:
-					{
-						Sint16 *src = (Sint16 *) this->vertex.data;
-						for (j=0; j<3; j++) {
-							v[j].x = src[(tri->v[j]*(this->vertex.stride>>1))+0];
-							v[j].y = src[(tri->v[j]*(this->vertex.stride>>1))+1];
-							v[j].z = src[(tri->v[j]*(this->vertex.stride>>1))+2];
-						}
-					}
-					break;
+	if (this->num_tris>0) {
+		gl.Begin(GL_TRIANGLES);
+
+		for (i=0; i<this->num_tris; i++) {
+			render_mesh_tri_t *tri = &(this->triangles[i]);
+
+			if (tri->txpal != prevpal) {
+				render.set_texture(tri->txpal, this->texture);
+				prevpal = tri->txpal;
 			}
+
+			gl.ArrayElement(tri->v[0]);
+			gl.ArrayElement(tri->v[1]);
+			gl.ArrayElement(tri->v[2]);
 		}
 
-		if (this->texcoord.data) {
-			switch(this->texcoord.type) {
-				case RENDER_ARRAY_BYTE:
-					{
-						Uint8 *src = (Uint8 *) this->texcoord.data;
-						for (j=0; j<3; j++) {
-							v[j].u = src[(tri->tx[j]*this->texcoord.stride)+0];
-							v[j].v = src[(tri->tx[j]*this->texcoord.stride)+1];
-						}
-					}
-					break;
-				case RENDER_ARRAY_SHORT:
-					{
-						Sint16 *src = (Sint16 *) this->texcoord.data;
-						for (j=0; j<3; j++) {
-							v[j].u = src[(tri->tx[j]*(this->texcoord.stride>>1))+0];
-							v[j].v = src[(tri->tx[j]*(this->texcoord.stride>>1))+1];
-						}
-					}
-					break;
-			}
-		}
-
-		if (tri->txpal != prevpal) {
-			render.set_texture(tri->txpal, this->texture);
-			prevpal = tri->txpal;
-		}
-		render.triangle(&v[0], &v[1], &v[2]);
+		gl.End();
 	}
 
-	for (i=0; i<this->num_quads; i++) {
-		render_mesh_quad_t *quad = &(this->quads[i]);
+	if (this->num_quads>0) {
+		gl.Begin(GL_QUADS);
 
-		if (this->vertex.data) {
-			switch(this->vertex.type) {
-				case RENDER_ARRAY_BYTE:
-					{
-						Uint8 *src = (Uint8 *) this->vertex.data;
-						for (j=0; j<4; j++) {
-							v[j].x = src[(quad->v[j]*this->vertex.stride)+0];
-							v[j].y = src[(quad->v[j]*this->vertex.stride)+1];
-							v[j].z = src[(quad->v[j]*this->vertex.stride)+2];
-						}
-					}
-					break;
-				case RENDER_ARRAY_SHORT:
-					{
-						Sint16 *src = (Sint16 *) this->vertex.data;
-						for (j=0; j<4; j++) {
-							v[j].x = src[(quad->v[j]*(this->vertex.stride>>1))+0];
-							v[j].y = src[(quad->v[j]*(this->vertex.stride>>1))+1];
-							v[j].z = src[(quad->v[j]*(this->vertex.stride>>1))+2];
-						}
-					}
-					break;
+		for (i=0; i<this->num_quads; i++) {
+			render_mesh_quad_t *quad = &(this->quads[i]);
+
+
+			if (quad->txpal != prevpal) {
+				render.set_texture(quad->txpal, this->texture);
+				prevpal = quad->txpal;
 			}
+
+			gl.ArrayElement(quad->v[0]);
+			gl.ArrayElement(quad->v[1]);
+			gl.ArrayElement(quad->v[3]);
+			gl.ArrayElement(quad->v[2]);
 		}
 
-		if (this->texcoord.data) {
-			switch(this->texcoord.type) {
-				case RENDER_ARRAY_BYTE:
-					{
-						Uint8 *src = (Uint8 *) this->texcoord.data;
-						for (j=0; j<4; j++) {
-							v[j].u = src[(quad->tx[j]*this->texcoord.stride)+0];
-							v[j].v = src[(quad->tx[j]*this->texcoord.stride)+1];
-						}
-					}
-					break;
-				case RENDER_ARRAY_SHORT:
-					{
-						Sint16 *src = (Sint16 *) this->texcoord.data;
-						for (j=0; j<4; j++) {
-							v[j].u = src[(quad->tx[j]*(this->texcoord.stride>>1))+0];
-							v[j].v = src[(quad->tx[j]*(this->texcoord.stride>>1))+1];
-						}
-					}
-					break;
-			}
-		}
-
-		if (quad->txpal != prevpal) {
-			render.set_texture(quad->txpal, this->texture);
-			prevpal = quad->txpal;
-		}
-		render.quad(&v[0], &v[1], &v[3], &v[2]);
+		gl.End();
 	}
 
 	gl.EndList();

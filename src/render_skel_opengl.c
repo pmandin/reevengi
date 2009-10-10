@@ -112,6 +112,22 @@ static void draw(render_skel_t *this)
 	}
 
 	gl_skel->softDraw(this);
+
+	switch(render.render_mode) {
+		case RENDER_WIREFRAME:
+			gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			break;
+		case RENDER_TEXTURED:
+			{
+				render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
+
+				gl.Disable(gl_tex->textureTarget);
+			}
+			break;
+	}
+	gl.Disable(GL_CULL_FACE);
+
+	gl.Disable(GL_DEPTH_TEST);
 }
 
 #endif /* ENABLE_OPENGL */
