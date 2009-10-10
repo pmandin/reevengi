@@ -106,6 +106,7 @@ void render_soft_init(render_t *render)
 	render->endFrame = render_endFrame;
 
 	render->createTexture = render_texture_create;
+	render->createMesh = render_mesh_create;
 
 	render->set_viewport = set_viewport;
 	render->set_projection = set_projection;

@@ -176,7 +176,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 		emd_triangle_t *emd_tri_idx;
 		Uint16 *txcoordPtr, *txcoords;
 
-		render_mesh_t *mesh = render_mesh_create(texture);
+		render_mesh_t *mesh = render.createMesh(texture);
 		if (!mesh) {
 			fprintf(stderr, "Can not create mesh\n");
 			break;

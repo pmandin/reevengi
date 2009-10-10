@@ -21,9 +21,8 @@
 #ifndef RENDER_H
 #define RENDER_H 1
 
-#include <SDL.h>
-
 #include "render_texture.h"
+#include "render_mesh.h"
 
 /*--- Defines ---*/
 
@@ -59,6 +58,7 @@ struct render_s {
 	void (*endFrame)(render_t *this);
 
 	render_texture_t *(*createTexture)(int flags);
+	render_mesh_t *(*createMesh)(render_texture_t *texture);
 
 	void (*set_viewport)(int x, int y, int w, int h);
 	void (*set_projection)(float angle, float aspect,
