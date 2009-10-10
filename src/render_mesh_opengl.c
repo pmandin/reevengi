@@ -94,10 +94,10 @@ static void upload(render_mesh_t *this)
 	gl.EnableClientState(GL_VERTEX_ARRAY);
 	gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	gl.NewList(gl_mesh->num_list, GL_COMPILE);
-
 	gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);
 	gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);
+
+	gl.NewList(gl_mesh->num_list, GL_COMPILE);
 
 	if (this->num_tris>0) {
 		gl.Begin(GL_TRIANGLES);
@@ -123,7 +123,6 @@ static void upload(render_mesh_t *this)
 
 		for (i=0; i<this->num_quads; i++) {
 			render_mesh_quad_t *quad = &(this->quads[i]);
-
 
 			if (quad->txpal != prevpal) {
 				render.set_texture(quad->txpal, this->texture);

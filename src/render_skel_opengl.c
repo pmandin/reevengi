@@ -104,6 +104,10 @@ static void draw(render_skel_t *this)
 
 				gl.MatrixMode(GL_TEXTURE);
 				gl.LoadIdentity();
+				if (gl_tex->textureTarget == GL_TEXTURE_2D) {
+					gl.Scalef(1.0f / this->texture->pitchw, 1.0f / this->texture->pitchh, 1.0f);
+				}
+
 				gl.MatrixMode(GL_MODELVIEW);
 
 				gl.Enable(gl_tex->textureTarget);
