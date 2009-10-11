@@ -44,7 +44,7 @@
 
 /*--- Functions prototypes ---*/
 
-static void draw(render_skel_t *this);
+static void draw(render_skel_t *this, render_skel_mesh_t *parent);
 
 /*--- Functions ---*/
 
@@ -78,60 +78,64 @@ render_skel_t *render_skel_gl_create(render_texture_t *texture)
 	return skel;
 }
 
-static void draw(render_skel_t *this)
+static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 {
 	render_skel_gl_t *gl_skel = (render_skel_gl_t *) this;
 
-	/* Init OpenGL rendering */
-	gl.Enable(GL_DEPTH_TEST);
+	if (parent == NULL) {
+		/* Init OpenGL rendering */
+		gl.Enable(GL_DEPTH_TEST);
 
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
+		gl.Enable(GL_CULL_FACE);
+		gl.CullFace(GL_FRONT);
 
-	switch(render.render_mode) {
-		case RENDER_WIREFRAME:
-			gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			break;
-		case RENDER_FILLED:
-			gl.ShadeModel(GL_FLAT);
-			break;
-		case RENDER_GOURAUD:
-			gl.ShadeModel(GL_SMOOTH);
-			break;
-		case RENDER_TEXTURED:
-			{
-				render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
+		switch(render.render_mode) {
+			case RENDER_WIREFRAME:
+				gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				break;
+			case RENDER_FILLED:
+				gl.ShadeModel(GL_FLAT);
+				break;
+			case RENDER_GOURAUD:
+				gl.ShadeModel(GL_SMOOTH);
+				break;
+			case RENDER_TEXTURED:
+				{
+					render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
 
-				gl.MatrixMode(GL_TEXTURE);
-				gl.LoadIdentity();
-				if (gl_tex->textureTarget == GL_TEXTURE_2D) {
-					gl.Scalef(1.0f / this->texture->pitchw, 1.0f / this->texture->pitchh, 1.0f);
+					gl.MatrixMode(GL_TEXTURE);
+					gl.LoadIdentity();
+					if (gl_tex->textureTarget == GL_TEXTURE_2D) {
+						gl.Scalef(1.0f / this->texture->pitchw, 1.0f / this->texture->pitchh, 1.0f);
+					}
+
+					gl.MatrixMode(GL_MODELVIEW);
+
+					gl.Enable(gl_tex->textureTarget);
 				}
-
-				gl.MatrixMode(GL_MODELVIEW);
-
-				gl.Enable(gl_tex->textureTarget);
-			}
-			break;
+				break;
+		}
 	}
 
-	gl_skel->softDraw(this);
+	gl_skel->softDraw(this, parent);
 
-	switch(render.render_mode) {
-		case RENDER_WIREFRAME:
-			gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			break;
-		case RENDER_TEXTURED:
-			{
-				render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
+	if (parent == NULL) {
+		switch(render.render_mode) {
+			case RENDER_WIREFRAME:
+				gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				break;
+			case RENDER_TEXTURED:
+				{
+					render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
 
-				gl.Disable(gl_tex->textureTarget);
-			}
-			break;
+					gl.Disable(gl_tex->textureTarget);
+				}
+				break;
+		}
+		gl.Disable(GL_CULL_FACE);
+
+		gl.Disable(GL_DEPTH_TEST);
 	}
-	gl.Disable(GL_CULL_FACE);
-
-	gl.Disable(GL_DEPTH_TEST);
 }
 
 #endif /* ENABLE_OPENGL */

@@ -569,7 +569,7 @@ static void drawPlayer(void)
 
 	if (player_model) {
 		render.set_blending(1);
-		player_model->draw(player_model);
+		player_model->draw(player_model, NULL);
 		render.set_blending(0);
 		if (render_bones) {
 			player_model->drawBones(player_model, NULL);

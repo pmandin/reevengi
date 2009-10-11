@@ -31,7 +31,7 @@ typedef struct render_skel_gl_s render_skel_gl_t;
 struct render_skel_gl_s {
 	render_skel_t render_skel;
 
-	void (*softDraw)(render_skel_t *this);
+	void (*softDraw)(render_skel_t *this, render_skel_mesh_t *parent);
 };
 
 /*--- Functions prototypes ---*/
