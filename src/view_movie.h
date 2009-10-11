@@ -21,11 +21,6 @@
 #ifndef VIEW_MOVIE_H
 #define VIEW_MOVIE_H 1
 
-/*--- Includes ---*/
-
-#include <stdlib.h>
-#include <SDL.h>
-
 /*--- Function prototypes ---*/
 
 int view_movie_input(SDL_Event *event);

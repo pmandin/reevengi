@@ -21,8 +21,6 @@
 #ifndef STATE_H
 #define STATE_H 1
 
-#include <SDL.h>
-
 #include "room.h"
 #include "render_texture.h"
 #include "render_skel.h"

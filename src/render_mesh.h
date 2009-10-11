@@ -21,8 +21,6 @@
 #ifndef RENDER_MESH_H
 #define RENDER_MESH_H 1
 
-#include <SDL.h>
-
 /*--- Defines ---*/
 
 enum {

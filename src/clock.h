@@ -21,8 +21,6 @@
 #ifndef CLOCK_H
 #define CLOCK_H 1
 
-#include <SDL.h>
-
 /*--- Functions prototypes ---*/
 
 /* Init clock */

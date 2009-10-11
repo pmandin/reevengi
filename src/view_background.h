@@ -21,11 +21,6 @@
 #ifndef VIEW_BACKGROUND_H
 #define VIEW_BACKGROUND_H 1
 
-/*--- Includes ---*/
-
-#include <stdlib.h>
-#include <SDL.h>
-
 /*--- Function prototypes ---*/
 
 void view_background_input(SDL_Event *event);
