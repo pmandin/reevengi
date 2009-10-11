@@ -122,13 +122,19 @@ static void upload(render_mesh_t *this)
 
 	gl_mesh->num_list = gl.GenLists(1);	
 
-	/*gl.EnableClientState(GL_VERTEX_ARRAY);*/
-	/*gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);*/
+	/*gl.EnableClientState(GL_VERTEX_ARRAY);
+	gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);
 
-	/*gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);*/
-	/*gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);*/
+	if (render.render_mode == RENDER_TEXTURED) {
+		gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);
+		gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);
+	}*/
 
 	gl.NewList(gl_mesh->num_list, GL_COMPILE);
+
+	if (render.render_mode == RENDER_TEXTURED) {
+		render.set_texture(0, this->texture);
+	}
 
 	if (this->num_tris>0) {
 		gl.Begin(GL_TRIANGLES);
