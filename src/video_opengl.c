@@ -23,9 +23,10 @@
 #include "config.h"
 #endif
 
+#include <SDL.h>
+
 #ifdef ENABLE_OPENGL
 
-#include <SDL.h>
 #include <SDL_opengl.h>
 
 #include "dyngl.h"

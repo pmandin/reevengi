@@ -23,11 +23,12 @@
 #include "config.h"
 #endif
 
-#ifdef ENABLE_OPENGL
-
 #include <stdio.h>
 
 #include <SDL.h>
+
+#ifdef ENABLE_OPENGL
+
 #include <SDL_opengl.h>
 
 #include "dyngl.h"
