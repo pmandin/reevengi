@@ -260,19 +260,19 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_RENDER_WIREFRAME:
 				render.set_render(&render, RENDER_WIREFRAME);
-				/*player_model->download(player_model);*/
+				player_model->download(player_model);
 				break;
 			case KEY_RENDER_FILLED:
 				render.set_render(&render, RENDER_FILLED);
-				/*player_model->download(player_model);*/
+				player_model->download(player_model);
 				break;
 			case KEY_RENDER_GOURAUD:
 				render.set_render(&render, RENDER_GOURAUD);
-				/*player_model->download(player_model);*/
+				player_model->download(player_model);
 				break;
 			case KEY_RENDER_TEXTURED:
 				render.set_render(&render, RENDER_TEXTURED);
-				/*player_model->download(player_model);*/
+				player_model->download(player_model);
 				break;
 			default:
 				break;
