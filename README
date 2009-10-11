@@ -110,6 +110,7 @@ N		toggle map display.
 		Camera switches and boundary checks are enabled.
 		WHITE: camera, ORANGE: camera switch,
 		RED: boundary, GREEN ARROW: you, BLUE: door.
+J		toggle model skeleton display.
 
 SPACE		refresh background, move player at current camera position
 U		Enter a door (only for RE2/RE3)

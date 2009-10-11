@@ -65,6 +65,7 @@
 #define KEY_TOGGLE_GRID		SDLK_y
 #define KEY_TOGGLE_RESTORE	SDLK_h
 #define KEY_TOGGLE_MAP		SDLK_n
+#define KEY_TOGGLE_BONES	SDLK_j
 
 #define KEY_FORCE_REFRESH	SDLK_SPACE
 
@@ -94,6 +95,7 @@ static render_skel_t *player_model = NULL;
 static int render_grid = 0;
 static int render_restore = 0;
 static int render_map = 0;
+static int render_bones = 0;
 
 static int refresh_player_pos = 1;
 static float player_x = 0, player_y = 0, player_z = 0;
@@ -226,6 +228,9 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_TOGGLE_MAP:
 				render_map ^= 1;
+				break;
+			case KEY_TOGGLE_BONES:
+				render_bones ^= 1;
 				break;
 			case KEY_FORCE_REFRESH:
 				refresh_bg = 1;
@@ -566,6 +571,9 @@ static void drawPlayer(void)
 		render.set_blending(1);
 		player_model->draw(player_model);
 		render.set_blending(0);
+		if (render_bones) {
+			player_model->drawBones(player_model, NULL);
+		}
 #if 0
 	} else {
 		render.set_texture(0, NULL);

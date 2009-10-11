@@ -5,8 +5,11 @@ v 0.14
 - Add timing in ms, in log file.
 - Heavy rewrite for texturing. The background image is processed with same stuff
   as the model textures.
+- Heavy rewrite for drawing code. EMD model is organized in a skel structure,
+  with the various meshes.
 - Can set width,height,bpp of video mode
-- Bilinear filtering for background.
+- Software renderer: Bilinear filtering for background.
+- Display model skeleton.
 
 v 0.13
 

@@ -44,6 +44,8 @@ static void setParent(render_skel_t *this, int parent, int child);
 static void draw(render_skel_t *this);
 static void drawChild(render_skel_t *this, render_skel_mesh_t *parent);
 
+static void drawBones(render_skel_t *this, render_skel_mesh_t *parent);
+
 /*--- Functions ---*/
 
 render_skel_t *render_skel_create(render_texture_t *texture)
@@ -65,6 +67,7 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 	skel->setParent = setParent;
 	skel->draw = draw;
 	skel->drawChild = drawChild;
+	skel->drawBones = drawBones;
 
 	skel->texture = texture;
 
@@ -233,5 +236,50 @@ static void drawChild(render_skel_t *this, render_skel_mesh_t *parent)
 		this->drawChild(this, skel_mesh);
 
 		render.pop_matrix();
+	}
+}
+
+static void drawBones(render_skel_t *this, render_skel_mesh_t *parent)
+{
+	int i;
+	vertex_t v[2];
+
+	render.set_color(0x0000ff00);
+
+	for (i=0; i<this->num_meshes; i++) {
+		render_skel_mesh_t *skel_mesh = &(this->meshes[i]);
+
+		if (skel_mesh->parent != parent) {
+			continue;
+		}
+
+		if (parent) {
+			v[0].x = 0;
+			v[0].y = 0;
+			v[0].z = 0;
+
+			v[1].x = skel_mesh->x;
+			v[1].y = skel_mesh->y;
+			v[1].z = skel_mesh->z;
+
+			render.line(&v[0], &v[1]);
+		}
+
+		render.push_matrix();
+		render.translate(
+			skel_mesh->x,
+			skel_mesh->y,
+			skel_mesh->z
+		);
+
+		/* Draw children, relative to parent */
+		this->drawBones(this, skel_mesh);
+
+		render.pop_matrix();
+
+		/* FIXME: Only draw first parent object */
+		if (parent==NULL) {
+			break;
+		}
 	}
 }

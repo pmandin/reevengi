@@ -1,8 +1,14 @@
-v 0.13
+v 0.14
 
-- Dump room scripts (see -dumpscript command).
-- Display doors and walls on map.
-- Can enter doors (only RE2/RE3).
+- Add separate clock for engine, so loading times are not taken into account
+  for player movements.
+- Add timing in ms, in log file.
+- Heavy rewrite for texturing. The background image is processed with same stuff
+  as the model textures.
+- Heavy rewrite for drawing code. EMD model is organized in a skel structure,
+  with the various meshes.
+- Can set width,height,bpp of video mode
+- Software renderer: Bilinear filtering for background.
 
 
 See ChangeLog for older changes.
