@@ -331,6 +331,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\render_skel_opengl.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\render_texture.c"
 				>
 			</File>
@@ -530,6 +534,10 @@
 			</File>
 			<File
 				RelativePath="..\src\render_skel_list.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_skel_opengl.h"
 				>
 			</File>
 			<File
