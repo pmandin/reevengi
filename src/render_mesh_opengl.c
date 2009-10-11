@@ -120,7 +120,7 @@ static void upload(render_mesh_t *this)
 
 	logMsg(2, "render_mesh_gl: creating new list\n");
 
-	gl_mesh->num_list = gl.GenLists(1);	
+	gl_mesh->num_list = gl.GenLists(1);
 
 	/*gl.EnableClientState(GL_VERTEX_ARRAY);
 	gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);
@@ -129,6 +129,11 @@ static void upload(render_mesh_t *this)
 		gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);
 		gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);
 	}*/
+
+	/* Force reupload of all textures */
+	for (i=0; i<this->texture->num_palettes; i++) {
+		render.set_texture(i, this->texture);
+	}
 
 	gl.NewList(gl_mesh->num_list, GL_COMPILE);
 
@@ -150,8 +155,10 @@ static void upload(render_mesh_t *this)
 					break;
 				case RENDER_TEXTURED:
 					if (tri->txpal != prevpal) {
+						gl.End();
 						render.set_texture(tri->txpal, this->texture);
 						prevpal = tri->txpal;
+						gl.Begin(GL_TRIANGLES);
 					}
 					break;
 			}
@@ -167,10 +174,6 @@ static void upload(render_mesh_t *this)
 				}
 				gl.Vertex3sv( &srcVtx[tri->v[j]*(this->vertex.stride>>1)] );
 			}
-
-			/*gl.ArrayElement(tri->v[0]);
-			gl.ArrayElement(tri->v[1]);
-			gl.ArrayElement(tri->v[2]);*/
 		}
 
 		gl.End();
@@ -190,8 +193,10 @@ static void upload(render_mesh_t *this)
 					break;
 				case RENDER_TEXTURED:
 					if (quad->txpal != prevpal) {
+						gl.End();
 						render.set_texture(quad->txpal, this->texture);
 						prevpal = quad->txpal;
+						gl.Begin(GL_QUADS);
 					}
 					break;
 			}
@@ -211,11 +216,6 @@ static void upload(render_mesh_t *this)
 				}
 				gl.Vertex3sv( &srcVtx[quad->v[k]*(this->vertex.stride>>1)] );
 			}
-
-			/*gl.ArrayElement(quad->v[0]);
-			gl.ArrayElement(quad->v[1]);
-			gl.ArrayElement(quad->v[3]);
-			gl.ArrayElement(quad->v[2]);*/
 		}
 
 		gl.End();
