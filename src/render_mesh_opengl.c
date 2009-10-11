@@ -81,6 +81,35 @@ render_mesh_t *render_mesh_gl_create(render_texture_t *texture)
 	return mesh;
 }
 
+static void set_color_from_texture(render_texture_t *texture, int num_pal, int u, int v)
+{
+	Uint32 color = 0xffffffff;
+
+	if (!texture) {
+		return;
+	}
+
+	if (texture->paletted) {
+		Uint8 pix = texture->pixels[texture->pitch * v + u];
+		
+		color = texture->palettes[num_pal][pix];
+	} else {
+		int r,g,b;
+		Uint16 pix = ((Uint16 *) texture->pixels)[((texture->pitch>>1) * v) + u];
+
+		r = (pix>>8) & 0xf8;
+		r |= r>>5;
+		g = (pix>>3) & 0xfc;
+		g |= g>>6;
+		b = (pix<<3) & 0xf8;
+		b |= b>>5;
+		color = (r<<16)|(g<<8)|b;
+	}
+
+	gl.Color4ub((color>>16) & 0xff, (color>>8) & 0xff,
+		color & 0xff, (color>>24) & 0xff);
+}
+
 static void upload(render_mesh_t *this)
 {
 	render_mesh_gl_t *gl_mesh = (render_mesh_gl_t *) this;
@@ -101,21 +130,17 @@ static void upload(render_mesh_t *this)
 
 	gl.NewList(gl_mesh->num_list, GL_COMPILE);
 
-	if (render.render_mode == RENDER_TEXTURED) {
-		render.set_texture(0, this->texture);
-	}
-
-	gl.Color3f(1.0,1.0,1.0);
-
 	if (this->num_tris>0) {
 		gl.Begin(GL_TRIANGLES);
 
 		for (i=0; i<this->num_tris; i++) {
 			render_mesh_tri_t *tri = &(this->triangles[i]);
+			Sint16 *srcTxi = &srcTx[tri->tx[0]*(this->texcoord.stride>>1)];
 
 			switch(render.render_mode) {
 				case RENDER_WIREFRAME:
 				case RENDER_FILLED:
+					set_color_from_texture(this->texture, tri->txpal, srcTxi[0], srcTxi[1]);
 					break;
 				case RENDER_TEXTURED:
 					if (tri->txpal != prevpal) {
@@ -126,10 +151,13 @@ static void upload(render_mesh_t *this)
 			}
 
 			for (j=0; j<3; j++) {
+				srcTxi = &srcTx[tri->tx[j]*(this->texcoord.stride>>1)];
+
 				if (render.render_mode == RENDER_GOURAUD) {
+					set_color_from_texture(this->texture, tri->txpal, srcTxi[0], srcTxi[1]);
 				}
 				if (render.render_mode == RENDER_TEXTURED) {
-					gl.TexCoord2sv( &srcTx[tri->tx[j]*(this->texcoord.stride>>1)] );
+					gl.TexCoord2sv( srcTxi );
 				}
 				gl.Vertex3sv( &srcVtx[tri->v[j]*(this->vertex.stride>>1)] );
 			}
@@ -147,10 +175,12 @@ static void upload(render_mesh_t *this)
 
 		for (i=0; i<this->num_quads; i++) {
 			render_mesh_quad_t *quad = &(this->quads[i]);
+			Sint16 *srcTxi = &srcTx[quad->tx[0]*(this->texcoord.stride>>1)];
 
 			switch(render.render_mode) {
 				case RENDER_WIREFRAME:
 				case RENDER_FILLED:
+					set_color_from_texture(this->texture, quad->txpal, srcTxi[0], srcTxi[1]);
 					break;
 				case RENDER_TEXTURED:
 					if (quad->txpal != prevpal) {
@@ -165,10 +195,13 @@ static void upload(render_mesh_t *this)
 
 				if (j==2) k=3;
 				if (j==3) k=2;
+
+				srcTxi = &srcTx[quad->tx[j]*(this->texcoord.stride>>1)];
 				if (render.render_mode == RENDER_GOURAUD) {
+					set_color_from_texture(this->texture, quad->txpal, srcTxi[0], srcTxi[1]);
 				}
 				if (render.render_mode == RENDER_TEXTURED) {
-					gl.TexCoord2sv( &srcTx[quad->tx[k]*(this->texcoord.stride>>1)] );
+					gl.TexCoord2sv( srcTxi );
 				}
 				gl.Vertex3sv( &srcVtx[quad->v[k]*(this->vertex.stride>>1)] );
 			}
