@@ -164,6 +164,11 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 static void swapBuffers(video_t *this)
 {
+	GLenum errCode = gl.GetError();
+	if (errCode != GL_NO_ERROR) {
+		logMsg(1, "OpenGL error %d\n", errCode);
+	}
+
 	this->countFps(this);
 
 	SDL_GL_SwapBuffers();
