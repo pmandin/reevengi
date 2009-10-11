@@ -202,7 +202,7 @@ static void upload(render_mesh_t *this)
 				if (j==2) k=3;
 				if (j==3) k=2;
 
-				srcTxi = &srcTx[quad->tx[j]*(this->texcoord.stride>>1)];
+				srcTxi = &srcTx[quad->tx[k]*(this->texcoord.stride>>1)];
 				if (render.render_mode == RENDER_GOURAUD) {
 					set_color_from_texture(this->texture, quad->txpal, srcTxi[0], srcTxi[1]);
 				}
