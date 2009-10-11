@@ -84,20 +84,28 @@ render_mesh_t *render_mesh_gl_create(render_texture_t *texture)
 static void upload(render_mesh_t *this)
 {
 	render_mesh_gl_t *gl_mesh = (render_mesh_gl_t *) this;
-	int i, j, prevpal=-1;
+	int i, j, prevpal=0;
 	vertex_t v[4];
+	Sint16 *srcVtx = (Sint16 *) this->vertex.data;
+	Sint16 *srcTx = (Sint16 *) this->texcoord.data;
 
 	logMsg(2, "render_mesh_gl: creating new list\n");
 
 	gl_mesh->num_list = gl.GenLists(1);	
 
-	gl.EnableClientState(GL_VERTEX_ARRAY);
-	gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);
+	/*gl.EnableClientState(GL_VERTEX_ARRAY);*/
+	/*gl.EnableClientState(GL_TEXTURE_COORD_ARRAY);*/
 
-	gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);
-	gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);
+	/*gl.VertexPointer(3, GL_SHORT, 0, this->vertex.data);*/
+	/*gl.TexCoordPointer(2, GL_SHORT, 0, this->texcoord.data);*/
 
 	gl.NewList(gl_mesh->num_list, GL_COMPILE);
+
+	if (render.render_mode == RENDER_TEXTURED) {
+		render.set_texture(0, this->texture);
+	}
+
+	gl.Color3f(1.0,1.0,1.0);
 
 	if (this->num_tris>0) {
 		gl.Begin(GL_TRIANGLES);
@@ -105,14 +113,30 @@ static void upload(render_mesh_t *this)
 		for (i=0; i<this->num_tris; i++) {
 			render_mesh_tri_t *tri = &(this->triangles[i]);
 
-			if (tri->txpal != prevpal) {
-				render.set_texture(tri->txpal, this->texture);
-				prevpal = tri->txpal;
+			switch(render.render_mode) {
+				case RENDER_WIREFRAME:
+				case RENDER_FILLED:
+					break;
+				case RENDER_TEXTURED:
+					if (tri->txpal != prevpal) {
+						render.set_texture(tri->txpal, this->texture);
+						prevpal = tri->txpal;
+					}
+					break;
 			}
 
-			gl.ArrayElement(tri->v[0]);
+			for (j=0; j<3; j++) {
+				if (render.render_mode == RENDER_GOURAUD) {
+				}
+				if (render.render_mode == RENDER_TEXTURED) {
+					gl.TexCoord2sv( &srcTx[tri->tx[j]*(this->texcoord.stride>>1)] );
+				}
+				gl.Vertex3sv( &srcVtx[tri->v[j]*(this->vertex.stride>>1)] );
+			}
+
+			/*gl.ArrayElement(tri->v[0]);
 			gl.ArrayElement(tri->v[1]);
-			gl.ArrayElement(tri->v[2]);
+			gl.ArrayElement(tri->v[2]);*/
 		}
 
 		gl.End();
@@ -124,15 +148,35 @@ static void upload(render_mesh_t *this)
 		for (i=0; i<this->num_quads; i++) {
 			render_mesh_quad_t *quad = &(this->quads[i]);
 
-			if (quad->txpal != prevpal) {
-				render.set_texture(quad->txpal, this->texture);
-				prevpal = quad->txpal;
+			switch(render.render_mode) {
+				case RENDER_WIREFRAME:
+				case RENDER_FILLED:
+					break;
+				case RENDER_TEXTURED:
+					if (quad->txpal != prevpal) {
+						render.set_texture(quad->txpal, this->texture);
+						prevpal = quad->txpal;
+					}
+					break;
 			}
 
-			gl.ArrayElement(quad->v[0]);
+			for (j=0; j<4; j++) {
+				int k = j;
+
+				if (j==2) k=3;
+				if (j==3) k=2;
+				if (render.render_mode == RENDER_GOURAUD) {
+				}
+				if (render.render_mode == RENDER_TEXTURED) {
+					gl.TexCoord2sv( &srcTx[quad->tx[k]*(this->texcoord.stride>>1)] );
+				}
+				gl.Vertex3sv( &srcVtx[quad->v[k]*(this->vertex.stride>>1)] );
+			}
+
+			/*gl.ArrayElement(quad->v[0]);
 			gl.ArrayElement(quad->v[1]);
 			gl.ArrayElement(quad->v[3]);
-			gl.ArrayElement(quad->v[2]);
+			gl.ArrayElement(quad->v[2]);*/
 		}
 
 		gl.End();
