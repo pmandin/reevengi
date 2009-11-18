@@ -92,9 +92,9 @@ diff -Naur --exclude=aclocal.m4 --exclude=config.guess --exclude=config.h.in --e
 +} ROFSfileinfo;
 +
 +typedef struct {
-+	unsigned short offset;
-+	unsigned short num_keys;
-+	unsigned long length;
++	PHYSFS_uint16 offset;
++	PHYSFS_uint16 num_keys;
++	PHYSFS_uint32 length;
 +	unsigned char ident[8];
 +} rofs_dat_file_t;
 +
