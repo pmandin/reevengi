@@ -234,7 +234,7 @@ static int re2pcgame_load_image(int num_image)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			SDL_Surface *image = adt_surface((Uint16 *) dstBuffer);
+			SDL_Surface *image = adt_surface((Uint16 *) dstBuffer, 1);
 			if (image) {
 				game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
 				if (game_state.background) {
