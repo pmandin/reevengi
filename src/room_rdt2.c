@@ -28,6 +28,17 @@
 #include "room_rdt3_script.h"
 #include "log.h"
 
+/*--- Constants ---*/
+
+static char txt2asc[0x60]={
+	' ','.','?','?', '?','(',')','?', '?','?','?','?', '0','1','2','3',
+	'4','5','6','7', '8','9',':','?', ',','"','!','?', '?','A','B','C',
+	'D','E','F','G', 'H','I','J','K', 'L','M','N','O', 'P','Q','R','S',
+	'T','U','V','W', 'X','Y','Z','[', '/',']','\'','-', '_','a','b','c',
+	'd','e','f','g', 'h','i','j','k', 'l','m','n','o', 'p','q','r','s',
+	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','?'
+};
+
 /*--- Types ---*/
 
 typedef struct {
@@ -95,6 +106,8 @@ static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t 
 static int rdt2_getNumBoundaries(room_t *this);
 static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
+static void rdt2_displayWesternText(room_t *this);
+
 /*--- Functions ---*/
 
 void room_rdt2_init(room_t *this)
@@ -124,6 +137,18 @@ void room_rdt2_init(room_t *this)
 
 	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
 		this->num_cameras, this->num_camswitches, this->num_boundaries);
+
+	/* Display Western language texts */
+	switch(game_state.version) {
+		case GAME_RE3_PS1_GAME:
+		case GAME_RE3_PC_GAME:
+		case GAME_RE3_PC_DEMO:
+			/* TODO */
+			break;
+		default:
+			rdt2_displayWesternText(this);
+			break;
+	}
 }
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
@@ -283,4 +308,66 @@ static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *r
 	room_camswitch->y[2] = SDL_SwapLE16(camswitch_array[i].y3);
 	room_camswitch->x[3] = SDL_SwapLE16(camswitch_array[i].x4);
 	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[i].y4);
+}
+
+static void rdt2_displayWesternText(room_t *this)
+{
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
+	Uint16 *txtOffsets, txtCount;
+	Uint8 *txtPtr;
+	int i;
+	char tmpBuf[512];
+
+	offset = SDL_SwapLE32(rdt_header->offsets[13 /*RDT2_OFFSET_TEXT_ENG*/]);
+	if (offset == 0) {
+		logMsg(1, "No texts to display\n");
+		return;
+	}
+
+	txtOffsets = (Uint16 *) &((Uint8 *) this->file)[offset];
+
+	txtCount = SDL_SwapLE16(txtOffsets[0]) >> 1;
+	for (i=0; i<txtCount; i++) {
+		txtPtr = &((Uint8 *) this->file)[offset + SDL_SwapLE16(txtOffsets[i])];
+		logMsg(1, "Text[%d]:\n", i);
+
+		memset(tmpBuf, 0, sizeof(tmpBuf));
+		while (*txtPtr != 0xfe) {
+			switch(*txtPtr) {
+				case 0xf3:
+					strncat(tmpBuf, "[0xf3]", sizeof(tmpBuf)-1);
+					break;
+				case 0xfa:
+					strncat(tmpBuf, "[0xfa]?", sizeof(tmpBuf)-1);
+					txtPtr++;
+					break;
+				case 0xfb:
+					/* Yes/No question */
+					strncat(tmpBuf, "[Yes/No]", sizeof(tmpBuf)-1);
+					break;
+				case 0xfc:
+					/* Carriage return */
+					logMsg(1, " %s\n", tmpBuf);
+					memset(tmpBuf, 0, sizeof(tmpBuf));
+					break;
+				case 0xfd:
+					strncat(tmpBuf, "[0xfd]?", sizeof(tmpBuf)-1);
+					txtPtr++;
+					break;
+				default:
+					if (*txtPtr<0x60) {
+						char concatBuf[2]={0,0};
+
+						concatBuf[0]=txt2asc[*txtPtr];
+						strncat(tmpBuf, concatBuf, sizeof(tmpBuf)-1);
+					} else {
+						strncat(tmpBuf, "?", sizeof(tmpBuf)-1);
+					}
+					break;
+			}
+			txtPtr++;
+		}
+		logMsg(1, " %s\n", tmpBuf);
+	}
 }
