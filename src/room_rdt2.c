@@ -319,7 +319,7 @@ static void rdt2_displayWesternText(room_t *this)
 	int i;
 	char tmpBuf[512];
 
-	offset = SDL_SwapLE32(rdt_header->offsets[13 /*RDT2_OFFSET_TEXT_ENG*/]);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_TEXTS]);
 	if (offset == 0) {
 		logMsg(1, "No texts to display\n");
 		return;
