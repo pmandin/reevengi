@@ -318,6 +318,7 @@ static void rdt2_displayWesternText(room_t *this)
 	Uint8 *txtPtr;
 	int i;
 	char tmpBuf[512];
+	char strBuf[16];
 
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_TEXTS]);
 	if (offset == 0) {
@@ -339,7 +340,8 @@ static void rdt2_displayWesternText(room_t *this)
 					strncat(tmpBuf, "[0xf3]", sizeof(tmpBuf)-1);
 					break;
 				case 0xfa:
-					strncat(tmpBuf, "[0xfa]?", sizeof(tmpBuf)-1);
+					sprintf(strBuf, "[0xfa][0x%02x]", txtPtr[1]);
+					strncat(tmpBuf, strBuf, sizeof(tmpBuf)-1);
 					txtPtr++;
 					break;
 				case 0xfb:
@@ -352,18 +354,17 @@ static void rdt2_displayWesternText(room_t *this)
 					memset(tmpBuf, 0, sizeof(tmpBuf));
 					break;
 				case 0xfd:
-					strncat(tmpBuf, "[0xfd]?", sizeof(tmpBuf)-1);
+					sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[1]);
+					strncat(tmpBuf, strBuf, sizeof(tmpBuf)-1);
 					txtPtr++;
 					break;
 				default:
 					if (*txtPtr<0x60) {
-						char concatBuf[2]={0,0};
-
-						concatBuf[0]=txt2asc[*txtPtr];
-						strncat(tmpBuf, concatBuf, sizeof(tmpBuf)-1);
+						sprintf(strBuf, "%c", txt2asc[*txtPtr]);
 					} else {
-						strncat(tmpBuf, "?", sizeof(tmpBuf)-1);
+						sprintf(strBuf, "[0x%02x]", *txtPtr);
 					}
+					strncat(tmpBuf, strBuf, sizeof(tmpBuf)-1);
 					break;
 			}
 			txtPtr++;
