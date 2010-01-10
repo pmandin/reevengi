@@ -779,21 +779,28 @@ static Uint8 *scriptNextInst(room_t *this)
 static void scriptDump(room_t *this, int num_script)
 {
 	Uint8 *inst;
+	char strBuf[1024];
 
 	inst = this->scriptPrivFirstInst(this, num_script);
 	while (inst) {
 		if (params.verbose>=2) {
 			int i, inst_len;
+			char tmpBuf[16];
 
 			inst_len = this->scriptPrivGetInstLen(this);
 			if (inst_len==0) {
 				inst_len = 16;
 			}
-			logMsg(2, "0x%08x: ", this->cur_inst_offset);
+
+			memset(strBuf, 0, sizeof(strBuf));
+			sprintf(tmpBuf, "0x%08x:", this->cur_inst_offset);
+			strcat(strBuf, tmpBuf);
 			for (i=0; i<inst_len; i++) {
-				logMsg(2, " %02x", this->cur_inst[i]);
+				sprintf(tmpBuf, " 0x%02x", this->cur_inst[i]);
+				strcat(strBuf, tmpBuf);
 			}
-			logMsg(2, "\n");
+			strcat(strBuf, "\n");
+			logMsg(2, strBuf);
 		}
 
 		this->scriptPrivPrintInst(this);
