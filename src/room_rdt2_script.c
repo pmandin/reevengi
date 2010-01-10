@@ -513,7 +513,7 @@ static void scriptPrintInst(room_t *this)
 	memset(strBuf, 0, sizeof(strBuf));
 
 	if ((indentLevel==0) && (inst->opcode!=0xff)) {
-		sprintf(strBuf, "func%02x() {\n", numFunc++);
+		logMsg(1, "func%02x() {\n", numFunc++);
 		++indentLevel;
 	}
 
