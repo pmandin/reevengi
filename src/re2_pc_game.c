@@ -50,7 +50,7 @@ typedef struct {
 /*--- Constant ---*/
 
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
-static const char *re2pcgame_room = "PL%d/RD%c/ROOM%d%02x0.RDT";
+static const char *re2pcgame_room = "PL%d/RD%c/ROOM%d%02x%d.RDT";
 static const char *re2pcgame_model = "PL%d/EMD%d/EM%d%02x.%s";
 
 static const int map_models[MAX_MODELS]={
@@ -266,7 +266,8 @@ static void re2pcgame_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.num_stage,
+		game_state.num_room, game_player);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
