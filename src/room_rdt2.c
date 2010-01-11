@@ -30,7 +30,7 @@
 
 /*--- Constants ---*/
 
-static char txt2asc[0x60]={
+static const char txt2asc[0x60]={
 	' ','.','?','?', '?','(',')','?', '?','?','?','?', '0','1','2','3',
 	'4','5','6','7', '8','9',':','?', ',','"','!','?', '?','A','B','C',
 	'D','E','F','G', 'H','I','J','K', 'L','M','N','O', 'P','Q','R','S',
@@ -106,7 +106,7 @@ static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t 
 static int rdt2_getNumBoundaries(room_t *this);
 static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
-static void rdt2_displayWesternText(room_t *this);
+static void rdt2_displayTexts(room_t *this, int num_offset);
 
 /*--- Functions ---*/
 
@@ -138,17 +138,9 @@ void room_rdt2_init(room_t *this)
 	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
 		this->num_cameras, this->num_camswitches, this->num_boundaries);
 
-	/* Display Western language texts */
-	switch(game_state.version) {
-		case GAME_RE3_PS1_GAME:
-		case GAME_RE3_PC_GAME:
-		case GAME_RE3_PC_DEMO:
-			/* TODO */
-			break;
-		default:
-			rdt2_displayWesternText(this);
-			break;
-	}
+	/* Display texts */
+	rdt2_displayTexts(this, RDT2_OFFSET_TEXT_LANG1);
+	rdt2_displayTexts(this, RDT2_OFFSET_TEXT_LANG2);
 }
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
@@ -310,7 +302,7 @@ static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *r
 	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[i].y4);
 }
 
-static void rdt2_displayWesternText(room_t *this)
+static void rdt2_displayTexts(room_t *this, int num_offset)
 {
 	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
 	Uint32 offset;
@@ -320,7 +312,7 @@ static void rdt2_displayWesternText(room_t *this)
 	char tmpBuf[512];
 	char strBuf[16];
 
-	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_TEXTS]);
+	offset = SDL_SwapLE32(rdt_header->offsets[num_offset]);
 	if (offset == 0) {
 		logMsg(1, "No texts to display\n");
 		return;
