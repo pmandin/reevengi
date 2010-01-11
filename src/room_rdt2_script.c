@@ -45,6 +45,7 @@
 
 #define INST_EVAL_CK	0x21
 #define INST_EVAL_CMP	0x23
+#define INST_PRINT_TEXT	0x2b
 #define INST_ITEM_SET	0x2c
 
 #define INST_DOOR_SET	0x3b
@@ -116,6 +117,13 @@ typedef struct {
 	Uint8 unknown4;
 } script_door_set_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint8 id;
+	Uint8 unknown1[3];
+} script_print_text_t;
+
 typedef union {
 	Uint8 opcode;
 	script_if_t	i_if;
@@ -124,6 +132,7 @@ typedef union {
 	script_func_t	func;
 	script_door_set_t	door_set;
 	script_item_set_t	item_set;
+	script_print_text_t	print_text;
 } script_inst_t;
 
 typedef struct {
@@ -181,7 +190,7 @@ static const script_inst_len_t inst_length[]={
 	{0x28,		1},
 	{0x29,		2},
 	{0x2a,		1},
-	{0x2b,		6},
+	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
 	{INST_ITEM_SET,		sizeof(script_item_set_t)},
 	{0x2d,		38},
 	{0x2e,		3},
@@ -573,6 +582,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_EVAL_CMP:
 			reindent(indentLevel);
 			strcat(strBuf, "EVAL_CMP xxx\n");
+			break;
+		case INST_PRINT_TEXT:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "PRINT_TEXT #0x%02x\n", inst->print_text.id);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_ITEM_SET:
 			reindent(indentLevel);
