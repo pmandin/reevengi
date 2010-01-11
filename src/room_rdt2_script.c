@@ -69,6 +69,13 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 cond;
+	Uint8 ex_opcode;	/* 0x18: execute function */
+	Uint8 num_func;
+} script_evtexec_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 unknown0;
 	Uint16 block_length;
 } script_if_t;	/* always followed by script_condition_t */
@@ -126,6 +133,7 @@ typedef struct {
 
 typedef union {
 	Uint8 opcode;
+	script_evtexec_t	evtexec;
 	script_if_t	i_if;
 	script_else_t	i_else;
 	script_sleepn_t	sleepn;
@@ -148,7 +156,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_RETURN,	2},
 	{0x02,		1},
 	{0x03,		2},
-	{INST_EVT_EXEC,	4},
+	{INST_EVT_EXEC,	sizeof(script_evtexec_t)},
 	{0x05,		2},
 	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
@@ -545,7 +553,14 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_EVT_EXEC:
 			reindent(indentLevel);
-			strcat(strBuf, "EVT_EXEC xxx\n");
+			if (inst->evtexec.ex_opcode == INST_FUNC) {
+				sprintf(tmpBuf, "EVT_EXEC #0x%02x, func%02x()\n",
+					inst->evtexec.cond, inst->evtexec.num_func);
+			} else {
+				sprintf(tmpBuf, "EVT_EXEC #0x%02x, xxx\n",
+					inst->evtexec.cond);
+			}
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_IF:
 			reindent(indentLevel++);
