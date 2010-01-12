@@ -42,7 +42,11 @@
 #define INST_SLEEP_N	0x0a
 
 #define INST_FUNC	0x18
+#define INST_NOP1C	0x1c
+#define INST_NOP1E	0x1e
+#define INST_NOP1F	0x1f
 
+#define INST_NOP20	0x20
 #define INST_EVAL_CK	0x21
 #define INST_EVAL_CMP	0x23
 #define INST_PRINT_TEXT	0x2b
@@ -51,6 +55,8 @@
 #define INST_DOOR_SET	0x3b
 
 #define INST_EM_SET	0x44
+
+#define INST_NOP63	0x63
 
 /* Item types */
 
@@ -181,13 +187,13 @@ static const script_inst_len_t inst_length[]={
 	/*{0x19,		2},*/
 	{0x1a,		2},
 	{0x1b,		6},
-	{0x1c,		1},
+	{INST_NOP1C,	1},
 	{0x1d,		4},
-	{0x1e,		1},
-	{0x1f,		1},
+	{INST_NOP1E,	1},
+	{INST_NOP1F,	1},
 
 	/* 0x20-0x2f */
-	{0x20,		1},
+	{INST_NOP20,	1},
 	{INST_EVAL_CK,	4},
 	{0x22,		4},
 	{INST_EVAL_CMP,	6},
@@ -262,7 +268,7 @@ static const script_inst_len_t inst_length[]={
 	{0x60,		14},
 	{0x61,		4},
 	{0x62,		2},
-	{0x63,		1},
+	{INST_NOP63,	1},
 	{0x64,		16},
 	{0x65,		2},
 	{0x66,		1},
@@ -587,9 +593,19 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
 			strcat(strBuf, tmpBuf);
 			break;
+		case INST_NOP1C:
+		case INST_NOP1E:
+		case INST_NOP1F:
+			reindent(indentLevel);
+			strcat(strBuf, "nop\n");
+			break;
 
 		/* 0x20-0x2f */
 
+		case INST_NOP20:
+			reindent(indentLevel);
+			strcat(strBuf, "nop\n");
+			break;
 		case INST_EVAL_CK:
 			reindent(indentLevel);
 			strcat(strBuf, "EVAL_CK xxx\n");
@@ -620,6 +636,15 @@ static void scriptPrintInst(room_t *this)
 		case INST_EM_SET:
 			reindent(indentLevel);
 			strcat(strBuf,"EM_SET xxx\n");
+			break;
+
+		/* 0x50-0x5f */
+
+		/* 0x60-0x6f */
+
+		case INST_NOP63:
+			reindent(indentLevel);
+			strcat(strBuf, "nop\n");
 			break;
 
 		default:

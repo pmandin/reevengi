@@ -323,7 +323,7 @@ static void rdt2_displayTexts(room_t *this, int num_offset)
 	txtCount = SDL_SwapLE16(txtOffsets[0]) >> 1;
 	for (i=0; i<txtCount; i++) {
 		txtPtr = &((Uint8 *) this->file)[offset + SDL_SwapLE16(txtOffsets[i])];
-		logMsg(1, "Text[%d]:\n", i);
+		logMsg(1, "Text[0x%02x]:\n", i);
 
 		memset(tmpBuf, 0, sizeof(tmpBuf));
 		while (*txtPtr != 0xfe) {
