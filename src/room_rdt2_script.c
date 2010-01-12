@@ -51,7 +51,13 @@
 #define INST_EVAL_CMP	0x23
 #define INST_PRINT_TEXT	0x2b
 #define INST_ITEM_SET	0x2c
+#define INST_SET_REG_MEM	0x2e
+#define INST_SET_REG_IMM	0x2f
 
+#define INST_SET_REG_TMP	0x30
+#define INST_ADD_REG	0x31
+#define INST_SET_REG2	0x32
+#define INST_SET_REG3	0x33
 #define INST_DOOR_SET	0x3b
 
 #define INST_EM_SET	0x44
@@ -137,6 +143,24 @@ typedef struct {
 	Uint8 unknown1[3];
 } script_print_text_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 component;
+	Uint8 index;
+} script_setregmem_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 component;
+	Sint16 value;
+} script_setregimm_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown;
+	Sint16 value[3];
+} script_setreg3w_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
@@ -147,6 +171,9 @@ typedef union {
 	script_door_set_t	door_set;
 	script_item_set_t	item_set;
 	script_print_text_t	print_text;
+	script_setregmem_t	set_reg_mem;
+	script_setregimm_t	set_reg_imm;
+	script_setreg3w_t	set_reg_3w;
 } script_inst_t;
 
 typedef struct {
@@ -207,14 +234,14 @@ static const script_inst_len_t inst_length[]={
 	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
 	{INST_ITEM_SET,		sizeof(script_item_set_t)},
 	{0x2d,		38},
-	{0x2e,		3},
-	{0x2f,		4},
+	{INST_SET_REG_MEM,	sizeof(script_setregmem_t)},
+	{INST_SET_REG_IMM,	sizeof(script_setregimm_t)},
 
 	/* 0x30-0x3f */
-	{0x30,		1},
-	{0x31,		1},
-	{0x32,		8},
-	{0x33,		8},
+	{INST_SET_REG_TMP,	1},
+	{INST_ADD_REG,		1},
+	{INST_SET_REG2,		sizeof(script_setreg3w_t)},
+	{INST_SET_REG3,		sizeof(script_setreg3w_t)},
 	{0x34,		4},
 	{0x35,		3},
 	{0x36,		12},
@@ -623,9 +650,45 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "ITEM_SET xxx\n");
 			break;
+		case INST_SET_REG_MEM:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SET_REG_MEM %d,%d\n",
+				inst->set_reg_mem.component, inst->set_reg_mem.index);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_SET_REG_IMM:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SET_REG_IMM %d,%d\n",
+				inst->set_reg_imm.component, SDL_SwapLE16(inst->set_reg_imm.value));
+			strcat(strBuf, tmpBuf);
+			break;
 
 		/* 0x30-0x3f */
 
+		case INST_SET_REG_TMP:
+			reindent(indentLevel);
+			strcat(strBuf, "SET_REG_TMP\n");
+			break;
+		case INST_ADD_REG:
+			reindent(indentLevel);
+			strcat(strBuf, "ADD_REG\n");
+			break;
+		case INST_SET_REG2:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SET_REG2 %d,%d,%d\n",
+				SDL_SwapLE16(inst->set_reg_3w.value[0]),
+				SDL_SwapLE16(inst->set_reg_3w.value[1]),
+				SDL_SwapLE16(inst->set_reg_3w.value[2]));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_SET_REG3:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SET_REG3 %d,%d,%d\n",
+				SDL_SwapLE16(inst->set_reg_3w.value[0]),
+				SDL_SwapLE16(inst->set_reg_3w.value[1]),
+				SDL_SwapLE16(inst->set_reg_3w.value[2]));
+			strcat(strBuf, tmpBuf);
+			break;
 		case INST_DOOR_SET:
 			reindent(indentLevel);
 			strcat(strBuf,"DOOR_SET xxx\n");
