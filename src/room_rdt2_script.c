@@ -65,7 +65,7 @@
 #define INST_CMP_IMM	0x3e
 
 #define INST_EM_SET	0x44
-#define INST_SET_CUR_OBJ	0x47
+#define INST_ACTIVATE_OBJECT	0x47
 #define INST_ITEM_SET	0x4e
 
 #define INST_NOP63	0x63
@@ -336,7 +336,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_EM_SET,	sizeof(script_em_set_t)},
 	{0x45,		5},
 	{0x46,		10},
-	{INST_SET_CUR_OBJ,	sizeof(script_set_cur_obj_t)},
+	{INST_ACTIVATE_OBJECT,	sizeof(script_set_cur_obj_t)},
 	{0x48,		16},
 	{0x49,		8},
 	{0x4a,		2},
@@ -807,9 +807,9 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "EM_SET #%02x\n", inst->em_set.id);
 			strcat(strBuf, tmpBuf);
 			break;
-		case INST_SET_CUR_OBJ:
+		case INST_ACTIVATE_OBJECT:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "SET_CUR_OBJ #0x%02d\n", inst->set_cur_obj.id);
+			sprintf(tmpBuf, "ACTIVATE_OBJECT #0x%02x\n", inst->set_cur_obj.id);
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_ITEM_SET:
