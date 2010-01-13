@@ -50,7 +50,8 @@
 #define INST_EVAL_CK	0x21
 #define INST_EVAL_CMP	0x23
 #define INST_PRINT_TEXT	0x2b
-#define INST_ITEM_SET	0x2c
+#define INST_NPITEM_SET	0x2c
+#define INST_INST2D_SET	0x2d
 #define INST_SET_REG_MEM	0x2e
 #define INST_SET_REG_IMM	0x2f
 
@@ -58,19 +59,25 @@
 #define INST_ADD_REG	0x31
 #define INST_SET_REG2	0x32
 #define INST_SET_REG3	0x33
+#define INST_CAM_SET	0x37
 #define INST_DOOR_SET	0x3b
+#define INST_BCHG8	0x3c
+#define INST_CMP_IMM	0x3e
 
 #define INST_EM_SET	0x44
+#define INST_SET_CUR_OBJ	0x47
+#define INST_ITEM_SET	0x4e
 
 #define INST_NOP63	0x63
+#define INST_WALL_SET	0x67
 
-/* Item types */
+/* Non pickable item types */
 
-#define ITEM_LIGHT	0x03
-#define ITEM_OBSTACLE	0x04
-#define ITEM_TYPEWRITER	0x09
-#define ITEM_BOX	0x0a
-#define ITEM_FIRE	0x0b
+#define NPITEM_LIGHT	0x03
+#define NPITEM_OBSTACLE	0x04
+#define NPITEM_TYPEWRITER	0x09
+#define NPITEM_BOX	0x0a
+#define NPITEM_FIRE	0x0b
 
 /*--- Types ---*/
 
@@ -116,24 +123,23 @@ typedef struct {
 	Uint8 unknown0[3];
 	Sint16 x,y,w,h;
 	Uint16 unknown1[3];
-} script_item_set_t;
+} script_npitem_set_t;
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown0;
 	Uint8 id;
-	Uint8 unknown1[3];
+	Uint16 unknown0[2];
 	Sint16 x,y,w,h;
 	Sint16 next_x,next_y,next_z;
 	Sint16 next_dir;
 	Uint8 next_stage,next_room,next_camera;
-	Uint8 unknown2;
+	Uint8 unknown1;
 	Uint8 door_type;
 	Uint8 door_lock;
-	Uint8 unknown3;
+	Uint8 unknown2;
 	Uint8 door_locked;
 	Uint8 door_key;
-	Uint8 unknown4;
+	Uint8 unknown3;
 } script_door_set_t;
 
 typedef struct {
@@ -161,19 +167,82 @@ typedef struct {
 	Sint16 value[3];
 } script_setreg3w_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint8 camera;
+	Uint8 unknown1;
+} script_cam_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 operation;
+} script_bchg8_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint8 unknown1;
+	Uint8 compare;
+	Sint16 value;
+} script_cmp_imm_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+} script_set_cur_obj_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint16 unknown0[2];
+	Sint16 x,y,w,h;
+	Uint16 type;
+	Uint16 amount;
+	Uint16 unknown1[2];
+} script_item_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Uint8 id;
+	Uint8 unknown1;
+	Uint16 unknown[9];
+} script_em_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint16 unknown[13];
+} script_wall_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint16 unknown[18];
+} script_inst2d_set_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
-	script_if_t	i_if;
-	script_else_t	i_else;
-	script_sleepn_t	sleepn;
-	script_func_t	func;
+	script_if_t		i_if;
+	script_else_t		i_else;
+	script_sleepn_t		sleepn;
+	script_func_t		func;
 	script_door_set_t	door_set;
-	script_item_set_t	item_set;
+	script_npitem_set_t	npitem_set;
 	script_print_text_t	print_text;
 	script_setregmem_t	set_reg_mem;
 	script_setregimm_t	set_reg_imm;
 	script_setreg3w_t	set_reg_3w;
+	script_cam_set_t	cam_set;
+	script_bchg8_t		bchg8;
+	script_cmp_imm_t	cmp_imm;
+	script_set_cur_obj_t	set_cur_obj;
+	script_item_set_t	item_set;
+	script_em_set_t		em_set;
+	script_wall_set_t	wall_set;
+	script_inst2d_set_t	inst2d_set;
 } script_inst_t;
 
 typedef struct {
@@ -182,6 +251,10 @@ typedef struct {
 } script_inst_len_t;
 
 /*--- Variables ---*/
+
+static const char *cmp_imm_name[7]={
+	"EQ", "GT", "GE", "LT", "LE", "NE", "??"
+};
 
 static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
@@ -232,8 +305,8 @@ static const script_inst_len_t inst_length[]={
 	{0x29,		2},
 	{0x2a,		1},
 	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
-	{INST_ITEM_SET,		sizeof(script_item_set_t)},
-	{0x2d,		38},
+	{INST_NPITEM_SET,	sizeof(script_npitem_set_t)},
+	{INST_INST2D_SET,	sizeof(script_inst2d_set_t)},
 	{INST_SET_REG_MEM,	sizeof(script_setregmem_t)},
 	{INST_SET_REG_IMM,	sizeof(script_setregimm_t)},
 
@@ -245,14 +318,14 @@ static const script_inst_len_t inst_length[]={
 	{0x34,		4},
 	{0x35,		3},
 	{0x36,		12},
-	{0x37,		4},
+	{INST_CAM_SET,	sizeof(script_cam_set_t)},
 	{0x38,		3},
 	{0x39,		8},
 	{0x3a,		16},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
-	{0x3c,		2},
+	{INST_BCHG8,	sizeof(script_bchg8_t)},
 	{0x3d,		3},
-	{0x3e,		6},
+	{INST_CMP_IMM,	sizeof(script_cmp_imm_t)},
 	{0x3f,		4},
 
 	/* 0x40-0x4f */
@@ -260,17 +333,17 @@ static const script_inst_len_t inst_length[]={
 	{0x41,		10},
 	{0x42,		1},
 	{0x43,		4},
-	{INST_EM_SET,	22},
+	{INST_EM_SET,	sizeof(script_em_set_t)},
 	{0x45,		5},
 	{0x46,		10},
-	{0x47,		2},
+	{INST_SET_CUR_OBJ,	sizeof(script_set_cur_obj_t)},
 	{0x48,		16},
 	{0x49,		8},
 	{0x4a,		2},
 	{0x4b,		3},
 	{0x4c,		5},
 	{0x4d,		22},
-	{0x4e,		22},
+	{INST_ITEM_SET,	sizeof(script_item_set_t)},
 	{0x4f,		4},
 
 	/* 0x50-0x5f */
@@ -299,7 +372,7 @@ static const script_inst_len_t inst_length[]={
 	{0x64,		16},
 	{0x65,		2},
 	{0x66,		1},
-	{0x67,		28},
+	{INST_WALL_SET,		sizeof(script_wall_set_t)},
 	{0x68,		40},
 	/*{0x69,		2},*/
 	{0x6a,		6},
@@ -646,9 +719,15 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "PRINT_TEXT #0x%02x\n", inst->print_text.id);
 			strcat(strBuf, tmpBuf);
 			break;
-		case INST_ITEM_SET:
+		case INST_NPITEM_SET:
 			reindent(indentLevel);
-			strcat(strBuf, "ITEM_SET xxx\n");
+			sprintf(tmpBuf, "OBJECT #0x%02x = NPITEM_SET xxx\n", inst->npitem_set.id);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_INST2D_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "OBJECT #0x%02x = ???_SET xxx\n", inst->inst2d_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_SET_REG_MEM:
 			reindent(indentLevel);
@@ -689,16 +768,54 @@ static void scriptPrintInst(room_t *this)
 				SDL_SwapLE16(inst->set_reg_3w.value[2]));
 			strcat(strBuf, tmpBuf);
 			break;
+		case INST_CAM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "CAM_SET %d,%d\n",
+				inst->cam_set.unknown0, inst->cam_set.camera);
+			strcat(strBuf, tmpBuf);
+			break;
 		case INST_DOOR_SET:
 			reindent(indentLevel);
-			strcat(strBuf,"DOOR_SET xxx\n");
+			sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_BCHG8:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "B%s #8,xxx\n",
+				(inst->bchg8.operation == 1 ? "SET" : "CLR"));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_CMP_IMM:
+			{
+				int compare = inst->cmp_imm.compare;
+				if (compare>6) {
+					compare = 6;
+				}
+
+				reindent(indentLevel);
+				sprintf(tmpBuf, "CMP_IMM %s xxx,0x%04x\n",
+					cmp_imm_name[compare],
+					SDL_SwapLE16(inst->cmp_imm.value));
+				strcat(strBuf, tmpBuf);
+			}
 			break;
 
 		/* 0x40-0x4f */
 
 		case INST_EM_SET:
 			reindent(indentLevel);
-			strcat(strBuf,"EM_SET xxx\n");
+			sprintf(tmpBuf, "EM_SET #%02x\n", inst->em_set.id);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_SET_CUR_OBJ:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SET_CUR_OBJ #0x%02d\n", inst->set_cur_obj.id);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_ITEM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET xxx\n", inst->item_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 
 		/* 0x50-0x5f */
@@ -708,6 +825,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_NOP63:
 			reindent(indentLevel);
 			strcat(strBuf, "nop\n");
+			break;
+		case INST_WALL_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "OBJECT #0x%02x = WALL_SET xxx\n", inst->wall_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 
 		default:
