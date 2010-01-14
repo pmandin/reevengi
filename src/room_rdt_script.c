@@ -106,6 +106,18 @@ typedef struct {
 	Uint8 unknown[7];
 } script_item_set_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint16 unknown[12];
+} script_item_model_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint16 unknown[13];
+} script_om_set_t;
+
 typedef union {
 	Uint8 opcode;
 	script_if_t	i_if;
@@ -113,6 +125,8 @@ typedef union {
 	script_endif_t	i_endif;
 	script_door_set_t	door_set;
 	script_item_set_t	item_set;
+	script_item_model_set_t	item_model_set;
+	script_om_set_t	om_set;
 } script_inst_t;
 
 typedef struct {
@@ -148,14 +162,14 @@ static const script_inst_len_t inst_length[]={
 	{0x15,	2},
 	{0x16,	2},
 	{0x17,	10},
-	{0x18,	26},
+	{INST_ITEM_MODEL_SET,	sizeof(script_item_model_set_t)},
 	{0x19,	4},
 	{0x1a,	2},
 	{INST_EM_SET,	22},
 	{0x1c,	6},
 	{0x1d,	2},
 	{0x1e,	4},
-	{0x1f,	28},
+	{INST_OM_SET,	sizeof(script_om_set_t)},
 
 	{0x20,	14},
 	{0x21,	14},
@@ -498,11 +512,13 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_DOOR_SET:
 			reindent(indentLevel);
-			strcat(strBuf, "DOOR_SET xxx\n");
+			sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_ITEM_SET:
 			reindent(indentLevel);
-			strcat(strBuf, "ITEM_SET xxx\n");
+			sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET xxx\n", inst->item_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_NOP0E:
 			reindent(indentLevel);
@@ -521,7 +537,8 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_ITEM_MODEL_SET:
 			reindent(indentLevel);
-			strcat(strBuf, "ITEM_MODEL_SET xxx\n");
+			sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_MODEL_SET xxx\n", inst->item_model_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_EM_SET:
 			reindent(indentLevel);
@@ -529,7 +546,8 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_OM_SET:
 			reindent(indentLevel);
-			strcat(strBuf, "OM_SET xxx\n");
+			sprintf(tmpBuf, "OM_SET #0x%02x, xxx\n", inst->om_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 
 		default:
