@@ -71,6 +71,10 @@
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
 
+#define INST_NOP8A	0x8a
+#define INST_NOP8B	0x8b
+#define INST_NOP8C	0x8c
+
 /* Non pickable item types */
 
 #define NPITEM_LIGHT	0x03
@@ -402,7 +406,7 @@ static const script_inst_len_t inst_length[]={
 	
 	/* 0x80-0x8f */
 	{0x80,		2},
-	/*{0x81,		2},*/
+	/*{0x81,		3},*/
 	{0x82,		3},
 	{0x83,		1},
 	{0x84,		2},
@@ -411,9 +415,9 @@ static const script_inst_len_t inst_length[]={
 	{0x87,		1},
 	{0x88,		3},
 	{0x89,		1},
-	{0x8a,		6},
-	{0x8b,		6},
-	{0x8c,		12},
+	{INST_NOP8A,	6},
+	{INST_NOP8B,	6},
+	{INST_NOP8C,	8},
 	{0x8d,		24},
 	{0x8e,		24}
 };
@@ -642,12 +646,23 @@ static void scriptPrintInst(room_t *this)
 
 	switch(inst->opcode) {
 
-		/* 0x00-0x0f */
+		/* Nops */
 
 		case INST_NOP:
+		case INST_NOP1C:
+		case INST_NOP1E:
+		case INST_NOP1F:
+		case INST_NOP20:
+		case INST_NOP63:
+		case INST_NOP8A:
+		case INST_NOP8B:
+		case INST_NOP8C:
 			reindent(indentLevel);
 			strcat(strBuf, "nop\n");
 			break;
+
+		/* 0x00-0x0f */
+
 		case INST_RETURN:
 			if (indentLevel>1) {
 				reindent(indentLevel);
@@ -693,19 +708,9 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
 			strcat(strBuf, tmpBuf);
 			break;
-		case INST_NOP1C:
-		case INST_NOP1E:
-		case INST_NOP1F:
-			reindent(indentLevel);
-			strcat(strBuf, "nop\n");
-			break;
 
 		/* 0x20-0x2f */
 
-		case INST_NOP20:
-			reindent(indentLevel);
-			strcat(strBuf, "nop\n");
-			break;
 		case INST_EVAL_CK:
 			reindent(indentLevel);
 			strcat(strBuf, "EVAL_CK xxx\n");
@@ -822,15 +827,15 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x60-0x6f */
 
-		case INST_NOP63:
-			reindent(indentLevel);
-			strcat(strBuf, "nop\n");
-			break;
 		case INST_WALL_SET:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "OBJECT #0x%02x = WALL_SET xxx\n", inst->wall_set.id);
 			strcat(strBuf, tmpBuf);
 			break;
+
+		/* 0x70-0x7f */
+
+		/* 0x80-0x8f */
 
 		default:
 			reindent(indentLevel);
