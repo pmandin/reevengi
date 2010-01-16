@@ -340,7 +340,7 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 	Uint16 *txtOffsets, txtCount;
 	Uint8 *txtPtr;
 	int i = 0;
-	char strBuf[16];
+	char strBuf[32];
 
 	memset(buffer, 0, sizeof(bufferLen));
 	

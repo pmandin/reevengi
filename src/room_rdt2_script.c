@@ -72,13 +72,16 @@
 #define INST_ITEM_SET	0x4e
 
 #define INST_SND_PLAY	0x59
+#define INST_ITEM_HAVE	0x5e
 
+#define INST_ITEM_BELOW	0x62
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
 #define INST_MOVIE_PLAY	0x6f
 
 #define INST_ITEM_ADD	0x76
 
+#define INST_ITEM_ABOVE	0x88
 #define INST_NOP8A	0x8a
 #define INST_NOP8B	0x8b
 #define INST_NOP8C	0x8c
@@ -262,6 +265,22 @@ typedef struct {
 	Uint8 id;
 } script_movie_play_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+} script_item_have_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+} script_item_below_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint8 unknown;
+} script_item_above_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
@@ -288,6 +307,9 @@ typedef union {
 	script_snd_play_t	snd_play;
 	script_item_add_t	item_add;
 	script_movie_play_t	movie_play;
+	script_item_have_t	item_have;
+	script_item_below_t	item_below;
+	script_item_above_t	item_above;
 } script_inst_t;
 
 typedef struct {
@@ -434,13 +456,13 @@ static const script_inst_len_t inst_length[]={
 	{0x5b,		2},
 	{0x5c,		3},
 	{0x5d,		2},
-	{0x5e,		2},
+	{INST_ITEM_HAVE,	sizeof(script_item_have_t)},
 	{0x5f,		2},
 
 	/* 0x60-0x6f */
 	{0x60,		14},
 	{0x61,		4},
-	{0x62,		2},
+	{INST_ITEM_BELOW,	sizeof(script_item_below_t)},
 	{INST_NOP63,	1},
 	{0x64,		16},
 	{0x65,		2},
@@ -482,7 +504,7 @@ static const script_inst_len_t inst_length[]={
 	{0x85,		6},
 	{0x86,		1},
 	{0x87,		1},
-	{0x88,		3},
+	{INST_ITEM_ABOVE,	sizeof(script_item_above_t)},
 	{0x89,		1},
 	{INST_NOP8A,	6},
 	{INST_NOP8B,	6},
@@ -938,9 +960,19 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "SND_PLAY %d,%d\n", inst->snd_play.id, SDL_SwapLE16(inst->snd_play.value));
 			strcat(strBuf, tmpBuf);
 			break;
+		case INST_ITEM_HAVE:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "ITEM_HAVE %d\n", inst->item_have.id);
+			strcat(strBuf, tmpBuf);
+			break;
 
 		/* 0x60-0x6f */
 
+		case INST_ITEM_BELOW:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "ITEM_BELOW %d\n", inst->item_below.id);
+			strcat(strBuf, tmpBuf);
+			break;
 		case INST_WALL_SET:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "OBJECT #0x%02x = WALL_SET xxx\n", inst->wall_set.id);
@@ -970,6 +1002,12 @@ static void scriptPrintInst(room_t *this)
 			break;
 
 		/* 0x80-0x8f */
+
+		case INST_ITEM_ABOVE:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "ITEM_ABOVE %d\n", inst->item_above.id);
+			strcat(strBuf, tmpBuf);
+			break;
 
 		default:
 			reindent(indentLevel);
