@@ -35,6 +35,7 @@
 
 #define INST_NOP	0x00
 #define INST_RETURN	0x01
+#define INST_DO_EVENTS	0x02
 #define INST_EVT_EXEC	0x04
 #define INST_IF		0x06
 #define INST_ELSE	0x07
@@ -49,6 +50,7 @@
 #define INST_NOP20	0x20
 #define INST_EVAL_CK	0x21
 #define INST_EVAL_CMP	0x23
+#define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
 #define INST_NPITEM_SET	0x2c
 #define INST_INST2D_SET	0x2d
@@ -59,7 +61,8 @@
 #define INST_ADD_REG	0x31
 #define INST_SET_REG2	0x32
 #define INST_SET_REG3	0x33
-#define INST_CAM_SET	0x37
+#define INST_SET_VAR	0x34
+#define INST_CAM_CHG	0x37
 #define INST_DOOR_SET	0x3b
 #define INST_BCHG8	0x3c
 #define INST_CMP_IMM	0x3e
@@ -68,8 +71,12 @@
 #define INST_ACTIVATE_OBJECT	0x47
 #define INST_ITEM_SET	0x4e
 
+#define INST_SND_PLAY	0x59
+
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
+
+#define INST_ITEM_ADD	0x76
 
 #define INST_NOP8A	0x8a
 #define INST_NOP8B	0x8b
@@ -176,7 +183,7 @@ typedef struct {
 	Uint8 unknown0;
 	Uint8 camera;
 	Uint8 unknown1;
-} script_cam_set_t;
+} script_cam_chg_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -210,7 +217,7 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 unknown0;
 	Uint8 id;
-	Uint8 unknown1;
+	Uint8 model;
 	Uint16 unknown[9];
 } script_em_set_t;
 
@@ -226,6 +233,29 @@ typedef struct {
 	Uint16 unknown[18];
 } script_inst2d_set_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+} script_cam_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Sint16 value;
+} script_set_var_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Sint16 value;
+} script_snd_play_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint8 amount;
+} script_item_add_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
@@ -239,7 +269,7 @@ typedef union {
 	script_setregmem_t	set_reg_mem;
 	script_setregimm_t	set_reg_imm;
 	script_setreg3w_t	set_reg_3w;
-	script_cam_set_t	cam_set;
+	script_cam_chg_t	cam_chg;
 	script_bchg8_t		bchg8;
 	script_cmp_imm_t	cmp_imm;
 	script_set_cur_obj_t	set_cur_obj;
@@ -247,6 +277,10 @@ typedef union {
 	script_em_set_t		em_set;
 	script_wall_set_t	wall_set;
 	script_inst2d_set_t	inst2d_set;
+	script_cam_set_t	cam_set;
+	script_set_var_t	set_var;
+	script_snd_play_t	snd_play;
+	script_item_add_t	item_add;
 } script_inst_t;
 
 typedef struct {
@@ -264,7 +298,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
 	{INST_NOP,	1},
 	{INST_RETURN,	2},
-	{0x02,		1},
+	{INST_DO_EVENTS,	1},
 	{0x03,		2},
 	{INST_EVT_EXEC,	sizeof(script_evtexec_t)},
 	{0x05,		2},
@@ -306,7 +340,7 @@ static const script_inst_len_t inst_length[]={
 	{0x26,		6},
 	{0x27,		4},
 	{0x28,		1},
-	{0x29,		2},
+	{INST_CAM_SET,	sizeof(script_cam_set_t)},
 	{0x2a,		1},
 	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
 	{INST_NPITEM_SET,	sizeof(script_npitem_set_t)},
@@ -319,10 +353,10 @@ static const script_inst_len_t inst_length[]={
 	{INST_ADD_REG,		1},
 	{INST_SET_REG2,		sizeof(script_setreg3w_t)},
 	{INST_SET_REG3,		sizeof(script_setreg3w_t)},
-	{0x34,		4},
+	{INST_SET_VAR,		sizeof(script_set_var_t)},
 	{0x35,		3},
 	{0x36,		12},
-	{INST_CAM_SET,	sizeof(script_cam_set_t)},
+	{INST_CAM_CHG,	sizeof(script_cam_chg_t)},
 	{0x38,		3},
 	{0x39,		8},
 	{0x3a,		16},
@@ -360,7 +394,7 @@ static const script_inst_len_t inst_length[]={
 	{0x56,		4},
 	{0x57,		8},
 	{0x58,		4},
-	{0x59,		4},
+	{INST_SND_PLAY,		sizeof(script_snd_play_t)},
 	{0x5a,		2},
 	{0x5b,		2},
 	{0x5c,		3},
@@ -393,7 +427,7 @@ static const script_inst_len_t inst_length[]={
 	{0x73,		8},
 	{0x74,		4},
 	{0x75,		22},
-	{0x76,		3},
+	{INST_ITEM_ADD,		sizeof(script_item_add_t)},
 	{0x77,		4},
 	{0x78,		6},
 	{0x79,		1},
@@ -672,6 +706,10 @@ static void scriptPrintInst(room_t *this)
 				strcat(strBuf, "}\n\n");
 			}
 			break;
+		case INST_DO_EVENTS:
+			reindent(indentLevel);
+			strcat(strBuf, "PROCESS_EVENTS\n");
+			break;
 		case INST_EVT_EXEC:
 			reindent(indentLevel);
 			if (inst->evtexec.ex_opcode == INST_FUNC) {
@@ -718,6 +756,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_EVAL_CMP:
 			reindent(indentLevel);
 			strcat(strBuf, "EVAL_CMP xxx\n");
+			break;
+		case INST_CAM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "CAM_SET #0x%02x\n", inst->cam_set.id);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_PRINT_TEXT:
 			{
@@ -784,10 +827,17 @@ static void scriptPrintInst(room_t *this)
 				SDL_SwapLE16(inst->set_reg_3w.value[2]));
 			strcat(strBuf, tmpBuf);
 			break;
-		case INST_CAM_SET:
+		case INST_SET_VAR:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "CAM_SET %d,%d\n",
-				inst->cam_set.unknown0, inst->cam_set.camera);
+			sprintf(tmpBuf, "SET_VAR #0x%02x,%d\n",
+				inst->set_var.id,
+				SDL_SwapLE16(inst->set_var.value));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_CAM_CHG:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "CAM_CHG %d,%d\n",
+				inst->cam_chg.unknown0, inst->cam_chg.camera);
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_DOOR_SET:
@@ -820,7 +870,7 @@ static void scriptPrintInst(room_t *this)
 
 		case INST_EM_SET:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "EM_SET #%02x\n", inst->em_set.id);
+			sprintf(tmpBuf, "ENTITY #0x%02x = EM_SET model 0x%02x\n", inst->em_set.id, inst->em_set.model);
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_ACTIVATE_OBJECT:
@@ -836,6 +886,12 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x50-0x5f */
 
+		case INST_SND_PLAY:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "SND_PLAY %d,%d\n", inst->snd_play.id, SDL_SwapLE16(inst->snd_play.value));
+			strcat(strBuf, tmpBuf);
+			break;
+
 		/* 0x60-0x6f */
 
 		case INST_WALL_SET:
@@ -845,6 +901,12 @@ static void scriptPrintInst(room_t *this)
 			break;
 
 		/* 0x70-0x7f */
+
+		case INST_ITEM_ADD:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "ITEM_ADD %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
+			strcat(strBuf, tmpBuf);
+			break;
 
 		/* 0x80-0x8f */
 
