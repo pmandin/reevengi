@@ -47,4 +47,6 @@ typedef struct {
 
 void room_rdt2_init(room_t *this);
 
+void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
+
 #endif /* ROOM_RDT2_H */

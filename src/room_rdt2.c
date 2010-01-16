@@ -106,7 +106,7 @@ static void rdt2_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t 
 static int rdt2_getNumBoundaries(room_t *this);
 static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
-static void rdt2_displayTexts(room_t *this, int num_offset);
+static void rdt2_displayTexts(room_t *this, int num_lang);
 
 /*--- Functions ---*/
 
@@ -139,8 +139,8 @@ void room_rdt2_init(room_t *this)
 		this->num_cameras, this->num_camswitches, this->num_boundaries);
 
 	/* Display texts */
-	rdt2_displayTexts(this, RDT2_OFFSET_TEXT_LANG1);
-	rdt2_displayTexts(this, RDT2_OFFSET_TEXT_LANG2);
+	rdt2_displayTexts(this, 0);	/* language 1 */
+	rdt2_displayTexts(this, 1);	/* language 2 */
 }
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
@@ -302,19 +302,20 @@ static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *r
 	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[i].y4);
 }
 
-static void rdt2_displayTexts(room_t *this, int num_offset)
+static void rdt2_displayTexts(room_t *this, int num_lang)
 {
 	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	int room_lang = (num_lang==0) ? RDT2_OFFSET_TEXT_LANG1 : RDT2_OFFSET_TEXT_LANG2;
 	Uint32 offset;
 	Uint16 *txtOffsets, txtCount;
-	Uint8 *txtPtr;
 	int i;
 	char tmpBuf[512];
-	char strBuf[16];
 
-	offset = SDL_SwapLE32(rdt_header->offsets[num_offset]);
+	logMsg(1, "Language %d\n", num_lang);
+
+	offset = SDL_SwapLE32(rdt_header->offsets[room_lang]);
 	if (offset == 0) {
-		logMsg(1, "No texts to display\n");
+		logMsg(1, " No texts to display\n");
 		return;
 	}
 
@@ -322,45 +323,69 @@ static void rdt2_displayTexts(room_t *this, int num_offset)
 
 	txtCount = SDL_SwapLE16(txtOffsets[0]) >> 1;
 	for (i=0; i<txtCount; i++) {
-		txtPtr = &((Uint8 *) this->file)[offset + SDL_SwapLE16(txtOffsets[i])];
-		logMsg(1, "Text[0x%02x]:\n", i);
+		room_rdt2_getText(this, num_lang, i, tmpBuf, sizeof(tmpBuf));
+		logMsg(1, " Text[0x%02x]: %s\n", i, tmpBuf);
+	}
+}
 
-		memset(tmpBuf, 0, sizeof(tmpBuf));
-		while (*txtPtr != 0xfe) {
-			switch(*txtPtr) {
-				case 0xf3:
-					strncat(tmpBuf, "[0xf3]", sizeof(tmpBuf)-1);
-					break;
-				case 0xfa:
-					sprintf(strBuf, "[0xfa][0x%02x]", txtPtr[1]);
-					strncat(tmpBuf, strBuf, sizeof(tmpBuf)-1);
-					txtPtr++;
-					break;
-				case 0xfb:
-					/* Yes/No question */
-					strncat(tmpBuf, "[Yes/No]", sizeof(tmpBuf)-1);
-					break;
-				case 0xfc:
-					/* Carriage return */
-					logMsg(1, " %s\n", tmpBuf);
-					memset(tmpBuf, 0, sizeof(tmpBuf));
-					break;
-				case 0xfd:
-					sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[1]);
-					strncat(tmpBuf, strBuf, sizeof(tmpBuf)-1);
-					txtPtr++;
-					break;
-				default:
-					if (*txtPtr<0x60) {
-						sprintf(strBuf, "%c", txt2asc[*txtPtr]);
-					} else {
-						sprintf(strBuf, "[0x%02x]", *txtPtr);
-					}
-					strncat(tmpBuf, strBuf, sizeof(tmpBuf)-1);
-					break;
-			}
-			txtPtr++;
+void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen)
+{
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	int room_lang = (lang==0) ? RDT2_OFFSET_TEXT_LANG1 : RDT2_OFFSET_TEXT_LANG2;
+	Uint32 offset;
+	Uint16 *txtOffsets, txtCount;
+	Uint8 *txtPtr;
+	int i = 0;
+	char strBuf[16];
+
+	memset(buffer, 0, sizeof(bufferLen));
+	
+	offset = SDL_SwapLE32(rdt_header->offsets[room_lang]);
+	if (offset == 0) {
+		return;
+	}
+
+	txtOffsets = (Uint16 *) &((Uint8 *) this->file)[offset];
+
+	txtCount = SDL_SwapLE16(txtOffsets[0]) >> 1;
+	if (num_text>=txtCount) {
+		return;
+	}
+
+	txtPtr = &((Uint8 *) this->file)[offset + SDL_SwapLE16(txtOffsets[num_text])];
+
+	while ((txtPtr[i] != 0xfe) && (i<bufferLen-1)) {
+		switch(txtPtr[i]) {
+			case 0xf3:
+				strncat(buffer, "[0xf3]", bufferLen-1);
+				break;
+			case 0xfa:
+				sprintf(strBuf, "[0xfa][0x%02x]", txtPtr[i+1]);
+				strncat(buffer, strBuf, bufferLen-1);
+				i++;
+				break;
+			case 0xfb:
+				/* Yes/No question */
+				strncat(buffer, "[Yes/No]", bufferLen-1);
+				break;
+			case 0xfc:
+				/* Carriage return */
+				strncat(buffer, "\n", bufferLen-1);
+				break;
+			case 0xfd:
+				sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[i+1]);
+				strncat(buffer, strBuf, bufferLen-1);
+				i++;
+				break;
+			default:
+				if (txtPtr[i]<0x60) {
+					sprintf(strBuf, "%c", txt2asc[txtPtr[i]]);
+				} else {
+					sprintf(strBuf, "[0x%02x]", txtPtr[i]);
+				}
+				strncat(buffer, strBuf, bufferLen-1);
+				break;
 		}
-		logMsg(1, " %s\n", tmpBuf);
+		i++;
 	}
 }
