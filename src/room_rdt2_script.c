@@ -75,6 +75,7 @@
 
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
+#define INST_MOVIE_PLAY	0x6f
 
 #define INST_ITEM_ADD	0x76
 
@@ -256,6 +257,11 @@ typedef struct {
 	Uint8 amount;
 } script_item_add_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+} script_movie_play_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
@@ -281,6 +287,7 @@ typedef union {
 	script_set_var_t	set_var;
 	script_snd_play_t	snd_play;
 	script_item_add_t	item_add;
+	script_movie_play_t	movie_play;
 } script_inst_t;
 
 typedef struct {
@@ -446,7 +453,7 @@ static const script_inst_len_t inst_length[]={
 	{0x6c,		1},
 	{0x6d,		4},
 	{0x6e,		6},
-	{0x6f,		2},
+	{INST_MOVIE_PLAY,	sizeof(script_movie_play_t)},
 
 	/* 0x70-0x7f */
 	{0x70,		1},
@@ -916,7 +923,7 @@ static void scriptPrintInst(room_t *this)
 				strcat(strBuf, tmpBuf);
 				logMsg(1, "%s", strBuf);
 
-				if (inst->item_add.id < 64) {
+				if (inst->item_set.type < 64) {
 					sprintf(strBuf, "#\t%s\n", item_name[inst->item_set.type]);
 				} else {
 					sprintf(strBuf, "#\tUnknown item\n");
@@ -937,6 +944,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_WALL_SET:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "OBJECT #0x%02x = WALL_SET xxx\n", inst->wall_set.id);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_MOVIE_PLAY:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "MOVIE_PLAY #0x%02x\n", inst->movie_play.id);
 			strcat(strBuf, tmpBuf);
 			break;
 
