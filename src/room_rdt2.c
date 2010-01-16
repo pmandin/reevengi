@@ -360,7 +360,17 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 				strncat(buffer, "[0xf3]", bufferLen-1);
 				break;
 			case 0xfa:
-				sprintf(strBuf, "[0xfa][0x%02x]", txtPtr[i+1]);
+				switch (txtPtr[i+1]) {
+					case 0:
+						sprintf(strBuf, "<p>");
+						break;
+					case 1:
+						sprintf(strBuf, "</p>");
+						break;
+					default:
+						sprintf(strBuf, "[0xfa][0x%02x]", txtPtr[i+1]);
+						break;
+				}
 				strncat(buffer, strBuf, bufferLen-1);
 				i++;
 				break;
@@ -370,9 +380,10 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 				break;
 			case 0xfc:
 				/* Carriage return */
-				strncat(buffer, "\n", bufferLen-1);
+				strncat(buffer, "<br>", bufferLen-1);
 				break;
 			case 0xfd:
+				/* Pause ? */
 				sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[i+1]);
 				strncat(buffer, strBuf, bufferLen-1);
 				i++;
@@ -380,6 +391,8 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 			default:
 				if (txtPtr[i]<0x60) {
 					sprintf(strBuf, "%c", txt2asc[txtPtr[i]]);
+				} else if (txtPtr[i]==0x79) {
+					sprintf(strBuf, ".");
 				} else {
 					sprintf(strBuf, "[0x%02x]", txtPtr[i]);
 				}

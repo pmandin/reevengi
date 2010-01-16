@@ -720,9 +720,20 @@ static void scriptPrintInst(room_t *this)
 			strcat(strBuf, "EVAL_CMP xxx\n");
 			break;
 		case INST_PRINT_TEXT:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "PRINT_TEXT #0x%02x\n", inst->print_text.id);
-			strcat(strBuf, tmpBuf);
+			{
+				char tmpBuf[512];
+
+				reindent(indentLevel);
+				sprintf(tmpBuf, "PRINT_TEXT #0x%02x\n", inst->print_text.id);
+				strcat(strBuf, tmpBuf);
+				logMsg(1, "%s", strBuf);
+
+				room_rdt2_getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+				logMsg(1, "#\tL0\t%s\n", tmpBuf);
+
+				room_rdt2_getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+				sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
+			}
 			break;
 		case INST_NPITEM_SET:
 			reindent(indentLevel);
