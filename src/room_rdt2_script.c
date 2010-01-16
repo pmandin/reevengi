@@ -52,7 +52,7 @@
 #define INST_EVAL_CMP	0x23
 #define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
-#define INST_NPITEM_SET	0x2c
+#define INST_ESPR_SET	0x2c
 #define INST_INST2D_SET	0x2d
 #define INST_SET_REG_MEM	0x2e
 #define INST_SET_REG_IMM	0x2f
@@ -86,13 +86,13 @@
 #define INST_NOP8B	0x8b
 #define INST_NOP8C	0x8c
 
-/* Non pickable item types */
+/* Effect sprites */
 
-#define NPITEM_LIGHT	0x03
-#define NPITEM_OBSTACLE	0x04
-#define NPITEM_TYPEWRITER	0x09
-#define NPITEM_BOX	0x0a
-#define NPITEM_FIRE	0x0b
+#define ESPR_LIGHT	0x03
+#define ESPR_OBSTACLE	0x04
+#define ESPR_TYPEWRITER	0x09
+#define ESPR_BOX	0x0a
+#define ESPR_FIRE	0x0b
 
 /*--- Types ---*/
 
@@ -138,7 +138,7 @@ typedef struct {
 	Uint8 unknown0[3];
 	Sint16 x,y,w,h;
 	Uint16 unknown1[3];
-} script_npitem_set_t;
+} script_espr_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -222,7 +222,16 @@ typedef struct {
 	Uint8 unknown0;
 	Uint8 id;
 	Uint8 model;
-	Uint16 unknown[9];
+
+	Uint8 state;
+	Uint8 unknown1[2];
+	Uint8 sound_bank;
+
+	Uint8 texture;
+	Uint8 killed;
+	Sint16 x,y,z,dir;
+
+	Uint16 unknown2[2];
 } script_em_set_t;
 
 typedef struct {
@@ -289,7 +298,7 @@ typedef union {
 	script_sleepn_t		sleepn;
 	script_func_t		func;
 	script_door_set_t	door_set;
-	script_npitem_set_t	npitem_set;
+	script_espr_set_t	espr_set;
 	script_print_text_t	print_text;
 	script_setregmem_t	set_reg_mem;
 	script_setregimm_t	set_reg_imm;
@@ -400,7 +409,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_CAM_SET,	sizeof(script_cam_set_t)},
 	{0x2a,		1},
 	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
-	{INST_NPITEM_SET,	sizeof(script_npitem_set_t)},
+	{INST_ESPR_SET,		sizeof(script_espr_set_t)},
 	{INST_INST2D_SET,	sizeof(script_inst2d_set_t)},
 	{INST_SET_REG_MEM,	sizeof(script_setregmem_t)},
 	{INST_SET_REG_IMM,	sizeof(script_setregimm_t)},
@@ -835,9 +844,9 @@ static void scriptPrintInst(room_t *this)
 				sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
 			}
 			break;
-		case INST_NPITEM_SET:
+		case INST_ESPR_SET:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "OBJECT #0x%02x = NPITEM_SET xxx\n", inst->npitem_set.id);
+			sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx\n", inst->espr_set.id);
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_INST2D_SET:
@@ -927,7 +936,8 @@ static void scriptPrintInst(room_t *this)
 
 		case INST_EM_SET:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "ENTITY #0x%02x = EM_SET model 0x%02x\n", inst->em_set.id, inst->em_set.model);
+			sprintf(tmpBuf, "ENTITY #0x%02x = EM_SET model 0x%02x, killed 0x%02x\n",
+				inst->em_set.id, inst->em_set.model, inst->em_set.killed);
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_ACTIVATE_OBJECT:
