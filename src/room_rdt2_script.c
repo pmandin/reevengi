@@ -294,6 +294,34 @@ static const char *cmp_imm_name[7]={
 	"EQ", "GT", "GE", "LT", "LE", "NE", "??"
 };
 
+static const char *item_name[]={
+	"", "Knife", "HK VP70", "Browning",
+	"Custom handgun", "Magnum", "Custom magnum", "Shotgun",
+	"Custom shotgun", "Grenade launcher + grenade rounds", "Grenade launcher + fire rounds", "Grenade launcher + acid rounds",
+	"Bowgun", "Calico M950", "Sparkshot", "Ingram",
+	"Flamethrower", "Rocket launcher", "Gatling gun", "Machine gun",
+	"Handgun ammo", "Shotgun ammo", "Magnum ammo", "Flamer fuel",
+	"Grenade rounds", "Fire rounds", "Acid rounds", "SMG ammo",
+	"Sparkshot ammo", "Bowgun ammo", "Ink ribbon", "Small key",
+	"Handgun parts", "Magnum parts", "Shotgun parts", "First aid spray",
+	"Chemical F-09", "Chemical ACw-32", "Green herb", "Red herb",
+	"Blue herb", "Green + green herbs", "Green + red herbs", "Green + blue herbs",
+	"Green + green + green herbs", "Green + green + blue herbs", "Green + red + blue herbs", "Lighter",
+	"Lockpick", "Sherry's photo", "Valve handle", "Red jewel",
+	"Red card", "Blue card", "Serpent stone", "Jaguar stone",
+	"Jaguar stone (left part)", "Jaguar stone (right part)", "Eagle stone", "Rook plug",
+	"King plug", "Bishop plug", "Knight plug", "Weapon storage key",
+	"Detonator", "C4", "C4 + detonator", "Crank",
+	"Film A", "Film B", "Film C", "Unicord medal",
+	"Eagle medal", "Wolf medal", "Cog", "Manhole opener",
+	"Main fuse", "Fuse case", "Vaccine", "Vaccine container",
+	"Firestarter", "Base vaccine", "G-Virus", "Base vaccine (case only)",
+	"Joint S plug", "Joint N plug", "Wire", "Ada's photo",
+	"Cabin key", "Spade key", "Diamond key", "Heart key",
+	"Club key", "Control panel key (down)", "Control panel key (up)", "Power room key",
+	"MO disk", "Umbrella keycard", "Master key", "Weapons locker key"
+};
+
 static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
 	{INST_NOP,	1},
@@ -879,9 +907,21 @@ static void scriptPrintInst(room_t *this)
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_ITEM_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET xxx\n", inst->item_set.id);
-			strcat(strBuf, tmpBuf);
+			{
+				reindent(indentLevel);
+				sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET %d, amount %d\n",
+					inst->item_set.id,
+					SDL_SwapLE16(inst->item_set.type),
+					SDL_SwapLE16(inst->item_set.amount));
+				strcat(strBuf, tmpBuf);
+				logMsg(1, "%s", strBuf);
+
+				if (inst->item_add.id < 64) {
+					sprintf(strBuf, "#\t%s\n", item_name[inst->item_set.type]);
+				} else {
+					sprintf(strBuf, "#\tUnknown item\n");
+				}
+			}
 			break;
 
 		/* 0x50-0x5f */
@@ -903,9 +943,18 @@ static void scriptPrintInst(room_t *this)
 		/* 0x70-0x7f */
 
 		case INST_ITEM_ADD:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "ITEM_ADD %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
-			strcat(strBuf, tmpBuf);
+			{
+				reindent(indentLevel);
+				sprintf(tmpBuf, "ITEM_ADD %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
+				strcat(strBuf, tmpBuf);
+				logMsg(1, "%s", strBuf);
+
+				if (inst->item_add.id < 64) {
+					sprintf(strBuf, "#\t%s\n", item_name[inst->item_add.id]);
+				} else {
+					sprintf(strBuf, "#\tUnknown item\n");
+				}
+			}
 			break;
 
 		/* 0x80-0x8f */
