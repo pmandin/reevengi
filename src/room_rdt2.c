@@ -39,6 +39,10 @@ static const char txt2asc[0x60]={
 	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','?'
 };
 
+static const char *txtcolor[6]={
+	"white", "green", "red", "grey", "blue", "black"
+};
+
 /*--- Types ---*/
 
 typedef struct {
@@ -359,6 +363,22 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 			case 0xf3:
 				strncat(buffer, "[0xf3]", bufferLen-1);
 				break;
+			case 0xf8:
+				/* Item */
+				sprintf(strBuf, "<item id=\"%d\">", txtPtr[i+1]);
+				strncat(buffer, strBuf, bufferLen-1);
+				i++;
+				break;
+			case 0xf9:
+				/* Text color */
+				if (txtPtr[i+1]<6) {
+					sprintf(strBuf, "<text color=\"%s\">", txtcolor[txtPtr[i+1]]);
+				} else {
+					sprintf(strBuf, "<text color=\"0x%02x\">", txtPtr[i+1]);
+				}
+				strncat(buffer, strBuf, bufferLen-1);
+				i++;
+				break;
 			case 0xfa:
 				switch (txtPtr[i+1]) {
 					case 0:
@@ -383,7 +403,7 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 				strncat(buffer, "<br>", bufferLen-1);
 				break;
 			case 0xfd:
-				/* Pause ? */
+				/* Wait player input */
 				sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[i+1]);
 				strncat(buffer, strBuf, bufferLen-1);
 				i++;
