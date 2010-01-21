@@ -77,9 +77,12 @@
 #define INST_ITEM_BELOW	0x62
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
+#define INST_LIGHT_POS_SET	0x6a
+#define INST_LIGHT3_POS_SET	0x6b
 #define INST_MOVIE_PLAY	0x6f
 
 #define INST_ITEM_ADD	0x76
+#define INST_LIGHT_COLOR_SET	0x7c
 
 #define INST_ITEM_ABOVE	0x88
 #define INST_NOP8A	0x8a
@@ -93,6 +96,15 @@
 #define ESPR_TYPEWRITER	0x09
 #define ESPR_BOX	0x0a
 #define ESPR_FIRE	0x0b
+
+/* possible room objects: */
+/* inst2c: espr */
+/* inst3b: door */
+/* inst4e: item */
+/* inst67: wall */
+/* inst68: ?, ptr+2 stored in object list, like others */
+/* inst69: ?, ptr+2 stored in object list, like others */
+/* inst8d: ?, ptr+2 stored in object list, like others */
 
 /*--- Types ---*/
 
@@ -134,7 +146,7 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
-	Uint8 type;
+	Uint8 type;	/* ptr to this stored in room object list */
 	Uint8 unknown0[3];
 	Sint16 x,y,w,h;
 	Uint16 unknown1[3];
@@ -143,7 +155,7 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
-	Uint16 unknown0[2];
+	Uint16 unknown0[2];	/* ptr to this stored in room object list */
 	Sint16 x,y,w,h;
 	Sint16 next_x,next_y,next_z;
 	Sint16 next_dir;
@@ -210,7 +222,7 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
-	Uint16 unknown0[2];
+	Uint16 unknown0[2];	/* ptr to this stored in room object list */
 	Sint16 x,y,w,h;
 	Uint16 type;
 	Uint16 amount;
@@ -237,7 +249,7 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
-	Uint16 unknown[13];
+	Uint16 unknown[13];	/* ptr to this stored in room object list */
 } script_wall_set_t;
 
 typedef struct {
@@ -290,6 +302,27 @@ typedef struct {
 	Uint8 unknown;
 } script_item_above_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint8 id;
+	Uint8 param;
+	Sint16 value;
+} script_light_pos_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 param;
+	Sint16 value;
+} script_light3_pos_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint8 r,g,b;
+	Uint8 dummy;
+} script_light_color_set_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
@@ -319,6 +352,9 @@ typedef union {
 	script_item_have_t	item_have;
 	script_item_below_t	item_below;
 	script_item_above_t	item_above;
+	script_light_pos_set_t	light_pos_set;
+	script_light3_pos_set_t	light3_pos_set;
+	script_light_color_set_t	light_color_set;
 } script_inst_t;
 
 typedef struct {
@@ -479,8 +515,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_WALL_SET,		sizeof(script_wall_set_t)},
 	{0x68,		40},
 	/*{0x69,		2},*/
-	{0x6a,		6},
-	{0x6b,		4},
+	{INST_LIGHT_POS_SET,	sizeof(script_light_pos_set_t)},
+	{INST_LIGHT3_POS_SET,	sizeof(script_light3_pos_set_t)},
 	{0x6c,		1},
 	{0x6d,		4},
 	{0x6e,		6},
@@ -499,7 +535,7 @@ static const script_inst_len_t inst_length[]={
 	{0x79,		1},
 	{0x7a,		16},
 	{0x7b,		16},
-	{0x7c,		6},
+	{INST_LIGHT_COLOR_SET,	sizeof(script_light_color_set_t)},
 	{0x7d,		6},
 	{0x7e,		6},
 	{0x7f,		6},
@@ -740,7 +776,7 @@ static void scriptPrintInst(room_t *this)
 	memset(strBuf, 0, sizeof(strBuf));
 
 	if ((indentLevel==0) && (inst->opcode!=0xff)) {
-		logMsg(1, "func%02x() {\n", numFunc++);
+		logMsg(1, "func%02x()\n", numFunc++);
 		++indentLevel;
 	}
 
@@ -766,10 +802,10 @@ static void scriptPrintInst(room_t *this)
 		case INST_RETURN:
 			if (indentLevel>1) {
 				reindent(indentLevel);
-				strcat(strBuf, "return\n");
+				strcat(strBuf, "EXIT_FUNC\n");
 			} else {
 				reindent(--indentLevel);
-				strcat(strBuf, "}\n\n");
+				strcat(strBuf, "EXIT_FUNC\n\n");
 			}
 			break;
 		case INST_DO_EVENTS:
@@ -789,15 +825,15 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_IF:
 			reindent(indentLevel++);
-			strcat(strBuf, "if (xxx) {\n");
+			strcat(strBuf, "BEGIN_IF\n");
 			break;
 		case INST_ELSE:
 			reindent(--indentLevel);
-			strcat(strBuf, "} else {\n");
+			strcat(strBuf, "ELSE_IF\n");
 			break;
 		case INST_END_IF:
 			reindent(--indentLevel);
-			strcat(strBuf, "}\n");
+			strcat(strBuf, "END_IF\n");
 			break;
 		case INST_SLEEP_N:
 			reindent(indentLevel);
@@ -817,11 +853,11 @@ static void scriptPrintInst(room_t *this)
 
 		case INST_EVAL_CK:
 			reindent(indentLevel);
-			strcat(strBuf, "EVAL_CK xxx\n");
+			strcat(strBuf, "EXIT_IF CK xxx\n");
 			break;
 		case INST_EVAL_CMP:
 			reindent(indentLevel);
-			strcat(strBuf, "EVAL_CMP xxx\n");
+			strcat(strBuf, "EXIT_IF_CMP xxx\n");
 			break;
 		case INST_CAM_SET:
 			reindent(indentLevel);
@@ -988,6 +1024,21 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "OBJECT #0x%02x = WALL_SET xxx\n", inst->wall_set.id);
 			strcat(strBuf, tmpBuf);
 			break;
+		case INST_LIGHT_POS_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "LIGHT_POS_SET %d,%c=%d\n",
+				inst->light_pos_set.id,
+				'x'+inst->light_pos_set.param,
+				SDL_SwapLE16(inst->light_pos_set.value));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_LIGHT3_POS_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "LIGHT3_POS_SET %c=%d\n",
+				'x'+inst->light3_pos_set.param,
+				SDL_SwapLE16(inst->light3_pos_set.value));
+			strcat(strBuf, tmpBuf);
+			break;
 		case INST_MOVIE_PLAY:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "MOVIE_PLAY #0x%02x\n", inst->movie_play.id);
@@ -1009,6 +1060,13 @@ static void scriptPrintInst(room_t *this)
 					sprintf(strBuf, "#\tUnknown item\n");
 				}
 			}
+			break;
+		case INST_LIGHT_COLOR_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "LIGHT_COLOR_SET %d,r=0x%02x,g=0x%02x,b=0x%02x\n",
+				inst->light_color_set.id, inst->light_color_set.r,
+				inst->light_color_set.g, inst->light_color_set.b);
+			strcat(strBuf, tmpBuf);
 			break;
 
 		/* 0x80-0x8f */
