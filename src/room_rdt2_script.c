@@ -83,6 +83,9 @@
 
 #define INST_ITEM_ADD	0x76
 #define INST_LIGHT_COLOR_SET	0x7c
+#define INST_LIGHT_POS_CAM_SET	0x7d
+#define INST_LIGHT3_POS_CAM_SET	0x7e
+#define INST_LIGHT_COLOR_CAM_SET	0x7f
 
 #define INST_ITEM_ABOVE	0x88
 #define INST_NOP8A	0x8a
@@ -323,6 +326,29 @@ typedef struct {
 	Uint8 dummy;
 } script_light_color_set_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 camera;
+	Uint8 id;
+	Uint8 param;
+	Sint16 value;
+} script_light_pos_cam_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint8 camera;
+	Uint8 param;
+	Sint16 value;
+} script_light3_pos_cam_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 camera;
+	Uint8 id;
+	Uint8 r,g,b;
+} script_light_color_cam_set_t;
+
 typedef union {
 	Uint8 opcode;
 	script_evtexec_t	evtexec;
@@ -355,6 +381,9 @@ typedef union {
 	script_light_pos_set_t	light_pos_set;
 	script_light3_pos_set_t	light3_pos_set;
 	script_light_color_set_t	light_color_set;
+	script_light_pos_cam_set_t	light_pos_cam_set;
+	script_light3_pos_cam_set_t	light3_pos_cam_set;
+	script_light_color_cam_set_t	light_color_cam_set;
 } script_inst_t;
 
 typedef struct {
@@ -536,9 +565,9 @@ static const script_inst_len_t inst_length[]={
 	{0x7a,		16},
 	{0x7b,		16},
 	{INST_LIGHT_COLOR_SET,	sizeof(script_light_color_set_t)},
-	{0x7d,		6},
-	{0x7e,		6},
-	{0x7f,		6},
+	{INST_LIGHT_POS_CAM_SET,	sizeof(script_light_pos_cam_set_t)},
+	{INST_LIGHT3_POS_CAM_SET,	sizeof(script_light3_pos_cam_set_t)},
+	{INST_LIGHT_COLOR_CAM_SET,	sizeof(script_light_color_cam_set_t)},
 	
 	/* 0x80-0x8f */
 	{0x80,		2},
@@ -776,7 +805,7 @@ static void scriptPrintInst(room_t *this)
 	memset(strBuf, 0, sizeof(strBuf));
 
 	if ((indentLevel==0) && (inst->opcode!=0xff)) {
-		logMsg(1, "func%02x()\n", numFunc++);
+		logMsg(1, "BEGIN_FUNC func%02x\n", numFunc++);
 		++indentLevel;
 	}
 
@@ -1028,7 +1057,7 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			sprintf(tmpBuf, "LIGHT_POS_SET %d,%c=%d\n",
 				inst->light_pos_set.id,
-				'x'+inst->light_pos_set.param,
+				'x'+inst->light_pos_set.param-11,
 				SDL_SwapLE16(inst->light_pos_set.value));
 			strcat(strBuf, tmpBuf);
 			break;
@@ -1066,6 +1095,31 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "LIGHT_COLOR_SET %d,r=0x%02x,g=0x%02x,b=0x%02x\n",
 				inst->light_color_set.id, inst->light_color_set.r,
 				inst->light_color_set.g, inst->light_color_set.b);
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_LIGHT_POS_CAM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "LIGHT_POS_CAM_SET camera %d,%d,%c=%d\n",
+				inst->light_pos_cam_set.camera,
+				inst->light_pos_cam_set.id,
+				'x'+inst->light_pos_cam_set.param-11,
+				SDL_SwapLE16(inst->light_pos_cam_set.value));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_LIGHT3_POS_CAM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "LIGHT3_POS_CAM_SET camera %d,%c=%d\n",
+				inst->light3_pos_cam_set.camera,
+				'x'+inst->light3_pos_cam_set.param,
+				SDL_SwapLE16(inst->light3_pos_cam_set.value));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_LIGHT_COLOR_CAM_SET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "LIGHT_COLOR_CAM_SET camera %d,%d,r=0x%02x,g=0x%02x,b=0x%02x\n",
+				inst->light_color_cam_set.camera,
+				inst->light_color_cam_set.id, inst->light_color_cam_set.r,
+				inst->light_color_cam_set.g, inst->light_color_cam_set.b);
 			strcat(strBuf, tmpBuf);
 			break;
 
