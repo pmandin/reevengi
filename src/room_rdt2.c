@@ -489,19 +489,39 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 		
 		for (num_mask=0; num_mask<SDL_SwapLE16(mask_offsets->count); num_mask++) {
 			rdt_mask_square_t *square_mask;
+			int src_x, src_y, width, height;
+			int dst_x = SDL_SwapLE16(mask_offsets->dst_x);
+			int dst_y = SDL_SwapLE16(mask_offsets->dst_y);
 
 			square_mask = (rdt_mask_square_t *) &((Uint8 *) this->file)[offset];
 			if (square_mask->size == 0) {
 				/* Rect mask */
 				rdt_mask_rect_t *rect_mask = (rdt_mask_rect_t *) square_mask;
 
-				/* TODO: draw rectangular mask */
+				src_x += rect_mask->src_x;
+				src_y += rect_mask->src_y;
+				dst_x += rect_mask->dst_x;
+				dst_y += rect_mask->dst_y;
+				width = SDL_SwapLE16(rect_mask->width);
+				height = SDL_SwapLE16(rect_mask->height);
+
+				render.bitmapSetSrcPos(&video, src_x, src_y);
+				render.bitmapScaled(&video, dst_x, dst_y,
+					width,height);
 
 				offset += sizeof(rdt_mask_rect_t);
 			} else {
 				/* Square mask */
 
-				/* TODO: draw square mask */
+				src_x += square_mask->src_x;
+				src_y += square_mask->src_y;
+				dst_x += square_mask->dst_x;
+				dst_y += square_mask->dst_y;
+				width = height = SDL_SwapLE16(square_mask->size);
+
+				render.bitmapSetSrcPos(&video, src_x, src_y);
+				render.bitmapScaled(&video, dst_x, dst_y,
+					width,height);
 
 				offset += sizeof(rdt_mask_square_t);
 			}
