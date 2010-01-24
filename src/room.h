@@ -108,6 +108,9 @@ struct room_s {
 
 	void (*scriptDump)(room_t *this, int num_script);
 	void (*scriptExec)(room_t *this, int num_script);
+
+	/*--- Image masks ---*/
+	void (*drawMasks)(room_t *this, int num_camera);
 };
 
 /*--- Functions ---*/

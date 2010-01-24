@@ -55,7 +55,7 @@ typedef struct {
 	Sint32 camera_to_x;
 	Sint32 camera_to_y;
 	Sint32 camera_to_z;
-	Uint32 offset;
+	Uint32 masks_offset;
 } rdt_camera_pos_t;
 
 typedef struct {
@@ -100,6 +100,30 @@ typedef struct {
 	Uint32 length;
 } rdt_anim_end_t;
 
+typedef struct {
+	Uint16 num_offset;
+	Uint16 num_masks;
+} rdt_mask_header_t;
+
+typedef struct {
+	Uint16 count;
+	Uint16 unknown;
+	Uint16 dst_x, dst_y;
+} rdt_mask_offset_t;
+
+typedef struct {
+	Uint8 src_x, src_y;
+	Uint8 dst_x, dst_y;
+	Uint16 depth, size;
+} rdt_mask_square_t;
+
+typedef struct {
+	Uint8 src_x, dst_x;
+	Uint8 src_y, dst_y;
+	Uint16 depth, zero;
+	Uint16 width, height;
+} rdt_mask_rect_t;
+
 /*--- Functions prototypes ---*/
 
 static void rdt2_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
@@ -111,6 +135,8 @@ static int rdt2_getNumBoundaries(room_t *this);
 static void rdt2_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
 static void rdt2_displayTexts(room_t *this, int num_lang);
+
+static void rdt2_drawMasks(room_t *this, int num_camera);
 
 /*--- Functions ---*/
 
@@ -126,6 +152,8 @@ void room_rdt2_init(room_t *this)
 		this->getCamera = rdt2_getCamera;
 		this->getCamswitch = rdt2_getCamswitch;
 		this->getBoundary = rdt2_getBoundary;
+
+		this->drawMasks = rdt2_drawMasks;
 
 		switch(game_state.version) {
 			case GAME_RE3_PS1_GAME:
@@ -420,5 +448,12 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 				break;
 		}
 		i++;
+	}
+}
+
+static void rdt2_drawMasks(room_t *this, int num_camera)
+{
+	if (game_state.bg_mask==NULL) {
+		return;
 	}
 }

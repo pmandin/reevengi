@@ -84,6 +84,8 @@ static Uint8 *scriptNextInst(room_t *this);
 static void scriptDump(room_t *this, int num_script);
 static void scriptExec(room_t *this, int num_script);
 
+static void drawMasks(room_t *this, int num_camera);
+
 /*--- Functions ---*/
 
 room_t *room_create(void *room_file, Uint32 length)
@@ -112,6 +114,8 @@ room_t *room_create(void *room_file, Uint32 length)
 
 	this->scriptDump = scriptDump;
 	this->scriptExec = scriptExec;
+
+	this->drawMasks = drawMasks;
 
 	return this;
 }
@@ -817,4 +821,10 @@ static void scriptExec(room_t *this, int num_script)
 		this->scriptPrivExecInst(this);
 		inst = scriptNextInst(this);
 	}
+}
+
+/* Background image masks */
+
+static void drawMasks(room_t *this, int num_camera)
+{
 }
