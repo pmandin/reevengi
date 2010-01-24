@@ -195,6 +195,11 @@ void state_unloadbackground(void)
 		game_state.background->shutdown(game_state.background);
 		game_state.background = NULL;
 	}
+
+	if (game_state.bg_mask) {
+		game_state.bg_mask->shutdown(game_state.bg_mask);
+		game_state.bg_mask = NULL;
+	}
 }
 
 static void state_loadroom(void)

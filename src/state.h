@@ -71,6 +71,9 @@ typedef struct {
 	/* Background image */
 	render_texture_t *background;
 
+	/* and its masks */
+	render_texture_t *bg_mask;
+
 	/* List of movies */
 	char **movies_list;
 	/* Currently playing movie */
