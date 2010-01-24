@@ -84,9 +84,11 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
+	gl.Translatef((float) render.bitmapSrcX, (float) render.bitmapSrcY, 0.0f);
 	if (gl_tex->textureTarget != GL_TEXTURE_2D) {
 		/* Rescale to width/height range */
-		gl.Scalef((float) tex->w, (float) tex->h, 1.0f);
+		gl.Scalef((float) tex->w - render.bitmapSrcX,
+			(float) tex->h - render.bitmapSrcY, 1.0f);
 	} else {
 		/* Rescale to 0-1 range */
 		gl.Scalef((float) tex->w / tex->pitchw,
@@ -103,13 +105,14 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 		gl.Vertex2f(0.0f, 0.0f);
 
 		gl.TexCoord2f(1.0f, 0.0f);
-		gl.Vertex2f(1.0f, 0.0f);
+		gl.Vertex2f((float) (tex->w - render.bitmapSrcX) / tex->w, 0.0f);
 
 		gl.TexCoord2f(1.0f, 1.0f);
-		gl.Vertex2f(1.0f, 1.0f);
+		gl.Vertex2f((float) (tex->w - render.bitmapSrcX) / tex->w,
+			(float) (tex->h - render.bitmapSrcY) / tex->h);
 
 		gl.TexCoord2f(0.0f, 1.0f);
-		gl.Vertex2f(0.0f, 1.0f);
+		gl.Vertex2f(0.0f, (float) (tex->h - render.bitmapSrcY) / tex->h);
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);

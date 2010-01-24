@@ -76,7 +76,7 @@ static void bitmapUnscaled(video_t *video, int x, int y)
 
 static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 {
-	int src_x=render.bitmapSrcX, src_y=render.bitmapSrcY, dst_x=x, dst_y=y;
+	int src_x,src_y, dst_x=x, dst_y=y;
 	SDL_Rect src_rect, dst_rect;
 
 	if (!render.texture)
@@ -89,6 +89,9 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h)
 
 	/* Use scaled version if available, to update screen */
 	refresh_scaled_version(video, render.texture, w,h);
+
+	src_x = (render.bitmapSrcX * w) / render.texture->w;
+	src_y = (render.bitmapSrcY * h) / render.texture->h;
 
 	if (x<0) {
 		dst_x = 0;
