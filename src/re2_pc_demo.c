@@ -45,6 +45,7 @@
 /*--- Constant ---*/
 
 static const char *re2pcdemo_bg = "common/stage%d/rc%d%02x%1x.adt";
+static const char *re2pcdemo_bgmask = "common/stage%d/rs%d%02x%1x.adt";
 static const char *re2pcdemo_room = "pl0/rd%c/room%d%02x0.rdt";
 static const char *re2pcdemo_model = "pl0/emd0/em0%02x.%s";
 
@@ -63,7 +64,9 @@ static int game_lang = 'u';
 static void re2pcdemo_shutdown(void);
 
 static void re2pcdemo_loadbackground(void);
+static void re2pcdemo_loadbackground_mask(void);
 static int re2pcdemo_load_adt_bg(const char *filename);
+static int re2pcdemo_load_adt_bgmask(const char *filename);
 
 static void re2pcdemo_loadroom(void);
 static int re2pcdemo_loadroom_rdt(const char *filename);
@@ -108,6 +111,29 @@ static void re2pcdemo_loadbackground(void)
 		filepath);
 
 	free(filepath);
+
+	re2pcdemo_loadbackground_mask();
+}
+
+static void re2pcdemo_loadbackground_mask(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re2pcdemo_bgmask)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re2pcdemo_bgmask, game_state.num_stage, game_state.num_stage,
+		game_state.num_room, game_state.num_camera);
+
+	logMsg(1, "adt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "adt: %s loading %s ...\n",
+		re2pcdemo_load_adt_bgmask(filepath) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
 }
 
 static int re2pcdemo_load_adt_bg(const char *filename)
@@ -133,6 +159,36 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 					}
 					SDL_FreeSurface(image);
 				}
+			}
+			free(dstBuffer);
+		}
+		SDL_RWclose(src);
+	}
+
+	return retval;
+}
+
+static int re2pcdemo_load_adt_bgmask(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	src = FS_makeRWops(filename);
+	if (src) {
+		Uint8 *dstBuffer;
+		int dstBufLen;
+
+		adt_depack(src, &dstBuffer, &dstBufLen);
+
+		if (dstBuffer && dstBufLen) {
+			SDL_Surface *image = adt_surface((Uint16 *) dstBuffer, 1);
+			if (image) {
+				game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+				if (game_state.bg_mask) {
+					game_state.bg_mask->load_from_surf(game_state.bg_mask, image);
+					retval = 1;
+				}
+				SDL_FreeSurface(image);
 			}
 			free(dstBuffer);
 		}
