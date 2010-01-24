@@ -126,6 +126,7 @@ void render_opengl_init(render_t *render)
 	render->sortBackToFront = sortBackToFront;
 
 	render_bitmap_opengl_init(render);
+	render->bitmapSrcX = render->bitmapSrcY = 0;
 
 	render->texture = NULL;
 	render->tex_pal = 0;

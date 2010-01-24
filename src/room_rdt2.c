@@ -27,6 +27,9 @@
 #include "room_rdt2_script.h"
 #include "room_rdt3_script.h"
 #include "log.h"
+#include "video.h"
+#include "render.h"
+#include "parameters.h"
 
 /*--- Constants ---*/
 
@@ -472,6 +475,10 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 		return;
 	}
 
+	render.set_dithering(params.dithering);
+	render.set_useDirtyRects(1);
+	render.set_texture(0, game_state.bg_mask);
+
 	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
 	offset += sizeof(rdt_mask_header_t);
 	mask_offsets = (rdt_mask_offset_t *) &((Uint8 *) this->file)[offset];
@@ -502,4 +509,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 
 		mask_hdr++;
 	}
+
+	render.set_useDirtyRects(0);
+	render.set_dithering(0);
 }

@@ -132,6 +132,7 @@ void render_soft_init(render_t *render)
 	render->sortBackToFront = sortBackToFront;
 
 	render_bitmap_soft_init(render);
+	render->bitmapSrcX = render->bitmapSrcY = 0;
 
 	render->texture = NULL;
 	render->tex_pal = -1;

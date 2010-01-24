@@ -36,6 +36,7 @@
 
 /*--- Functions prototypes ---*/
 
+static void bitmapSetSrcPos(video_t *video, int srcx, int srcy);
 static void bitmapUnscaled(video_t *video, int x, int y);
 static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
@@ -45,6 +46,13 @@ void render_bitmap_opengl_init(render_t *render)
 {
 	render->bitmapUnscaled = bitmapUnscaled;
 	render->bitmapScaled = bitmapScaled;
+	render->bitmapSetSrcPos = bitmapSetSrcPos;
+}
+
+static void bitmapSetSrcPos(video_t *video, int srcx, int srcy)
+{
+	render.bitmapSrcX = srcx;
+	render.bitmapSrcY = srcy;
 }
 
 static void bitmapUnscaled(video_t *video, int x, int y)
