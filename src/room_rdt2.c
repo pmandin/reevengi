@@ -453,7 +453,53 @@ void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int b
 
 static void rdt2_drawMasks(room_t *this, int num_camera)
 {
+	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	Uint32 offset;
+	rdt_camera_pos_t *cam_array;
+	rdt_mask_header_t *mask_hdr;
+	rdt_mask_offset_t *mask_offsets;
+	int num_offset;
+
 	if (game_state.bg_mask==NULL) {
 		return;
+	}
+
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAMERAS]);
+	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
+
+	offset = SDL_SwapLE32(cam_array->masks_offset);
+	if (offset == 0xffffffffUL) {
+		return;
+	}
+
+	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
+	offset += sizeof(rdt_mask_header_t);
+	mask_offsets = (rdt_mask_offset_t *) &((Uint8 *) this->file)[offset];
+	offset += sizeof(rdt_mask_offset_t) * SDL_SwapLE16(mask_hdr->num_offset);
+
+	for (num_offset=0; num_offset<SDL_SwapLE16(mask_hdr->num_offset); num_offset++) {
+		int num_mask;
+		
+		for (num_mask=0; num_mask<SDL_SwapLE16(mask_offsets->count); num_mask++) {
+			rdt_mask_square_t *square_mask;
+
+			square_mask = (rdt_mask_square_t *) &((Uint8 *) this->file)[offset];
+			if (square_mask->size == 0) {
+				/* Rect mask */
+				rdt_mask_rect_t *rect_mask = (rdt_mask_rect_t *) square_mask;
+
+				/* TODO: draw rectangular mask */
+
+				offset += sizeof(rdt_mask_rect_t);
+			} else {
+				/* Square mask */
+
+				/* TODO: draw square mask */
+
+				offset += sizeof(rdt_mask_square_t);
+			}
+		}
+
+		mask_hdr++;
 	}
 }
