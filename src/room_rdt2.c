@@ -506,8 +506,11 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				height = SDL_SwapLE16(rect_mask->height);
 
 				render.bitmapSetSrcPos(src_x,src_y);
-				render.bitmapScaled(&video, dst_x, dst_y,
-					width,height);
+				render.bitmapScaled(&video,
+					(dst_x*video.viewport.w)/320,
+					(dst_y*video.viewport.h)/240,
+					(width*video.viewport.w)/320,
+					(height*video.viewport.h)/240);
 
 				offset += sizeof(rdt_mask_rect_t);
 			} else {
@@ -520,8 +523,11 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				width = height = SDL_SwapLE16(square_mask->size);
 
 				render.bitmapSetSrcPos(src_x,src_y);
-				render.bitmapScaled(&video, dst_x, dst_y,
-					width,height);
+				render.bitmapScaled(&video,
+					(dst_x*video.viewport.w)/320,
+					(dst_y*video.viewport.h)/240,
+					(width*video.viewport.w)/320,
+					(height*video.viewport.h)/240);
 
 				offset += sizeof(rdt_mask_square_t);
 			}
