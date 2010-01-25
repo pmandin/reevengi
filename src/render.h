@@ -101,7 +101,7 @@ struct render_s {
 	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 	/* Bitmap functions */
-	void (*bitmapSetSrcPos)(video_t *video, int srcx, int srcy);
+	void (*bitmapSetSrcPos)(int srcx, int srcy);
 	void (*bitmapUnscaled)(video_t *video, int x, int y);
 	void (*bitmapScaled)(video_t *video, int x, int y, int w, int h);
 

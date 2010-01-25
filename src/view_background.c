@@ -455,6 +455,7 @@ void view_background_draw(void)
 	render.set_dithering(params.dithering);
 	render.set_useDirtyRects(1);
 	render.set_texture(0, game_state.background);
+	render.bitmapSetSrcPos(0,0);
 	render.bitmapScaled(&video,
 		video.viewport.x,video.viewport.y,
 		video.viewport.w,video.viewport.h);
