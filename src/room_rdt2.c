@@ -481,6 +481,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 
 	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
 	offset += sizeof(rdt_mask_header_t);
+
 	mask_offsets = (rdt_mask_offset_t *) &((Uint8 *) this->file)[offset];
 	offset += sizeof(rdt_mask_offset_t) * SDL_SwapLE16(mask_hdr->num_offset);
 
@@ -533,7 +534,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 			}
 		}
 
-		mask_hdr++;
+		mask_offsets++;
 	}
 
 	render.set_useDirtyRects(0);
