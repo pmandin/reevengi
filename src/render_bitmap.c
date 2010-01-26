@@ -71,39 +71,36 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 
 static void clipSource(int x, int y, int w, int h)
 {
-	render_texture_t *tex;
+	render_texture_t *tex = render.texture;
+
+	if (tex) {
+		if (!w) {
+			w = render.texture->w;
+		}
+		if (!h) {
+			h = render.texture->h;
+		}
+	}
 
 	render.bitmap.srcRect.x = x;
 	render.bitmap.srcRect.y = y;
 	render.bitmap.srcRect.w = w;
 	render.bitmap.srcRect.h = h;
-
-	tex = render.texture;
-	if (!tex) {
-		return;
-	}
-
-	if (!w) {
-		render.bitmap.srcRect.w = render.texture->w;
-	}
-	if (!h) {
-		render.bitmap.srcRect.h = render.texture->h;
-	}
 }
 
 static void clipDest(int x, int y, int w, int h)
 {
+	if (!w) {
+		w = video.viewport.w;
+	}
+	if (!h) {
+		h = video.viewport.h;
+	}
+
 	render.bitmap.dstRect.x = x;
 	render.bitmap.dstRect.y = y;
 	render.bitmap.dstRect.w = w;
 	render.bitmap.dstRect.h = h;
-
-	if (!w) {
-		render.bitmap.dstRect.w = video.viewport.w;
-	}
-	if (!h) {
-		render.bitmap.dstRect.h = video.viewport.h;
-	}
 }
 
 static void setScaler(int srcw, int srch, int dstw, int dsth)
@@ -112,6 +109,8 @@ static void setScaler(int srcw, int srch, int dstw, int dsth)
 	render.bitmap.srcHeight = srch;
 	render.bitmap.dstWidth = dstw;
 	render.bitmap.dstHeight = dsth;
+
+	refresh_scaled_version(&video, render.texture, dstw,dsth);
 }
 
 static void drawImage(video_t *video)
