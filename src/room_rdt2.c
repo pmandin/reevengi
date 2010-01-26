@@ -478,7 +478,8 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 	render.set_dithering(params.dithering);
 	render.set_useDirtyRects(1);
 	render.set_texture(0, game_state.bg_mask);
-	render.bitmap.setScaler(game_state.bg_mask->w, game_state.bg_mask->h,
+	render.bitmap.setScaler(
+		game_state.bg_mask->w, game_state.bg_mask->h,
 		video.viewport.w, video.viewport.h);
 
 	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
@@ -495,6 +496,8 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 			int src_x, src_y, width, height;
 			int dst_x = SDL_SwapLE16(mask_offsets->dst_x);
 			int dst_y = SDL_SwapLE16(mask_offsets->dst_y);
+			int scaled_dst_x, scaled_dst_y;
+			int scaled_dst_w, scaled_dst_h;
 
 			square_mask = (rdt_mask_square_t *) &((Uint8 *) this->file)[offset];
 			if (square_mask->size == 0) {
@@ -508,13 +511,6 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				width = SDL_SwapLE16(rect_mask->width);
 				height = SDL_SwapLE16(rect_mask->height);
 
-				render.bitmapSetSrcPos(src_x,src_y);
-				render.bitmapScaled(&video,
-					(dst_x*video.viewport.w)/320,
-					(dst_y*video.viewport.h)/240,
-					(width*video.viewport.w)/320,
-					(height*video.viewport.h)/240);
-
 				offset += sizeof(rdt_mask_rect_t);
 			} else {
 				/* Square mask */
@@ -525,15 +521,20 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				dst_y += square_mask->dst_y;
 				width = height = SDL_SwapLE16(square_mask->size);
 
-				render.bitmapSetSrcPos(src_x,src_y);
-				render.bitmapScaled(&video,
-					(dst_x*video.viewport.w)/320,
-					(dst_y*video.viewport.h)/240,
-					(width*video.viewport.w)/320,
-					(height*video.viewport.h)/240);
-
 				offset += sizeof(rdt_mask_square_t);
 			}
+
+			scaled_dst_x = (dst_x*video.viewport.w)/320;
+			scaled_dst_y = (dst_y*video.viewport.h)/240;
+			scaled_dst_w = (width*video.viewport.w)/320;
+			scaled_dst_h = (height*video.viewport.h)/240;
+
+			render.bitmap.clipSource(src_x,src_y,width,height);
+			render.bitmap.clipDest(
+				video.viewport.x+scaled_dst_x,
+				video.viewport.y+scaled_dst_y,
+				scaled_dst_w,scaled_dst_h);
+			render.bitmap.drawImage(&video);
 		}
 
 		mask_offsets++;
