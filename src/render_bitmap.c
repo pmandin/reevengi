@@ -53,6 +53,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst);
 static void clipSource(int x, int y, int w, int h);
 static void clipDest(int x, int y, int w, int h);
 static void setScaler(int srcw, int srch, int dstw, int dsth);
+static void drawImage(video_t *video);
 
 /*--- Functions ---*/
 
@@ -65,6 +66,7 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 	render.bitmap.clipSource = clipSource;
 	render.bitmap.clipDest = clipDest;
 	render.bitmap.setScaler = setScaler;
+	render.bitmap.drawImage = drawImage;
 }
 
 static void clipSource(int x, int y, int w, int h)
@@ -110,6 +112,10 @@ static void setScaler(int srcw, int srch, int dstw, int dsth)
 	render.bitmap.srcHeight = srch;
 	render.bitmap.dstWidth = dstw;
 	render.bitmap.dstHeight = dsth;
+}
+
+static void drawImage(video_t *video)
+{
 }
 
 static void bitmapSetSrcPos(int srcx, int srcy)
