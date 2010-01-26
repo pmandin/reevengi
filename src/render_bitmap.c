@@ -69,10 +69,17 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 
 static void clipSource(int x, int y, int w, int h)
 {
+	render_texture_t *tex;
+
 	render.bitmap.srcRect.x = x;
 	render.bitmap.srcRect.y = y;
 	render.bitmap.srcRect.w = w;
 	render.bitmap.srcRect.h = h;
+
+	tex = render.texture;
+	if (!tex) {
+		return;
+	}
 
 	if (!w) {
 		render.bitmap.srcRect.w = render.texture->w;
