@@ -95,8 +95,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-void render_bitmap_soft_init(render_t *render);
-
 /*--- Functions ---*/
 
 void render_soft_init(render_t *render)
@@ -131,7 +129,7 @@ void render_soft_init(render_t *render)
 
 	render->sortBackToFront = sortBackToFront;
 
-	render_bitmap_soft_init(render);
+	render_bitmap_soft_init(&(render->bitmap));
 	render->bitmapSrcX = render->bitmapSrcY = 0;
 
 	render->texture = NULL;

@@ -24,6 +24,7 @@
 #include "render_texture.h"
 #include "render_mesh.h"
 #include "render_skel.h"
+#include "render_bitmap.h"
 
 /*--- Defines ---*/
 
@@ -101,6 +102,8 @@ struct render_s {
 	void (*quad)(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 	/* Bitmap functions */
+	render_bitmap_t	bitmap;
+
 	void (*bitmapSetSrcPos)(int srcx, int srcy);
 	void (*bitmapUnscaled)(video_t *video, int x, int y);
 	void (*bitmapScaled)(video_t *video, int x, int y, int w, int h);

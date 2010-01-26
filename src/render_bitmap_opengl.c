@@ -33,6 +33,7 @@
 #include "video.h"
 #include "render.h"
 #include "render_texture_opengl.h"
+#include "render_bitmap.h"
 
 /*--- Functions prototypes ---*/
 
@@ -42,11 +43,13 @@ static void bitmapScaled(video_t *video, int x, int y, int w, int h);
 
 /*--- Functions ---*/
 
-void render_bitmap_opengl_init(render_t *render)
+void render_bitmap_opengl_init(render_bitmap_t *render_bitmap)
 {
-	render->bitmapUnscaled = bitmapUnscaled;
-	render->bitmapScaled = bitmapScaled;
-	render->bitmapSetSrcPos = bitmapSetSrcPos;
+	render_bitmap_soft_init(render_bitmap);
+
+	render.bitmapUnscaled = bitmapUnscaled;
+	render.bitmapScaled = bitmapScaled;
+	render.bitmapSetSrcPos = bitmapSetSrcPos;
 }
 
 static void bitmapSetSrcPos(int srcx, int srcy)

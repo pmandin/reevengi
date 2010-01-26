@@ -498,7 +498,7 @@ void view_background_draw(void)
 		drawOrigin();	/* what the camera looks at */
 	}
 
-	(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
+	/* (*game_state.room->drawMasks)(game_state.room, game_state.num_camera); */
 
 	if (render_map) {
 		room_map_draw(game_state.room);
