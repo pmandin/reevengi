@@ -115,6 +115,85 @@ static void setScaler(int srcw, int srch, int dstw, int dsth)
 
 static void drawImage(video_t *video)
 {
+	if (!render.texture)
+		return;
+
+	/* Clip in source texture */
+	if (render.bitmap.srcRect.x<0) {
+		render.bitmap.srcRect.w += render.bitmap.srcRect.x;
+		render.bitmap.dstRect.x -= (render.bitmap.srcRect.x*render.bitmap.dstWidth)/render.bitmap.srcWidth;
+		render.bitmap.srcRect.x = 0;
+	} else if (render.bitmap.srcRect.x+render.bitmap.srcRect.w>render.texture->w) {
+		render.bitmap.srcRect.w = render.texture->w - render.bitmap.srcRect.x;
+		render.bitmap.dstRect.w = (render.bitmap.srcRect.w*render.bitmap.dstWidth)/render.bitmap.srcWidth;
+	}
+	if (render.bitmap.srcRect.y<0) {
+		render.bitmap.srcRect.h += render.bitmap.srcRect.y;
+		render.bitmap.dstRect.y -= (render.bitmap.srcRect.y*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+		render.bitmap.srcRect.y = 0;
+	} else if (render.bitmap.srcRect.y+render.bitmap.srcRect.h>render.texture->h) {
+		render.bitmap.srcRect.h = render.texture->h - render.bitmap.srcRect.y;
+		render.bitmap.dstRect.h = (render.bitmap.srcRect.h*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+	}
+
+	/* Clip in dest screen */
+	if (render.bitmap.dstRect.x<0) {
+		render.bitmap.dstRect.w += render.bitmap.dstRect.x;
+		render.bitmap.srcRect.x -= (render.bitmap.dstRect.x*render.bitmap.srcWidth)/render.bitmap.dstWidth;
+		render.bitmap.dstRect.x = 0;
+	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video->viewport.w) {
+		render.bitmap.dstRect.w = video->viewport.w - render.bitmap.dstRect.x;
+		render.bitmap.srcRect.w = (render.bitmap.dstRect.w*render.bitmap.srcWidth)/render.bitmap.dstWidth;
+	}
+	if (render.bitmap.dstRect.y<0) {
+		render.bitmap.dstRect.h += render.bitmap.dstRect.y;
+		render.bitmap.srcRect.y -= (render.bitmap.dstRect.y*render.bitmap.srcHeight)/render.bitmap.dstHeight;
+		render.bitmap.dstRect.y = 0;
+	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video->viewport.h) {
+		render.bitmap.dstRect.h = video->viewport.h - render.bitmap.dstRect.y;
+		render.bitmap.srcRect.h = (render.bitmap.dstRect.h*render.bitmap.srcHeight)/render.bitmap.dstHeight;
+	}
+
+	/* Clipping for out of bounds in source */
+	if ((render.bitmap.srcRect.x>=render.texture->w)
+	   || (render.bitmap.srcRect.y>=render.texture->h)
+	   || (render.bitmap.srcRect.x+render.bitmap.srcRect.w<0)
+	   || (render.bitmap.srcRect.y+render.bitmap.srcRect.h<0))
+	{
+		return;
+	}
+
+	/* Clipping for out of bounds in dest */
+	if ((render.bitmap.dstRect.x>=video->viewport.w)
+	   || (render.bitmap.dstRect.y>=video->viewport.h)
+	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<0)
+	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<0))
+	{
+		return;
+	}
+
+	if (render.texture->scaled) {
+		if (render.useDirtyRects) {
+			bitmapScaledScDirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
+		} else {
+			SDL_BlitSurface(render.texture->scaled, &render.bitmap.srcRect,
+				video->screen, &render.bitmap.dstRect);
+		}
+	} else {
+		if (SDL_MUSTLOCK(video->screen)) {
+			SDL_LockSurface(video->screen);
+		}
+
+		if (render.useDirtyRects) {
+			bitmapScaledRtDirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
+		} else {
+			bitmapScaledRtNodirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
+		}
+
+		if (SDL_MUSTLOCK(video->screen)) {
+			SDL_UnlockSurface(video->screen);
+		}
+	}
 }
 
 static void bitmapSetSrcPos(int srcx, int srcy)
