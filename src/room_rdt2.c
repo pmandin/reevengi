@@ -480,7 +480,8 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 	render.set_texture(0, game_state.bg_mask);
 	render.bitmap.setScaler(
 		game_state.bg_mask->w, game_state.bg_mask->h,
-		video.viewport.w, video.viewport.h);
+		(game_state.bg_mask->w*video.viewport.w)/320,
+		(game_state.bg_mask->h*video.viewport.h)/240);
 
 	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
 	offset += sizeof(rdt_mask_header_t);
