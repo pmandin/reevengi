@@ -181,14 +181,10 @@ static int re2pcdemo_load_adt_bgmask(const char *filename)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			SDL_Surface *image = adt_surface((Uint16 *) dstBuffer, 1);
-			if (image) {
-				game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-				if (game_state.bg_mask) {
-					game_state.bg_mask->load_from_surf(game_state.bg_mask, image);
-					retval = 1;
-				}
-				SDL_FreeSurface(image);
+			game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+			if (game_state.bg_mask) {
+				game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
+				retval = 1;
 			}
 			free(dstBuffer);
 		}
