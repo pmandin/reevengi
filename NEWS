@@ -9,6 +9,7 @@ v 0.14
   with the various meshes.
 - Can set width,height,bpp of video mode
 - Software renderer: Bilinear filtering for background.
+- Display model skeleton.
 
 
 See ChangeLog for older changes.

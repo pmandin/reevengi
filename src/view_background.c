@@ -66,6 +66,7 @@
 #define KEY_TOGGLE_RESTORE	SDLK_h
 #define KEY_TOGGLE_MAP		SDLK_n
 #define KEY_TOGGLE_BONES	SDLK_j
+#define KEY_TOGGLE_MASKS	SDLK_i
 
 #define KEY_FORCE_REFRESH	SDLK_SPACE
 
@@ -96,6 +97,7 @@ static int render_grid = 0;
 static int render_restore = 0;
 static int render_map = 0;
 static int render_bones = 0;
+static int render_masks = 1;
 
 static int refresh_player_pos = 1;
 static float player_x = 0, player_y = 0, player_z = 0;
@@ -228,6 +230,9 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_TOGGLE_MAP:
 				render_map ^= 1;
+				break;
+			case KEY_TOGGLE_MASKS:
+				render_masks ^= 1;
 				break;
 			case KEY_TOGGLE_BONES:
 				render_bones ^= 1;
@@ -452,26 +457,28 @@ void view_background_draw(void)
 	}
 
 	/* Draw background, dithered if needed */
-	render.set_dithering(params.dithering);
-	render.set_useDirtyRects(1);	/* restore background only on dirtied zones */
-	render.set_texture(0, game_state.background);
+	if (game_state.background) {
+		render.set_dithering(params.dithering);
+		render.set_useDirtyRects(1);	/* restore background only on dirtied zones */
+		render.set_texture(0, game_state.background);
 #if 1
-	render.bitmap.clipSource(0,0,0,0);
-	render.bitmap.clipDest(
-		video.viewport.x,video.viewport.y,
-		video.viewport.w,video.viewport.h);
-	render.bitmap.setScaler(
-		game_state.background->w, game_state.background->h,
-		video.viewport.w,video.viewport.h);
-	render.bitmap.drawImage(&video);
+		render.bitmap.clipSource(0,0,0,0);
+		render.bitmap.clipDest(
+			video.viewport.x,video.viewport.y,
+			video.viewport.w,video.viewport.h);
+		render.bitmap.setScaler(
+			game_state.background->w, game_state.background->h,
+			video.viewport.w,video.viewport.h);
+		render.bitmap.drawImage(&video);
 #else
-	render.bitmapSetSrcPos(0,0);
-	render.bitmapScaled(&video,
-		video.viewport.x,video.viewport.y,
-		video.viewport.w,video.viewport.h);
+		render.bitmapSetSrcPos(0,0);
+		render.bitmapScaled(&video,
+			video.viewport.x,video.viewport.y,
+			video.viewport.w,video.viewport.h);
 #endif
+		render.set_dithering(0);
+	}
 	render.set_useDirtyRects(0);
-	render.set_dithering(0);
 
 	/* Background completely restored, clear dirty rectangles list */
 	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
@@ -501,7 +508,9 @@ void view_background_draw(void)
 
 	drawPlayer();
 
-	(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
+	if (render_masks) {
+		(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
+	}
 
 	if (render_grid) {
 		/* World origin */
