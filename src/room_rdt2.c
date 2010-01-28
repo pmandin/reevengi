@@ -121,8 +121,8 @@ typedef struct {
 } rdt_mask_square_t;
 
 typedef struct {
-	Uint8 src_x, dst_x;
-	Uint8 src_y, dst_y;
+	Uint8 src_x, src_y;
+	Uint8 dst_x, dst_y;
 	Uint16 depth, zero;
 	Uint16 width, height;
 } rdt_mask_rect_t;
@@ -475,7 +475,8 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 		return;
 	}
 
-	render.set_dithering(params.dithering);
+	/*render.set_dithering(params.dithering);*/
+	render.set_dithering(0);
 	render.set_useDirtyRects(0);
 	render.set_texture(0, game_state.bg_mask);
 	render.bitmap.setScaler(
@@ -541,6 +542,5 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 		mask_offsets++;
 	}
 
-	render.set_useDirtyRects(0);
 	render.set_dithering(0);
 }
