@@ -253,7 +253,6 @@ static void countFps(video_t *this)
 
 static void swapBuffers(video_t *this)
 {
-	SDL_Rect *list_rects;
 	int i, x, y;
 
 	render.endFrame(&render);
@@ -303,7 +302,6 @@ static void swapBuffers(video_t *this)
 
 	SDL_UpdateRects(this->screen, i, this->list_rects);
 	this->upload_rects[this->numfb]->clear(this->upload_rects[this->numfb]);
-	free(list_rects);
 }
 
 static void screenShot(video_t *this)
