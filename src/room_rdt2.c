@@ -470,13 +470,13 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAMERAS]);
 	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[offset];
 
-	offset = SDL_SwapLE32(cam_array->masks_offset);
+	offset = SDL_SwapLE32(cam_array[num_camera].masks_offset);
 	if (offset == 0xffffffffUL) {
 		return;
 	}
 
 	render.set_dithering(params.dithering);
-	render.set_useDirtyRects(1);
+	render.set_useDirtyRects(0);
 	render.set_texture(0, game_state.bg_mask);
 	render.bitmap.setScaler(
 		game_state.bg_mask->w, game_state.bg_mask->h,
