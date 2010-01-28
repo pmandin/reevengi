@@ -92,6 +92,12 @@ static void shutDown(video_t *this)
 		dirty_rects_destroy(this->upload_rects[1]);
 		this->upload_rects[1] = NULL;
 	}
+
+	if (this->list_rects) {
+		free(this->list_rects);
+		this->list_rects = NULL;
+		this->num_list_rects = 0;
+	}
 }
 
 /* Search biggest video mode, calculate its ratio */
@@ -261,11 +267,10 @@ static void swapBuffers(video_t *this)
 	}
 
 	/* Update background from rectangle list */
-	list_rects = (SDL_Rect *) calloc(this->upload_rects[this->numfb]->width * this->upload_rects[this->numfb]->height,
-		sizeof(SDL_Rect));
-	if (!list_rects) {
-		SDL_UpdateRect(this->screen, 0,0,0,0);
-		return;
+	i = this->upload_rects[this->numfb]->width * this->upload_rects[this->numfb]->height;
+	if (i>this->num_list_rects) {
+		this->list_rects = (SDL_Rect *) realloc(this->list_rects, i * sizeof(SDL_Rect));
+		this->num_list_rects = i;
 	}
 
 	i = 0;
@@ -288,15 +293,15 @@ static void swapBuffers(video_t *this)
 			}
 
 			/* Add rectangle */
-			list_rects[i].x = x<<4;
-			list_rects[i].y = y<<4;
-			list_rects[i].w = num_cols;
-			list_rects[i].h = num_rows;
+			this->list_rects[i].x = x<<4;
+			this->list_rects[i].y = y<<4;
+			this->list_rects[i].w = num_cols;
+			this->list_rects[i].h = num_rows;
 			i++;
 		}
 	}
 
-	SDL_UpdateRects(this->screen, i, list_rects);
+	SDL_UpdateRects(this->screen, i, this->list_rects);
 	this->upload_rects[this->numfb]->clear(this->upload_rects[this->numfb]);
 	free(list_rects);
 }

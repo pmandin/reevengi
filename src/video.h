@@ -46,6 +46,10 @@ struct video_s {
 
 	void (*initViewport)(video_t *this);
 
+	/* Rect list of final update */
+	int num_list_rects;
+	SDL_Rect *list_rects;
+
 	/* OpenGL extensions */
 	int has_gl_arb_texture_non_power_of_two;
 	int has_gl_arb_texture_rectangle;
