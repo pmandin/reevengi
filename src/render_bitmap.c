@@ -137,19 +137,19 @@ static void drawImage(video_t *video)
 	}
 
 	/* Clip in dest screen */
-	if (render.bitmap.dstRect.x<0) {
+	if (render.bitmap.dstRect.x<video->viewport.x) {
 		render.bitmap.dstRect.w += render.bitmap.dstRect.x;
 		render.bitmap.srcRect.x -= (render.bitmap.dstRect.x*render.bitmap.srcWidth)/render.bitmap.dstWidth;
 		render.bitmap.dstRect.x = 0;
-	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video->viewport.w) {
+	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video->viewport.x+video->viewport.w) {
 		render.bitmap.dstRect.w = video->viewport.w - render.bitmap.dstRect.x;
 		render.bitmap.srcRect.w = (render.bitmap.dstRect.w*render.bitmap.srcWidth)/render.bitmap.dstWidth;
 	}
-	if (render.bitmap.dstRect.y<0) {
+	if (render.bitmap.dstRect.y<video->viewport.y) {
 		render.bitmap.dstRect.h += render.bitmap.dstRect.y;
 		render.bitmap.srcRect.y -= (render.bitmap.dstRect.y*render.bitmap.srcHeight)/render.bitmap.dstHeight;
 		render.bitmap.dstRect.y = 0;
-	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video->viewport.h) {
+	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video->viewport.y+video->viewport.h) {
 		render.bitmap.dstRect.h = video->viewport.h - render.bitmap.dstRect.y;
 		render.bitmap.srcRect.h = (render.bitmap.dstRect.h*render.bitmap.srcHeight)/render.bitmap.dstHeight;
 	}
@@ -164,10 +164,10 @@ static void drawImage(video_t *video)
 	}
 
 	/* Clipping for out of bounds in dest */
-	if ((render.bitmap.dstRect.x>=video->viewport.w)
-	   || (render.bitmap.dstRect.y>=video->viewport.h)
-	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<0)
-	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<0))
+	if ((render.bitmap.dstRect.x>=video->viewport.x+video->viewport.w)
+	   || (render.bitmap.dstRect.y>=video->viewport.y+video->viewport.h)
+	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<video->viewport.x)
+	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<video->viewport.y))
 	{
 		return;
 	}
