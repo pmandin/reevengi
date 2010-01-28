@@ -453,15 +453,28 @@ void view_background_draw(void)
 
 	/* Draw background, dithered if needed */
 	render.set_dithering(params.dithering);
-	render.set_useDirtyRects(1);
+	render.set_useDirtyRects(1);	/* restore background only on dirtied zones */
 	render.set_texture(0, game_state.background);
+#if 1
+	render.bitmap.clipSource(0,0,0,0);
+	render.bitmap.clipDest(
+		video.viewport.x,video.viewport.y,
+		video.viewport.w,video.viewport.h);
+	render.bitmap.setScaler(
+		game_state.background->w, game_state.background->h,
+		video.viewport.w,video.viewport.h);
+	render.bitmap.drawImage(&video);
+#else
 	render.bitmapSetSrcPos(0,0);
 	render.bitmapScaled(&video,
 		video.viewport.x,video.viewport.y,
 		video.viewport.w,video.viewport.h);
+#endif
 	render.set_useDirtyRects(0);
-	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 	render.set_dithering(0);
+
+	/* Background completely restored, clear dirty rectangles list */
+	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 
 	if (!game_state.room) {
 		return;
@@ -488,6 +501,8 @@ void view_background_draw(void)
 
 	drawPlayer();
 
+	(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
+
 	if (render_grid) {
 		/* World origin */
 		drawOrigin();
@@ -497,8 +512,6 @@ void view_background_draw(void)
 
 		drawOrigin();	/* what the camera looks at */
 	}
-
-	/* (*game_state.room->drawMasks)(game_state.room, game_state.num_camera); */
 
 	if (render_map) {
 		room_map_draw(game_state.room);
