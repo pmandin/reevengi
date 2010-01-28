@@ -173,10 +173,17 @@ static void drawImage(video_t *video)
 	}
 
 	if (render.texture->scaled) {
+		SDL_Rect scaled_src;
+
+		scaled_src.x = (render.bitmap.srcRect.x*render.bitmap.dstWidth)/render.bitmap.srcWidth;
+		scaled_src.y = (render.bitmap.srcRect.y*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+		scaled_src.w = (render.bitmap.srcRect.w*render.bitmap.dstWidth)/render.bitmap.srcWidth;
+		scaled_src.h = (render.bitmap.srcRect.h*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+
 		if (render.useDirtyRects) {
-			bitmapScaledScDirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
+			bitmapScaledScDirty(video, &scaled_src, &render.bitmap.dstRect);
 		} else {
-			SDL_BlitSurface(render.texture->scaled, &render.bitmap.srcRect,
+			SDL_BlitSurface(render.texture->scaled, &scaled_src,
 				video->screen, &render.bitmap.dstRect);
 		}
 	} else {
@@ -535,8 +542,6 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		texture->scaled = NULL;
 	}
 
-	logMsg(2, "bitmap: create scaled version of texture\n");
-
 	new_bpp = 8;
 	switch(texture->bpp) {
 		case 2:
@@ -560,7 +565,21 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	}
 
 	if (new_bpp == 8) {
-		dither_setpalette(texture->scaled);
+		/*dither_setpalette(texture->scaled);*/
+
+		int i;
+
+		SDL_Palette *palette = texture->scaled->format->palette;
+		SDL_PixelFormat *fmt = video->screen->format;
+		for (i=0; i<256; i++) {
+			Uint8 r,g,b;
+
+			SDL_GetRGB(texture->palettes[0][i], fmt, &r,&g,&b);
+
+			palette->colors[i].r = r;
+			palette->colors[i].g = g;
+			palette->colors[i].b = b;
+		}
 	}
 
 	if (params.linear) {
