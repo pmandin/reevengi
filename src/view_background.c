@@ -485,6 +485,10 @@ void view_background_draw(void)
 		return;
 	}
 
+	if (render_masks) {
+		(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
+	}
+
 	(*game_state.room->getCamera)(game_state.room, game_state.num_camera, &room_camera);
 
 	if (refresh_player_pos) {
@@ -500,10 +504,6 @@ void view_background_draw(void)
 		room_camera.to_x, room_camera.to_y, room_camera.to_z,
 		0.0f, -1.0f, 0.0f
 	);
-
-	/*if (render_masks) {
-		(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
-	}*/
 
 	drawPlayer();
 
