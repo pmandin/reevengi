@@ -124,39 +124,35 @@ static void drawImage(video_t *video)
 		/* Rescale to width/height range */
 		gl.Translatef((float) render.bitmap.srcRect.x,
 			(float) render.bitmap.srcRect.y, 0.0f);
-		gl.Scalef((float) tex->w - render.bitmap.srcRect.x,
-			(float) tex->h - render.bitmap.srcRect.y, 1.0f);
+		gl.Scalef((float) render.bitmap.srcRect.w,
+			(float) render.bitmap.srcRect.h, 1.0f);
 	} else {
 		/* Rescale to 0-1 range */
 		gl.Translatef((float) render.bitmap.srcRect.x / tex->pitchw,
 			(float) render.bitmap.srcRect.y / tex->pitchh, 0.0f);
-		gl.Scalef((float) (tex->w-render.bitmap.srcRect.x) / tex->pitchw,
-			(float) (tex->h-render.bitmap.srcRect.y) / tex->pitchh, 1.0f);
+		gl.Scalef((float) render.bitmap.srcRect.w / tex->pitchw,
+			(float) render.bitmap.srcRect.h / tex->pitchh, 1.0f);
 	}
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
-	/*gl.Translatef(0.375f, 0.375f, 0.0f);*/
 	gl.Translatef((float) render.bitmap.dstRect.x,
-		(float) render.bitmap.dstRect.y,
-		0.0f);
+		(float) render.bitmap.dstRect.y, 0.0f);
 	gl.Scalef((float) render.bitmap.dstRect.w,
-		(float) render.bitmap.dstRect.h,
-		1.0f);
+		(float) render.bitmap.dstRect.h, 0.0f);
 
 	gl.Begin(GL_QUADS);
 		gl.TexCoord2f(0.0f, 0.0f);
 		gl.Vertex2f(0.0f, 0.0f);
 
 		gl.TexCoord2f(1.0f, 0.0f);
-		gl.Vertex2f((float) (tex->pitchw - render.bitmap.srcRect.x) / tex->pitchw, 0.0f);
+		gl.Vertex2f(1.0f, 0.0f);
 
 		gl.TexCoord2f(1.0f, 1.0f);
-		gl.Vertex2f((float) (tex->pitchw - render.bitmap.srcRect.x) / tex->pitchw,
-			(float) (tex->pitchh - render.bitmap.srcRect.y) / tex->pitchh);
+		gl.Vertex2f(1.0f, 1.0f);
 
 		gl.TexCoord2f(0.0f, 1.0f);
-		gl.Vertex2f(0.0f, (float) (tex->pitchh - render.bitmap.srcRect.y) / tex->pitchh);
+		gl.Vertex2f(0.0f, 1.0f);
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);
