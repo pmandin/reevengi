@@ -38,10 +38,6 @@
 
 /*--- Functions prototypes ---*/
 
-static void bitmapSetSrcPos(int srcx, int srcy);
-static void bitmapUnscaled(video_t *video, int x, int y);
-static void bitmapScaled(video_t *video, int x, int y, int w, int h);
-
 static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
@@ -59,10 +55,6 @@ static void drawImage(video_t *video);
 
 void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 {
-	render.bitmapUnscaled = bitmapUnscaled;
-	render.bitmapScaled = bitmapScaled;
-	render.bitmapSetSrcPos = bitmapSetSrcPos;
-
 	render.bitmap.clipSource = clipSource;
 	render.bitmap.clipDest = clipDest;
 	render.bitmap.setScaler = setScaler;
@@ -185,6 +177,7 @@ static void drawImage(video_t *video)
 		} else {
 			SDL_BlitSurface(render.texture->scaled, &scaled_src,
 				video->screen, &render.bitmap.dstRect);
+			/*SDL_FillRect(video->screen, &render.bitmap.dstRect, 0xffffffff);*/
 		}
 	} else {
 		if (SDL_MUSTLOCK(video->screen)) {
@@ -195,91 +188,6 @@ static void drawImage(video_t *video)
 			bitmapScaledRtDirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
 		} else {
 			bitmapScaledRtNodirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
-		}
-
-		if (SDL_MUSTLOCK(video->screen)) {
-			SDL_UnlockSurface(video->screen);
-		}
-	}
-}
-
-static void bitmapSetSrcPos(int srcx, int srcy)
-{
-	render.bitmapSrcX = srcx;
-	render.bitmapSrcY = srcy;
-}
-
-static void bitmapUnscaled(video_t *video, int x, int y)
-{
-	render_texture_t *tex = render.texture;
-
-	if (!tex)
-		return;
-
-	bitmapScaled(video,x,y,tex->w,tex->h);
-}
-
-static void bitmapScaled(video_t *video, int x, int y, int w, int h)
-{
-	int src_x,src_y, dst_x=x, dst_y=y;
-	SDL_Rect src_rect, dst_rect;
-
-	if (!render.texture)
-		return;
-
-	/* Clipping for out of bounds */
-	if ((x>=video->viewport.w) || (y>=video->viewport.h) || (x+w<0) || (y+h<0)) {
-		return;
-	}
-
-	/* Use scaled version if available, to update screen */
-	refresh_scaled_version(video, render.texture, w,h);
-
-	src_x = (render.bitmapSrcX * w) / render.texture->w;
-	src_y = (render.bitmapSrcY * h) / render.texture->h;
-
-	if (x<0) {
-		dst_x = 0;
-		src_x -= x;
-		w -= x;
-	}
-	if (y<0) {
-		dst_y = 0;
-		src_y -= y;
-		h -= y;
-	}
-	if (x+w>=video->viewport.w) {
-		w = video->viewport.x+video->viewport.w - x;
-	}
-	if (y+h>=video->viewport.h) {
-		h = video->viewport.y+video->viewport.h - y;
-	}
-	if ((w<=0) || (h<=0) || (src_x>=w) || (src_y>=h)) {
-		return;
-	}
-
-	src_rect.x = src_x;
-	src_rect.y = src_y;
-	dst_rect.x = dst_x;
-	dst_rect.y = dst_y;
-	src_rect.w = dst_rect.w = w;
-	src_rect.h = dst_rect.h = h;
-
-	if (render.texture->scaled) {
-		if (render.useDirtyRects) {
-			bitmapScaledScDirty(video, &src_rect, &dst_rect);
-		} else {
-			SDL_BlitSurface(render.texture->scaled, &src_rect, video->screen, &dst_rect);
-		}
-	} else {
-		if (SDL_MUSTLOCK(video->screen)) {
-			SDL_LockSurface(video->screen);
-		}
-
-		if (render.useDirtyRects) {
-			bitmapScaledRtDirty(video, &src_rect, &dst_rect);
-		} else {
-			bitmapScaledRtNodirty(video, &src_rect, &dst_rect);
 		}
 
 		if (SDL_MUSTLOCK(video->screen)) {

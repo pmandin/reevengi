@@ -35,7 +35,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	re1_pc_game.h re1_ps1.h \
 	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
 	re3_pc.h re3_ps1_game.h \
-	render.h \
+	render.h render_bitmap.h \
 	render_mesh.h render_mesh_opengl.h \
 	render_skel.h render_skel_opengl.h render_skel_list.h \
 	render_texture.h render_texture_opengl.h \
@@ -48,4 +48,3 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h
 
 EXTRA_DIST = $(reevengi_headers) $(reevengi_generated)
-
