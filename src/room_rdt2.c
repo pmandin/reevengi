@@ -483,6 +483,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 		game_state.bg_mask->w, game_state.bg_mask->h,
 		(game_state.bg_mask->w*video.viewport.w)/320,
 		(game_state.bg_mask->h*video.viewport.h)/240);
+	render.set_blending(1);
 
 	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
 	offset += sizeof(rdt_mask_header_t);
@@ -495,7 +496,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 		
 		for (num_mask=0; num_mask<SDL_SwapLE16(mask_offsets->count); num_mask++) {
 			rdt_mask_square_t *square_mask;
-			int src_x, src_y, width, height;
+			int src_x, src_y, width, height, depth;
 			int dst_x = SDL_SwapLE16(mask_offsets->dst_x);
 			int dst_y = SDL_SwapLE16(mask_offsets->dst_y);
 			int scaled_dst_x, scaled_dst_y;
@@ -512,6 +513,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				dst_y += rect_mask->dst_y;
 				width = SDL_SwapLE16(rect_mask->width);
 				height = SDL_SwapLE16(rect_mask->height);
+				depth = SDL_SwapLE16(rect_mask->depth);
 
 				offset += sizeof(rdt_mask_rect_t);
 			} else {
@@ -522,6 +524,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				dst_x += square_mask->dst_x;
 				dst_y += square_mask->dst_y;
 				width = height = SDL_SwapLE16(square_mask->size);
+				depth = SDL_SwapLE16(square_mask->depth);
 
 				offset += sizeof(rdt_mask_square_t);
 			}
@@ -536,11 +539,14 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				video.viewport.x+scaled_dst_x,
 				video.viewport.y+scaled_dst_y,
 				scaled_dst_w,scaled_dst_h);
+			render.bitmap.setDepth(1, (float) depth);
 			render.bitmap.drawImage(&video);
 		}
 
 		mask_offsets++;
 	}
 
+	render.bitmap.setDepth(0, 0.0f);
+	render.set_blending(0);
 	render.set_dithering(0);
 }

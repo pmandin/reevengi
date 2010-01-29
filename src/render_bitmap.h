@@ -38,11 +38,17 @@ struct render_bitmap_s {
 	/* Set scaling factor from source w*h to dest w*h */
 	void (*setScaler)(int srcw, int srch, int dstw, int dsth);
 
+	/* Set depth and enabled or not */
+	void (*setDepth)(int enabled, float depth);
+
 	/* Draw scaled image */
 	void (*drawImage)(video_t *video);
 
 	SDL_Rect srcRect, dstRect;
 	int srcWidth, srcHeight, dstWidth, dstHeight;
+
+	int depth_test;
+	float depth;
 };
 
 void render_bitmap_soft_init(render_bitmap_t *render_bitmap);

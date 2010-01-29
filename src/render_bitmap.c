@@ -49,6 +49,7 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst);
 static void clipSource(int x, int y, int w, int h);
 static void clipDest(int x, int y, int w, int h);
 static void setScaler(int srcw, int srch, int dstw, int dsth);
+static void setDepth(int enabled, float depth);
 static void drawImage(video_t *video);
 
 /*--- Functions ---*/
@@ -58,6 +59,7 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 	render.bitmap.clipSource = clipSource;
 	render.bitmap.clipDest = clipDest;
 	render.bitmap.setScaler = setScaler;
+	render.bitmap.setDepth = setDepth;
 	render.bitmap.drawImage = drawImage;
 }
 
@@ -103,6 +105,12 @@ static void setScaler(int srcw, int srch, int dstw, int dsth)
 	render.bitmap.dstHeight = dsth;
 
 	refresh_scaled_version(&video, render.texture, dstw,dsth);
+}
+
+static void setDepth(int enabled, float depth)
+{
+	render.bitmap.depth_test = enabled;
+	render.bitmap.depth = depth;
 }
 
 static void drawImage(video_t *video)
