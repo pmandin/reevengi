@@ -137,7 +137,12 @@ static void drawImage(video_t *video)
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
 	/*gl.Translatef(0.375f, 0.375f, 0.0f);*/
-	gl.Scalef((float) video->width, (float) video->height, 1.0f);
+	gl.Translatef((float) render.bitmap.dstRect.x,
+		(float) render.bitmap.dstRect.y,
+		0.0f);
+	gl.Scalef((float) render.bitmap.dstRect.w,
+		(float) render.bitmap.dstRect.h,
+		1.0f);
 
 	gl.Begin(GL_QUADS);
 		gl.TexCoord2f(0.0f, 0.0f);
