@@ -46,6 +46,12 @@ static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 
+static void
+ShowDepthBuffer( GLsizei winWidth, GLsizei winHeight,
+                 GLfloat zBlack, GLfloat zWhite );
+
+extern int render_masks;
+
 /*--- Functions ---*/
 
 int video_opengl_loadlib(void)
@@ -165,6 +171,10 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 static void swapBuffers(video_t *this)
 {
+	if (render_masks) {
+		ShowDepthBuffer(this->width,this->height, 1.0f, 0.0f);
+	}
+
 	GLenum errCode = gl.GetError();
 	if (errCode != GL_NO_ERROR) {
 		logMsg(1, "OpenGL error %d\n", errCode);
@@ -178,6 +188,118 @@ static void swapBuffers(video_t *this)
 static void screenShot(video_t *this)
 {
 	fprintf(stderr, "Screenshot not available in OpenGL mode\n");
+}
+
+/*
+ * Copy the depth buffer values into the current color buffer as a
+ * grayscale image.
+ * Input:  winWidth, winHeight - size of the window
+ *         zBlack - the Z value which should map to black (usually 1)
+ *         zWhite - the Z value which should map to white (usually 0)
+ */
+static void
+ShowDepthBuffer( GLsizei winWidth, GLsizei winHeight,
+                 GLfloat zBlack, GLfloat zWhite )
+{
+#if 0
+   GLfloat *depthValues;
+
+   /*assert(zBlack >= 0.0);
+   assert(zBlack <= 1.0);
+   assert(zWhite >= 0.0);
+   assert(zWhite <= 1.0);
+   assert(zBlack != zWhite);*/
+
+   gl.PixelStorei(GL_UNPACK_ALIGNMENT, 1);
+   gl.PixelStorei(GL_PACK_ALIGNMENT, 1);
+
+   /* Read depth values */
+   depthValues = (GLfloat *) malloc(winWidth * winHeight * sizeof(GLfloat));
+   /*assert(depthValues);*/
+   gl.ReadPixels(0, 0, winWidth, winHeight, GL_DEPTH_COMPONENT,
+                GL_FLOAT, depthValues);
+
+   /* Map Z values from [zBlack, zWhite] to gray levels in [0, 1] */
+   /* Not using glPixelTransfer() because it's broke on some systems! */
+   if (zBlack != 0.0 || zWhite != 1.0) {
+      GLfloat scale = 1.0 / (zWhite - zBlack);
+      GLfloat bias = -zBlack * scale;
+      int n = winWidth * winHeight;
+      int i;
+      for (i = 0; i < n; i++)
+         depthValues[i] = depthValues[i] * scale + bias;
+   }
+
+   /* save GL state */
+   gl.PushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT |
+                GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+   /* setup raster pos for glDrawPixels */
+   gl.MatrixMode(GL_PROJECTION);
+   gl.PushMatrix();
+   gl.LoadIdentity();
+
+   gl.Ortho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -1.0, 1.0);
+   gl.MatrixMode(GL_MODELVIEW);
+   gl.PushMatrix();
+   gl.LoadIdentity();
+
+   gl.Disable(GL_STENCIL_TEST);
+   gl.Disable(GL_DEPTH_TEST);
+   gl.RasterPos2f(0, 0);
+
+   gl.DrawPixels(winWidth, winHeight, GL_LUMINANCE, GL_FLOAT, depthValues);
+
+   gl.PopMatrix();
+   gl.MatrixMode(GL_PROJECTION);
+   gl.PopMatrix();
+   free(depthValues);
+
+   gl.PopAttrib();
+#else
+	GLint ShadowTexWidth = 1024 /*winWidth*/;
+	GLint ShadowTexHeight = 512 /*winHeight*/;
+	GLenum depthFormat = GL_DEPTH_COMPONENT;
+	GLenum depthType = GL_UNSIGNED_INT;
+
+	GLuint *depth = (GLuint *)
+		malloc(ShadowTexWidth * ShadowTexHeight * sizeof(GLuint));
+	/*assert(depth);*/
+	gl.ReadPixels(0, 0, ShadowTexWidth, ShadowTexHeight,
+		depthFormat, depthType, depth);
+	gl.TexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE,
+		ShadowTexWidth, ShadowTexHeight, 0,
+		GL_LUMINANCE, GL_UNSIGNED_INT, depth);
+	free(depth);
+
+	gl.MatrixMode(GL_TEXTURE);
+	gl.LoadIdentity();
+
+	gl.MatrixMode(GL_PROJECTION);
+	gl.LoadIdentity();
+	gl.Ortho(0, winWidth, 0, winHeight, -1, 1);
+
+	gl.MatrixMode(GL_MODELVIEW);
+	gl.LoadIdentity();
+
+	gl.Disable(GL_DEPTH_TEST);
+	gl.Enable(GL_TEXTURE_2D);
+
+	gl.Disable(GL_TEXTURE_GEN_S);
+	gl.Disable(GL_TEXTURE_GEN_T);
+
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	gl.Begin(GL_POLYGON);
+		gl.TexCoord2f(0, 0);  gl.Vertex2f(0, 0);
+		gl.TexCoord2f(1, 0);  gl.Vertex2f(ShadowTexWidth, 0);
+		gl.TexCoord2f(1, 1);  gl.Vertex2f(ShadowTexWidth, ShadowTexHeight);
+		gl.TexCoord2f(0, 1);  gl.Vertex2f(0, ShadowTexHeight);
+	gl.End();
+
+	gl.Disable(GL_TEXTURE_2D);
+	gl.Enable(GL_DEPTH_TEST);
+#endif
 }
 
 #else /* ENABLE_OPENGL */

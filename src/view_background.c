@@ -97,7 +97,7 @@ static int render_grid = 0;
 static int render_restore = 0;
 static int render_map = 0;
 static int render_bones = 0;
-static int render_masks = 1;
+/*static*/ int render_masks = 1;
 
 static int refresh_player_pos = 1;
 static float player_x = 0, player_y = 0, player_z = 0;
@@ -469,8 +469,10 @@ void view_background_draw(void)
 		render.bitmap.setScaler(
 			game_state.background->w, game_state.background->h,
 			video.viewport.w,video.viewport.h);
+		/*render.bitmap.setDepth(1, 90000.0f);*/
 		render.bitmap.drawImage(&video);
 
+		/*render.bitmap.setDepth(0, 0.0f);*/
 		render.set_dithering(0);
 		render.set_useDirtyRects(0);
 	}
@@ -485,9 +487,9 @@ void view_background_draw(void)
 		return;
 	}
 
-	if (render_masks) {
+	/*if (render_masks) {*/
 		(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
-	}
+	/*}*/
 
 	(*game_state.room->getCamera)(game_state.room, game_state.num_camera, &room_camera);
 
