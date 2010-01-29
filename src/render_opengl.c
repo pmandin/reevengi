@@ -483,8 +483,8 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 
  	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
  	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
- 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
- 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+ 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+ 	gl.TexParameteri(gl_tex->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
