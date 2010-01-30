@@ -75,6 +75,7 @@ static void draw_line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
 static void draw_triangle(draw_t *this, draw_vertex_t v[3]);
 static void draw_quad(draw_t *this, draw_vertex_t v[4]);
 
+static void draw_poly_line(draw_t *this, vertexf_t *vtx, int num_vtx);
 static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx);
 static void draw_poly_gouraud(draw_t *this, vertexf_t *vtx, int num_vtx);
 static void draw_poly_tex(draw_t *this, vertexf_t *vtx, int num_vtx);
@@ -100,6 +101,7 @@ void draw_init_simple(draw_t *draw)
 	draw->triangle = draw_triangle;
 	draw->quad = draw_quad;
 
+	draw->polyLine = draw_poly_line;
 	draw->polyFill = draw_poly_fill;
 	draw->polyGouraud = draw_poly_gouraud;
 	draw->polyTexture = draw_poly_tex;
@@ -580,6 +582,11 @@ static void draw_quad(draw_t *this, draw_vertex_t v[4])
 	draw_line(this, &v[1], &v[2]);
 	draw_line(this, &v[2], &v[3]);
 	draw_line(this, &v[3], &v[0]);
+}
+
+static void draw_poly_line(draw_t *this, vertexf_t *vtx, int num_vtx)
+{
+	/* TODO */
 }
 
 static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)
