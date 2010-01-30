@@ -81,6 +81,7 @@ typedef struct {
 
 typedef struct {
 	Uint32	id;	/* ID to merge segments */
+	int render_mode;
 	int tex_num_pal;
 	render_texture_t *texture;
 	sbuffer_point_t start, end;
@@ -113,6 +114,10 @@ static unsigned logbase2(unsigned n);
 static void draw_resize(draw_t *this, int w, int h);
 static void draw_startFrame(draw_t *this);
 static void draw_endFrame(draw_t *this);
+
+static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end);
+static void draw_render_gouraud(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end);
+static void draw_render_textured(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end);
 
 static void draw_render8_fill(void);
 static void draw_render16_fill(void);
@@ -197,6 +202,48 @@ static void draw_endFrame(draw_t *this)
 		SDL_LockSurface(surf);
 	}
 
+#if 1
+	{
+		int i,j;
+		Uint8 *dst = (Uint8 *) surf->pixels;
+		dst += video.viewport.y * surf->pitch;
+		dst += video.viewport.x;
+
+		/* For each row */
+		for (i=0; i<sbuffer_numrows; i++) {
+			Uint8 *dst_line = dst;
+			sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+			/* Render list of segment */
+			for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+				int last;
+
+				/* Find last segment to merge */
+				for (last=j;
+					(last<sbuffer_rows[i].num_segs-1) && (segments[j].id==segments[last+1].id);
+					last++)
+				{
+				}
+
+				switch(segments[j].render_mode) {
+					case RENDER_FILLED:
+						draw_render_fill(surf, dst_line, &segments[j], &segments[last]);
+						break;
+					case RENDER_GOURAUD:
+						draw_render_gouraud(surf, dst_line, &segments[j], &segments[last]);
+						break;
+					case RENDER_TEXTURED:
+						draw_render_textured(surf, dst_line, &segments[j], &segments[last]);
+						break;
+				}
+
+				j = last;
+			}
+
+			dst += surf->pitch;
+		}
+	}
+#else
 	switch(render.render_mode) {
 		case RENDER_FILLED:
 			switch(surf->format->BytesPerPixel) {
@@ -247,10 +294,171 @@ static void draw_endFrame(draw_t *this)
 			}
 			break;
 	}
+#endif
 
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_UnlockSurface(surf);
 	}
+}
+
+static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end)
+{
+	Uint32 color;
+	int i;
+	int r = start->start.r;
+	int g = start->start.g;
+	int b = start->start.b;
+
+	if (drawCorrectPerspective>0) {
+		r = start->start.r / start->start.w;
+		g = start->start.g / start->start.w;
+		b = start->start.b / start->start.w;
+	}
+
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			{
+				Uint8 *dst_col = &dst_line[start->start.x];
+				color = dither_nearest_index(r,g,b);
+
+				memset(dst_col, color, end->end.x - start->start.x + 1);
+			}
+			break;
+		case 2:
+			{
+				Uint16 *dst_col = & ((Uint16 *) dst_line)[start->start.x];
+				color = SDL_MapRGB(surf->format, r,g,b);
+
+				for (i=start->start.x; i<=end->end.x; i++) {
+					*dst_col++ = color;
+				}
+			}
+			break;
+		case 3:
+			{
+				Uint8 *dst_col = &dst_line[start->start.x*3];
+				color = SDL_MapRGB(surf->format, r,g,b);
+ 
+				for (i=start->start.x; i<=end->end.x; i++) {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+					*dst_col++ = color>>16;
+					*dst_col++ = color>>8;
+					*dst_col++ = color;
+#else
+					*dst_col++ = color;
+					*dst_col++ = color>>8;
+					*dst_col++ = color>>16;
+#endif
+				}
+			}
+			break;
+		case 4:
+			{
+				Uint32 *dst_col =  & ((Uint32 *) dst_line)[start->start.x];
+				color = SDL_MapRGB(surf->format, r,g,b);
+
+				for (i=start->start.x; i<=end->end.x; i++) {
+					*dst_col++ = color;
+				}
+			}
+			break;
+	}
+}
+
+static void draw_render_gouraud(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	int dx, i;
+
+	r1 = start->start.r;
+	g1 = start->start.g;
+	b1 = start->start.b;
+	r2 = end->end.r;
+	g2 = end->end.g;
+	b2 = end->end.b;
+
+	if (drawCorrectPerspective>0) {
+		r1 = start->start.r / start->start.w;
+		g1 = start->start.g / start->start.w;
+		b1 = start->start.b / start->start.w;
+		r2 = end->end.r / end->end.w;
+		g2 = end->end.g / end->end.w;
+		b2 = end->end.b / end->end.w;
+	}
+
+	dx = end->end.x - start->start.x + 1;
+ 
+	dr = (r2-r1)/dx;
+	dg = (g2-g1)/dx;
+	db = (b2-b1)/dx;
+
+	r = r1;
+	g = g1;
+	b = b1;
+
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			{
+				Uint8 *dst_col = &dst_line[start->start.x];
+
+				for (i=0; i<dx; i++) {
+					*dst_col++ = dither_nearest_index(r,g,b);
+					r += dr;
+					g += dg;
+					b += db;
+				}
+			}
+			break;
+		case 2:
+			{
+				Uint16 *dst_col = & ((Uint16 *) dst_line)[start->start.x];
+
+				for (i=0; i<dx; i++) {
+					*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+					r += dr;
+					g += dg;
+					b += db;
+				}
+			}
+			break;
+		case 3:
+			{
+				Uint8 *dst_col = &dst_line[start->start.x*3];
+
+				for (i=0; i<dx; i++) {
+					Uint32 color = SDL_MapRGB(surf->format, r,g,b);
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+					*dst_col++ = color>>16;
+					*dst_col++ = color>>8;
+					*dst_col++ = color;
+#else
+					*dst_col++ = color;
+					*dst_col++ = color>>8;
+					*dst_col++ = color>>16;
+#endif
+					r += dr;
+					g += dg;
+					b += db;
+				}
+			}
+			break;
+		case 4:
+			{
+				Uint32 *dst_col =  & ((Uint32 *) dst_line)[start->start.x];
+
+				for (i=0; i<dx; i++) {
+					*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+					r += dr;
+					g += dg;
+					b += db;
+				}
+			}
+			break;
+	}
+}
+
+static void draw_render_textured(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end)
+{
 }
 
 static void draw_render8_fill(void)
@@ -1222,6 +1430,7 @@ static int draw_push_segment(const sbuffer_segment_t *segment,
 	draw_clip_segment(segment, x2, p);
 
 	sbuffer_rows[y].segment[pos].id = segment->id;
+	sbuffer_rows[y].segment[pos].render_mode = segment->render_mode;
 	sbuffer_rows[y].segment[pos].tex_num_pal = segment->tex_num_pal;
 	sbuffer_rows[y].segment[pos].texture = segment->texture;
 
@@ -1831,6 +2040,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	segment.id = sbuffer_seg_id++;
+	segment.render_mode = render.render_mode;
 	segment.tex_num_pal = render.tex_pal;
 	segment.texture = render.texture;
 
