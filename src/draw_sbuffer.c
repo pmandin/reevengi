@@ -459,6 +459,285 @@ static void draw_render_gouraud(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 
 static void draw_render_textured(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end)
 {
+	float u1,v1, u2,v2, du,dv, u,v;
+	int dx, i;
+	render_texture_t *tex = start->texture;
+
+	u1 = start->start.u;
+	v1 = start->start.v;
+	u2 = end->end.u;
+	v2 = end->end.v;
+
+	if (drawCorrectPerspective>0) {
+		u1 = start->start.u / start->start.w;
+		v1 = start->start.v / start->start.w;
+		u2 = end->end.u / end->end.w;
+		v2 = end->end.v / end->end.w;
+	}
+
+	dx = end->end.x - start->start.x + 1;
+	du = (u2-u1)/dx;
+	dv = (v2-v1)/dx;
+	u = u1;
+	v = v1;
+
+	switch(surf->format->BytesPerPixel) {
+		case 1:
+			{
+				Uint8 *dst_col = &dst_line[start->start.x];
+
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+/*
+	XXxxYYyy	uv/uvd
+	XXxx--YY	lsr.w
+	xx--YYXX	rol.l
+*/
+				if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
+					/* Integer calculations */
+					Sint32 vi = v * 65536.0f;
+					Sint32 vd = dv * 65536.0f;
+					Sint32 ui = u * 65536.0f;
+					Sint32 ud = du * 65536.0f;
+					int ushift = 16-logbase2(tex->pitchw);
+					int vshift = logbase2(tex->pitchh);
+					Uint32 uv = (vi>>vshift) & 0x0000ffff;
+					Uint32 uvd = (vd>>vshift) & 0x0000ffff;
+					uv |= (ui<<ushift) & 0xffff0000;
+					uvd |= (ud<<ushift) & 0xffff0000;
+
+					ushift = 16-ushift;
+					vshift = 16-vshift;
+
+					if (tex->paletted) {
+						Uint32 *palette = tex->palettes[start->tex_num_pal];
+						Uint8 *tex_pixels = (Uint8 *) tex->pixels;
+
+						/* for signed d0:w addressing */
+						if (tex->pitchh*tex->pitchw>32768) {
+							tex_pixels += 32768;
+							uv ^= 0x8000;
+						}
+
+						--dx;
+__asm__ __volatile__ (
+	"movel	%5,d0\n\t"
+	"moveql	#0,d1\n"
+
+"R_DrawSpan8_loop:\n\t"
+
+	"lsrw	%6,d0\n\t"
+	"roll	%7,d0\n\t"
+	"moveb	%1@(0,d0:w),d1\n\t"
+	"addl	%2,%5\n\t"
+	"moveb	%3@(3,d1:w*4),d1\n\t"
+	"movel	%5,d0\n\t"
+	"moveb	d1,%4@+\n\t"
+
+	"subqw	#1,%0\n\t"
+	"bpls	R_DrawSpan8_loop\n"
+
+	: /* no return value */
+	: /* input */
+		"d"(dx), "a"(tex_pixels), "r"(uvd), "a"(palette),
+		"a"(dst_col), "r"(uv), "d"(ushift), "d"(vshift)
+	: /* clobbered registers */
+		"d0", "d1", "cc", "memory" 
+);						
+					}/* else {
+						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+
+						for (k=dx-1; k>=0; k--) {
+							Uint32 uv = (vi & vm) | (ui & 0xffff);
+							uv >>= rshift;
+							ui += ud;
+							*dst_col++ = tex_pixels[uv];
+							vi += vd;
+						}
+					}*/
+				} else
+#endif
+				{
+					/* Float calculations */
+					if (tex->paletted) {
+						Uint32 *palette = tex->palettes[start->tex_num_pal];
+						for (i=0; i<dx; i++) {
+							*dst_col++ = palette[tex->pixels[((int) v)*tex->pitchw + ((int) u)]];
+							u += du;
+							v += dv;
+						}
+					}/* else {
+						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+				
+						for (k=0; k<dx; k++) {
+							*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+							u += du;
+							v += dv;
+						}
+					}*/
+				}
+			}
+			break;
+		case 2:
+			{
+				Uint16 *dst_col = & ((Uint16 *) dst_line)[start->start.x];
+
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+/*
+	XXxxYYyy	uv/uvd
+	XXxx--YY	lsr.w
+	xx--YYXX	rol.l
+*/
+				if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
+					/* Integer calculations */
+					Sint32 vi = v * 65536.0f;
+					Sint32 vd = dv * 65536.0f;
+					Sint32 ui = u * 65536.0f;
+					Sint32 ud = du * 65536.0f;
+					int ushift = 16-logbase2(tex->pitchw);
+					int vshift = logbase2(tex->pitchh);
+					Uint32 uv = (vi>>vshift) & 0x0000ffff;
+					Uint32 uvd = (vd>>vshift) & 0x0000ffff;
+					uv |= (ui<<ushift) & 0xffff0000;
+					uvd |= (ud<<ushift) & 0xffff0000;
+
+					ushift = 16-ushift;
+					vshift = 16-vshift;
+
+					if (tex->paletted) {
+						Uint32 *palette = tex->palettes[start->tex_num_pal];
+						Uint8 *tex_pixels = (Uint8 *) tex->pixels;
+
+						/* for signed d0:w addressing */
+						if (tex->pitchh*tex->pitchw>32768) {
+							tex_pixels += 32768;
+							uv ^= 0x8000;
+						}
+
+						--dx;
+__asm__ __volatile__ (
+	"movel	%5,d0\n\t"
+	"moveql	#0,d1\n"
+	"moveql	#0,d2\n"
+
+"R_DrawSpan16_loop:\n\t"
+
+	"lsrw	%6,d0\n\t"
+	"roll	%7,d0\n\t"
+	"moveb	%1@(0,d0:w),d1\n\t"
+	"addl	%2,%5\n\t"
+	"movew	%3@(2,d1:w*4),d2\n\t"
+	"movel	%5,d0\n\t"
+	"movew	d2,%4@+\n\t"
+
+	"subqw	#1,%0\n\t"
+	"bpls	R_DrawSpan16_loop\n"
+
+	: /* no return value */
+	: /* input */
+		"d"(dx), "a"(tex_pixels), "r"(uvd), "a"(palette),
+		"a"(dst_col), "r"(uv), "d"(ushift), "d"(vshift)
+	: /* clobbered registers */
+		"d0", "d1", "d2", "cc", "memory" 
+);						
+					} else {
+						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+						Uint32 vm = (0xffffffff>>vshift) & 0xffff0000;
+						int rshift = 16-ushift;
+
+						for (i=dx-1; i>=0; i--) {
+							Uint32 uv = (vi & vm) | (ui & 0xffff);
+							uv >>= rshift;
+							ui += ud;
+							*dst_col++ = tex_pixels[uv];
+							vi += vd;
+						}
+					}
+				} else
+#endif
+				{
+					/* Float calculations */
+					if (tex->paletted) {
+						Uint32 *palette = tex->palettes[start->tex_num_pal];
+						for (i=0; i<dx; i++) {
+							*dst_col++ = palette[tex->pixels[((int) v)*tex->pitchw + ((int) u)]];
+							u += du;
+							v += dv;
+						}
+					} else {
+						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+			
+						for (i=0; i<dx; i++) {
+							*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+							u += du;
+							v += dv;
+						}
+					}
+				}
+			}
+			break;
+		case 3:
+			{
+				Uint8 *dst_col = &dst_line[start->start.x*3];
+
+				if (tex->paletted) {
+					Uint32 *palette = tex->palettes[start->tex_num_pal];
+					for (i=0; i<dx; i++) {
+						Uint32 color = palette[tex->pixels[((int)v)*tex->pitchw + ((int) u)]];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+						*dst_col++ = color>>16;
+						*dst_col++ = color>>8;
+						*dst_col++ = color;
+#else
+						*dst_col++ = color;
+						*dst_col++ = color>>8;
+						*dst_col++ = color>>16;
+#endif
+						u += du;
+						v += dv;
+					}
+				} else {
+					Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+			
+					for (i=0; i<dx; i++) {
+						Uint32 color = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+						*dst_col++ = color>>16;
+						*dst_col++ = color>>8;
+						*dst_col++ = color;
+#else
+						*dst_col++ = color;
+						*dst_col++ = color>>8;
+						*dst_col++ = color>>16;
+#endif
+						u += du;
+						v += dv;
+					}
+				}
+			}
+			break;
+		case 4:
+			{
+				Uint32 *dst_col =  & ((Uint32 *) dst_line)[start->start.x];
+
+				if (tex->paletted) {
+					Uint32 *palette = tex->palettes[start->tex_num_pal];
+					for (i=0; i<dx; i++) {
+						*dst_col++ = palette[tex->pixels[((int)v)*tex->pitchw + ((int) u)]];
+						u += du;
+						v += dv;
+					}
+				} else {
+					Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+			
+					for (i=0; i<dx; i++) {
+						*dst_col++ = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
+						u += du;
+						v += dv;
+					}
+				}
+			}
+			break;
+	}
 }
 
 static void draw_render8_fill(void)
