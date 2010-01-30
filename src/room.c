@@ -248,11 +248,8 @@ void room_map_draw(room_t *this)
 	render.set_texture(0, NULL);
 	render.push_matrix();
 
-	/*printf("draw map %d,%d %d,%d\n",minx,maxx,minz,maxz);*/
-
 	/* Set ortho projection */
-	render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f,1.0f);
-	/*render.set_identity();*/
+	render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, 1.0f, 100000.0f);
 
 	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
@@ -555,7 +552,7 @@ void room_map_drawPlayer(float x, float y, float angle)
 	render.push_matrix();
 
 	/* Set ortho projection */
-	render.set_ortho(minx * 0.5f,maxx * 0.5f, minz * 0.5f,maxz * 0.5f, -1.0f,1.0f);
+	render.set_ortho(minx * 0.5f,maxx * 0.5f, minz * 0.5f,maxz * 0.5f, 1.0f,100000.0f);
 
 	render.set_color(MAP_COLOR_PLAYER);
 

@@ -84,10 +84,6 @@ static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 
 	if (parent == NULL) {
 		/* Init OpenGL rendering */
-		gl.Enable(GL_DEPTH_TEST);
-
-		gl.Enable(GL_CULL_FACE);
-		gl.CullFace(GL_FRONT);
 
 		switch(render.render_mode) {
 			case RENDER_WIREFRAME:
@@ -132,9 +128,6 @@ static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 				}
 				break;
 		}
-		gl.Disable(GL_CULL_FACE);
-
-		gl.Disable(GL_DEPTH_TEST);
 	}
 }
 

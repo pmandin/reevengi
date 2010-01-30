@@ -147,7 +147,13 @@ static void render_resize(render_t *this, int w, int h)
 static void render_startFrame(render_t *this)
 {
 	gl.ClearColor(0.0,0.0,0.0,0.0);
+	gl.ClearDepth(1.0f);
 	gl.Clear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	gl.Enable(GL_DEPTH_TEST);
+
+	gl.Enable(GL_CULL_FACE);
+	gl.CullFace(GL_FRONT);
 }
 
 static void render_endFrame(render_t *this)
@@ -342,8 +348,6 @@ static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 
 static void line(vertex_t *v1, vertex_t *v2)
 {
-	gl.Disable(GL_DEPTH_TEST);
-
 	gl.Begin(GL_LINES);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
 	gl.Vertex3s(v2->x, v2->y, v2->z);
@@ -354,11 +358,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	set_color_from_texture(v1);
 
-	gl.Disable(GL_DEPTH_TEST);
-
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_TRIANGLES);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
@@ -367,18 +367,13 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	gl.Disable(GL_CULL_FACE);
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
 	set_color_from_texture(v1);
 
-	gl.Disable(GL_DEPTH_TEST);
-
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_QUADS);
 	gl.Vertex3s(v1->x, v1->y, v1->z);
@@ -388,7 +383,6 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	gl.Disable(GL_CULL_FACE);
 }
 
 /*
@@ -402,11 +396,6 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	} else {
 		gl.ShadeModel(GL_SMOOTH);
 	}
-
-	gl.Enable(GL_DEPTH_TEST);
-
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_TRIANGLES);
 	if (gouraud) {
@@ -423,7 +412,6 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.Vertex3s(v3->x, v3->y, v3->z);
 	gl.End();
 
-	gl.Disable(GL_CULL_FACE);
 	gl.ShadeModel(GL_FLAT);
 }
 
@@ -434,11 +422,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	} else {
 		gl.ShadeModel(GL_SMOOTH);
 	}
-
-	gl.Enable(GL_DEPTH_TEST);
-
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
 
 	gl.Begin(GL_QUADS);
 	if (gouraud) {
@@ -459,7 +442,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Vertex3s(v4->x, v4->y, v4->z);
 	gl.End();
 
-	gl.Disable(GL_CULL_FACE);
 	gl.ShadeModel(GL_FLAT);
 }
 
@@ -503,11 +485,6 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.LoadIdentity();
 	gl.MatrixMode(GL_MODELVIEW);
 
-	gl.Enable(GL_DEPTH_TEST);
-
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
-
 	gl.Enable(gl_tex->textureTarget);
 
 	gl.Begin(GL_TRIANGLES);
@@ -529,7 +506,6 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);
-	gl.Disable(GL_CULL_FACE);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -545,11 +521,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
 	gl.MatrixMode(GL_MODELVIEW);
-
-	gl.Enable(GL_DEPTH_TEST);
-
-	gl.Enable(GL_CULL_FACE);
-	gl.CullFace(GL_FRONT);
 
 	gl.Enable(gl_tex->textureTarget);
 
@@ -576,7 +547,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);
-	gl.Disable(GL_CULL_FACE);
 }
 
 #else
