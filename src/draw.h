@@ -43,6 +43,8 @@ struct draw_s {
 	void (*triangle)(draw_t *this, draw_vertex_t v[3]);
 	void (*quad)(draw_t *this, draw_vertex_t v[4]);
 
+	void (*polyLine)(draw_t *this, vertexf_t *vtx, int num_vtx);
+
 	/* Filled */
 	void (*polyFill)(draw_t *this, vertexf_t *vtx, int num_vtx);
 

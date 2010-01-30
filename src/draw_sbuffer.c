@@ -70,12 +70,13 @@ typedef struct {
 } sbuffer_point_t;
 
 typedef struct {
+#if 0
 	int x[2];	/* x 0:min, 1:max */
 	Uint32 c[2];	/* color 0:min, 1:max */
 	float tu[2];	/* texture 0:min, 1:max */
 	float tv[2];
 	float w[2];	/* 1/z, 0:min, 1:max */
-
+#endif
 	sbuffer_point_t sbp[2]; /* 0:min, 1:max */
 } poly_hline_t;
 
@@ -133,6 +134,7 @@ void draw_init_sbuffer(draw_t *draw)
 	draw->startFrame = draw_startFrame;
 	draw->endFrame = draw_endFrame;
 
+	draw->polyLine = draw_poly_sbuffer;
 	draw->polyFill = draw_poly_sbuffer;
 	draw->polyGouraud = draw_poly_sbuffer;
 	draw->polyTexture = draw_poly_sbuffer;
@@ -1221,6 +1223,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	int minx = video.viewport.w, maxx = -1;
 	int y, p1, p2;
 	sbuffer_segment_t segment;
+	int num_array = 1; /* max array */
 
 	if (video.viewport.h>size_poly_minmaxx) {
 		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
@@ -1249,7 +1252,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		int v2 = p2;
 		int x1,y1, x2,y2;
 		int dy;
-		int num_array = 1; /* max */
+		num_array = 1; /* max */
 		float w1, w2;
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
@@ -1342,6 +1345,15 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 	if (maxy>=video.viewport.h) {
 		maxy = video.viewport.h;
+	}
+
+	/* Copy to other array for a single segment */
+	if (num_vtx==2) {
+		for (y=miny; y<maxy; y++) {
+			memcpy(	&poly_hlines[y].sbp[num_array ^ 1],
+				&poly_hlines[y].sbp[num_array],
+				sizeof(sbuffer_point_t));
+		}
 	}
 
 	segment.id = sbuffer_seg_id++;
