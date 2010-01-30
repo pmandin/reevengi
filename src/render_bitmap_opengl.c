@@ -147,7 +147,8 @@ static void drawImage(video_t *video)
 		(float) render.bitmap.dstRect.y,
 		-bitmap_depth);
 	gl.Scalef((float) render.bitmap.dstRect.w,
-		(float) render.bitmap.dstRect.h, 0.0f);
+		(float) render.bitmap.dstRect.h,
+		1.0f);
 
 	gl.Begin(GL_QUADS);
 		gl.TexCoord2f(0.0f, 0.0f);
