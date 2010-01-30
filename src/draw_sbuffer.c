@@ -110,7 +110,9 @@ static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pix
 
 static void draw_shutdown(draw_t *this);
 
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
 static unsigned logbase2(unsigned n);
+#endif
 
 static void draw_resize(draw_t *this, int w, int h);
 static void draw_startFrame(draw_t *this);
@@ -155,6 +157,7 @@ static void draw_shutdown(draw_t *this)
 	size_poly_minmaxx = 0;
 }
 
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
 static unsigned logbase2(unsigned n)
 {
 	unsigned log2 = 0;
@@ -162,6 +165,7 @@ static unsigned logbase2(unsigned n)
 		++log2;
 	return log2;
 }
+#endif
 
 static void draw_resize(draw_t *this, int w, int h)
 {
