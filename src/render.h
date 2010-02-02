@@ -25,6 +25,7 @@
 #include "render_mesh.h"
 #include "render_skel.h"
 #include "render_bitmap.h"
+#include "draw.h"
 
 /*--- Defines ---*/
 
@@ -44,11 +45,13 @@ typedef struct {
 	Uint16 u,v;	/* Texture coords */
 } vertex_t;
 
-typedef struct {
+typedef struct vertexf_s vertexf_t;
+
+struct vertexf_s {
 	float pos[4];	/* x,y,z,w */
 	float tx[2];	/* u,v */
 	float col[4];	/* r,g,b,a */
-} vertexf_t;
+};
 
 typedef struct render_s render_t;
 
@@ -107,6 +110,9 @@ struct render_s {
 	Uint32 color;	/* Active color */
 	render_texture_t *texture;
 	int tex_pal;	/* Palette to use */
+
+	/* Software drawing */
+	draw_t	draw;
 };
 
 void render_soft_init(render_t *render);

@@ -47,8 +47,6 @@ static float clip_planes[6][4]; /* view frustum clip planes */
 
 static int gouraud;
 
-static draw_t draw;
-
 /*--- Functions prototypes ---*/
 
 static void render_soft_shutdown(render_t *render);
@@ -148,30 +146,30 @@ void render_soft_init(render_t *render)
 	gouraud = 0;
 	render->useDirtyRects = 0;
 
-	/*draw_init_simple(&draw);*/
-	draw_init_sbuffer(&draw);
+	/*draw_init_simple(&render->draw);*/
+	draw_init_sbuffer(&render->draw);
 }
 
 static void render_soft_shutdown(render_t *render)
 {
-	draw.shutdown(&draw);
+	render->draw.shutdown(&render->draw);
 	list_render_texture_shutdown();
 	list_render_skel_shutdown();
 }
 
 static void render_resize(render_t *this, int w, int h)
 {
-	draw.resize(&draw, w,h);
+	this->draw.resize(&this->draw, w,h);
 }
 
 static void render_startFrame(render_t *this)
 {
-	draw.startFrame(&draw);
+	this->draw.startFrame(&this->draw);
 }
 
 static void render_endFrame(render_t *this)
 {
-	draw.endFrame(&draw);
+	this->draw.endFrame(&this->draw);
 }
 
 /* Recalculate frustum matrix = modelview*projection */
@@ -481,7 +479,7 @@ static void line(vertex_t *v1, vertex_t *v2)
 	v[1].x = segment[1][0]/segment[1][2];
 	v[1].y = segment[1][1]/segment[1][2];
 
-	draw.line(&draw, &v[0], &v[1]);
+	render.draw.line(&render.draw, &v[0], &v[1]);
 }
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -524,7 +522,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	v[2].x = segment[2][0]/segment[2][2];
 	v[2].y = segment[2][1]/segment[2][2];
 
-	draw.triangle(&draw, v);
+	render.draw.triangle(&render.draw, v);
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -573,7 +571,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	v[3].x = segment[3][0]/segment[3][2];
 	v[3].y = segment[3][1]/segment[3][2];
 
-	draw.quad(&draw, v);
+	render.draw.quad(&render.draw, v);
 }
 
 /*
@@ -658,9 +656,9 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	/* Draw polygon */
 	if (gouraud) {
-		draw.polyGouraud(&draw, poly, num_vtx);
+		render.draw.polyGouraud(&render.draw, poly, num_vtx);
 	} else {
-		draw.polyFill(&draw, poly, num_vtx);
+		render.draw.polyFill(&render.draw, poly, num_vtx);
 	}
 }
 
@@ -756,9 +754,9 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	/* Draw polygon */
 	if (gouraud) {
-		draw.polyGouraud(&draw, poly, num_vtx);
+		render.draw.polyGouraud(&render.draw, poly, num_vtx);
 	} else {
-		draw.polyFill(&draw, poly, num_vtx);
+		render.draw.polyFill(&render.draw, poly, num_vtx);
 	}
 }
 
@@ -825,7 +823,7 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw.polyTexture(&draw, poly, num_vtx);
+	render.draw.polyTexture(&render.draw, poly, num_vtx);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -888,5 +886,5 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	draw.polyTexture(&draw, poly, num_vtx);
+	render.draw.polyTexture(&render.draw, poly, num_vtx);
 }

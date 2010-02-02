@@ -21,6 +21,10 @@
 #ifndef DRAW_H
 #define DRAW_H 1
 
+/*---- Forward declaration ---*/
+
+struct vertexf_s;
+
 /*--- Types ---*/
 
 typedef struct {
@@ -43,16 +47,16 @@ struct draw_s {
 	void (*triangle)(draw_t *this, draw_vertex_t v[3]);
 	void (*quad)(draw_t *this, draw_vertex_t v[4]);
 
-	void (*polyLine)(draw_t *this, vertexf_t *vtx, int num_vtx);
+	void (*polyLine)(draw_t *this, struct vertexf_s *vtx, int num_vtx);
 
 	/* Filled */
-	void (*polyFill)(draw_t *this, vertexf_t *vtx, int num_vtx);
+	void (*polyFill)(draw_t *this, struct vertexf_s *vtx, int num_vtx);
 
 	/* Gouraud */
-	void (*polyGouraud)(draw_t *this, vertexf_t *vtx, int num_vtx);
+	void (*polyGouraud)(draw_t *this, struct vertexf_s *vtx, int num_vtx);
 
 	/* Textured */
-	void (*polyTexture)(draw_t *this, vertexf_t *vtx, int num_vtx);
+	void (*polyTexture)(draw_t *this, struct vertexf_s *vtx, int num_vtx);
 };
 
 #endif /* DRAW_H */

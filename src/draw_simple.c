@@ -587,6 +587,7 @@ static void draw_quad(draw_t *this, draw_vertex_t v[4])
 static void draw_poly_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
 	/* TODO */
+	logMsg(0, "TODO: draw_poly_line\n");
 }
 
 static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)

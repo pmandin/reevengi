@@ -52,6 +52,8 @@ static void setScaler(int srcw, int srch, int dstw, int dsth);
 static void setDepth(int enabled, float depth);
 static void drawImage(video_t *video);
 
+static void drawImageDepth();
+
 /*--- Functions ---*/
 
 void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
@@ -172,6 +174,11 @@ static void drawImage(video_t *video)
 		return;
 	}
 
+	if (render.bitmap.depth_test) {
+		drawImageDepth();
+		return;
+	}
+
 	if (render.texture->scaled) {
 		SDL_Rect scaled_src;
 
@@ -202,6 +209,48 @@ static void drawImage(video_t *video)
 			SDL_UnlockSurface(video->screen);
 		}
 	}
+}
+
+static void drawImageDepth(void)
+{
+	vertexf_t poly[16];
+	int i;
+
+	poly[0].pos[0] = render.bitmap.dstRect.x;
+	poly[0].pos[1] = render.bitmap.dstRect.y;
+	poly[0].pos[2] = 1.0f;
+	poly[0].pos[3] = 1.0f;
+	poly[0].tx[0] = render.bitmap.srcRect.x;
+	poly[0].tx[1] = render.bitmap.srcRect.y;
+
+	poly[1].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
+	poly[1].pos[1] = render.bitmap.dstRect.y;
+	poly[1].pos[2] = 1.0f;
+	poly[1].pos[3] = 1.0f;
+	poly[1].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
+	poly[1].tx[1] = render.bitmap.srcRect.y;
+
+	poly[2].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
+	poly[2].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
+	poly[2].pos[2] = 1.0f;
+	poly[2].pos[3] = 1.0f;
+	poly[2].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
+	poly[2].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
+
+	poly[3].pos[0] = render.bitmap.dstRect.x;
+	poly[3].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
+	poly[3].pos[2] = 1.0f;
+	poly[3].pos[3] = 1.0f;
+	poly[3].tx[0] = render.bitmap.srcRect.x;
+	poly[3].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
+
+	for (i=0; i<4; i++) {
+		poly[i].pos[0] *= render.bitmap.depth;
+		poly[i].pos[1] *= render.bitmap.depth;
+		poly[i].pos[2] *= render.bitmap.depth;
+	}
+
+	render.draw.polyTexture(&render.draw, poly, 4);
 }
 
 static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
