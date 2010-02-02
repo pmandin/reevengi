@@ -529,8 +529,6 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				offset += sizeof(rdt_mask_square_t);
 			}
 
-			/*logMsg(1, "mask %d: depth %d\n", num_mask, depth);*/
-
 			scaled_dst_x = (dst_x*video.viewport.w)/320;
 			scaled_dst_y = (dst_y*video.viewport.h)/240;
 			scaled_dst_w = (width*video.viewport.w)/320;
@@ -541,7 +539,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 				video.viewport.x+scaled_dst_x,
 				video.viewport.y+scaled_dst_y,
 				scaled_dst_w,scaled_dst_h);
-			render.bitmap.setDepth(1, (float) depth * 64.0f);
+			render.bitmap.setDepth(1, (float) depth * 32.0f);
 			render.bitmap.drawImage(&video);
 		}
 
