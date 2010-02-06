@@ -45,6 +45,7 @@
 #define KEY_RENDER_FILLED	SDLK_F3
 #define KEY_RENDER_GOURAUD	SDLK_F4
 #define KEY_RENDER_TEXTURED	SDLK_F5
+#define KEY_RENDER_DEPTH	SDLK_F6
 
 #define KEY_STAGE_DOWN		SDLK_z
 #define KEY_STAGE_UP		SDLK_s
@@ -83,6 +84,8 @@
 #endif
 #define KEY_ENTER_DOOR		SDLK_u
 
+/*#define DISABLE_CAM_SWITCH	1*/
+
 /*--- Variables ---*/
 
 static int reload_bg = 1;
@@ -97,7 +100,8 @@ static int render_grid = 0;
 static int render_restore = 0;
 static int render_map = 0;
 static int render_bones = 0;
-/*static*/ int render_masks = 1;
+static int render_masks = 1;
+static int render_depth = 0;
 
 static int refresh_player_pos = 1;
 static float player_x = 0, player_y = 0, player_z = 0;
@@ -284,6 +288,10 @@ void view_background_input(SDL_Event *event)
 				render.set_render(&render, RENDER_TEXTURED);
 				player_model->download(player_model);
 				break;
+			case KEY_RENDER_DEPTH:
+				render_depth ^= 1;
+				render.setRenderDepth(&render, render_depth);
+				break;
 			default:
 				break;
 		}
@@ -376,6 +384,9 @@ static void processPlayerMovement(void)
 		new_x = playerstart_x + cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z - sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
+#ifdef DISABLE_CAM_SWITCH
+		is_inside = was_inside;
+#endif
 		if (was_inside && !is_inside) {
 			/* Player can not go out */
 		} else {
@@ -383,6 +394,9 @@ static void processPlayerMovement(void)
 			player_z = new_z;
 		}
 		new_camera = room_checkCamswitch(game_state.room, game_state.num_camera, player_x, player_z);
+#ifdef DISABLE_CAM_SWITCH
+		new_camera = -1;
+#endif
 		if (new_camera != -1) {
 			game_state.num_camera = new_camera;
 			reload_bg = 1;
@@ -392,6 +406,9 @@ static void processPlayerMovement(void)
 		new_x = playerstart_x - cos((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		new_z = playerstart_z + sin((player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
 		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
+#ifdef DISABLE_CAM_SWITCH
+		is_inside = was_inside;
+#endif
 		if (was_inside && !is_inside) {
 			/* Player can not go out */
 		} else {
@@ -399,6 +416,9 @@ static void processPlayerMovement(void)
 			player_z = new_z;
 		}
 		new_camera = room_checkCamswitch(game_state.room, game_state.num_camera, player_x, player_z);
+#ifdef DISABLE_CAM_SWITCH
+		new_camera = -1;
+#endif
 		if (new_camera != -1) {
 			game_state.num_camera = new_camera;
 			reload_bg = 1;
@@ -469,10 +489,9 @@ void view_background_draw(void)
 		render.bitmap.setScaler(
 			game_state.background->w, game_state.background->h,
 			video.viewport.w,video.viewport.h);
-		/*render.bitmap.setDepth(1, 90000.0f);*/
+		render.bitmap.setDepth(0, 0.0f);
 		render.bitmap.drawImage(&video);
 
-		/*render.bitmap.setDepth(0, 0.0f);*/
 		render.set_dithering(0);
 		render.set_useDirtyRects(0);
 	}
@@ -487,9 +506,9 @@ void view_background_draw(void)
 		return;
 	}
 
-	/*if (render_masks) {*/
+	if (render_masks) {
 		(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
-	/*}*/
+	}
 
 	(*game_state.room->getCamera)(game_state.room, game_state.num_camera, &room_camera);
 
@@ -500,7 +519,7 @@ void view_background_draw(void)
 		refresh_player_pos = 0;
 	}
 
-	render.set_projection(60.0f, 4.0f/3.0f, 1.0f, 100000.0f);
+	render.set_projection(60.0f, 4.0f/3.0f, 10.0f, 100000.0f);
 	render.set_modelview(
 		room_camera.from_x, room_camera.from_y, room_camera.from_z,
 		room_camera.to_x, room_camera.to_y, room_camera.to_z,

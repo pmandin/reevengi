@@ -113,6 +113,11 @@ struct render_s {
 
 	/* Software drawing */
 	draw_t	draw;
+
+	/* Display depth buffer */
+	int render_depth;
+	void (*setRenderDepth)(render_t *this, int show_depth);
+	void (*copyDepthToColor)(void);
 };
 
 void render_soft_init(render_t *render);

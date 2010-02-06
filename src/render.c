@@ -93,6 +93,9 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
+static void setRenderDepth(render_t *this, int show_depth);
+static void copyDepthToColor(void);
+
 /*--- Functions ---*/
 
 void render_soft_init(render_t *render)
@@ -146,6 +149,10 @@ void render_soft_init(render_t *render)
 	gouraud = 0;
 	render->useDirtyRects = 0;
 
+	render->render_depth = 0;
+	render->setRenderDepth = setRenderDepth;
+	render->copyDepthToColor = copyDepthToColor;
+
 	/*draw_init_simple(&render->draw);*/
 	draw_init_sbuffer(&render->draw);
 }
@@ -169,6 +176,10 @@ static void render_startFrame(render_t *this)
 
 static void render_endFrame(render_t *this)
 {
+	if (this->render_depth) {
+		this->copyDepthToColor();
+	}
+
 	this->draw.endFrame(&this->draw);
 }
 
@@ -887,4 +898,13 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	/* Draw polygon */
 	render.draw.polyTexture(&render.draw, poly, num_vtx);
+}
+
+static void setRenderDepth(render_t *this, int show_depth)
+{
+	this->render_depth = show_depth;
+}
+
+static void copyDepthToColor(void)
+{
 }

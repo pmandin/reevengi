@@ -89,6 +89,9 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
+static void setRenderDepth(render_t *this, int show_depth);
+static void copyDepthToColor(void);
+
 /*--- Functions ---*/
 
 void render_opengl_init(render_t *render)
@@ -132,6 +135,10 @@ void render_opengl_init(render_t *render)
 	blending = 0;
 	gouraud = 0;
 	render->useDirtyRects = 0;
+
+	render->render_depth = 0;
+	render->setRenderDepth = setRenderDepth;
+	render->copyDepthToColor = copyDepthToColor;
 }
 
 static void render_opengl_shutdown(render_t *render)
@@ -158,6 +165,10 @@ static void render_startFrame(render_t *this)
 
 static void render_endFrame(render_t *this)
 {
+	if (this->render_depth) {
+		this->copyDepthToColor();
+	}
+
 }
 
 static void set_viewport(int x, int y, int w, int h)
@@ -547,6 +558,123 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.End();
 
 	gl.Disable(gl_tex->textureTarget);
+}
+
+static void setRenderDepth(render_t *this, int show_depth)
+{
+	this->render_depth = show_depth;
+}
+
+static void copyDepthToColor(void)
+{
+	GLsizei winWidth = video.viewport.w;
+	GLsizei winHeight = video.viewport.h;
+        GLfloat zBlack = 1.0f;
+	GLfloat zWhite = 0.0f;
+	 
+#if 0
+   GLfloat *depthValues;
+
+   /*assert(zBlack >= 0.0);
+   assert(zBlack <= 1.0);
+   assert(zWhite >= 0.0);
+   assert(zWhite <= 1.0);
+   assert(zBlack != zWhite);*/
+
+   gl.PixelStorei(GL_UNPACK_ALIGNMENT, 1);
+   gl.PixelStorei(GL_PACK_ALIGNMENT, 1);
+
+   /* Read depth values */
+   depthValues = (GLfloat *) malloc(winWidth * winHeight * sizeof(GLfloat));
+   /*assert(depthValues);*/
+   gl.ReadPixels(0, 0, winWidth, winHeight, GL_DEPTH_COMPONENT,
+                GL_FLOAT, depthValues);
+
+   /* Map Z values from [zBlack, zWhite] to gray levels in [0, 1] */
+   /* Not using glPixelTransfer() because it's broke on some systems! */
+   if (zBlack != 0.0 || zWhite != 1.0) {
+      GLfloat scale = 1.0 / (zWhite - zBlack);
+      GLfloat bias = -zBlack * scale;
+      int n = winWidth * winHeight;
+      int i;
+      for (i = 0; i < n; i++)
+         depthValues[i] = depthValues[i] * scale + bias;
+   }
+
+   /* save GL state */
+   gl.PushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT |
+                GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+   /* setup raster pos for glDrawPixels */
+   gl.MatrixMode(GL_PROJECTION);
+   gl.PushMatrix();
+   gl.LoadIdentity();
+
+   gl.Ortho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -1.0, 1.0);
+   gl.MatrixMode(GL_MODELVIEW);
+   gl.PushMatrix();
+   gl.LoadIdentity();
+
+   gl.Disable(GL_STENCIL_TEST);
+   gl.Disable(GL_DEPTH_TEST);
+   gl.RasterPos2f(0, 0);
+
+   gl.DrawPixels(winWidth, winHeight, GL_LUMINANCE, GL_FLOAT, depthValues);
+
+   gl.PopMatrix();
+   gl.MatrixMode(GL_PROJECTION);
+   gl.PopMatrix();
+   free(depthValues);
+
+   gl.PopAttrib();
+#else
+	GLint ShadowTexWidth = 1024 /*winWidth*/;
+	GLint ShadowTexHeight = 512 /*winHeight*/;
+	GLuint tid;
+
+	/*gl.GenTextures(1, &tid);
+	gl.BindTexture(GL_TEXTURE_2D, tid);*/
+
+	GLuint *depth = (GLuint *)
+		malloc(ShadowTexWidth * ShadowTexHeight * sizeof(GLuint));
+	/*assert(depth);*/
+	gl.ReadPixels(0, 0, ShadowTexWidth, ShadowTexHeight,
+		GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, depth);
+	gl.TexImage2D(GL_TEXTURE_2D, 0, /*GL_LUMINANCE*/ GL_RGBA,
+		ShadowTexWidth, ShadowTexHeight, 0,
+		/*GL_LUMINANCE*/ GL_RGBA, GL_UNSIGNED_BYTE /*GL_UNSIGNED_INT*/, depth);
+	free(depth);
+
+	gl.MatrixMode(GL_TEXTURE);
+	gl.LoadIdentity();
+
+	gl.MatrixMode(GL_PROJECTION);
+	gl.LoadIdentity();
+	gl.Ortho(0, winWidth, 0, winHeight, -1, 1);
+
+	gl.MatrixMode(GL_MODELVIEW);
+	gl.LoadIdentity();
+
+	gl.Disable(GL_DEPTH_TEST);
+	gl.Enable(GL_TEXTURE_2D);
+
+	gl.Disable(GL_TEXTURE_GEN_S);
+	gl.Disable(GL_TEXTURE_GEN_T);
+
+	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	gl.Begin(GL_POLYGON);
+		gl.TexCoord2f(0, 0);  gl.Vertex2f(0, 0);
+		gl.TexCoord2f(1, 0);  gl.Vertex2f(ShadowTexWidth, 0);
+		gl.TexCoord2f(1, 1);  gl.Vertex2f(ShadowTexWidth, ShadowTexHeight);
+		gl.TexCoord2f(0, 1);  gl.Vertex2f(0, ShadowTexHeight);
+	gl.End();
+
+	gl.Disable(GL_TEXTURE_2D);
+	gl.Enable(GL_DEPTH_TEST);
+
+	/*gl.DeleteTextures(1, &tid);*/
+#endif
 }
 
 #else
