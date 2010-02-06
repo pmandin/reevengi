@@ -571,7 +571,8 @@ static void copyDepthToColor(void)
 	GLsizei winHeight = video.viewport.h;
         GLfloat zBlack = 1.0f;
 	GLfloat zWhite = 0.0f;
-	 
+
+	gl.Disable(GL_CULL_FACE);
 #if 0
    GLfloat *depthValues;
 
