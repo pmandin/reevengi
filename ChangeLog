@@ -1,6 +1,7 @@
 v 0.15
 
-- Preliminary support for background masks.
+- Preliminary support for background masks (togglable).
+- Add toggle to display depth buffer.
 
 v 0.14
 

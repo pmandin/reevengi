@@ -82,6 +82,7 @@ F2		wireframe rendering for model
 F3		filled rendering for model
 F4		gouraud rendering for model
 F5		textured rendering for model
+F6		toggle between depth and color buffer
 Alt+Enter	toggle between fullscreen and windowed mode.
 
 A		decrement gamma
