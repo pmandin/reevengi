@@ -38,6 +38,9 @@ enum {
 
 #define TRI_LIST_SIZE 16
 
+#define RENDER_Z_NEAR	10.0f
+#define RENDER_Z_FAR	100000.0f
+
 /*--- Types ---*/
 
 typedef struct {

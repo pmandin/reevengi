@@ -519,7 +519,7 @@ void view_background_draw(void)
 		refresh_player_pos = 0;
 	}
 
-	render.set_projection(60.0f, 4.0f/3.0f, 10.0f, 100000.0f);
+	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
 	render.set_modelview(
 		room_camera.from_x, room_camera.from_y, room_camera.from_z,
 		room_camera.to_x, room_camera.to_y, room_camera.to_z,

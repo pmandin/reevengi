@@ -174,7 +174,8 @@ static void swapBuffers(video_t *this)
 {
 	render.endFrame(&render);
 
-	if (0) {
+#if 0
+	{
 		GLint viewport[4];
 		GLdouble modelview[16];
 		GLdouble projection[16];
@@ -188,7 +189,7 @@ static void swapBuffers(video_t *this)
 
 		gl.MatrixMode(GL_PROJECTION);
 		gl.LoadIdentity();
-		gluPerspective(60.0f, 4.0f/3.0f, 10.0f, 100000.0f);
+		gluPerspective(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
 
 		gl.MatrixMode(GL_MODELVIEW);
 		gl.LoadIdentity();
@@ -215,6 +216,7 @@ static void swapBuffers(video_t *this)
 			}
 		}
 	}
+#endif
 
 	GLenum errCode = gl.GetError();
 	if (errCode != GL_NO_ERROR) {
