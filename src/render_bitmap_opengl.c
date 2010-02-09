@@ -123,6 +123,14 @@ f/(f-n) * 1-n/z
 */
 		bitmap_depth = 1.0f - (RENDER_Z_NEAR / render.bitmap.depth);
 		bitmap_depth *= RENDER_Z_FAR / (RENDER_Z_FAR - RENDER_Z_NEAR);
+
+		/* Avoid some holes */
+		render.bitmap.dstRect.w ++;
+		render.bitmap.dstRect.h ++;
+
+		if (render.bitmap.masking) {
+			gl.ColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		}
 	} else {
 		gl.Disable(GL_DEPTH_TEST);
 		bitmap_depth = 0.5f;
@@ -173,6 +181,7 @@ f/(f-n) * 1-n/z
 
 	gl.Disable(gl_tex->textureTarget);
 	gl.Enable(GL_DEPTH_TEST);
+	gl.ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 #endif /* ENABLE_OPENGL */

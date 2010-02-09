@@ -50,6 +50,7 @@ static void clipSource(int x, int y, int w, int h);
 static void clipDest(int x, int y, int w, int h);
 static void setScaler(int srcw, int srch, int dstw, int dsth);
 static void setDepth(int enabled, float depth);
+static void setMasking(int enabled);
 static void drawImage(video_t *video);
 
 static void drawImageDepth();
@@ -58,10 +59,13 @@ static void drawImageDepth();
 
 void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 {
+	memset(render_bitmap, 0, sizeof(render_bitmap_t));
+
 	render.bitmap.clipSource = clipSource;
 	render.bitmap.clipDest = clipDest;
 	render.bitmap.setScaler = setScaler;
 	render.bitmap.setDepth = setDepth;
+	render.bitmap.setMasking = setMasking;
 	render.bitmap.drawImage = drawImage;
 }
 
@@ -113,6 +117,11 @@ static void setDepth(int enabled, float depth)
 {
 	render.bitmap.depth_test = enabled;
 	render.bitmap.depth = depth;
+}
+
+static void setMasking(int enabled)
+{
+	render.bitmap.masking = enabled;
 }
 
 static void drawImage(video_t *video)

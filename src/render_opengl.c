@@ -637,17 +637,22 @@ static void copyDepthToColor(void)
 	GLint ShadowTexHeight = 512 /*winHeight*/;
 	GLuint tid;
 
-	/*gl.GenTextures(1, &tid);
-	gl.BindTexture(GL_TEXTURE_2D, tid);*/
+	gl.GenTextures(1, &tid);
+	gl.BindTexture(GL_TEXTURE_2D, tid);
+
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+ 	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	GLuint *depth = (GLuint *)
 		malloc(ShadowTexWidth * ShadowTexHeight * sizeof(GLuint));
 	/*assert(depth);*/
 	gl.ReadPixels(0, 0, ShadowTexWidth, ShadowTexHeight,
 		GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, depth);
-	gl.TexImage2D(GL_TEXTURE_2D, 0, /*GL_LUMINANCE*/ GL_RGBA,
+	gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		ShadowTexWidth, ShadowTexHeight, 0,
-		/*GL_LUMINANCE*/ GL_RGBA, GL_UNSIGNED_BYTE /*GL_UNSIGNED_INT*/, depth);
+		GL_RGBA, GL_UNSIGNED_BYTE, depth);
 	free(depth);
 
 	gl.MatrixMode(GL_TEXTURE);
@@ -655,7 +660,7 @@ static void copyDepthToColor(void)
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gl.Ortho(0.0f, video.viewport.w, 0.0f, video.viewport.h, 0.0f, 1.0f);
+	gl.Ortho(0.0f, video.viewport.w, 0.0f, video.viewport.h, -1.0f, 1.0f);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
@@ -669,12 +674,7 @@ static void copyDepthToColor(void)
 	gl.Disable(GL_DEPTH_TEST);
 	gl.Enable(GL_TEXTURE_2D);
 
-	gl.Disable(GL_TEXTURE_GEN_S);
-	gl.Disable(GL_TEXTURE_GEN_T);
-
-	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	gl.Begin(GL_POLYGON);
+	gl.Begin(GL_QUADS);
 		gl.TexCoord2f(0.0f, 0.0f);  gl.Vertex2f(0.0f, 0.0f);
 		gl.TexCoord2f(1.0f, 0.0f);  gl.Vertex2f(1.0f, 0.0f);
 		gl.TexCoord2f(1.0f, 1.0f);  gl.Vertex2f(1.0f, 1.0f);
@@ -684,7 +684,7 @@ static void copyDepthToColor(void)
 	gl.Disable(GL_TEXTURE_2D);
 	gl.Enable(GL_DEPTH_TEST);
 
-	/*gl.DeleteTextures(1, &tid);*/
+	gl.DeleteTextures(1, &tid);
 #endif
 }
 

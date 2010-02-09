@@ -41,13 +41,16 @@ struct render_bitmap_s {
 	/* Set depth and enabled or not */
 	void (*setDepth)(int enabled, float depth);
 
+	/* Bitmap is a mask, do not draw it */
+	void (*setMasking)(int enabled);
+
 	/* Draw scaled image */
 	void (*drawImage)(video_t *video);
 
 	SDL_Rect srcRect, dstRect;
 	int srcWidth, srcHeight, dstWidth, dstHeight;
 
-	int depth_test;
+	int depth_test, masking;
 	float depth;
 };
 

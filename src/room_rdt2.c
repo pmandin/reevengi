@@ -479,6 +479,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 	render.set_dithering(0);
 	render.set_useDirtyRects(0);
 	render.set_texture(0, game_state.bg_mask);
+	render.bitmap.setMasking(1);
 	render.bitmap.setScaler(
 		game_state.bg_mask->w, game_state.bg_mask->h,
 		(game_state.bg_mask->w*video.viewport.w)/320,
@@ -547,6 +548,7 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 	}
 
 	render.bitmap.setDepth(0, 0.0f);
+	render.bitmap.setMasking(0);
 	render.set_blending(0);
 	render.set_dithering(0);
 }
