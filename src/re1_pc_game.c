@@ -178,7 +178,7 @@ static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1pcgame_bgmask, re1_stage,
+	sprintf(filepath, re1pcgame_bgmask, re1_stage-1,
 		game_state.num_room, game_state.num_camera);
 
 	logMsg(1, "pak: Start loading %s ...\n", filepath);

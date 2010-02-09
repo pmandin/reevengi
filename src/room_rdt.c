@@ -58,6 +58,8 @@ static void rdt_getCamswitch(room_t *this, int num_camswitch, room_camswitch_t *
 static int rdt_getNumBoundaries(room_t *this);
 static void rdt_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
+static void rdt_drawMasks(room_t *this, int num_camera);
+
 /*--- Functions ---*/
 
 void room_rdt_init(room_t *this)
@@ -72,6 +74,8 @@ void room_rdt_init(room_t *this)
 		this->getCamera = rdt_getCamera;
 		this->getCamswitch = rdt_getCamswitch;
 		this->getBoundary = rdt_getBoundary;
+
+		this->drawMasks = rdt_drawMasks;
 
 		room_rdt_scriptInit(this);
 	}
@@ -196,4 +200,8 @@ static void rdt_getBoundary(room_t *this, int num_boundary, room_camswitch_t *ro
 	room_camswitch->y[2] = SDL_SwapLE16(camswitch_array[i].y3);
 	room_camswitch->x[3] = SDL_SwapLE16(camswitch_array[i].x4);
 	room_camswitch->y[3] = SDL_SwapLE16(camswitch_array[i].y4);
+}
+
+static void rdt_drawMasks(room_t *this, int num_camera)
+{
 }
