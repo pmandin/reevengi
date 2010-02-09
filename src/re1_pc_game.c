@@ -44,6 +44,7 @@
 /*--- Constant ---*/
 
 static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
+static const char *re1pcgame_bgmask = "horr/usa/objspr/osp%02d%02d%d.pak";
 static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x0.rdt";
 static const char *re1pcgame_model1 = "horr/usa/enemy/char1%d.emd";
 static const char *re1pcgame_model2 = "horr/usa/enemy/em10%02x.emd";
@@ -87,7 +88,9 @@ static const char *re1pcgame_movies[] = {
 static void re1pcgame_shutdown(void);
 
 static void re1pcgame_loadbackground(void);
+static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage);
 static int re1pcgame_load_pak_bg(const char *filename, int row_offset);
+static int re1pcgame_load_pak_bgmask(const char *filename, int row_offset);
 
 static void re1pcgame_loadroom(void);
 static int re1pcgame_loadroom_rdt(const char *filename);
@@ -162,6 +165,29 @@ void re1pcgame_loadbackground(void)
 		filepath);
 
 	free(filepath);
+
+	re1pcgame_loadbackground_mask(row_offset, re1_stage);
+}
+
+static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re1pcgame_bgmask)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re1pcgame_bgmask, re1_stage,
+		game_state.num_room, game_state.num_camera);
+
+	logMsg(1, "pak: Start loading %s ...\n", filepath);
+
+	logMsg(1, "pak: %s loading %s ...\n",
+		re1pcgame_load_pak_bgmask(filepath, row_offset) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
 }
 
 int re1pcgame_load_pak_bg(const char *filename, int row_offset)
@@ -184,6 +210,40 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 					game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
 					if (game_state.background) {
 						game_state.background->load_from_surf(game_state.background, image);
+						retval = 1;
+					}
+					SDL_FreeSurface(image);
+				}
+				SDL_FreeRW(tim_src);
+			}
+			free(dstBuffer);
+		}
+		SDL_RWclose(src);
+	}
+
+	return retval;
+}
+
+int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
+{
+	SDL_RWops *src;
+	int retval = 0;
+	
+	src = FS_makeRWops(filename);
+	if (src) {
+		Uint8 *dstBuffer;
+		int dstBufLen;
+
+		pak_depack(src, &dstBuffer, &dstBufLen);
+
+		if (dstBuffer && dstBufLen) {
+			SDL_RWops *tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
+			if (tim_src) {
+				SDL_Surface *image = background_tim_load(tim_src, row_offset);
+				if (image) {
+					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+					if (game_state.bg_mask) {
+						game_state.bg_mask->load_from_surf(game_state.bg_mask, image);
 						retval = 1;
 					}
 					SDL_FreeSurface(image);
