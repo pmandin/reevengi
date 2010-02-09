@@ -115,15 +115,19 @@ static void drawImage(video_t *video)
 	gl.Enable(gl_tex->textureTarget);
 	if (render.bitmap.depth_test) {
 		gl.Enable(GL_DEPTH_TEST);
-		bitmap_depth = render.bitmap.depth;
+/*
+f/(f-n) * 1-n/z
+*/
+		bitmap_depth = 1.0f - (RENDER_Z_NEAR / render.bitmap.depth);
+		bitmap_depth *= RENDER_Z_FAR / (RENDER_Z_FAR - RENDER_Z_NEAR);
 	} else {
 		gl.Disable(GL_DEPTH_TEST);
-		bitmap_depth = 50000.0f;
+		bitmap_depth = 0.5f;
 	}
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gl.Ortho(0.0f, video->width, video->height, 0.0f, 1.0f, 100000.0f);
+	gl.Ortho(0.0f, video->width, video->height, 0.0f, 0.0f, 1.0f);
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
