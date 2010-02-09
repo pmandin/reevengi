@@ -112,6 +112,9 @@ static void drawImage(video_t *video)
 		return;
 	}
 
+	render.bitmap.dstRect.x -= video->viewport.x;
+	render.bitmap.dstRect.y -= video->viewport.y;
+
 	gl.Enable(gl_tex->textureTarget);
 	if (render.bitmap.depth_test) {
 		gl.Enable(GL_DEPTH_TEST);
@@ -127,7 +130,7 @@ f/(f-n) * 1-n/z
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gl.Ortho(0.0f, video->width, video->height, 0.0f, 0.0f, 1.0f);
+	gl.Ortho(0.0f, video->viewport.w, video->viewport.h, 0.0f, 0.0f, 1.0f);
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();

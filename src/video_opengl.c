@@ -185,10 +185,11 @@ static void swapBuffers(video_t *this)
 		static int pmx=-1,pmy=-1;
 
 		SDL_GetMouseState(&mx, &my);
-		my = video.viewport.h - my;
+		my = this->height - my;
 
 		gl.MatrixMode(GL_PROJECTION);
 		gl.LoadIdentity();
+		/*gl.Ortho(0.0f, this->width, this->height, 0.0f, -1.0f, 1.0f);*/
 		gluPerspective(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
 
 		gl.MatrixMode(GL_MODELVIEW);

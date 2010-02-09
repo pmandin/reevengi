@@ -651,10 +651,16 @@ static void copyDepthToColor(void)
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gl.Ortho(0, winWidth, 0, winHeight, -1, 1);
+	gl.Ortho(0.0f, video.viewport.w, 0.0f, video.viewport.h, 0.0f, 1.0f);
 
 	gl.MatrixMode(GL_MODELVIEW);
 	gl.LoadIdentity();
+	gl.Translatef((float) -video.viewport.x,
+		(float) -video.viewport.y,
+		0.0f);
+	gl.Scalef((float) ShadowTexWidth,
+		(float) ShadowTexHeight,
+		1.0f);
 
 	gl.Disable(GL_DEPTH_TEST);
 	gl.Enable(GL_TEXTURE_2D);
@@ -665,10 +671,10 @@ static void copyDepthToColor(void)
 	gl.TexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	gl.Begin(GL_POLYGON);
-		gl.TexCoord2f(0, 0);  gl.Vertex2f(0, 0);
-		gl.TexCoord2f(1, 0);  gl.Vertex2f(ShadowTexWidth, 0);
-		gl.TexCoord2f(1, 1);  gl.Vertex2f(ShadowTexWidth, ShadowTexHeight);
-		gl.TexCoord2f(0, 1);  gl.Vertex2f(0, ShadowTexHeight);
+		gl.TexCoord2f(0.0f, 0.0f);  gl.Vertex2f(0.0f, 0.0f);
+		gl.TexCoord2f(1.0f, 0.0f);  gl.Vertex2f(1.0f, 0.0f);
+		gl.TexCoord2f(1.0f, 1.0f);  gl.Vertex2f(1.0f, 1.0f);
+		gl.TexCoord2f(0.0f, 1.0f);  gl.Vertex2f(0.0f, 1.0f);
 	gl.End();
 
 	gl.Disable(GL_TEXTURE_2D);
