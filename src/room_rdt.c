@@ -315,7 +315,7 @@ static void rdt_drawMasks(room_t *this, int num_camera)
 				video.viewport.x+scaled_dst_x,
 				video.viewport.y+scaled_dst_y,
 				scaled_dst_w,scaled_dst_h);
-			render.bitmap.setDepth(1, (float) depth * 32.0f);
+			render.bitmap.setDepth(1, (float) depth * 16.0f);
 			render.bitmap.drawImage(&video);
 		}
 

@@ -237,19 +237,22 @@ int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
 		pak_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			SDL_RWops *tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
+			/* FIXME: take into account row_offset to match background */
+
+			/*SDL_RWops *tim_src = SDL_RWFromMem(dstBuffer, dstBufLen);
 			if (tim_src) {
 				SDL_Surface *image = background_tim_load(tim_src, row_offset);
-				if (image) {
+				if (image) {*/
 					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
 					if (game_state.bg_mask) {
-						game_state.bg_mask->load_from_surf(game_state.bg_mask, image);
+						/*game_state.bg_mask->load_from_surf(game_state.bg_mask, image);*/
+						game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
 						retval = 1;
 					}
-					SDL_FreeSurface(image);
+				/*	SDL_FreeSurface(image);
 				}
 				SDL_FreeRW(tim_src);
-			}
+			}*/
 			free(dstBuffer);
 		}
 		SDL_RWclose(src);
