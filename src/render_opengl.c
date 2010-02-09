@@ -572,6 +572,10 @@ static void copyDepthToColor(void)
         GLfloat zBlack = 1.0f;
 	GLfloat zWhite = 0.0f;
 
+	if ((winWidth>1024) || (winHeight>512)) {
+		return;
+	}
+
 	gl.Disable(GL_CULL_FACE);
 #if 0
    GLfloat *depthValues;
