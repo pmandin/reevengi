@@ -184,6 +184,9 @@ static void drawImage(video_t *video)
 	}
 
 	if (render.bitmap.depth_test) {
+		render.bitmap.dstRect.x -= video->viewport.x;
+		render.bitmap.dstRect.y -= video->viewport.y;
+
 		drawImageDepth();
 		return;
 	}
