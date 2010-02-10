@@ -88,6 +88,7 @@ static int rdt_getNumBoundaries(room_t *this);
 static void rdt_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_camswitch);
 
 static void rdt_drawMasks(room_t *this, int num_camera);
+static void rdt_loadMasks(room_t *this, int num_camera);
 
 /*--- Functions ---*/
 
@@ -239,6 +240,13 @@ static void rdt_drawMasks(room_t *this, int num_camera)
 	rdt_mask_offset_t *mask_offsets;
 	int num_offset;
 
+	if (num_camera>=this->num_cameras) {
+		return;
+	}
+
+	if (game_state.bg_mask==NULL) {
+		rdt_loadMasks(this, num_camera);
+	}
 	if (game_state.bg_mask==NULL) {
 		return;
 	}
@@ -326,4 +334,25 @@ static void rdt_drawMasks(room_t *this, int num_camera)
 	render.bitmap.setMasking(0);
 	render.set_blending(0);
 	render.set_dithering(0);
+}
+
+static void rdt_loadMasks(room_t *this, int num_camera)
+{
+	Uint32 offset;
+	rdt_camera_pos_t *cam_array;
+
+	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[sizeof(rdt1_header_t)];
+
+	offset = SDL_SwapLE32(cam_array[num_camera].tim_offset);
+	if (offset == 0) {
+		return;
+	}
+
+	game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+	if (game_state.bg_mask) {
+		Uint8 *tim_hdr = (Uint8 *) &((Uint8 *) this->file)[offset];
+
+		game_state.bg_mask->load_from_tim(game_state.bg_mask, tim_hdr);
+		logMsg(1, "rdt: Loaded masks from embedded TIM image\n");
+	}
 }

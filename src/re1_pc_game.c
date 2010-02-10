@@ -166,7 +166,7 @@ void re1pcgame_loadbackground(void)
 
 	free(filepath);
 
-	re1pcgame_loadbackground_mask(row_offset, re1_stage);
+	/*re1pcgame_loadbackground_mask(row_offset, re1_stage);*/
 }
 
 static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)

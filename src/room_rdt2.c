@@ -463,6 +463,10 @@ static void rdt2_drawMasks(room_t *this, int num_camera)
 	rdt_mask_offset_t *mask_offsets;
 	int num_offset;
 
+	if (num_camera>=this->num_cameras) {
+		return;
+	}
+
 	if (game_state.bg_mask==NULL) {
 		return;
 	}
