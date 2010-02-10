@@ -153,6 +153,20 @@ static int re3ps1game_loadroom_ard(const char *filename)
 
 	count = ((ard_header_t *) ard_file)->count;
 	count = SDL_SwapLE32(count);
+/*
+	offset = 0x800;
+	len = 0;
+	ard_object = (ard_object_t *) (&ard_file[8]);
+	for (i=0; i<count; i++) {
+		logMsg(1, "ard: object %d at offset 0x%08x\n", i,offset);
+		len = SDL_SwapLE32(ard_object->length);
+
+		offset += len;
+		offset |= 0x7ff;
+		offset ++;
+		ard_object++;
+	}
+*/
 	offset = 0x800;
 	len = 0;
 	ard_object = (ard_object_t *) (&ard_file[8]);
