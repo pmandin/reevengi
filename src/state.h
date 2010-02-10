@@ -90,6 +90,7 @@ typedef struct {
 
 	/*--- Private functions, for backend ---*/
 	void (*priv_load_background)(void);
+	void (*priv_load_bgmask)(void);
 	void (*priv_load_room)(void);
 	render_skel_t *(*priv_load_model)(int num_model);
 	void (*priv_shutdown)(void);

@@ -187,6 +187,10 @@ static void state_loadbackground(void)
 	if (game_state.priv_load_background) {
 		(*game_state.priv_load_background)();
 	}
+
+	if (game_state.priv_load_bgmask) {
+		(*game_state.priv_load_bgmask)();
+	}
 }
 
 void state_unloadbackground(void)
@@ -223,6 +227,8 @@ static void state_loadroom(void)
 
 static void state_unloadroom(void)
 {
+	state_unloadbackground();
+
 	if (game_state.room) {
 		game_state.room->shutdown(game_state.room);
 		game_state.room = NULL;

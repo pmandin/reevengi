@@ -78,6 +78,7 @@ static render_skel_t *re2pcdemo_load_model(int num_model);
 void re2pcdemo_init(state_t *game_state)
 {
 	game_state->priv_load_background = re2pcdemo_loadbackground;
+	game_state->priv_load_bgmask = re2pcdemo_loadbackground_mask;
 	game_state->priv_load_room = re2pcdemo_loadroom;
 	game_state->priv_shutdown = re2pcdemo_shutdown;
 
@@ -108,29 +109,6 @@ static void re2pcdemo_loadbackground(void)
 
 	logMsg(1, "adt: %s loading %s ...\n",
 		re2pcdemo_load_adt_bg(filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-
-	re2pcdemo_loadbackground_mask();
-}
-
-static void re2pcdemo_loadbackground_mask(void)
-{
-	char *filepath;
-
-	filepath = malloc(strlen(re2pcdemo_bgmask)+8);
-	if (!filepath) {
-		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
-	}
-	sprintf(filepath, re2pcdemo_bgmask, game_state.num_stage, game_state.num_stage,
-		game_state.num_room, game_state.num_camera);
-
-	logMsg(1, "adt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "adt: %s loading %s ...\n",
-		re2pcdemo_load_adt_bgmask(filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
@@ -166,6 +144,27 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 	}
 
 	return retval;
+}
+
+static void re2pcdemo_loadbackground_mask(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re2pcdemo_bgmask)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re2pcdemo_bgmask, game_state.num_stage, game_state.num_stage,
+		game_state.num_room, game_state.num_camera);
+
+	logMsg(1, "adt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "adt: %s loading %s ...\n",
+		re2pcdemo_load_adt_bgmask(filepath) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
 }
 
 static int re2pcdemo_load_adt_bgmask(const char *filename)
