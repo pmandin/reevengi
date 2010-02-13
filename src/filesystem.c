@@ -47,9 +47,37 @@
 
 int FS_Init(char *argv0)
 {
+	const char *userdir, *dirsep;
+	char *pathname;
+	int pathlen;
+
 	if (!PHYSFS_init(argv0)) {
 		fprintf(stderr,"fs: PHYSFS_init() failed.\n  reason: %s.\n", PHYSFS_getLastError());
 		return 0;
+	}
+
+	/* Set write directory */
+	userdir = PHYSFS_getUserDir();
+
+	pathlen = strlen(userdir)+strlen(PACKAGE_NAME)+2;
+	pathname = (char *) malloc(pathlen);
+	if (pathname) {
+		sprintf(pathname, "%s.%s", userdir, PACKAGE_NAME);
+		if (!PHYSFS_setWriteDir(pathname)) {
+			/* Create if not already exists */
+			sprintf(pathname, ".%s", PACKAGE_NAME);
+
+			if (PHYSFS_setWriteDir(userdir) && PHYSFS_mkdir(pathname)) {
+				sprintf(pathname, "%s.%s", userdir, PACKAGE_NAME);
+				if (PHYSFS_setWriteDir(pathname)) {
+					logMsg(1, "fs: Set write directory to %s\n", pathname);
+				}
+			}
+		} else {
+			logMsg(1, "fs: Set write directory to %s\n", pathname);
+		}
+
+		free(pathname);
 	}
 
 	return 1;
