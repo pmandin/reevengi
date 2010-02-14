@@ -48,9 +48,16 @@
 
 /*--- Types ---*/
 
+typedef struct {
+	Uint32 unknown0;
+	Uint32 length;
+	Uint32 unknown1;
+} sld_header_t;
+
 /*--- Constant ---*/
 
 static const char *re3pc_bg = "data_a/bss/r%d%02x%02x.jpg";
+static const char *re3pc_bgmask = "data_a/bss/r%d%02x.sld";
 static const char *re3pc_room = "data_%c/rdt/r%d%02x.rdt";
 static const char *rofs_dat = "%s/rofs%d.dat";
 static const char *rofs_cap_dat = "%s/Rofs%d.dat";
@@ -110,6 +117,9 @@ static void re3pc_shutdown(void);
 static void re3pc_loadbackground(void);
 static int re3pc_load_jpg_bg(const char *filename);
 
+static void re3pc_loadbackground_mask(void);
+static int re3pc_load_tim_bgmask(const char *filename);
+
 static void re3pc_loadroom(void);
 static int re3pc_loadroom_rdt(const char *filename);
 
@@ -135,6 +145,7 @@ void re3pc_init(state_t *game_state)
 	}
 
 	game_state->priv_load_background = re3pc_loadbackground;
+	game_state->priv_load_bgmask = re3pc_loadbackground_mask;
 	game_state->priv_load_room = re3pc_loadroom;
 	game_state->priv_shutdown = re3pc_shutdown;
 
@@ -201,6 +212,106 @@ int re3pc_load_jpg_bg(const char *filename)
 #else
 	return 0;
 #endif
+}
+
+void re3pc_loadbackground_mask(void)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re3pc_bgmask)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re3pc_bgmask, game_state.num_stage, game_state.num_room);
+
+	logMsg(1, "sld: Start loading %s ...\n", filepath);
+
+	logMsg(1, "sld: %s loading %s ...\n",
+		re3pc_load_tim_bgmask(filepath) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
+}
+
+int re3pc_load_tim_bgmask(const char *filename)
+{
+	SDL_RWops *src;
+	int retval = 0;
+
+	src = FS_makeRWops(filename);
+	if (src) {
+		sld_header_t sld_hdr;
+		int num_file = 0;
+
+		while (SDL_RWread(src, &sld_hdr, sizeof(sld_header_t),1)) {
+			Uint8 *dstBuffer;
+			int dstBufLen = SDL_SwapLE32(sld_hdr.length);
+			logMsg(1, "sld: len 0x%08x\n", dstBufLen);
+
+			/* Read file we need */
+			if (num_file == game_state.num_camera) {
+				dstBuffer = (Uint8 *) malloc(dstBufLen);
+				if (dstBuffer) {
+					int i, src_offset, dst_offset;
+					
+					SDL_RWread(src, dstBuffer, dstBufLen-sizeof(sld_header_t), 1);
+
+					/* Descramble TIM header */
+					src_offset = dst_offset = 0;
+					for (i=0; i<6 ;i++) {
+						if (dstBuffer[src_offset] & 0x80) {
+							int num_bytes = dstBuffer[src_offset++] & 15;
+							int k;
+							
+							for (k=0; k<num_bytes; k++) {
+								dstBuffer[dst_offset++] = dstBuffer[src_offset++];
+							}
+						} else {
+							src_offset++;
+							if (dstBuffer[src_offset++] == 0x0e) {
+								dstBuffer[dst_offset++] = 0;
+							} else {
+								dstBuffer[dst_offset++] = 0;
+								dstBuffer[dst_offset++] = 0;
+								dstBuffer[dst_offset++] = 0;
+							}
+						}
+					}
+
+					/* Copy rest of file */
+					for (i=src_offset; i<dstBufLen-sizeof(sld_header_t); i++) {
+						dstBuffer[dst_offset++] = dstBuffer[i];
+					}
+
+					/*printf("%d / %d\n", src_offset, dst_offset);
+					for (i=0; i<32; i++) {
+						printf(" 0x%02x", dstBuffer[i]);
+					}*/
+
+					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+					if (game_state.bg_mask) {
+						game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
+						game_state.bg_mask->shutdown(game_state.bg_mask);
+						game_state.bg_mask=NULL;
+						retval = 1;
+					}
+
+					free(dstBuffer);
+				}
+
+				break;
+			}
+
+			/* Next file */
+			SDL_RWseek(src, dstBufLen-sizeof(sld_header_t), RW_SEEK_CUR);
+			num_file++;
+		}
+
+		SDL_RWclose(src);
+	}
+
+	return retval;
 }
 
 static void re3pc_loadroom(void)
