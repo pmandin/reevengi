@@ -196,7 +196,7 @@ static void draw_endFrame(draw_t *this)
 	}
 
 	dst += video.viewport.y * surf->pitch;
-	dst += video.viewport.x;
+	dst += video.viewport.x * surf->format->BytesPerPixel;
 
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++) {
