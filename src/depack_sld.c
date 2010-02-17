@@ -60,7 +60,7 @@ void sld_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 			SDL_RWread(src, &start, sizeof(Uint8), 1);
 			tmp |= start;
 
-			offset = (start & 0x7ff)+4;
+			offset = (tmp & 0x7ff)+4;
 			count = (tmp>>11)+2;
 
 			if (dstIndex+count>buflen) {
@@ -68,7 +68,9 @@ void sld_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 				dst = realloc(dst, buflen);
 			}
 
-			memcpy(&dst[dstIndex], &dst[dstIndex-offset], count);
+			for (j=0; j<count; j++) {
+				dst[dstIndex+j] = dst[dstIndex-offset+j];
+			}
 			dstIndex += count;
 		}
 	}

@@ -40,6 +40,7 @@
 #include "model_emd3.h"
 #include "log.h"
 #include "room_rdt2.h"
+#include "depack_sld.h"
 
 /*--- Defines ---*/
 
@@ -51,7 +52,6 @@
 typedef struct {
 	Uint32 unknown0;
 	Uint32 length;
-	Uint32 unknown1;
 } sld_header_t;
 
 /*--- Constant ---*/
@@ -239,61 +239,39 @@ int re3pc_load_tim_bgmask(const char *filename)
 	SDL_RWops *src;
 	int retval = 0;
 
+#if 1
+	PHYSFS_sint64 length;
+	void *file;
+
+	file = FS_Load(filename, &length);
+	if (!file) {
+		return 0;
+	}
+
+	src = SDL_RWFromMem(file, length);
+#else
+	/* FIXME: physfs rofs driver is buggy with seek */
 	src = FS_makeRWops(filename);
+#endif
 	if (src) {
 		sld_header_t sld_hdr;
 		int num_file = 0;
+		Uint32 offset = 0;
 
 		while (SDL_RWread(src, &sld_hdr, sizeof(sld_header_t),1)) {
-			Uint8 *dstBuffer;
-			int dstBufLen = SDL_SwapLE32(sld_hdr.length);
-			logMsg(1, "sld: len 0x%08x\n", dstBufLen);
+			int fileLen = SDL_SwapLE32(sld_hdr.length);
 
 			/* Read file we need */
 			if (num_file == game_state.num_camera) {
-				dstBuffer = (Uint8 *) malloc(dstBufLen);
-				if (dstBuffer) {
-					int i, src_offset, dst_offset;
-					
-					SDL_RWread(src, dstBuffer, dstBufLen-sizeof(sld_header_t), 1);
+				Uint8 *dstBuffer;
+				int dstBufLen;
 
-					/* Descramble TIM header */
-					src_offset = dst_offset = 0;
-					for (i=0; i<6 ;i++) {
-						if (dstBuffer[src_offset] & 0x80) {
-							int num_bytes = dstBuffer[src_offset++] & 15;
-							int k;
-							
-							for (k=0; k<num_bytes; k++) {
-								dstBuffer[dst_offset++] = dstBuffer[src_offset++];
-							}
-						} else {
-							src_offset++;
-							if (dstBuffer[src_offset++] == 0x0e) {
-								dstBuffer[dst_offset++] = 0;
-							} else {
-								dstBuffer[dst_offset++] = 0;
-								dstBuffer[dst_offset++] = 0;
-								dstBuffer[dst_offset++] = 0;
-							}
-						}
-					}
-
-					/* Copy rest of file */
-					for (i=src_offset; i<dstBufLen-sizeof(sld_header_t); i++) {
-						dstBuffer[dst_offset++] = dstBuffer[i];
-					}
-
-					/*printf("%d / %d\n", src_offset, dst_offset);
-					for (i=0; i<32; i++) {
-						printf(" 0x%02x", dstBuffer[i]);
-					}*/
+				sld_depack(src, &dstBuffer, &dstBufLen);
+				if (dstBuffer && dstBufLen) {
 
 					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
 					if (game_state.bg_mask) {
 						game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
-						game_state.bg_mask->shutdown(game_state.bg_mask);
-						game_state.bg_mask=NULL;
 						retval = 1;
 					}
 
@@ -304,12 +282,16 @@ int re3pc_load_tim_bgmask(const char *filename)
 			}
 
 			/* Next file */
-			SDL_RWseek(src, dstBufLen-sizeof(sld_header_t), RW_SEEK_CUR);
+			offset += fileLen;
+			SDL_RWseek(src, offset, RW_SEEK_SET);
 			num_file++;
 		}
 
 		SDL_RWclose(src);
 	}
+#if 1
+	free(file);
+#endif
 
 	return retval;
 }
