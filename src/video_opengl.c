@@ -47,10 +47,6 @@ static void setVideoMode(video_t *this, int width, int height, int bpp);
 static void swapBuffers(video_t *this);
 static void screenShot(video_t *this);
 
-static void
-ShowDepthBuffer( GLsizei winWidth, GLsizei winHeight,
-                 GLfloat zBlack, GLfloat zWhite );
-
 extern int render_masks;
 
 /*--- Functions ---*/

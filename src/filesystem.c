@@ -47,7 +47,7 @@
 
 int FS_Init(char *argv0)
 {
-	const char *userdir, *dirsep;
+	const char *userdir;
 	char *pathname;
 	int pathlen;
 

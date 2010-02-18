@@ -358,7 +358,7 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4])
 /* Clip a segment against a plane, return clipped point */
 static void mtx_clipSegPlane(float points[4][4], int num_clipped, float clip[4])
 {
-	float num,den, u, x,y,z,w;
+	float num,den, u;
 
 	num =	clip[0]*points[0][0]+
 		clip[1]*points[0][1]+

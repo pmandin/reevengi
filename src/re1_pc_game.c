@@ -44,7 +44,7 @@
 /*--- Constant ---*/
 
 static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
-static const char *re1pcgame_bgmask = "horr/usa/objspr/osp%02d%02d%d.pak";
+/*static const char *re1pcgame_bgmask = "horr/usa/objspr/osp%02d%02d%d.pak";*/
 static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x0.rdt";
 static const char *re1pcgame_model1 = "horr/usa/enemy/char1%d.emd";
 static const char *re1pcgame_model2 = "horr/usa/enemy/em10%02x.emd";
@@ -88,9 +88,9 @@ static const char *re1pcgame_movies[] = {
 static void re1pcgame_shutdown(void);
 
 static void re1pcgame_loadbackground(void);
-static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage);
+/*static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage);*/
 static int re1pcgame_load_pak_bg(const char *filename, int row_offset);
-static int re1pcgame_load_pak_bgmask(const char *filename, int row_offset);
+/*static int re1pcgame_load_pak_bgmask(const char *filename, int row_offset);*/
 
 static void re1pcgame_loadroom(void);
 static int re1pcgame_loadroom_rdt(const char *filename);
@@ -169,6 +169,7 @@ void re1pcgame_loadbackground(void)
 	/*re1pcgame_loadbackground_mask(row_offset, re1_stage);*/
 }
 
+#if 0
 static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)
 {
 	char *filepath;
@@ -189,6 +190,7 @@ static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)
 
 	free(filepath);
 }
+#endif
 
 int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 {
@@ -224,6 +226,7 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 	return retval;
 }
 
+#if 0
 int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
 {
 	SDL_RWops *src;
@@ -260,6 +263,7 @@ int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
 
 	return retval;
 }
+#endif
 
 static void re1pcgame_loadroom(void)
 {

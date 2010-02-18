@@ -114,7 +114,7 @@ static void upload(render_mesh_t *this)
 {
 	render_mesh_gl_t *gl_mesh = (render_mesh_gl_t *) this;
 	int i, j, prevpal=0;
-	vertex_t v[4];
+	/*vertex_t v[4];*/
 	Sint16 *srcVtx = (Sint16 *) this->vertex.data;
 	Sint16 *srcTx = (Sint16 *) this->texcoord.data;
 
