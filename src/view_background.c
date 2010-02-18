@@ -95,6 +95,8 @@ static int reload_model = 1;
 
 static int num_model = 0;
 static render_skel_t *player_model = NULL;
+static int render_model = RENDER_WIREFRAME;
+static int prev_render_model = -1;
 
 static int render_grid = 0;
 static int render_restore = 0;
@@ -273,28 +275,16 @@ void view_background_input(SDL_Event *event)
 				processEnterDoor();
 				break;
 			case KEY_RENDER_WIREFRAME:
-				render.set_render(&render, RENDER_WIREFRAME);
-				if (player_model) {
-					player_model->download(player_model);
-				}
+				render_model = RENDER_WIREFRAME;
 				break;
 			case KEY_RENDER_FILLED:
-				render.set_render(&render, RENDER_FILLED);
-				if (player_model) {
-					player_model->download(player_model);
-				}
+				render_model = RENDER_FILLED;
 				break;
 			case KEY_RENDER_GOURAUD:
-				render.set_render(&render, RENDER_GOURAUD);
-				if (player_model) {
-					player_model->download(player_model);
-				}
+				render_model = RENDER_GOURAUD;
 				break;
 			case KEY_RENDER_TEXTURED:
-				render.set_render(&render, RENDER_TEXTURED);
-				if (player_model) {
-					player_model->download(player_model);
-				}
+				render_model = RENDER_TEXTURED;
 				break;
 			case KEY_RENDER_DEPTH:
 				render_depth ^= 1;
@@ -610,6 +600,8 @@ static void drawGrid(void)
 
 static void drawPlayer(void)
 {
+	render.set_render(&render, render_model);
+
 	render.set_color(0x004488cc);
 
 	render.push_matrix();
@@ -617,6 +609,11 @@ static void drawPlayer(void)
 	render.rotate(player_a, 0.0f,1.0f,0.0f);
 
 	if (player_model) {
+		if (render_model!=prev_render_model) {
+			player_model->download(player_model);
+			prev_render_model = render_model;
+		}
+
 		render.set_blending(1);
 		player_model->draw(player_model, NULL);
 		render.set_blending(0);
@@ -641,4 +638,6 @@ static void drawPlayer(void)
 	}
 
 	render.pop_matrix();
+
+	render.set_render(&render, RENDER_TEXTURED);
 }
