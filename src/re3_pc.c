@@ -263,43 +263,42 @@ int re3pc_load_tim_bgmask(const char *filename)
 		length = SDL_RWtell(src);
 		SDL_RWseek(src, 0, RW_SEEK_SET);
 
-		/* Skip till 1 */
-		for (;;) {
-			SDL_RWread(src, &num_file, sizeof(Uint32), 1);
-			if (num_file==0) {
-				offset += 4;
-			} else {
-				SDL_RWseek(src, offset, RW_SEEK_SET);
-				break;
-			}
-		}
-		logMsg(1, "sld: Start of files at offset 0x%08x\n", offset);
-
 		num_file = 0;
 		while (SDL_RWread(src, &sld_hdr, sizeof(sld_header_t),1)) {
 			int fileLen = SDL_SwapLE32(sld_hdr.length);
 
-			logMsg(2, "sld:  Reading file %d offset %d length %d\n",
+			logMsg(1, "sld:  Reading file %d offset %d length %d\n",
 				num_file, offset, fileLen);
 
-			/* Read file we need */
-			if (num_file == game_state.num_camera) {
-				Uint8 *dstBuffer;
-				int dstBufLen;
+			if (fileLen) {
+				/* Read file we need */
+				if (num_file == game_state.num_camera) {
+					Uint8 *dstBuffer;
+					int dstBufLen;
 
-				sld_depack(src, &dstBuffer, &dstBufLen);
-				if (dstBuffer && dstBufLen) {
+					sld_depack(src, &dstBuffer, &dstBufLen);
+					if (dstBuffer && dstBufLen) {
 
-					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
-					if (game_state.bg_mask) {
-						game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
-						retval = 1;
+						game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+						if (game_state.bg_mask) {
+							game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
+							retval = 1;
+						}
+
+						free(dstBuffer);
 					}
 
-					free(dstBuffer);
+					break;
 				}
+			} else {
+				/* Skip to next file */
+				fileLen = 8;
 
-				break;
+				/* No mask for this camera */
+				if (num_file == game_state.num_camera) {
+					retval = 1;
+					break;
+				}
 			}
 
 			/* Next file */
@@ -308,7 +307,7 @@ int re3pc_load_tim_bgmask(const char *filename)
 			num_file++;
 
 			/* Check EOF */
-			if (offset+sizeof(sld_header_t)+4 >= length) {
+			if (offset+sizeof(sld_header_t) >= length) {
 				break;
 			}
 		}
