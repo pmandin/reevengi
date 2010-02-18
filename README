@@ -112,7 +112,8 @@ N		toggle map display.
 		WHITE: camera, ORANGE: camera switch,
 		RED: boundary, GREEN ARROW: you, BLUE: door.
 J		toggle model skeleton display.
-I		toggle bakground masks display.
+I		toggle background masks display
+		(only for RE1 PC/PS1, RE2 PC demo, RE3 PC).
 
 SPACE		refresh background, move player at current camera position
 U		Enter a door (only for RE2/RE3)
@@ -144,7 +145,9 @@ All PS1 demos and games use same image format, so it should be easy to add
 support for them. I just need a list of all files on each CD (recursive directory
 tree).
 
-RE3 PS1: No model rendering, don't know where they are stored.
+Missing stuff, because I don't know where the needed data is stored:
+  RE2 PC full game, RE2 PS1, RE3 PS1: No masks for background image
+  RE3 PS1: No model rendering
 
 -- 
 Patrice Mandin <patmandin@gmail.com>

@@ -1,7 +1,8 @@
 v 0.15
 
-- Preliminary support for background masks (togglable).
-- Add toggle to display depth buffer.
+- Preliminary support for background masks, togglable
+  (RE1 pc/ps1, RE2 pc demo, RE3 pc).
+- OpenGL: Add toggle to display depth buffer.
 
 v 0.14
 

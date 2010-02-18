@@ -1,15 +1,8 @@
-v 0.14
+v 0.15
 
-- Add separate clock for engine, so loading times are not taken into account
-  for player movements.
-- Add timing in ms, in log file.
-- Heavy rewrite for texturing. The background image is processed with same stuff
-  as the model textures.
-- Heavy rewrite for drawing code. EMD model is organized in a skel structure,
-  with the various meshes.
-- Can set width,height,bpp of video mode
-- Software renderer: Bilinear filtering for background.
-- Display model skeleton.
+- Preliminary support for background masks, togglable
+  (RE1 pc/ps1, RE2 pc demo, RE3 pc).
+- OpenGL: Add toggle to display depth buffer.
 
 
 See ChangeLog for older changes.
