@@ -214,16 +214,18 @@ static void draw_endFrame(draw_t *this)
 			{
 			}
 
-			switch(segments[j].render_mode) {
-				case RENDER_FILLED:
-					draw_render_fill(surf, dst_line, &segments[j], &segments[last]);
-					break;
-				case RENDER_GOURAUD:
-					draw_render_gouraud(surf, dst_line, &segments[j], &segments[last]);
-					break;
-				case RENDER_TEXTURED:
-					draw_render_textured(surf, dst_line, &segments[j], &segments[last]);
-					break;
+			if (segments[j].start.x <= segments[last].end.x) {
+				switch(segments[j].render_mode) {
+					case RENDER_FILLED:
+						draw_render_fill(surf, dst_line, &segments[j], &segments[last]);
+						break;
+					case RENDER_GOURAUD:
+						draw_render_gouraud(surf, dst_line, &segments[j], &segments[last]);
+						break;
+					case RENDER_TEXTURED:
+						draw_render_textured(surf, dst_line, &segments[j], &segments[last]);
+						break;
+				}
 			}
 
 			j = last;
