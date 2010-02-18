@@ -245,7 +245,6 @@ static void room_map_minMaxBoundaries(room_t *this)
 
 void room_map_draw(room_t *this)
 {
-	render.set_texture(0, NULL);
 	render.push_matrix();
 
 	/* Set ortho projection */

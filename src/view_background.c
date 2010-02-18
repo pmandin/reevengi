@@ -526,6 +526,9 @@ void view_background_draw(void)
 
 	drawPlayer();
 
+	/* No texture for grid and map */
+	render.set_texture(0, NULL);
+
 	if (render_grid) {
 		/* World origin */
 		drawOrigin();
