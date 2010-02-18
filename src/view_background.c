@@ -20,6 +20,10 @@
 
 /*--- Includes ---*/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <SDL.h>
 #include <math.h>
@@ -95,7 +99,11 @@ static int reload_model = 1;
 
 static int num_model = 0;
 static render_skel_t *player_model = NULL;
+#ifdef ENABLE_OPENGL
+static int render_model = RENDER_TEXTURED;
+#else
 static int render_model = RENDER_WIREFRAME;
+#endif
 static int prev_render_model = -1;
 
 static int render_grid = 0;
