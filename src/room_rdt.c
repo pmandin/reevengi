@@ -307,7 +307,7 @@ static void rdt_drawMasks(room_t *this, int num_camera)
 				src_y = square_mask->src_y;
 				dst_x += square_mask->dst_x;
 				dst_y += square_mask->dst_y;
-				width = height = SDL_SwapLE16(square_mask->size);
+				width = height = square_mask->size;
 				depth = SDL_SwapLE16(square_mask->depth);
 
 				offset += sizeof(rdt_mask_square_t);
