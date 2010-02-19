@@ -245,10 +245,8 @@ static void room_map_minMaxBoundaries(room_t *this)
 
 void room_map_draw(room_t *this)
 {
-	render.push_matrix();
-
 	/* Set ortho projection */
-	render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, 1.0f, 100000.0f);
+	render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);
 
 	room_map_drawBoundaries(this);
 	room_map_drawCamswitches(this);
@@ -257,8 +255,6 @@ void room_map_draw(room_t *this)
 	room_map_drawObstacles(this);
 	room_map_drawItems(this);
 	room_map_drawDoors(this);
-
-	render.pop_matrix();
 }
 
 static void room_map_drawCameras(room_t *this)
@@ -309,6 +305,7 @@ static void room_map_drawCameras(room_t *this)
 		v[1].z = 1.0f;
 
 		render.line(&v[0], &v[1]);
+		/*break;*/
 	}
 }
 
