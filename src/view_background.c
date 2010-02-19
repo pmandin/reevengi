@@ -99,11 +99,7 @@ static int reload_model = 1;
 
 static int num_model = 0;
 static render_skel_t *player_model = NULL;
-#ifdef ENABLE_OPENGL
-static int render_model = RENDER_TEXTURED;
-#else
 static int render_model = RENDER_WIREFRAME;
-#endif
 static int prev_render_model = -1;
 
 static int render_grid = 0;
@@ -136,6 +132,15 @@ static void drawGrid(void);
 static void drawPlayer(void);
 
 /*--- Functions ---*/
+
+void view_background_init(void)
+{
+#ifdef ENABLE_OPENGL
+	if (params.use_opengl) {
+		render_model = RENDER_TEXTURED;
+	}
+#endif
+}
 
 void view_background_input(SDL_Event *event)
 {

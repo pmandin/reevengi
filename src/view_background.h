@@ -23,6 +23,7 @@
 
 /*--- Function prototypes ---*/
 
+void view_background_init(void);
 void view_background_input(SDL_Event *event);
 void view_background_refresh(void);
 void view_background_update(void);

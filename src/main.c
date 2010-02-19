@@ -172,9 +172,10 @@ int main(int argc, char **argv)
 	switch_mode=1;
 
 	/* Init viewer */
+	clockInit();
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
-			clockInit();
+			view_background_init();
 			break;
 		case VIEWMODE_MOVIE:
 			break;
