@@ -2,6 +2,7 @@ v 0.15
 
 - Preliminary support for background masks, togglable
   (RE1 pc/ps1, RE2 pc demo, RE3 pc).
+  Note: No transparency for software renderer.
 - OpenGL: Add toggle to display depth buffer.
 
 
