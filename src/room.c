@@ -187,7 +187,6 @@ static void room_map_minMaxCameras(room_t *this)
 
 	for (i=0; i<this->num_cameras; i++) {
 		room_camera_t room_camera;
-		Sint16 v;
 
 		this->getCamera(this, i, &room_camera);
 
@@ -311,12 +310,11 @@ static void room_map_drawCameras(room_t *this)
 
 static void room_map_drawCamswitches(room_t *this)
 {
-	int i, j, prev_from=-1;
+	int i, j;
 
 	for (i=0; i<this->num_camswitches; i++) {
 		room_camswitch_t room_camswitch;
 		vertex_t v[4];
-		int boundary = 0;
 
 		this->getCamswitch(this, i, &room_camswitch);
 
@@ -336,12 +334,11 @@ static void room_map_drawCamswitches(room_t *this)
 
 static void room_map_drawBoundaries(room_t *this)
 {
-	int i, j, prev_from=-1;
+	int i, j;
 
 	for (i=0; i<this->num_boundaries; i++) {
 		room_camswitch_t room_camswitch;
 		vertex_t v[4];
-		int boundary = 0;
 
 		this->getBoundary(this, i, &room_camswitch);
 

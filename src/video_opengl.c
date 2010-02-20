@@ -168,6 +168,8 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 static void swapBuffers(video_t *this)
 {
+	GLenum errCode;
+
 	render.endFrame(&render);
 
 #if 0
@@ -215,7 +217,7 @@ static void swapBuffers(video_t *this)
 	}
 #endif
 
-	GLenum errCode = gl.GetError();
+	errCode = gl.GetError();
 	if (errCode != GL_NO_ERROR) {
 		logMsg(1, "OpenGL error %d\n", errCode);
 	}

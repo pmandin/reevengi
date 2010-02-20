@@ -25,7 +25,7 @@
 
 enum {
 	RENDER_ARRAY_BYTE=0,
-	RENDER_ARRAY_SHORT,
+	RENDER_ARRAY_SHORT
 };
 
 enum {

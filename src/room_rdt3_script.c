@@ -694,7 +694,6 @@ static void scriptDisasmInit(void)
 
 static void scriptPrintInst(room_t *this)
 {
-	int i;
 	script_inst_t *inst;
 	const char *nameFromValue;
 

@@ -569,73 +569,16 @@ static void copyDepthToColor(void)
 {
 	GLsizei winWidth = video.viewport.w;
 	GLsizei winHeight = video.viewport.h;
-        GLfloat zBlack = 1.0f;
-	GLfloat zWhite = 0.0f;
+	GLint ShadowTexWidth = 1024 /*winWidth*/;
+	GLint ShadowTexHeight = 512 /*winHeight*/;
+	GLuint tid;
+	GLuint *depth;
 
 	if ((winWidth>1024) || (winHeight>512)) {
 		return;
 	}
 
 	gl.Disable(GL_CULL_FACE);
-#if 0
-   GLfloat *depthValues;
-
-   /*assert(zBlack >= 0.0);
-   assert(zBlack <= 1.0);
-   assert(zWhite >= 0.0);
-   assert(zWhite <= 1.0);
-   assert(zBlack != zWhite);*/
-
-   gl.PixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   gl.PixelStorei(GL_PACK_ALIGNMENT, 1);
-
-   /* Read depth values */
-   depthValues = (GLfloat *) malloc(winWidth * winHeight * sizeof(GLfloat));
-   /*assert(depthValues);*/
-   gl.ReadPixels(0, 0, winWidth, winHeight, GL_DEPTH_COMPONENT,
-                GL_FLOAT, depthValues);
-
-   /* Map Z values from [zBlack, zWhite] to gray levels in [0, 1] */
-   /* Not using glPixelTransfer() because it's broke on some systems! */
-   if (zBlack != 0.0 || zWhite != 1.0) {
-      GLfloat scale = 1.0 / (zWhite - zBlack);
-      GLfloat bias = -zBlack * scale;
-      int n = winWidth * winHeight;
-      int i;
-      for (i = 0; i < n; i++)
-         depthValues[i] = depthValues[i] * scale + bias;
-   }
-
-   /* save GL state */
-   gl.PushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT |
-                GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-   /* setup raster pos for glDrawPixels */
-   gl.MatrixMode(GL_PROJECTION);
-   gl.PushMatrix();
-   gl.LoadIdentity();
-
-   gl.Ortho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -1.0, 1.0);
-   gl.MatrixMode(GL_MODELVIEW);
-   gl.PushMatrix();
-   gl.LoadIdentity();
-
-   gl.Disable(GL_STENCIL_TEST);
-   gl.Disable(GL_DEPTH_TEST);
-   gl.RasterPos2f(0, 0);
-
-   gl.DrawPixels(winWidth, winHeight, GL_LUMINANCE, GL_FLOAT, depthValues);
-
-   gl.PopMatrix();
-   gl.MatrixMode(GL_PROJECTION);
-   gl.PopMatrix();
-   free(depthValues);
-
-   gl.PopAttrib();
-#else
-	GLint ShadowTexWidth = 1024 /*winWidth*/;
-	GLint ShadowTexHeight = 512 /*winHeight*/;
-	GLuint tid;
 
 	gl.GenTextures(1, &tid);
 	gl.BindTexture(GL_TEXTURE_2D, tid);
@@ -645,7 +588,7 @@ static void copyDepthToColor(void)
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
  	gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	GLuint *depth = (GLuint *)
+	depth = (GLuint *)
 		malloc(ShadowTexWidth * ShadowTexHeight * sizeof(GLuint));
 	/*assert(depth);*/
 	gl.ReadPixels(0, 0, ShadowTexWidth, ShadowTexHeight,
@@ -685,7 +628,6 @@ static void copyDepthToColor(void)
 	gl.Enable(GL_DEPTH_TEST);
 
 	gl.DeleteTextures(1, &tid);
-#endif
 }
 
 #else

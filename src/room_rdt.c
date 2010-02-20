@@ -184,7 +184,7 @@ static int rdt_getNumBoundaries(room_t *this)
 	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
 	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
 	rdt_camera_switch_t *camswitch_array;
-	int i=0, num_boundaries = 0, prev_from = -1;
+	int i=0, num_boundaries = 0;
 
 	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 
@@ -204,7 +204,7 @@ static void rdt_getBoundary(room_t *this, int num_boundary, room_camswitch_t *ro
 	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
 	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
 	rdt_camera_switch_t *camswitch_array;
-	int i=0, j=0, prev_from=-1;
+	int i=0, j=0;
 
 	camswitch_array = (rdt_camera_switch_t *) &((Uint8 *) this->file)[offset];
 

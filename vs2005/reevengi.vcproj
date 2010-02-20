@@ -207,6 +207,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\depack_sld.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\depack_vlc.c"
 				>
 			</File>
@@ -418,6 +422,10 @@
 			</File>
 			<File
 				RelativePath="..\src\depack_pak.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\depack_sld.h"
 				>
 			</File>
 			<File

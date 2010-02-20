@@ -3,7 +3,7 @@
 
 #define PACKAGE_NAME "reevengi"
 
-#define PACKAGE_VERSION "0.14"
+#define PACKAGE_VERSION "0.15"
 
 #define PACKAGE_STRING PACKAGE_NAME " " PACKAGE_VERSION
 

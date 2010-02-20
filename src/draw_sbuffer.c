@@ -1258,8 +1258,9 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		int v2 = p2;
 		int x1,y1, x2,y2;
 		int dy;
-		num_array = 1; /* max */
 		float w1, w2;
+
+		num_array = 1; /* max */
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
