@@ -56,6 +56,7 @@ int FS_Init(char *argv0)
 		return 0;
 	}
 
+#if 0
 	/* Set write directory */
 	userdir = PHYSFS_getUserDir();
 
@@ -79,6 +80,7 @@ int FS_Init(char *argv0)
 
 		free(pathname);
 	}
+#endif
 
 	return 1;
 }
