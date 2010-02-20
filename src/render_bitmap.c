@@ -230,36 +230,29 @@ static void drawImageDepth(void)
 
 	poly[0].pos[0] = render.bitmap.dstRect.x;
 	poly[0].pos[1] = render.bitmap.dstRect.y;
-	poly[0].pos[2] = 1.0f;
-	poly[0].pos[3] = 1.0f;
 	poly[0].tx[0] = render.bitmap.srcRect.x;
 	poly[0].tx[1] = render.bitmap.srcRect.y;
 
 	poly[1].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
 	poly[1].pos[1] = render.bitmap.dstRect.y;
-	poly[1].pos[2] = 1.0f;
-	poly[1].pos[3] = 1.0f;
 	poly[1].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
 	poly[1].tx[1] = render.bitmap.srcRect.y;
 
 	poly[2].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
 	poly[2].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
-	poly[2].pos[2] = 1.0f;
-	poly[2].pos[3] = 1.0f;
 	poly[2].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
 	poly[2].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
 
 	poly[3].pos[0] = render.bitmap.dstRect.x;
 	poly[3].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
-	poly[3].pos[2] = 1.0f;
-	poly[3].pos[3] = 1.0f;
 	poly[3].tx[0] = render.bitmap.srcRect.x;
 	poly[3].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
 
 	for (i=0; i<4; i++) {
 		poly[i].pos[0] *= render.bitmap.depth;
 		poly[i].pos[1] *= render.bitmap.depth;
-		poly[i].pos[2] *= render.bitmap.depth;
+		poly[i].pos[2] = render.bitmap.depth;
+		poly[i].pos[3] = 1.0f;
 	}
 
 	render.draw.polyTexture(&render.draw, poly, 4);
