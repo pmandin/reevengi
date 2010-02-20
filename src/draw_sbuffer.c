@@ -463,8 +463,8 @@ __asm__ __volatile__ (
 
 "R_DrawSpan8_loop:\n\t"
 
-	"lsrw	%6,d0\n\t"
-	"roll	%7,d0\n\t"
+	"lsrw	%7,d0\n\t"
+	"roll	%6,d0\n\t"
 	"moveb	%1@(0,d0:w),d1\n\t"
 	"addl	%2,%5\n\t"
 	"moveb	%3@(3,d1:w*4),d1\n\t"
@@ -559,8 +559,8 @@ __asm__ __volatile__ (
 
 "R_DrawSpan16_loop:\n\t"
 
-	"lsrw	%6,d0\n\t"
-	"roll	%7,d0\n\t"
+	"lsrw	%7,d0\n\t"
+	"roll	%6,d0\n\t"
 	"moveb	%1@(0,d0:w),d1\n\t"
 	"addl	%2,%5\n\t"
 	"movew	%3@(2,d1:w*4),d2\n\t"
