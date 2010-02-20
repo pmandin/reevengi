@@ -542,10 +542,9 @@ void room_map_drawPlayer(float x, float y, float angle)
 	const float radius = 2000.0f;
 
 	render.set_texture(0, NULL);
-	render.push_matrix();
 
 	/* Set ortho projection */
-	render.set_ortho(minx * 0.5f,maxx * 0.5f, minz * 0.5f,maxz * 0.5f, 1.0f,100000.0f);
+	render.set_ortho(minx * 0.5f,maxx * 0.5f, minz * 0.5f,maxz * 0.5f, -1.0f,1.0f);
 
 	render.set_color(MAP_COLOR_PLAYER);
 
@@ -570,8 +569,6 @@ void room_map_drawPlayer(float x, float y, float angle)
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
-
-	render.pop_matrix();
 }
 
 int room_checkBoundary(room_t *this, int num_camera, float x, float y)
