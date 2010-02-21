@@ -84,6 +84,7 @@ typedef struct {
 	Uint32	id;	/* ID to merge segments */
 	int render_mode;
 	int tex_num_pal;
+	int masking;
 	render_texture_t *texture;
 	sbuffer_point_t start, end;
 } sbuffer_segment_t;
@@ -214,7 +215,7 @@ static void draw_endFrame(draw_t *this)
 			{
 			}
 
-			if (segments[j].start.x <= segments[last].end.x) {
+			if (!segments[j].masking && (segments[j].start.x <= segments[last].end.x)) {
 				switch(segments[j].render_mode) {
 					case RENDER_FILLED:
 						draw_render_fill(surf, dst_line, &segments[j], &segments[last]);
@@ -745,6 +746,7 @@ static int draw_push_segment(const sbuffer_segment_t *segment,
 	sbuffer_rows[y].segment[pos].id = segment->id;
 	sbuffer_rows[y].segment[pos].render_mode = segment->render_mode;
 	sbuffer_rows[y].segment[pos].tex_num_pal = segment->tex_num_pal;
+	sbuffer_rows[y].segment[pos].masking = segment->masking;
 	sbuffer_rows[y].segment[pos].texture = segment->texture;
 
 	return 1;
@@ -1367,6 +1369,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	segment.render_mode = render.render_mode;
 	segment.tex_num_pal = render.tex_pal;
 	segment.texture = render.texture;
+	segment.masking = render.bitmap.masking;
 
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
