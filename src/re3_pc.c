@@ -279,7 +279,7 @@ int re3pc_load_tim_bgmask(const char *filename)
 					sld_depack(src, &dstBuffer, &dstBufLen);
 					if (dstBuffer && dstBufLen) {
 
-						game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+						game_state.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
 						if (game_state.bg_mask) {
 							game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
 							retval = 1;

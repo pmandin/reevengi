@@ -246,7 +246,7 @@ int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
 			if (tim_src) {
 				SDL_Surface *image = background_tim_load(tim_src, row_offset);
 				if (image) {*/
-					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
 					if (game_state.bg_mask) {
 						/*game_state.bg_mask->load_from_surf(game_state.bg_mask, image);*/
 						game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);

@@ -348,7 +348,7 @@ static void rdt_loadMasks(room_t *this, int num_camera)
 		return;
 	}
 
-	game_state.bg_mask = render.createTexture(RENDER_TEXTURE_CACHEABLE|RENDER_TEXTURE_MUST_POT);
+	game_state.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
 	if (game_state.bg_mask) {
 		Uint8 *tim_hdr = (Uint8 *) &((Uint8 *) this->file)[offset];
 
