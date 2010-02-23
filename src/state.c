@@ -310,12 +310,14 @@ int state_game_file_exists(char *filename)
 {
 	char *filenamedir;
 	int detected = 0;
-	
+
 	filenamedir = malloc(strlen(params.basedir)+strlen(filename)+4);
 	if (filenamedir) {
 		PHYSFS_file	*curfile;
 
 		sprintf(filenamedir, "%s/%s", params.basedir, filename);
+
+		logMsg(2, "fs: Checking %s file\n", filename);
 
 		curfile = PHYSFS_openRead(filename);
 		if (curfile) {
@@ -326,6 +328,26 @@ int state_game_file_exists(char *filename)
 			}
 
 			PHYSFS_close(curfile);
+		}
+
+		/* Try in upper case */
+		if (!detected) {
+			int i;
+
+			for (i=0; i<strlen(filenamedir); i++) {
+				filenamedir[i] = toupper(filenamedir[i]);
+			}
+
+			curfile = PHYSFS_openRead(filename);
+			if (curfile) {
+				char dummy;
+
+				if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
+					detected = 1;
+				}
+
+				PHYSFS_close(curfile);
+			}
 		}
 
 		free(filenamedir);
@@ -339,6 +361,9 @@ static void state_detect(void)
 	int i=0;
 
 	game_state.version = GAME_UNKNOWN;
+
+	logMsg(2, "fs: Detecting game version from %s directory...\n",
+		params.basedir);
 
 	while (game_detect[i].version != -1) {
 		if (state_game_file_exists(game_detect[i].filename)) {
