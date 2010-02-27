@@ -539,6 +539,9 @@ void view_background_draw(void)
 
 	drawPlayer();
 
+	/* Flush all 3D rendering to screen before drawing 2D stuff */
+	render.flushFrame(&render);
+
 	/* No texture for grid and map */
 	render.set_texture(0, NULL);
 

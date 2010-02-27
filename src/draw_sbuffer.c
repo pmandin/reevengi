@@ -115,8 +115,11 @@ static void draw_shutdown(draw_t *this);
 static unsigned logbase2(unsigned n);
 #endif
 
+static void clear_sbuffer(void);
+
 static void draw_resize(draw_t *this, int w, int h);
 static void draw_startFrame(draw_t *this);
+static void draw_flushFrame(draw_t *this);
 static void draw_endFrame(draw_t *this);
 
 static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end);
@@ -135,6 +138,7 @@ void draw_init_sbuffer(draw_t *draw)
 
 	draw->resize = draw_resize;
 	draw->startFrame = draw_startFrame;
+	draw->flushFrame = draw_flushFrame;
 	draw->endFrame = draw_endFrame;
 
 	draw->polyLine = draw_poly_sbuffer;
@@ -176,7 +180,7 @@ static void draw_resize(draw_t *this, int w, int h)
 	}
 }
 
-static void draw_startFrame(draw_t *this)
+static void clear_sbuffer(void)
 {
 	int i;
 
@@ -186,7 +190,12 @@ static void draw_startFrame(draw_t *this)
 	sbuffer_seg_id = 0;
 }
 
-static void draw_endFrame(draw_t *this)
+static void draw_startFrame(draw_t *this)
+{
+	clear_sbuffer();
+}
+
+static void draw_flushFrame(draw_t *this)
 {
 	SDL_Surface *surf = video.screen;
 	int i,j;
@@ -238,6 +247,13 @@ static void draw_endFrame(draw_t *this)
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_UnlockSurface(surf);
 	}
+
+	clear_sbuffer();
+}
+
+static void draw_endFrame(draw_t *this)
+{
+	draw_flushFrame(this);
 }
 
 static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *start, sbuffer_segment_t *end)

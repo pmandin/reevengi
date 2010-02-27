@@ -1,3 +1,7 @@
+v 0.16
+
+- Software renderer: Flush all 3D rendering before drawing 2D stuff.
+
 v 0.15
 
 - Preliminary support for background masks, togglable

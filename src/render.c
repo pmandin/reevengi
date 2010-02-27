@@ -53,6 +53,7 @@ static void render_soft_shutdown(render_t *render);
 
 static void render_resize(render_t *this, int w, int h);
 static void render_startFrame(render_t *this);
+static void render_flushFrame(render_t *this);
 static void render_endFrame(render_t *this);
 
 static void set_viewport(int x, int y, int w, int h);
@@ -104,6 +105,7 @@ void render_soft_init(render_t *render)
 
 	render->resize = render_resize;
 	render->startFrame = render_startFrame;
+	render->flushFrame = render_flushFrame;
 	render->endFrame = render_endFrame;
 
 	render->createTexture = render_texture_create;
@@ -172,6 +174,11 @@ static void render_resize(render_t *this, int w, int h)
 static void render_startFrame(render_t *this)
 {
 	this->draw.startFrame(&this->draw);
+}
+
+static void render_flushFrame(render_t *this)
+{
+	this->draw.flushFrame(&this->draw);
 }
 
 static void render_endFrame(render_t *this)

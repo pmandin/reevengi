@@ -63,6 +63,7 @@ struct render_s {
 
 	void (*resize)(render_t *this, int w, int h);
 	void (*startFrame)(render_t *this);
+	void (*flushFrame)(render_t *this);
 	void (*endFrame)(render_t *this);
 
 	render_texture_t *(*createTexture)(int flags);
