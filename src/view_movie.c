@@ -29,7 +29,7 @@
 
 #include <SDL.h>
 #ifdef ENABLE_MOVIES
-#include <ffmpeg/avformat.h>
+#include <libavformat/avformat.h>
 #endif
 
 #include "state.h"
@@ -85,7 +85,7 @@ static void check_emul_cd(void);
 static int probe_movie(const char *filename);
 #ifdef ENABLE_MOVIES
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
-static offset_t movie_ioseek( void *opaque, offset_t offset, int whence );
+static int64_t movie_ioseek( void *opaque, int64_t offset, int whence );
 #endif
 
 static int movie_decode_video(SDL_Surface *screen);
@@ -403,18 +403,18 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 	return size_read;
 }
 
-static offset_t movie_ioseek( void *opaque, offset_t offset, int whence )
+static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 {
-	offset_t new_offset;
+	int64_t new_offset;
 
 	if (emul_cd) {
 		switch(whence) {
 			case RW_SEEK_SET:
 			case RW_SEEK_END:
-				emul_cd_pos = offset;
+				emul_cd_pos = (int) offset;
 				break;
 			case RW_SEEK_CUR:
-				emul_cd_pos += offset;
+				emul_cd_pos += (int) offset;
 				break;
 		}
 

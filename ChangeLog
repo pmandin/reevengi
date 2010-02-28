@@ -1,6 +1,8 @@
 v 0.16
 
 - Software renderer: Flush all 3D rendering before drawing 2D stuff.
+- Movie player: Updated for latest FFmpeg revision. Added separate project
+  file for vs2005.
 
 v 0.15
 

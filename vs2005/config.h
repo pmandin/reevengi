@@ -11,8 +11,12 @@
 
 /*#define ENABLE_GAMMA 1*/
 
+/* Enabled in VS project file */
 /*#define ENABLE_MOVIES 1*/
 
 #define ENABLE_SCRIPT_DISASM 1
+
+/* MSVC++ does not have inline keyword (needed for FFmpeg) */
+#define inline _inline
 
 #endif /* CONFIG_H */

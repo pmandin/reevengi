@@ -1,3 +1,3 @@
-EXTRA_DIST = reevengi.sln reevengi.vcproj config.h
+EXTRA_DIST = reevengi.sln reevengi.vcproj reevengi-ffmpeg.vcproj config.h
 
 
