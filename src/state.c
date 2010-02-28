@@ -27,6 +27,7 @@
 #include "render.h"
 #include "state.h"
 #include "parameters.h"
+#include "log.h"
 
 /*--- Types ---*/
 
