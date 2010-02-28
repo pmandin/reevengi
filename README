@@ -18,11 +18,12 @@ Use at your own risks.
 - SDL for video and input (mandatory).
   http://www.libsdl.org/
 
-- SDL_image with libjpeg support (optional, for RE3 PC).
+- SDL_image with libjpeg support (optional, mandatory for RE3 PC).
   http://www.libsdl.org/projects/SDL_image/
 
 - FFmpeg for movie player (optional, for movie player).
   http://ffmpeg.mplayerhq.hu/
+  Unofficial win32 builds available at http://ffmpeg.arrozcru.org/
 
 - PhysicsFS for all filesystem access (mandatory).
   http://www.icculus.org/physfs/
