@@ -104,10 +104,10 @@ static int render_model = RENDER_WIREFRAME;
 static int prev_render_model = -1;
 
 static int render_grid = 0;
-static int render_restore = 1;
+static int render_restore = 0;
 static int render_map = 0;
 static int render_bones = 0;
-static int render_masks = 0;
+static int render_masks = 1;
 static int render_depth = 0;
 
 static int refresh_player_pos = 1;
