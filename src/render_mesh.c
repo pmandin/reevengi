@@ -280,6 +280,7 @@ static void draw(render_mesh_t *this)
 		}
 		render.triangle(&v[0], &v[1], &v[2]);
 	}
+	/*return;*/
 
 	for (i=0; i<this->num_quads; i++) {
 		render_mesh_quad_t *quad = &(this->quads[i]);

@@ -88,7 +88,8 @@
 #endif
 #define KEY_ENTER_DOOR		SDLK_u
 
-/*#define DISABLE_CAM_SWITCH	1*/
+/*#define DISABLE_CAM_SWITCH	1
+#define ENABLE_DEBUG_POS	1*/
 
 /*--- Variables ---*/
 
@@ -103,15 +104,20 @@ static int render_model = RENDER_WIREFRAME;
 static int prev_render_model = -1;
 
 static int render_grid = 0;
-static int render_restore = 0;
+static int render_restore = 1;
 static int render_map = 0;
 static int render_bones = 0;
-static int render_masks = 1;
+static int render_masks = 0;
 static int render_depth = 0;
 
 static int refresh_player_pos = 1;
+#ifdef ENABLE_DEBUG_POS
+static float player_x = 13148.0f, player_y = -2466.0f, player_z = -3367.0f;
+static float player_a = 157.0f;
+#else
 static float player_x = 0, player_y = 0, player_z = 0;
 static float player_a = 0;
+#endif
 static int player_moveforward = 0;
 static int player_movebackward = 0;
 static int player_moveup = 0;
@@ -523,12 +529,14 @@ void view_background_draw(void)
 
 	(*game_state.room->getCamera)(game_state.room, game_state.num_camera, &room_camera);
 
+#ifndef ENABLE_DEBUG_POS
 	if (refresh_player_pos) {
 		player_x = room_camera.to_x;
 		player_y = room_camera.to_y;
 		player_z = room_camera.to_z;
 		refresh_player_pos = 0;
 	}
+#endif
 
 	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
 	render.set_modelview(

@@ -198,6 +198,9 @@ static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 		/* Draw mesh */
 		skel_mesh->mesh->draw(skel_mesh->mesh);
 
+		/*render.pop_matrix();
+		break;*/
+
 		/* Draw children, relative to parent */
 		this->draw(this, skel_mesh);
 
