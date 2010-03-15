@@ -41,6 +41,7 @@
 #include "clock.h"
 #include "render_texture_list.h"
 #include "render_skel_list.h"
+#include "menu.h"
 
 #include "video.h"
 #include "render.h"
@@ -60,6 +61,7 @@ render_t render;
 
 static int new_width, new_height;
 static int switch_mode = 0;
+static int disp_menu = 0;
 
 /*--- Functions prototypes ---*/
 
@@ -173,6 +175,10 @@ int main(int argc, char **argv)
 
 	/* Init viewer */
 	game_state.load_font();
+	if (!game_state.font) {
+		logMsg(0, "No font. Menu disabled.\n");
+	}
+
 	clockInit();
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
@@ -223,7 +229,11 @@ static int viewer_loop(void)
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
 					case SDLK_ESCAPE:
-						quit=1;
+						if (!game_state.font) {
+							quit=1;
+						} else {
+							disp_menu ^= 1;
+						}
 						break;
 					case SDLK_F1:
 						video.screenShot(&video);
@@ -308,6 +318,10 @@ static void viewer_update(void)
 		case VIEWMODE_MOVIE:
 			view_movie_update(video.screen);
 			break;
+	}
+
+	if (disp_menu) {
+		menu_render();
 	}
 
 	video.swapBuffers(&video);

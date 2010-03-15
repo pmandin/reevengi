@@ -11,7 +11,7 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	dirty_rects.c dither.c draw_sbuffer.c draw_simple.c dyngl.c \
 	filesystem.c idctfst.c log.c main.c matrix.c \
 	model_emd.c model_emd2.c model_emd3.c \
-	parameters.c physfsrwops.c \
+	parameters.c physfsrwops.c menu.c \
 	re1_pc_game.c re1_ps1.c \
 	re2_pc_demo.c re2_pc_game.c re2_ps1.c \
 	re3_pc.c re3_ps1_game.c \
@@ -31,7 +31,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h dyngl.h \
 	filesystem.h idctfst.h log.h matrix.h \
 	model_emd.h model_emd2.h model_emd3.h \
-	parameters.h physfsrwops.h \
+	parameters.h physfsrwops.h menu.h \
 	re1_pc_game.h re1_ps1.h \
 	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
 	re3_pc.h re3_ps1_game.h \
