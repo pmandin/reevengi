@@ -52,7 +52,7 @@ typedef struct {
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
 static const char *re2pcgame_room = "PL%d/RD%c/ROOM%d%02x%d.RDT";
 static const char *re2pcgame_model = "PL%d/EMD%d/EM%d%02x.%s";
-static const char *re2pcdemo_font = "COMMON/DAT%c/SELECT_W.TIM";
+static const char *re2pcgame_font = "COMMON/DAT%c/SELECT_W.TIM";
 
 static const int map_models[MAX_MODELS]={
 	0x10,	0x11,	0x12,	0x13,	0x15,	0x16,	0x17,	0x18,
@@ -116,6 +116,9 @@ static int re2pcgame_loadroom_rdt(const char *filename);
 
 render_skel_t *re2pcgame_load_model(int num_model);
 
+static void load_font(void);
+static void get_char_pos(int ascii, int *x, int *y);
+
 /*--- Functions ---*/
 
 void re2pcgame_init(state_t *game_state)
@@ -151,6 +154,9 @@ void re2pcgame_init(state_t *game_state)
 	}
 
 	game_state->priv_load_model = re2pcgame_load_model;
+
+	game_state->load_font = load_font;
+	game_state->get_char_pos = get_char_pos;
 }
 
 static void re2pcgame_shutdown(void)
@@ -349,4 +355,41 @@ render_skel_t *re2pcgame_load_model(int num_model)
 
 	free(filepath);
 	return model;
+}
+
+static void load_font(void)
+{
+	Uint8 *font_file;
+	PHYSFS_sint64 length;
+	int retval = 0;
+	char *filepath;
+	const char *filename = re2pcgame_font;
+
+	filepath = malloc(strlen(filename)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, filename, game_lang);
+
+	logMsg(1, "Loading font from %s...\n", filepath);
+
+	font_file = FS_Load(filepath, &length);
+	if (font_file) {
+		game_state.font = render.createTexture(0);
+		if (game_state.font) {
+			game_state.font->load_from_tim(game_state.font, font_file);
+			retval = 1;
+		}
+
+		free(font_file);
+	}
+
+	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
+
+	free(filepath);
+}
+
+static void get_char_pos(int ascii, int *x, int *y)
+{
 }

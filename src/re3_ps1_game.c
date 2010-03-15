@@ -32,6 +32,7 @@
 #include "parameters.h"
 #include "log.h"
 #include "room_rdt2.h"
+#include "render.h"
 
 /*--- Defines ---*/
 
@@ -85,6 +86,9 @@ static void re3ps1game_loadbackground(void);
 static void re3ps1game_loadroom(void);
 static int re3ps1game_loadroom_ard(const char *filename);
 
+static void load_font(void);
+static void get_char_pos(int ascii, int *x, int *y);
+
 /*--- Functions ---*/
 
 void re3ps1game_init(state_t *game_state)
@@ -94,6 +98,9 @@ void re3ps1game_init(state_t *game_state)
 	game_state->priv_shutdown = re3ps1game_shutdown;
 
 	game_state->movies_list = (char **) re3ps1game_movies;
+
+	game_state->load_font = load_font;
+	game_state->get_char_pos = get_char_pos;
 }
 
 static void re3ps1game_shutdown(void)
@@ -205,4 +212,41 @@ static int re3ps1game_loadroom_ard(const char *filename)
 
 	free(ard_file);
 	return 1;
+}
+
+static void load_font(void)
+{
+	Uint8 *font_file;
+	PHYSFS_sint64 length;
+	int retval = 0;
+	char *filepath;
+	const char *filename = re3ps1game_font;
+
+	filepath = malloc(strlen(filename)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, filename, game_lang);
+
+	logMsg(1, "Loading font from %s...\n", filepath);
+
+	font_file = FS_Load(filepath, &length);
+	if (font_file) {
+		game_state.font = render.createTexture(0);
+		if (game_state.font) {
+			game_state.font->load_from_tim(game_state.font, font_file);
+			retval = 1;
+		}
+
+		free(font_file);
+	}
+
+	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
+
+	free(filepath);
+}
+
+static void get_char_pos(int ascii, int *x, int *y)
+{
 }

@@ -126,6 +126,9 @@ static int re3pc_loadroom_rdt(const char *filename);
 
 static render_skel_t *re3pc_load_model(int num_model);
 
+static void load_font(void);
+static void get_char_pos(int ascii, int *x, int *y);
+
 /*--- Functions ---*/
 
 void re3pc_init(state_t *game_state)
@@ -161,6 +164,9 @@ void re3pc_init(state_t *game_state)
 	}
 
 	game_state->priv_load_model = re3pc_load_model;
+
+	game_state->load_font = load_font;
+	game_state->get_char_pos = get_char_pos;
 }
 
 void re3pc_shutdown(void)
@@ -414,4 +420,41 @@ render_skel_t *re3pc_load_model(int num_model)
 
 	free(filepath);
 	return model;
+}
+
+static void load_font(void)
+{
+	Uint8 *font_file;
+	PHYSFS_sint64 length;
+	int retval = 0;
+	char *filepath;
+	const char *filename = re3pc_font;
+
+	filepath = malloc(strlen(filename)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, filename, game_lang, game_lang);
+
+	logMsg(1, "Loading font from %s...\n", filepath);
+
+	font_file = FS_Load(filepath, &length);
+	if (font_file) {
+		game_state.font = render.createTexture(0);
+		if (game_state.font) {
+			game_state.font->load_from_tim(game_state.font, font_file);
+			retval = 1;
+		}
+
+		free(font_file);
+	}
+
+	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
+
+	free(filepath);
+}
+
+static void get_char_pos(int ascii, int *x, int *y)
+{
 }
