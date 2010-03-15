@@ -29,6 +29,7 @@
 #include "dither.h"
 #include "log.h"
 #include "draw.h"
+#include "render_text.h"
 
 /*--- Function prototypes ---*/
 
@@ -241,15 +242,23 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 static void countFps(video_t *this)
 {
+	static int cur_fps = 0;
 	Uint32 cur_tick = SDL_GetTicks();
 
 	++this->fps;
 	if (cur_tick-this->start_tick>1000) {
-		if (params.fps) {
-			logMsg(0, "video: %d fps\n", this->fps);
-		}
+		cur_fps = this->fps;
+		if (cur_fps>999) cur_fps=999;
+
 		this->fps = 0;
 		this->start_tick = cur_tick;
+	}
+
+	if (params.fps) {
+		char fps_fmt[16];
+
+		sprintf(fps_fmt, "fps: %d", cur_fps);
+		render_text(fps_fmt, video.viewport.w-8*8, 0);
 	}
 }
 
@@ -257,9 +266,9 @@ static void swapBuffers(video_t *this)
 {
 	int i, x, y;
 
-	render.endFrame(&render);
-
 	this->countFps(this);
+
+	render.endFrame(&render);
 
 	if ((this->flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		this->numfb ^= 1;
