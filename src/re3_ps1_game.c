@@ -53,6 +53,7 @@ typedef struct {
 
 static const char *re3ps1game_bg = "cd_data/stage%d/r%d%02x.bss";
 static const char *re3ps1game_room = "cd_data/stage%d/r%d%02x.ard";
+static const char *re3ps1game_font = "cd_data/etc/sele_ob%c.tim";
 
 static const char *re3ps1game_movies[] = {
 	"cd_data/zmovie/enda.str",
@@ -72,6 +73,8 @@ static const char *re3ps1game_movies[] = {
 };
 
 /*--- Variables ---*/
+
+static int game_lang = 'f';
 
 /*--- Functions prototypes ---*/
 

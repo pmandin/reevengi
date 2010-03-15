@@ -47,6 +47,7 @@ static const char *re1ps1_room = "psx%s/stage%d/room%d%02x0.rdt";
 static const char *re1ps1_model1 = "psx%s/enemy/char1%d.emd";
 static const char *re1ps1_model2 = "psx%s/enemy/em10%02x.emd";
 static const char *re1ps1_model3 = "psx%s/enemy/em11%02x.emd";
+static const char *re1pcgame_font = "psx%s/data/font.tim";
 
 static const char *re1ps1demo_movies[] = {
 	"psx/movie/capcom.str",

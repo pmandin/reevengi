@@ -48,6 +48,7 @@ static const char *re2pcdemo_bg = "common/stage%d/rc%d%02x%1x.adt";
 static const char *re2pcdemo_bgmask = "common/stage%d/rs%d%02x%1x.adt";
 static const char *re2pcdemo_room = "pl0/rd%c/room%d%02x0.rdt";
 static const char *re2pcdemo_model = "pl0/emd0/em0%02x.%s";
+static const char *re2pcdemo_font = "common/dat%c/select_w.tim";
 
 static const int map_models[MAX_MODELS]={
 	0x10,	0x11,	0x12,	0x13,	0x15,	0x16,	0x17,	0x18,

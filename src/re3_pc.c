@@ -62,6 +62,7 @@ static const char *re3pc_room = "data_%c/rdt/r%d%02x.rdt";
 static const char *rofs_dat = "%s/rofs%d.dat";
 static const char *rofs_cap_dat = "%s/Rofs%d.dat";
 static const char *re3pc_model = "room/emd/em%02x.%s";
+static const char *re3pc_font = "data_%c/etc2/sele_ob%c.tim";
 
 static const int map_models_demo[MAX_MODELS_DEMO]={
 	0x10,	0x11,	0x12,	0x14,	0x17,	0x1c,	0x1d,	0x1e,

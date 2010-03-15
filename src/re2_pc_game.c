@@ -52,6 +52,7 @@ typedef struct {
 static const char *re2pcgame_bg_archive = "COMMON/BIN/ROOMCUT.BIN";
 static const char *re2pcgame_room = "PL%d/RD%c/ROOM%d%02x%d.RDT";
 static const char *re2pcgame_model = "PL%d/EMD%d/EM%d%02x.%s";
+static const char *re2pcdemo_font = "COMMON/DAT%c/SELECT_W.TIM";
 
 static const int map_models[MAX_MODELS]={
 	0x10,	0x11,	0x12,	0x13,	0x15,	0x16,	0x17,	0x18,

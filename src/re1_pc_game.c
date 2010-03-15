@@ -49,6 +49,7 @@ static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x0.rdt";
 static const char *re1pcgame_model1 = "horr/usa/enemy/char1%d.emd";
 static const char *re1pcgame_model2 = "horr/usa/enemy/em10%02x.emd";
 static const char *re1pcgame_model3 = "horr/usa/enemy/em11%02x.emd";
+static const char *re1pcgame_font = "horr/usa/data/fontus.tim";
 
 static const char *re1pcgame_movies[] = {
 	"horr/usa/movie/capcom.avi",
