@@ -117,7 +117,7 @@ static int re2pcgame_loadroom_rdt(const char *filename);
 render_skel_t *re2pcgame_load_model(int num_model);
 
 static void load_font(void);
-static void get_char_pos(int ascii, int *x, int *y);
+static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
@@ -156,7 +156,7 @@ void re2pcgame_init(state_t *game_state)
 	game_state->priv_load_model = re2pcgame_load_model;
 
 	game_state->load_font = load_font;
-	game_state->get_char_pos = get_char_pos;
+	game_state->get_char = get_char;
 }
 
 static void re2pcgame_shutdown(void)
@@ -390,6 +390,17 @@ static void load_font(void)
 	free(filepath);
 }
 
-static void get_char_pos(int ascii, int *x, int *y)
+static void get_char(int ascii, int *x, int *y, int *w, int *h)
 {
+	*x = *y = 0;
+	*w = 8;
+	*h = 10;
+
+	if ((ascii<=32) || (ascii>=96+27)) {
+		return;
+	}
+
+	ascii -= 32;
+	*x = (ascii & 31)<<3;
+	*y = (ascii>>5)*10;
 }

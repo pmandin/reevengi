@@ -103,7 +103,7 @@ typedef struct {
 	void (*load_room)(void);
 	render_skel_t *(*load_model)(int num_model);
 	void (*load_font)(void);
-	void (*get_char_pos)(int ascii, int *x, int *y);
+	void (*get_char)(int ascii, int *x, int *y, int *w, int *h);
 	void (*shutdown)(void);
 } state_t;
 

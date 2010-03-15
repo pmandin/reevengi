@@ -87,7 +87,7 @@ static void re3ps1game_loadroom(void);
 static int re3ps1game_loadroom_ard(const char *filename);
 
 static void load_font(void);
-static void get_char_pos(int ascii, int *x, int *y);
+static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
@@ -100,7 +100,7 @@ void re3ps1game_init(state_t *game_state)
 	game_state->movies_list = (char **) re3ps1game_movies;
 
 	game_state->load_font = load_font;
-	game_state->get_char_pos = get_char_pos;
+	game_state->get_char = get_char;
 }
 
 static void re3ps1game_shutdown(void)
@@ -247,6 +247,17 @@ static void load_font(void)
 	free(filepath);
 }
 
-static void get_char_pos(int ascii, int *x, int *y)
+static void get_char(int ascii, int *x, int *y, int *w, int *h)
 {
+	*x = *y = 0;
+	*w = 8;
+	*h = 10;
+
+	if ((ascii<=32) || (ascii>=96+27)) {
+		return;
+	}
+
+	ascii -= 32;
+	*x = 128+ ((ascii & 15)<<3);
+	*y = 176+ ((ascii>>4)*10);
 }

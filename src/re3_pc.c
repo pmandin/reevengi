@@ -127,7 +127,7 @@ static int re3pc_loadroom_rdt(const char *filename);
 static render_skel_t *re3pc_load_model(int num_model);
 
 static void load_font(void);
-static void get_char_pos(int ascii, int *x, int *y);
+static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
@@ -166,7 +166,7 @@ void re3pc_init(state_t *game_state)
 	game_state->priv_load_model = re3pc_load_model;
 
 	game_state->load_font = load_font;
-	game_state->get_char_pos = get_char_pos;
+	game_state->get_char = get_char;
 }
 
 void re3pc_shutdown(void)
@@ -455,6 +455,17 @@ static void load_font(void)
 	free(filepath);
 }
 
-static void get_char_pos(int ascii, int *x, int *y)
+static void get_char(int ascii, int *x, int *y, int *w, int *h)
 {
+	*x = *y = 0;
+	*w = 8;
+	*h = 10;
+
+	if ((ascii<=32) || (ascii>=96+27)) {
+		return;
+	}
+
+	ascii -= 32;
+	*x = 128+ ((ascii & 15)<<3);
+	*y = 176+ ((ascii>>4)*10);
 }

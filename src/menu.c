@@ -59,25 +59,27 @@ void menu_render(void)
 	render.set_blending(1);
 	render.set_useDirtyRects(0);
 	render.bitmap.setMasking(0);
-	render.bitmap.setScaler(16,16, 16,16);
+	render.bitmap.setScaler(render.texture->w,render.texture->h,
+		render.texture->w,render.texture->h);
 	render.bitmap.setDepth(0, 0.0f);
 
-	menu_text_print(title,START_X,START_Y);	
+	menu_text_print(title,START_X,START_Y);
 }
 
 static void menu_text_print(const char *str, int x, int y)
 {
 	Uint8 c;
-	int src_x,src_y;
+	int sx,sy,sw,sh;
 
 	while (c=*str++) {
-		src_x = src_y = 0;
-		game_state.get_char_pos(c, &src_x, &src_y);
+		if (c>32) {
+			game_state.get_char(c, &sx, &sy, &sw, &sh);
 
-		render.bitmap.clipSource(src_x,src_y, 8,8);
-		render.bitmap.clipDest(x,y, 8,8);
-		render.bitmap.drawImage(&video);
+			render.bitmap.clipSource(sx,sy, sw,sh);
+			render.bitmap.clipDest(video.viewport.x+x,video.viewport.y+y, sw,sh);
+			render.bitmap.drawImage(&video);
+		}
 
-		x+= 8;
+		x+= sw;
 	}
 }

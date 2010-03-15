@@ -122,7 +122,7 @@ static void state_unloadroom(void);
 static render_skel_t *state_loadmodel(int num_model);
 
 static void state_loadfont(void);
-static void state_get_char_pos(int ascii, int *x, int *y);
+static void state_get_char(int ascii, int *x, int *y, int *w, int *h);
 
 static void state_unloadmodels(void);
 
@@ -147,7 +147,7 @@ void state_init(void)
 	game_state.load_background = state_loadbackground;
 	game_state.load_model = state_loadmodel;
 	game_state.load_font = state_loadfont;
-	game_state.get_char_pos = state_get_char_pos;
+	game_state.get_char = state_get_char;
 	game_state.shutdown = state_shutdown;
 }
 
@@ -319,8 +319,10 @@ void state_loadfont(void)
 {
 }
 
-static void state_get_char_pos(int ascii, int *x, int *y)
+static void state_get_char(int ascii, int *x, int *y, int *w, int *h)
 {
+	*x = *y = 0;
+	*w = *h = 8;
 }
 
 /* Detect some game version */
