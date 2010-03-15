@@ -1,5 +1,5 @@
 /*
-	Debug menu
+	Render text
 
 	Copyright (C) 2010	Patrice Mandin
 
@@ -18,24 +18,9 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#ifndef RENDER_TEXT_H
+#define RENDER_TEXT_H 1
 
-#include "render_text.h"
+void render_text(const char *str, int x, int y);
 
-/*--- Defines ---*/
-
-#define START_X	16
-#define START_Y 16
-
-/*--- Constants ---*/
-
-static char *title=PACKAGE_STRING;
-
-/*--- Functions ---*/
-
-void menu_render(void)
-{
-	render_text(title,START_X,START_Y);
-}
+#endif /* RENDER_TEXT_H */
