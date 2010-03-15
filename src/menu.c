@@ -70,6 +70,7 @@ static void menu_text_print(const char *str, int x, int y)
 {
 	Uint8 c;
 	int sx,sy,sw,sh;
+	int dx=video.viewport.x+x,dy=video.viewport.y+y,dw=8,dh=8; /* dirtied zone */
 
 	while (c=*str++) {
 		if (c>32) {
@@ -81,5 +82,10 @@ static void menu_text_print(const char *str, int x, int y)
 		}
 
 		x+= sw;
+		dw += sw;
+		dh = sh;
 	}
+
+	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+		dx,dy,dw,dh);
 }
