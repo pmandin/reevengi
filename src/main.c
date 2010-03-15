@@ -229,14 +229,17 @@ static int viewer_loop(void)
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
 					case SDLK_ESCAPE:
-						if (!game_state.font) {
+						/*if (!game_state.font) {*/
 							quit=1;
-						} else {
+						/*} else {
 							disp_menu ^= 1;
-						}
+						}*/
 						break;
 					case SDLK_F1:
 						video.screenShot(&video);
+						break;
+					case SDLK_F10:
+						disp_menu ^= 1;
 						break;
 					case SDLK_RETURN:
 						if (event.key.keysym.mod & KMOD_ALT) {
