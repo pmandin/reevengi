@@ -1,7 +1,7 @@
 /*
 	Command line parameters
 
-	Copyright (C) 2003	Patrice Mandin
+	Copyright (C) 2003-2010	Patrice Mandin
 	
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -58,7 +58,8 @@ params_t params = {
 	0,	/* Dump script */
 	0,	/* Width */
 	0,	/* Height */
-	0	/* Bpp */
+	0,	/* Bpp */
+	0,	/* Fps */
 };
 
 /*---- Variables ---*/
@@ -173,6 +174,12 @@ int CheckParm(int argc,char **argv)
 	}
 #endif
 
+	/*--- Check for fps ---*/
+	p = ParmPresent("-fps", argc, argv);
+	if (p) {
+		params.fps = 1;
+	}
+
 	return 1;
 }
 
@@ -193,6 +200,7 @@ void DisplayUsage(void)
 		"  [-width <w>] (width of video mode, default=%d)\n"
 		"  [-height <h>] (height of video mode, default=%d)\n"
 		"  [-bpp <b>] (bits per pixel for video mode, default=%d)\n"
+		"  [-fps] (enable fps display)\n"
 #ifdef ENABLE_SCRIPT_DISASM
 		"  [-dumpscript] (enable script dump when loading room)\n"
 #endif

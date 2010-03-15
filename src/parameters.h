@@ -1,7 +1,7 @@
 /*
 	Command line parameters
 
-	Copyright (C) 2003	Patrice Mandin
+	Copyright (C) 2003-2010	Patrice Mandin
 	
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ typedef struct {
 	int width;
 	int height;
 	int bpp;
+	int fps;		/* Display frames per second */
 } params_t;
 
 /*--- Variables ---*/
