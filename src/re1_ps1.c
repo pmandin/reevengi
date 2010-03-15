@@ -33,6 +33,7 @@
 #include "model_emd.h"
 #include "log.h"
 #include "room_rdt.h"
+#include "render.h"
 
 /*--- Defines ---*/
 
@@ -47,7 +48,7 @@ static const char *re1ps1_room = "psx%s/stage%d/room%d%02x0.rdt";
 static const char *re1ps1_model1 = "psx%s/enemy/char1%d.emd";
 static const char *re1ps1_model2 = "psx%s/enemy/em10%02x.emd";
 static const char *re1ps1_model3 = "psx%s/enemy/em11%02x.emd";
-static const char *re1pcgame_font = "psx%s/data/font.tim";
+static const char *re1ps1_font = "psx%s/data/font.tim";
 
 static const char *re1ps1demo_movies[] = {
 	"psx/movie/capcom.str",
@@ -101,6 +102,9 @@ static int re1ps1_loadroom_rdt(const char *filename);
 
 render_skel_t *re1ps1_load_model(int num_model);
 
+static void load_font(void);
+static void get_char_pos(int ascii, int *x, int *y);
+
 /*--- Functions ---*/
 
 void re1ps1_init(state_t *game_state)
@@ -116,6 +120,9 @@ void re1ps1_init(state_t *game_state)
 	}
 
 	game_state->priv_load_model = re1ps1_load_model;
+
+	game_state->load_font = load_font;
+	game_state->get_char_pos = get_char_pos;
 }
 
 static void re1ps1_shutdown(void)
@@ -264,4 +271,42 @@ render_skel_t *re1ps1_load_model(int num_model)
 
 	free(filepath);
 	return model;
+}
+
+static void load_font(void)
+{
+	Uint8 *font_file;
+	PHYSFS_sint64 length;
+	int retval = 0;
+	char *filepath;
+	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	const char *filename = re1ps1_font;
+
+	filepath = malloc(strlen(filename)+16);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, filename, is_shock);
+
+	logMsg(1, "Loading font from %s...\n", filepath);
+
+	font_file = FS_Load(filepath, &length);
+	if (font_file) {
+		game_state.font = render.createTexture(0);
+		if (game_state.font) {
+			game_state.font->load_from_tim(game_state.font, font_file);
+			retval = 1;
+		}
+
+		free(font_file);
+	}
+
+	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
+
+	free(filepath);
+}
+
+static void get_char_pos(int ascii, int *x, int *y)
+{
 }

@@ -98,6 +98,9 @@ static int re1pcgame_loadroom_rdt(const char *filename);
 
 static render_skel_t *re1pcgame_load_model(int num_model);
 
+static void load_font(void);
+static void get_char_pos(int ascii, int *x, int *y);
+
 /*--- Functions ---*/
 
 void re1pcgame_init(state_t *game_state)
@@ -109,6 +112,9 @@ void re1pcgame_init(state_t *game_state)
 	game_state->movies_list = (char **) re1pcgame_movies;
 
 	game_state->priv_load_model = re1pcgame_load_model;
+
+	game_state->load_font = load_font;
+	game_state->get_char_pos = get_char_pos;
 }
 
 void re1pcgame_shutdown(void)
@@ -354,4 +360,30 @@ render_skel_t *re1pcgame_load_model(int num_model)
 
 	free(filepath);
 	return model;
+}
+
+static void load_font(void)
+{
+	Uint8 *font_file;
+	PHYSFS_sint64 length;
+	int retval = 0;
+
+	logMsg(1, "Loading font from %s...\n", re1pcgame_font);
+
+	font_file = FS_Load(re1pcgame_font, &length);
+	if (font_file) {
+		game_state.font = render.createTexture(0);
+		if (game_state.font) {
+			game_state.font->load_from_tim(game_state.font, font_file);
+			retval = 1;
+		}
+
+		free(font_file);
+	}
+
+	logMsg(1, "Loading font from %s... %s\n", re1pcgame_font, retval ? "Done" : "Failed");
+}
+
+static void get_char_pos(int ascii, int *x, int *y)
+{
 }
