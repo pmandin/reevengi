@@ -172,6 +172,7 @@ int main(int argc, char **argv)
 	switch_mode=1;
 
 	/* Init viewer */
+	game_state.load_font();
 	clockInit();
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:

@@ -121,6 +121,9 @@ static void state_unloadroom(void);
 
 static render_skel_t *state_loadmodel(int num_model);
 
+static void state_loadfont(void);
+static void state_get_char_pos(int ascii, int *x, int *y);
+
 static void state_unloadmodels(void);
 
 /*--- Functions ---*/
@@ -143,6 +146,8 @@ void state_init(void)
 	game_state.load_room = state_loadroom;
 	game_state.load_background = state_loadbackground;
 	game_state.load_model = state_loadmodel;
+	game_state.load_font = state_loadfont;
+	game_state.get_char_pos = state_get_char_pos;
 	game_state.shutdown = state_shutdown;
 }
 
@@ -151,6 +156,11 @@ static void state_shutdown(void)
 	state_unloadmodels();
 	state_unloadbackground();
 	state_unloadroom();
+
+	if (game_state.font) {
+		game_state.font->shutdown(game_state.font);
+		game_state.font = NULL;
+	}
 
 	if (game_state.priv_shutdown) {
 		(*game_state.priv_shutdown)();
@@ -303,6 +313,14 @@ int state_getnummovies(void)
 	for (i=0; movie[i]; i++) {
 	}
 	return i;
+}
+
+void state_loadfont(void)
+{
+}
+
+static void state_get_char_pos(int ascii, int *x, int *y)
+{
 }
 
 /* Detect some game version */

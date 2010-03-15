@@ -81,6 +81,9 @@ typedef struct {
 	/* Movie filename */
 	char *cur_movie/*[1024]*/;
 
+	/* Font for ASCII text */
+	render_texture_t *font;
+
 	/*--- RDT room manager */
 	room_t *room;
 
@@ -99,6 +102,8 @@ typedef struct {
 	void (*load_background)(void);
 	void (*load_room)(void);
 	render_skel_t *(*load_model)(int num_model);
+	void (*load_font)(void);
+	void (*get_char_pos)(int ascii, int *x, int *y);
 	void (*shutdown)(void);
 } state_t;
 
