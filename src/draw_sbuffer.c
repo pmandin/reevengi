@@ -767,6 +767,10 @@ static int check_behind(const sbuffer_segment_t *seg1, const sbuffer_segment_t *
 	dw1 = s1w2 - s1w1;
 	dw2 = s2w2 - s2w1;
 
+	if (dw2 - dw1 < 0.0001f) {
+		return SEG1_FRONT;
+	}
+
 	*cx = x1 + (((s1w1-s2w1)*dx)/(dw2-dw1));
 
 	if (*cx == x1) {
