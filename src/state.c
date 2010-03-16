@@ -124,6 +124,8 @@ static render_skel_t *state_loadmodel(int num_model);
 static void state_loadfont(void);
 static void state_get_char(int ascii, int *x, int *y, int *w, int *h);
 
+static void state_get_model_name(char name[32]);
+
 static void state_unloadmodels(void);
 
 /*--- Functions ---*/
@@ -141,6 +143,8 @@ void state_init(void)
 	/*memset(game_state.cur_movie, 0, sizeof(game_state.cur_movie));*/
 	game_state.cur_movie = NULL;
 
+	game_state.num_model = 0;
+
 	state_detect();
 
 	game_state.load_room = state_loadroom;
@@ -148,6 +152,7 @@ void state_init(void)
 	game_state.load_model = state_loadmodel;
 	game_state.load_font = state_loadfont;
 	game_state.get_char = state_get_char;
+	game_state.get_model_name = state_get_model_name;
 	game_state.shutdown = state_shutdown;
 
 #ifdef ENABLE_DEBUG_POS
@@ -330,6 +335,11 @@ static void state_get_char(int ascii, int *x, int *y, int *w, int *h)
 {
 	*x = *y = 0;
 	*w = *h = 8;
+}
+
+static void state_get_model_name(char name[32])
+{
+	memset(name, 0, sizeof(name));
 }
 
 /* Detect some game version */

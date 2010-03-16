@@ -97,7 +97,6 @@ static int reload_room = 1;
 static int refresh_bg = 1;
 static int reload_model = 1;
 
-static int num_model = 0;
 static render_skel_t *player_model = NULL;
 static int render_model = RENDER_WIREFRAME;
 static int prev_render_model = -1;
@@ -220,23 +219,23 @@ void view_background_input(SDL_Event *event)
 				reload_bg = 1;
 				break;						
 			case KEY_MODEL_DOWN:
-				--num_model;
-				if (num_model<0) {
-					num_model=0;
+				--game_state.num_model;
+				if (game_state.num_model<0) {
+					game_state.num_model=0;
 				} else {
 					reload_model = 1;
 				}
 				break;
 			case KEY_MODEL_UP:
-				++num_model;
-				if (num_model>100) {
-					num_model=100;
+				++game_state.num_model;
+				if (game_state.num_model>100) {
+					game_state.num_model=100;
 				} else {
 					reload_model = 1;
 				}
 				break;
 			case KEY_MODEL_RESET:
-				num_model = 0;
+				game_state.num_model = 0;
 				reload_model = 1;
 				break;
 			case KEY_TOGGLE_GRID:
@@ -371,7 +370,7 @@ void view_background_update(void)
 			refresh_bg = 0;
 		}
 		if (reload_model) {
-			player_model = game_state.load_model(num_model);
+			player_model = game_state.load_model(game_state.num_model);
 			reload_model = 0;
 		}
 

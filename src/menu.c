@@ -53,9 +53,13 @@ typedef struct {
 	void *str;	/* Pointer to string or int value */
 } menu_t;
 
+/*--- Variables ---*/
+
+static char model_name[32];
+
 /*--- Constants ---*/
 
-menu_t main_menu[1+6+8]={
+menu_t main_menu[1+8+8]={
 	{0,0, STR_TYPE_TEXT, PACKAGE_STRING},
 
 	{0,2, STR_TYPE_TEXT, "Stage :"},
@@ -64,15 +68,17 @@ menu_t main_menu[1+6+8]={
 	{8,3, STR_TYPE_HEXA2, &game_state.num_room},
 	{0,4, STR_TYPE_TEXT, "Camera:"},
 	{8,4, STR_TYPE_HEXA2, &game_state.num_camera},
+	{0,5, STR_TYPE_TEXT, "Model :"},
+	{8,5, STR_TYPE_TEXT, model_name},
 
-	{0,6, STR_TYPE_TEXT, "Player X:"},
-	{10,6, STR_TYPE_FLOAT_AS_INT, &game_state.player_x},
-	{0,7, STR_TYPE_TEXT, "Player Y:"},
-	{10,7, STR_TYPE_FLOAT_AS_INT, &game_state.player_y},
-	{0,8, STR_TYPE_TEXT, "Player Z:"},
-	{10,8, STR_TYPE_FLOAT_AS_INT, &game_state.player_z},
-	{0,9, STR_TYPE_TEXT, "Player A:"},
-	{10,9, STR_TYPE_FLOAT_AS_INT, &game_state.player_a}
+	{0,7, STR_TYPE_TEXT, "Player X:"},
+	{10,7, STR_TYPE_FLOAT_AS_INT, &game_state.player_x},
+	{0,8, STR_TYPE_TEXT, "Player Y:"},
+	{10,8, STR_TYPE_FLOAT_AS_INT, &game_state.player_y},
+	{0,9, STR_TYPE_TEXT, "Player Z:"},
+	{10,9, STR_TYPE_FLOAT_AS_INT, &game_state.player_z},
+	{0,10, STR_TYPE_TEXT, "Player A:"},
+	{10,10, STR_TYPE_FLOAT_AS_INT, &game_state.player_a}
 };
 
 /*--- Functions ---*/
@@ -81,6 +87,8 @@ void menu_render(void)
 {
 	int i, x,y;
 	char tmpstr[32];
+
+	game_state.get_model_name(model_name);
 
 	x = START_X;
 	y = START_Y;

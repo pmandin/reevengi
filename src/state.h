@@ -92,6 +92,8 @@ typedef struct {
 	room_t *room;
 
 	/*--- EMD model manager ---*/
+	int num_model;
+
 	int model_list_count;
 	model_item_t *model_list;
 
@@ -111,6 +113,7 @@ typedef struct {
 	render_skel_t *(*load_model)(int num_model);
 	void (*load_font)(void);
 	void (*get_char)(int ascii, int *x, int *y, int *w, int *h);
+	void (*get_model_name)(char name[32]);
 	void (*shutdown)(void);
 } state_t;
 
