@@ -25,6 +25,10 @@
 #include "render_texture.h"
 #include "render_skel.h"
 
+/*--- Defines ---*/
+
+/*#define ENABLE_DEBUG_POS	1*/
+
 /*--- Enums ---*/
 
 enum {
@@ -90,6 +94,9 @@ typedef struct {
 	/*--- EMD model manager ---*/
 	int model_list_count;
 	model_item_t *model_list;
+
+	/*--- Player position and angle */
+	float player_x, player_y, player_z, player_a;
 
 	/*--- Private functions, for backend ---*/
 	void (*priv_load_background)(void);

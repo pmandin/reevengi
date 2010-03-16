@@ -149,6 +149,13 @@ void state_init(void)
 	game_state.load_font = state_loadfont;
 	game_state.get_char = state_get_char;
 	game_state.shutdown = state_shutdown;
+
+#ifdef ENABLE_DEBUG_POS
+	game_state.player_x = 13148.0f;
+	game_state.player_y = -2466.0f;
+	game_state.player_z = 3367.0f;
+	game_state.player_a = 157.0f;
+#endif
 }
 
 static void state_shutdown(void)
