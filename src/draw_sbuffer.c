@@ -1013,6 +1013,13 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 		if (x1 == x2) {
 			DEBUG_PRINT((" new single pixel at %d\n", x1));
 
+			/* Skip if we already inserted some part of it before */
+			if (segbase_inserted) {
+				DEBUG_PRINT(("  skip part already inserted\n"));
+				row->num_segs += segbase_inserted;
+				return;
+			}
+
 			/* Skip if new behind current */
 			if (calc_w(&(row->segment[current->id]), x1) > calc_w(segment, x1)) {
 				DEBUG_PRINT(("  new behind current, stop\n"));
