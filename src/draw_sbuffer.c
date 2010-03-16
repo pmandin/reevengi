@@ -48,7 +48,7 @@
 #define CLIP_REJECT(a,b) (a&b)
 #define CLIP_ACCEPT(a,b) (!(a|b))
 
-#define NUM_SEGMENTS 32
+#define NUM_SEGMENTS 128
 #define NUM_SEGMENTS_DATA 128
 
 #define SEG1_FRONT 0
