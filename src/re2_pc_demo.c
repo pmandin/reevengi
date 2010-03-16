@@ -77,6 +77,8 @@ static render_skel_t *re2pcdemo_load_model(int num_model);
 static void load_font(void);
 static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
+static void get_model_name(char name[32]);
+
 /*--- Functions ---*/
 
 void re2pcdemo_init(state_t *game_state)
@@ -94,6 +96,8 @@ void re2pcdemo_init(state_t *game_state)
 
 	game_state->load_font = load_font;
 	game_state->get_char = get_char;
+
+	game_state->get_model_name = get_model_name;
 }
 
 static void re2pcdemo_shutdown(void)
@@ -327,4 +331,15 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 	ascii -= 32;
 	*x = (ascii & 31)<<3;
 	*y = (ascii>>5)*10;
+}
+
+static void get_model_name(char name[32])
+{
+	int num_model = game_state.num_model;
+
+	if (num_model>MAX_MODELS-1) {
+		num_model = MAX_MODELS-1;
+	}
+
+	sprintf(name, "em0%02x.emd", map_models[num_model]);
 }

@@ -129,6 +129,8 @@ static render_skel_t *re3pc_load_model(int num_model);
 static void load_font(void);
 static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
+static void get_model_name(char name[32]);
+
 /*--- Functions ---*/
 
 void re3pc_init(state_t *game_state)
@@ -167,6 +169,8 @@ void re3pc_init(state_t *game_state)
 
 	game_state->load_font = load_font;
 	game_state->get_char = get_char;
+
+	game_state->get_model_name = get_model_name;
 }
 
 void re3pc_shutdown(void)
@@ -468,4 +472,24 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 	ascii -= 32;
 	*x = 128+ ((ascii & 15)<<3);
 	*y = 176+ ((ascii>>4)*10);
+}
+
+static void get_model_name(char name[32])
+{
+	int num_model = game_state.num_model;
+
+	switch (game_state.version) {
+		case GAME_RE3_PC_DEMO:
+			if (num_model>MAX_MODELS_DEMO-1) {
+				num_model = MAX_MODELS_DEMO-1;
+			}
+			sprintf(name, "em0%02x.emd", map_models_demo[num_model]);
+			break;
+		case GAME_RE3_PC_GAME:
+			if (num_model>MAX_MODELS_GAME-1) {
+				num_model = MAX_MODELS_GAME-1;
+			}
+			sprintf(name, "em0%02x.emd", map_models_game[num_model]);
+			break;
+	}
 }

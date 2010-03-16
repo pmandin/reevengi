@@ -105,6 +105,8 @@ render_skel_t *re1ps1_load_model(int num_model);
 static void load_font(void);
 static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
+static void get_model_name(char name[32]);
+
 /*--- Functions ---*/
 
 void re1ps1_init(state_t *game_state)
@@ -123,6 +125,8 @@ void re1ps1_init(state_t *game_state)
 
 	game_state->load_font = load_font;
 	game_state->get_char = get_char;
+
+	game_state->get_model_name = get_model_name;
 }
 
 static void re1ps1_shutdown(void)
@@ -232,6 +236,10 @@ render_skel_t *re1ps1_load_model(int num_model)
 	void *emd;
 	PHYSFS_sint64 emd_length;
 
+	if (num_model>64) {
+		num_model = 64;
+	}
+
 	if (num_model>0x03) {
 		filename = re1ps1_model2;
 		num_model -= 4;
@@ -245,9 +253,6 @@ render_skel_t *re1ps1_load_model(int num_model)
 	if (num_model>0x31) {
 		filename = re1ps1_model3;
 		num_model -= 0x32;
-	}
-	if (num_model>0x15) {
-		num_model = 0x15;
 	}
 
 	filepath = malloc(strlen(filename)+16);
@@ -319,4 +324,31 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 	ascii -= 32;
 	*x = (ascii & 31)<<3;
 	*y = (ascii>>5)<<3;
+}
+
+static void get_model_name(char name[32])
+{
+	const char *filename = "char1%d.emd";
+	int num_model = game_state.num_model;
+
+	if (num_model>64) {
+		num_model = 64;
+	}
+
+	if (num_model>0x03) {
+		filename = "em10%02x.emd";
+		num_model -= 4;
+		if (num_model>0x15) {
+			num_model += 0x20-0x16;
+		}
+		if (num_model>0x2e) {
+			num_model += 1;
+		}
+	}
+	if (num_model>0x31) {
+		filename = "em11%02x.emd";
+		num_model -= 0x32;
+	}
+
+	sprintf(name, filename, num_model);
 }
