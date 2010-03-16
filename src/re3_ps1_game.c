@@ -75,7 +75,7 @@ static const char *re3ps1game_movies[] = {
 
 /*--- Variables ---*/
 
-static int game_lang = 'f';
+static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
@@ -98,6 +98,10 @@ void re3ps1game_init(state_t *game_state)
 	game_state->priv_shutdown = re3ps1game_shutdown;
 
 	game_state->movies_list = (char **) re3ps1game_movies;
+
+	if (state_game_file_exists("cd_data/etc/sele_obf.tim")) {
+		game_lang = 'f';
+	}
 
 	game_state->load_font = load_font;
 	game_state->get_char = get_char;
