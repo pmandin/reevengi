@@ -22,6 +22,7 @@
 /*--- Includes ---*/
 
 #include <SDL.h>
+#include <stdio.h>
 
 #include "parameters.h"
 #include "video.h"
