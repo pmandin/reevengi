@@ -70,6 +70,8 @@ Use at your own risks.
 "-dumpscript" to dump room scripts. Verbosity must be 1 or higher. Set to 2 to
   also display corresponding byte codes.
 
+"-fps" to dump frames per second.
+
 
 3 Controls
 ----------
@@ -84,6 +86,7 @@ F3		filled rendering for model
 F4		gouraud rendering for model
 F5		textured rendering for model
 F6		toggle between depth and color buffer
+F10		toggle menu on/off
 Alt+Enter	toggle between fullscreen and windowed mode.
 
 A		decrement gamma
