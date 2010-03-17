@@ -39,17 +39,28 @@
 
 /*--- Defines ---*/
 
+#define NUM_COUNTRIES 6
+
 /*--- Types ---*/
 
 /*--- Constant ---*/
 
-static const char *re1pcgame_bg = "horr/usa/stage%d/rc%d%02x%d.pak";
-/*static const char *re1pcgame_bgmask = "horr/usa/objspr/osp%02d%02d%d.pak";*/
-static const char *re1pcgame_room = "horr/usa/stage%d/room%d%02x0.rdt";
-static const char *re1pcgame_model1 = "horr/usa/enemy/char1%d.emd";
-static const char *re1pcgame_model2 = "horr/usa/enemy/em10%02x.emd";
-static const char *re1pcgame_model3 = "horr/usa/enemy/em11%02x.emd";
-static const char *re1pcgame_font = "horr/usa/data/fontus.tim";
+static const char *re1_country[6]={
+	"horr/usa",
+	"horr/ger",
+	"horr/jpn",
+	"usa",
+	"ger",
+	"jpn"
+};
+
+static const char *re1pcgame_bg = "%s/stage%d/rc%d%02x%d.pak";
+/*static const char *re1pcgame_bgmask = "%s/objspr/osp%02d%02d%d.pak";*/
+static const char *re1pcgame_room = "%s/stage%d/room%d%02x0.rdt";
+static const char *re1pcgame_model1 = "%s/enemy/char1%d.emd";
+static const char *re1pcgame_model2 = "%s/enemy/em10%02x.emd";
+static const char *re1pcgame_model3 = "%s/enemy/em11%02x.emd";
+static const char *re1pcgame_font = "%s/data/fontus.tim";
 
 static const char *re1pcgame_movies[] = {
 	"horr/usa/movie/capcom.avi",
@@ -84,6 +95,8 @@ static const char *re1pcgame_movies[] = {
 
 /*--- Variables ---*/
 
+static int game_country = 0;
+
 /*--- Functions prototypes ---*/
 
 static void re1pcgame_shutdown(void);
@@ -107,6 +120,17 @@ static void get_model_name(char name[32]);
 
 void re1pcgame_init(state_t *game_state)
 {
+	int i;
+	char filename[32];
+
+	for (i=0; i<NUM_COUNTRIES; i++) {
+		sprintf(filename, "%s/data/capcom.ptc", re1_country[i]);
+		if (state_game_file_exists(filename)) {
+			game_country = i;
+			break;
+		}
+	}
+
 	game_state->priv_load_background = re1pcgame_loadbackground;
 	game_state->priv_load_room = re1pcgame_loadroom;
 	game_state->priv_shutdown = re1pcgame_shutdown;
@@ -161,12 +185,12 @@ void re1pcgame_loadbackground(void)
 		}
 	}
 
-	filepath = malloc(strlen(re1pcgame_bg)+8);
+	filepath = malloc(strlen(re1pcgame_bg)+32);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1pcgame_bg, re1_stage, re1_stage,
+	sprintf(filepath, re1pcgame_bg, re1_country[game_country], re1_stage, re1_stage,
 		game_state.num_room, game_state.num_camera);
 
 	logMsg(1, "pak: Start loading %s ...\n", filepath);
@@ -185,12 +209,12 @@ static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)
 {
 	char *filepath;
 
-	filepath = malloc(strlen(re1pcgame_bgmask)+8);
+	filepath = malloc(strlen(re1pcgame_bgmask)+32);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1pcgame_bgmask, re1_stage-1,
+	sprintf(filepath, re1pcgame_bgmask, re1_country[game_country], re1_stage-1,
 		game_state.num_room, game_state.num_camera);
 
 	logMsg(1, "pak: Start loading %s ...\n", filepath);
@@ -280,12 +304,13 @@ static void re1pcgame_loadroom(void)
 {
 	char *filepath;
 
-	filepath = malloc(strlen(re1pcgame_room)+8);
+	filepath = malloc(strlen(re1pcgame_room)+32);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1pcgame_room, game_state.num_stage, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re1pcgame_room, re1_country[game_country],
+		game_state.num_stage, game_state.num_stage, game_state.num_room);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
@@ -344,12 +369,12 @@ render_skel_t *re1pcgame_load_model(int num_model)
 		num_model -= 0x34;
 	}
 
-	filepath = malloc(strlen(filename)+8);
+	filepath = malloc(strlen(filename)+32);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, filename, num_model);
+	sprintf(filepath, filename, re1_country[game_country], num_model);
 
 	logMsg(1, "emd: Start loading model %s...\n", filepath);
 
@@ -372,10 +397,18 @@ static void load_font(void)
 	Uint8 *font_file;
 	PHYSFS_sint64 length;
 	int retval = 0;
+	char *filepath;
 
 	logMsg(1, "Loading font from %s...\n", re1pcgame_font);
 
-	font_file = FS_Load(re1pcgame_font, &length);
+	filepath = malloc(strlen(re1pcgame_font)+32);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re1pcgame_font, re1_country[game_country]);
+
+	font_file = FS_Load(filepath, &length);
 	if (font_file) {
 		game_state.font = render.createTexture(0);
 		if (game_state.font) {
@@ -386,7 +419,9 @@ static void load_font(void)
 		free(font_file);
 	}
 
-	logMsg(1, "Loading font from %s... %s\n", re1pcgame_font, retval ? "Done" : "Failed");
+	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
+
+	free(filepath);
 }
 
 static void get_char(int ascii, int *x, int *y, int *w, int *h)

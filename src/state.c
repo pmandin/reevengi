@@ -48,7 +48,12 @@ const game_detect_t game_detect[]={
 	{GAME_RE2_PC_DEMO_P, "Regist/LeonP.exe", "Resident Evil 2 Preview, PC"},
 	{GAME_RE2_PC_DEMO_U, "regist/leonu.exe", "Resident Evil 2 Preview, PC"},
 
-	{GAME_RE1_PC_GAME, "horr/usa/data/capcom.ptc", "Resident Evil, PC"},
+	{GAME_RE1_PC_GAME, "horr/usa/data/capcom.ptc", "Resident Evil (US), PC"},
+	{GAME_RE1_PC_GAME, "horr/ger/data/capcom.ptc", "Resident Evil (DE), PC"},
+	{GAME_RE1_PC_GAME, "horr/jpn/data/capcom.ptc", "Resident Evil (JP), PC"},
+	{GAME_RE1_PC_GAME, "usa/data/capcom.ptc", "Resident Evil (US), PC"},
+	{GAME_RE1_PC_GAME, "ger/data/capcom.ptc", "Resident Evil (DE), PC"},
+	{GAME_RE1_PC_GAME, "jpn/data/capcom.ptc", "Resident Evil (JP), PC"},
 
 	{GAME_RE3_PS1_GAME, "sles_025.28", "Resident Evil 3: Nemesis (UK), PS1"},
 	{GAME_RE3_PS1_GAME, "sles_025.29", "Resident Evil 3: Nemesis (UK), PS1"},
