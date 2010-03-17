@@ -113,112 +113,112 @@ offset table at 131b8de0 (sector 136298) ?
 	05de8d10	41867		em17.tim	0c562420
 	05e04f40	41916		em17.emd	020ac310
 
-					em13.tim
-	0563fdc0			em13.emd
-					em15.tim
-	031cdf40			em15.emd
-					em16.tim
-	033af260			em16.emd
-					em18.tim
-	15728010			em18.emd
-					em19.tim
-	08d38d00			em19.emd
-					em1a.tim
-	0a1affc0			em1a.emd
-					em1b.tim
-	12955dd0			em1b.emd
-					em21.tim
-	06f9c8d0			em21.emd
-					em22.tim
-	13d92770			em22.emd
-					em23.tim
-	046727d0			em23.emd
-					em24.tim
-	13a7a9e0			em24.emd
-					em25.tim
-	0f54e490			em25.emd
-					em26.tim
-	0f2b9ef0			em26.emd
-					em27.tim
-	08e894e0			em27.emd
-					em28.tim
-	046daff0			em28.emd
-					em2c.tim
-	08776380			em2c.emd
+	115ec930	123905		em13.tim
+	0563fdc0	38452		em13.emd
+	03e92fb0	27897		em15.tim
+	031cdf40	22204		em15.emd
+	033eee30	23153		em16.tim
+	033af260	23042		em16.emd
+	157021b0	152921		em18.tim	009b65e0
+	15728010	152987		em18.emd
+	00364380	1512		em19.tim
+	08d38d00	62960		em19.emd
+	02e95f30	20769		em1a.tim
+	0a1affc0	72084		em1a.emd
+	1291d9a0	132461		em1b.tim
+	12955dd0	132559		em1b.emd
+	06f92ce0	49742		em21.tim
+	06f9c8d0	49759		em21.emd
+	12bc0df0	133637		em22.tim
+	13d92770	141581		em22.emd
+	046565a0	31358		em23.tim
+	046727d0	31407		em23.emd
+	13a67ab0	140169		em24.tim
+	13a7a9e0	140202		em24.emd
+	0f53b560	109330		em25.tim
+	0f54e490	109363		em25.emd
+	0f2b02c0	108196		em26.tim
+	0f2b9ef0	108213		em26.emd
+	08e7f8a0	63528		em27.tim
+	08e894e0	63546		em27.emd
+	046c80c0	31556		em28.tim
+	046daff0	31589		em28.emd
+	08763450	60359		em2c.tim
+	08776380	60392		em2c.emd
 					em2e.tim
 					em2e.emd
-					em30.tim
-	14a86940			em30.emd
-					em32.tim
-	089a8f40			em32.emd
-					em33.tim
-	0a5f1470			em33.emd
-					em35.tim
-	0ff4b480			em35.emd
+	14a60ad0	147289		em30.tim
+	14a86940	147356		em30.emd
+	0899f310	61355		em32.tim	0167a330
+	089a8f40	61372		em32.emd
+	0a5cb610	73915		em33.tim
+	0a5f1470	73981		em33.emd	026334e0
+	0ff1c320	113734		em35.tim
+	0ff4b480	113816		em35.emd
 					em36.tim
-	0f3561f0			em36.emd
-					em37.tim
-	0f3966f0			em37.emd
-					em38.tim
-	171855f0			em38.emd
-					em39.tim
-	171dca70			em39.emd
-					em3a.tim
-	0c0dd0d0			em3a.emd
-					em3b.tim
-	0ff84b40			em3b.emd
-					em3e.tim
-	174bc3a0			em3e.emd
-					em3f.tim
-	16c233f0			em3f.emd
-					em40.tim
-	0fab2b50			em40.emd
+	0f3561f0	108485		em36.emd
+	0f38cac0	108580		em37.tim
+	0f3966f0	108597		em37.emd
+	1715f790	164675		em38.tim
+	171855f0	164741		em38.emd
+	171d2e30	164875		em39.tim
+	171dca70	164893		em39.emd
+	0c0c0e90	85933		em3a.tim
+	0c0dd0d0	85983		em3a.emd
+	0f38cac0	108580		em3b.tim
+	0ff84b40	113916		em3b.emd
+	174a9470	166141		em3e.tim
+	174bc3a0	166174		em3e.emd
+	16c104b0	162307		em3f.tim
+	16c233f0	162341		em3f.emd
+	0faa8f20	111750		em40.tim
+	0fab2b50	111767		em40.emd
 					em50.tim
-	097d6970			em50.emd
-					em51.tim
-	0a9b9690			em51.emd
-					em52.tim
-	063f20a0			em52.emd
-					em55.tim
-	0641a3c0			em55.emd
-					em56.tim
-	134a3ed0			em56.emd
+	097d6970	67693		em50.emd
+	0a9a6750	75633		em51.tim
+	0a9b9690	75667		em51.emd
+	063df170	44525		em52.tim
+	063f20a0	44558		em52.emd
+	06407490	44595		em55.tim
+	0641a3c0	44628		em55.emd
+	13490fa0	137566		em56.tim
+	134a3ed0	137599		em56.emd
 					em57.tim
-	1ce9b730			em57.emd
-					em59.tim
-	02f156d0			em59.emd
-					em5a.tim
-	06441db0			em5a.emd
-					em5b.tim
-	0aca22c0			em5b.emd
-					em5c.tim
-	064697a0			em5c.emd
+	1ce9b730	206241		em57.emd
+	02f027a0	20958		em59.tim
+	02f156d0	20991		em59.emd
+	0642ee80	44664		em5a.tim
+	06441db0	44697		em5a.emd
+	01ca30d0	12767		em5b.tim
+	0aca22c0	76964		em5b.emd
+	06456870	44733		em5c.tim
+	064697a0	44766		em5c.emd
 					em5d.tim
 					em5d.emd
 					em5e.tim
 					em5e.emd
-					em5f.tim
-	10769f40			em5f.emd
-					em60.tim
-	16790fd0			em60.emd
-					em61.tim
-	186315f0			em61.emd
-					em62.tim
-	0acca5e0			em62.emd
-					em63.tim
-	0acf2900			em63.emd
-					em64.tim
-	0ad1ac20			em64.emd
-					em65.tim
-	0ad42f40			em65.emd
-					em66.tim
-	0ad6b260			em66.emd
-					em67.tim
-	186586b0			em67.emd
+	01e0a990			em5f.tim (no 2352 sectors)
+	10769f40	117436		em5f.emd
+	1677e0a0	160270		em60.tim
+	16790fd0	160303		em60.emd
+	1861e6c0	173924		em61.tim
+	186315f0	173957		em61.emd
+	01e5a1c4			em62.tim (no 2352 sectors)
+	0acca5e0	77034		em62.emd
+	01ea9a38			em63.tim (no 2352 sectors)
+	0acf2900	77104		em63.emd
+	01ef939c			em64.tim (no 2352 sectors)
+	0ad1ac20	77174		em64.emd
+	01f488e0			em65.tim (no 2352 sectors)
+	0ad42f40	77244		em65.emd
+	01f98598			em66.tim (no 2352 sectors)
+	0ad6b260	77314		em66.emd
+	18645780	173992		em67.tim
+	186586b0	174025		em67.emd
 					em70.tim
-	0aca22c0			em70.emd
+	0aca22c0	77409		em70.emd
 					em71.tim
-	0acca5e0			em71.emd
+	0acca5e0	77034		em71.emd
 */
 
 /*--- Variables ---*/
