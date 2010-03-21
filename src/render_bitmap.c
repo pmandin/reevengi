@@ -74,6 +74,22 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 
 static void shutdown(render_bitmap_t *this)
 {
+	if (scalex_src2dst) {
+		free(scalex_src2dst);
+		scalex_src2dst=NULL;
+	}
+	if (scalex_src2dst) {
+		free(scaley_src2dst);
+		scaley_src2dst=NULL;
+	}
+	if (scalex_dst2src) {
+		free(scalex_dst2src);
+		scalex_dst2src=NULL;
+	}
+	if (scaley_dst2src) {
+		free(scaley_dst2src);
+		scaley_dst2src=NULL;
+	}
 }
 
 static void clipSource(int x, int y, int w, int h)
@@ -118,6 +134,23 @@ static void setScaler(int srcw, int srch, int dstw, int dsth)
 	render.bitmap.dstHeight = dsth;
 
 	refresh_scaled_version(&video, render.texture, dstw,dsth);
+
+	if (srcw>sizex_src2dst) {
+		scalex_src2dst = (Uint16 *) realloc(scalex_src2dst, sizeof(Uint16) * srcw);
+		sizex_src2dst = srcw;
+	}
+	if (srch>sizey_src2dst) {
+		scaley_src2dst = (Uint16 *) realloc(scaley_src2dst, sizeof(Uint16) * srch);
+		sizey_src2dst = srch;
+	}
+	if (dstw>sizex_dst2src) {
+		scalex_dst2src = (Uint16 *) realloc(scalex_dst2src, sizeof(Uint16) * dstw);
+		sizex_dst2src = dstw;
+	}
+	if (dsth>sizey_dst2src) {
+		scaley_dst2src = (Uint16 *) realloc(scaley_dst2src, sizeof(Uint16) * dsth);
+		sizey_dst2src = dsth;
+	}
 }
 
 static void setDepth(int enabled, float depth)
