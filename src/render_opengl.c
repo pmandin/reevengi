@@ -145,6 +145,7 @@ void render_opengl_init(render_t *render)
 
 static void render_opengl_shutdown(render_t *render)
 {
+	render->bitmap.shutdown(&render->bitmap);
 	list_render_texture_shutdown();
 	list_render_skel_shutdown();
 }

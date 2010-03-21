@@ -161,6 +161,7 @@ void render_soft_init(render_t *render)
 
 static void render_soft_shutdown(render_t *render)
 {
+	render->bitmap.shutdown(&render->bitmap);
 	render->draw.shutdown(&render->draw);
 	list_render_texture_shutdown();
 	list_render_skel_shutdown();

@@ -29,6 +29,8 @@
 typedef struct render_bitmap_s render_bitmap_t;
 
 struct render_bitmap_s {
+	void (*shutdown)(render_bitmap_t *this);
+
 	/* Select a rectangle in source texture */
 	void (*clipSource)(int x, int y, int w, int h);
 

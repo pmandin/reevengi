@@ -38,6 +38,8 @@
 
 /*--- Functions prototypes ---*/
 
+static void shutdown(render_bitmap_t *this);
+
 static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
 static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
@@ -53,7 +55,7 @@ static void setDepth(int enabled, float depth);
 static void setMasking(int enabled);
 static void drawImage(video_t *video);
 
-static void drawImageDepth();
+static void drawImageDepth(void);
 
 /*--- Functions ---*/
 
@@ -67,6 +69,11 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 	render.bitmap.setDepth = setDepth;
 	render.bitmap.setMasking = setMasking;
 	render.bitmap.drawImage = drawImage;
+	render.bitmap.shutdown = shutdown;
+}
+
+static void shutdown(render_bitmap_t *this)
+{
 }
 
 static void clipSource(int x, int y, int w, int h)
