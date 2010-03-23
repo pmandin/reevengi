@@ -56,12 +56,14 @@ struct render_bitmap_s {
 	float depth;
 
 	/* Scale X,Y table from src to dest (gives dst pixel for a given src) */
-	int sizex_src2dst, sizey_src2dst;
+	Uint16 sizex_src2dst, sizey_src2dst;
+	Uint16 numx_src2dst, numy_src2dst;
 	Uint16 *scalex_src2dst;
 	Uint16 *scaley_src2dst;
 
 	/* Scale X,Y table from dest to src (gives src pixel for a given dst) */
-	int sizex_dst2src, sizey_dst2src;
+	Uint16 sizex_dst2src, sizey_dst2src;
+	Uint16 numx_dst2src, numy_dst2src;
 	Uint16 *scalex_dst2src;
 	Uint16 *scaley_dst2src;
 };

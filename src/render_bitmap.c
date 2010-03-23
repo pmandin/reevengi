@@ -74,21 +74,21 @@ void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
 
 static void shutdown(render_bitmap_t *this)
 {
-	if (scalex_src2dst) {
-		free(scalex_src2dst);
-		scalex_src2dst=NULL;
+	if (this->scalex_src2dst) {
+		free(this->scalex_src2dst);
+		this->scalex_src2dst=NULL;
 	}
-	if (scalex_src2dst) {
-		free(scaley_src2dst);
-		scaley_src2dst=NULL;
+	if (this->scalex_src2dst) {
+		free(this->scaley_src2dst);
+		this->scaley_src2dst=NULL;
 	}
-	if (scalex_dst2src) {
-		free(scalex_dst2src);
-		scalex_dst2src=NULL;
+	if (this->scalex_dst2src) {
+		free(this->scalex_dst2src);
+		this->scalex_dst2src=NULL;
 	}
-	if (scaley_dst2src) {
-		free(scaley_dst2src);
-		scaley_dst2src=NULL;
+	if (this->scaley_dst2src) {
+		free(this->scaley_dst2src);
+		this->scaley_dst2src=NULL;
 	}
 }
 
@@ -128,29 +128,55 @@ static void clipDest(int x, int y, int w, int h)
 
 static void setScaler(int srcw, int srch, int dstw, int dsth)
 {
-	render.bitmap.srcWidth = srcw;
-	render.bitmap.srcHeight = srch;
-	render.bitmap.dstWidth = dstw;
-	render.bitmap.dstHeight = dsth;
+	int i;
+	render_bitmap_t *this = &render.bitmap;
+
+	this->srcWidth = srcw;
+	this->srcHeight = srch;
+	this->dstWidth = dstw;
+	this->dstHeight = dsth;
+
+	if (srcw>this->sizex_src2dst) {
+		this->scalex_src2dst = (Uint16 *) realloc(this->scalex_src2dst, sizeof(Uint16) * srcw);
+		this->sizex_src2dst = srcw;
+	}
+	if (srch>this->sizey_src2dst) {
+		this->scaley_src2dst = (Uint16 *) realloc(this->scaley_src2dst, sizeof(Uint16) * srch);
+		this->sizey_src2dst = srch;
+	}
+	if (dstw>this->sizex_dst2src) {
+		this->scalex_dst2src = (Uint16 *) realloc(this->scalex_dst2src, sizeof(Uint16) * dstw);
+		this->sizex_dst2src = dstw;
+	}
+	if (dsth>this->sizey_dst2src) {
+		this->scaley_dst2src = (Uint16 *) realloc(this->scaley_dst2src, sizeof(Uint16) * dsth);
+		this->sizey_dst2src = dsth;
+	}
+
+	if ((srcw!=this->numx_src2dst) || (dstw!=this->numx_dst2src)) {
+		for (i=0; i<srcw; i++) {
+			this->scalex_src2dst[i] = (i*dstw)/srcw;
+		}
+		this->numx_src2dst = srcw;
+
+		for (i=0; i<dstw; i++) {
+			this->scalex_dst2src[i] = (i*srcw)/dstw;
+		}
+		this->numx_dst2src = dstw;
+	}
+	if ((srch!=this->numy_src2dst) || (dsth!=this->numy_dst2src)) {
+		for (i=0; i<srch; i++) {
+			this->scaley_src2dst[i] = (i*dsth)/srch;
+		}
+		this->numy_src2dst = srch;
+
+		for (i=0; i<dsth; i++) {
+			this->scaley_dst2src[i] = (i*srch)/dsth;
+		}
+		this->numy_dst2src = dsth;
+	}
 
 	refresh_scaled_version(&video, render.texture, dstw,dsth);
-
-	if (srcw>sizex_src2dst) {
-		scalex_src2dst = (Uint16 *) realloc(scalex_src2dst, sizeof(Uint16) * srcw);
-		sizex_src2dst = srcw;
-	}
-	if (srch>sizey_src2dst) {
-		scaley_src2dst = (Uint16 *) realloc(scaley_src2dst, sizeof(Uint16) * srch);
-		sizey_src2dst = srch;
-	}
-	if (dstw>sizex_dst2src) {
-		scalex_dst2src = (Uint16 *) realloc(scalex_dst2src, sizeof(Uint16) * dstw);
-		sizex_dst2src = dstw;
-	}
-	if (dsth>sizey_dst2src) {
-		scaley_dst2src = (Uint16 *) realloc(scaley_dst2src, sizeof(Uint16) * dsth);
-		sizey_dst2src = dsth;
-	}
 }
 
 static void setDepth(int enabled, float depth)
@@ -166,43 +192,45 @@ static void setMasking(int enabled)
 
 static void drawImage(video_t *video)
 {
+	render_bitmap_t *this = &render.bitmap;
+
 	if (!render.texture)
 		return;
 
 	/* Clip in source texture */
 	if (render.bitmap.srcRect.x<0) {
 		render.bitmap.srcRect.w += render.bitmap.srcRect.x;
-		render.bitmap.dstRect.x -= (render.bitmap.srcRect.x*render.bitmap.dstWidth)/render.bitmap.srcWidth;
+		render.bitmap.dstRect.x -= this->scalex_src2dst[render.bitmap.srcRect.x];
 		render.bitmap.srcRect.x = 0;
 	} else if (render.bitmap.srcRect.x+render.bitmap.srcRect.w>render.texture->w) {
 		render.bitmap.srcRect.w = render.texture->w - render.bitmap.srcRect.x;
-		render.bitmap.dstRect.w = (render.bitmap.srcRect.w*render.bitmap.dstWidth)/render.bitmap.srcWidth;
+		render.bitmap.dstRect.w = this->scalex_src2dst[render.bitmap.srcRect.w];
 	}
 	if (render.bitmap.srcRect.y<0) {
 		render.bitmap.srcRect.h += render.bitmap.srcRect.y;
-		render.bitmap.dstRect.y -= (render.bitmap.srcRect.y*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+		render.bitmap.dstRect.y -= this->scaley_src2dst[render.bitmap.srcRect.y];
 		render.bitmap.srcRect.y = 0;
 	} else if (render.bitmap.srcRect.y+render.bitmap.srcRect.h>render.texture->h) {
 		render.bitmap.srcRect.h = render.texture->h - render.bitmap.srcRect.y;
-		render.bitmap.dstRect.h = (render.bitmap.srcRect.h*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+		render.bitmap.dstRect.h = this->scaley_src2dst[render.bitmap.srcRect.h];
 	}
 
 	/* Clip in dest screen */
 	if (render.bitmap.dstRect.x<video->viewport.x) {
 		render.bitmap.dstRect.w += render.bitmap.dstRect.x;
-		render.bitmap.srcRect.x -= (render.bitmap.dstRect.x*render.bitmap.srcWidth)/render.bitmap.dstWidth;
+		render.bitmap.srcRect.x -= this->scalex_dst2src[render.bitmap.dstRect.x];
 		render.bitmap.dstRect.x = 0;
 	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video->viewport.x+video->viewport.w) {
 		render.bitmap.dstRect.w = video->viewport.w - render.bitmap.dstRect.x;
-		render.bitmap.srcRect.w = (render.bitmap.dstRect.w*render.bitmap.srcWidth)/render.bitmap.dstWidth;
+		render.bitmap.srcRect.w = this->scalex_dst2src[render.bitmap.dstRect.w];
 	}
 	if (render.bitmap.dstRect.y<video->viewport.y) {
 		render.bitmap.dstRect.h += render.bitmap.dstRect.y;
-		render.bitmap.srcRect.y -= (render.bitmap.dstRect.y*render.bitmap.srcHeight)/render.bitmap.dstHeight;
+		render.bitmap.srcRect.y -= this->scaley_dst2src[render.bitmap.dstRect.y];
 		render.bitmap.dstRect.y = 0;
 	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video->viewport.y+video->viewport.h) {
 		render.bitmap.dstRect.h = video->viewport.h - render.bitmap.dstRect.y;
-		render.bitmap.srcRect.h = (render.bitmap.dstRect.h*render.bitmap.srcHeight)/render.bitmap.dstHeight;
+		render.bitmap.srcRect.h = this->scaley_dst2src[render.bitmap.dstRect.h];
 	}
 
 	/* Clipping for out of bounds in source */
@@ -234,10 +262,10 @@ static void drawImage(video_t *video)
 	if (render.texture->scaled) {
 		SDL_Rect scaled_src;
 
-		scaled_src.x = (render.bitmap.srcRect.x*render.bitmap.dstWidth)/render.bitmap.srcWidth;
-		scaled_src.y = (render.bitmap.srcRect.y*render.bitmap.dstHeight)/render.bitmap.srcHeight;
-		scaled_src.w = (render.bitmap.srcRect.w*render.bitmap.dstWidth)/render.bitmap.srcWidth;
-		scaled_src.h = (render.bitmap.srcRect.h*render.bitmap.dstHeight)/render.bitmap.srcHeight;
+		scaled_src.x = this->scalex_src2dst[render.bitmap.srcRect.x];
+		scaled_src.y = this->scaley_src2dst[render.bitmap.srcRect.y];
+		scaled_src.w = this->scalex_src2dst[render.bitmap.srcRect.w];
+		scaled_src.h = this->scaley_src2dst[render.bitmap.srcRect.h];
 
 		if (render.useDirtyRects) {
 			bitmapScaledScDirty(video, &scaled_src, &render.bitmap.dstRect);
