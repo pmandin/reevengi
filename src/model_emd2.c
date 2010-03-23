@@ -32,8 +32,6 @@
 #define EMD_SKELETON 2
 #define EMD_MESHES 7
 
-#define ID_EMX36	0x0001b6b4UL
-
 /*--- Types ---*/
 
 typedef struct {
@@ -147,7 +145,7 @@ render_skel_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 t
 static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *texture)
 {
 	Uint32 *hdr_offsets, skel_offset, mesh_offset;
-	int i,j, ismodel36;
+	int i,j;
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_relpos_t *emd_skel_relpos;
 	emd_skel_data_t *emd_skel_data;
@@ -162,8 +160,6 @@ static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *tex
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) emd_file)[SDL_SwapLE32(emd_header->offset)]);
-
-	ismodel36 = (SDL_SwapLE32(emd_header->offset) == ID_EMX36);
 
 	/* Offset 2: Skeleton */
 	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
@@ -344,9 +340,6 @@ static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *tex
 			mesh_tri.tx[2] = j*3+2;
 
 			mesh_tri.txpal = SDL_SwapLE16(emd_tri_tex[j].clutid) & 3;
-			if (ismodel36) {
-				mesh_tri.txpal = 0;
-			}
 
 			mesh->addTriangle(mesh, &mesh_tri);
 		}
@@ -378,9 +371,6 @@ static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *tex
 			mesh_quad.tx[3] = start_tx + j*4+3;
 
 			mesh_quad.txpal = SDL_SwapLE16(emd_quad_tex[j].clutid) & 3;
-			if (ismodel36) {
-				mesh_quad.txpal = 0;
-			}
 
 			mesh->addQuad(mesh, &mesh_quad);
 		}
