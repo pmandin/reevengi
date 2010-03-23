@@ -942,9 +942,13 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 		/* Finish before current ? Insert before it
 			ccccc
 		nnnnnn
+		  nnnnnnn
 		*/
-		if (x2 < current->x1) {
-			DEBUG_PRINT(("  finish before %d\n",ic));
+		if (x2 <= current->x1) {
+			DEBUG_PRINT(("  finish before or equal start %d\n",ic));
+			if (x2 == current->x1) {
+				--x2;
+			}
 			insert_data_segment(num_segs,ic,y, x1,x2);
 			++row->num_segs;
 			return;
