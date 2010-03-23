@@ -43,8 +43,10 @@ void render_text(const char *str, int x, int y)
 	render.set_blending(1);
 	render.set_useDirtyRects(0);
 	render.bitmap.setMasking(0);
-	render.bitmap.setScaler(video.viewport.w,video.viewport.h,
-		video.viewport.w,video.viewport.h);
+	/*render.bitmap.setScaler(video.viewport.w,video.viewport.h,
+		video.viewport.w,video.viewport.h);*/
+	render.bitmap.setScaler(render.texture->w,render.texture->h,
+		render.texture->w,render.texture->h);
 	render.bitmap.setDepth(0, 0.0f);
 
 	while (c=*str++) {
