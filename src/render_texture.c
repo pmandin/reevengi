@@ -189,7 +189,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	int num_colors, num_palettes, i,j, paletted, img_offset;
 	int w,h, tim_type;
 	tim_size_t *tim_size;
-	SDL_PixelFormat *fmt = video.screen->format;
+	SDL_PixelFormat *fmt = &(this->format);
 	int bytes_per_pixel;
 
 	if (!this || !tim_ptr) {
