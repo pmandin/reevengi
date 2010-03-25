@@ -69,6 +69,7 @@ render_texture_t *render_texture_create(int flags)
 	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
 
 	tex->bpp = video.screen->format->BytesPerPixel;
+	/* FIXME: copy palette from format elsewhere */
 	memcpy(&(tex->format), video.screen->format, sizeof(SDL_PixelFormat));
 	tex->format.palette = NULL;
 
@@ -189,7 +190,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	int num_colors, num_palettes, i,j, paletted, img_offset;
 	int w,h, tim_type;
 	tim_size_t *tim_size;
-	SDL_PixelFormat *fmt = &(this->format);
+	SDL_PixelFormat *fmt = video.screen->format /*&(this->format)*/;
 	int bytes_per_pixel;
 
 	if (!this || !tim_ptr) {
