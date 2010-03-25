@@ -100,7 +100,7 @@ static int num_re2_images = 0;
 
 static int game_player = 0;
 
-static int game_lang = 'F';
+static int game_lang = 'U';
 
 /*--- Functions prototypes ---*/
 
@@ -142,6 +142,9 @@ void re2pcgame_init(state_t *game_state)
 			if (state_game_file_exists("PL0/RDS/ROOM1000.RDT")) {
 				game_lang = 'S';
 			}
+			if (state_game_file_exists("PL0/RDF/ROOM1000.RDT")) {
+				game_lang = 'F';
+			}
 			break;
 		case GAME_RE2_PC_GAME_CLAIRE:
 			game_state->movies_list = (char **) re2pcgame_claire_movies;
@@ -151,6 +154,9 @@ void re2pcgame_init(state_t *game_state)
 			}
 			if (state_game_file_exists("PL1/RDS/ROOM1001.RDT")) {
 				game_lang = 'S';
+			}
+			if (state_game_file_exists("PL1/RDF/ROOM1001.RDT")) {
+				game_lang = 'F';
 			}
 			break;
 	}
