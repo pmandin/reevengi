@@ -112,9 +112,9 @@ static const re3cd_raw_t re3_sles_02530[]={
 	{787,0,"dmerc_t4.tim"},
 	{799,0,"dmerc_t5.tim"},
 	{811,0,"dmerc_t6.tim"},
-	{823,0,"fax_i.tim"},
-	{840,0,"fax_t0.tim"},
-	{852,0,"fax_t1.tim"},
+	{823,0,"fax1_i.tim"},
+	{840,0,"fax1_t0.tim"},
+	{852,0,"fax1_t1.tim"},
 	{864,0,"marvin_i.tim"},
 	{881,0,"marvin_t0.tim"},
 	{893,0,"marvin_t1.tim"},
@@ -148,170 +148,169 @@ static const re3cd_raw_t re3_sles_02530[]={
 	{1249,0,"inst_t4.tim"},
 	{1261,0,"nmerc_i.tim"},
 	{1278,0,"nmerc_t0.tim"},
+	{1290,0,"nmerc_t1.tim"},
+	{1302,0,"nmerc_t2.tim"},
+	{1314,0,"nmerc_t3.tim"},
+	{1326,0,"nmerc_t4.tim"},
+	{1338,0,"nmerc_t5.tim"},
+	{1350,0,"nmerc_t6.tim"},
+	{1362,0,"postcard_i.tim"},
+	{1379,0,"postcard_t0.tim"},
+	{1391,0,"postcard_t1.tim"},
+	{1403,0,"postcard_t2.tim"},
+	{1415,0,"super_i.tim"},
+	{1432,0,"super_t0.tim"},
+	{1444,0,"super_t1.tim"},
+	{1456,0,"super_t2.tim"},
+	{1468,0,"super_t3.tim"},
+	{1480,0,"super_t4.tim"},
+	{1492,0,"super_t5.tim"},
+	{1504,0,"order_i.tim"},
+	{1521,0,"order_t0.tim"},
+	{1533,0,"order_t1.tim"},
+	{1545,0,"order_t2.tim"},
+	{1557,0,"director_i.tim"},
+	{1574,0,"director_t0.tim"},
+	{1586,0,"director_t1.tim"},
+	{1598,0,"director_t2.tim"},
+	{1610,0,"director_t3.tim"},
+	{1622,0,"director_t4.tim"},
+	{1634,0,"director_t5.tim"},
+	{1646,0,"director_t6.tim"},
+	{1658,0,"manager1_i.tim"},
+	{1675,0,"manager1_t0.tim"},
+	{1687,0,"manager1_t1.tim"},
+	{1699,0,"manager1_t2.tim"},
+	{1711,0,"manager1_t3.tim"},
+	{1723,0,"manager1_t4.tim"},
+	{1735,0,"manager1_t5.tim"},
+	{1747,0,"manager1_t6.tim"},
+	{1759,0,"manager1_t7.tim"},
+	{1771,0,"security_i.tim"},
+	{1788,0,"security_t0.tim"},
+	{1800,0,"security_t1.tim"},
+	{1812,0,"security_t2.tim"},
+	{1824,0,"security_t3.tim"},
+	{1836,0,"meca_i.tim"},
+	{1853,0,"meca_t0.tim"},
+	{1865,0,"meca_t1.tim"},
+	{1877,0,"meca_t2.tim"},
+	{1889,0,"meca_t3.tim"},
+	{1901,0,"meca_t4.tim"},
+	{1913,0,"kendo_i.tim"},
+	{1930,0,"kendo_t0.tim"},
+	{1942,0,"kendo_t1.tim"},
+	{1954,0,"kendo_t2.tim"},
+	{1966,0,"kendo_t3.tim"},
+	{1978,0,"kendo_t4.tim"},
+	{1990,0,"kendo_t5.tim"},
+	{2002,0,"manager2_i.tim"},
+	{2019,0,"manager2_t0.tim"},
+	{2031,0,"manager2_t1.tim"},
+	{2043,0,"manager2_t2.tim"},
+	{2055,0,"manager2_t3.tim"},
+	{2067,0,"manager2_t4.tim"},
+	{2079,0,"manager2_t5.tim"},
+	{2091,0,"medic_i.tim"},
+	{2108,0,"medic_t0.tim"},
+	{2120,0,"medic_t1.tim"},
+	{2132,0,"medic_t2.tim"},
+	{2144,0,"medic_t3.tim"},
+	{2156,0,"fax2_i.tim"},
+	{2173,0,"fax2_t0.tim"},
+	{2185,0,"fax2_t1.tim"},
+	{2197,0,"incinerator_i.tim"},
+	{2214,0,"incinerator_t0.tim"},
+	{2226,0,"incinerator_t1.tim"},
+	{2238,0,"incinerator_t2.tim"},
+	{2250,0,"incinerator_t3.tim"},
+	{2262,0,"photoa_i.tim"},
+	{2279,0,"photoa_t0.tim"},
+	{2291,0,"photoa_t1.tim"},
+	{2303,0,"photoa_t2.tim"},
+	{2315,0,"photoa_t3.tim"},
+	{2327,0,"photob_i.tim"},
+	{2344,0,"photob_t0.tim"},
+	{2356,0,"photob_t1.tim"},
+	{2368,0,"photob_t2.tim"},
+	{2380,0,"photob_t3.tim"},
+	{2392,0,"photoc_i.tim"},
+	{2409,0,"photoc_t0.tim"},
+	{2421,0,"photoc_t1.tim"},
+	{2433,0,"photoc_t2.tim"},
+	{2445,0,"photoe_i.tim"},
+	{2462,0,"photoe_t0.tim"},
+	{2474,0,"photoe_t1.tim"},
+	{2486,0,"photoe_t2.tim"},
+	{2498,0,"photod_i.tim"},
+	{2515,0,"photod_t0.tim"},
+	{2527,0,"photod_t1.tim"},
+	{2539,0,"photod_t2.tim"},
+	{2551,0,"photod_t3.tim"},
+	{2563,0,"belfry_i.tim"},
+	{2580,0,"belfry_t0.tim"},
+	{2592,0,"belfry_t1.tim"},
+	{2604,0,"belfry_t2.tim"},
+	{2616,0,"belfry_t3.tim"},
+	{2628,0,"instb_i.tim"},
+	{2645,0,"instb_t0.tim"},
+	{2657,0,"instb_t1.tim"},
+	{2669,0,"instb_t2.tim"},
+	{2681,0,"instb_t3.tim"},
+	{2693,0,"instb_t4.tim"},
+	{2705,0,"instb_t5.tim"},
+	{2717,0,"instb_t6.tim"},
+	{2729,0,"instb_t7.tim"},
+	{2741,0,"secret_i.tim"},
+	{2758,0,"secret_t0.tim"},
+	{2770,0,"secret_t1.tim"},
+	{2782,0,"secret_t2.tim"},
+	{2794,0,"djill_i.tim"},
+	{2811,0,"djill_t0.tim"},
+	{2823,0,"djill_t1.tim"},
+	{2835,0,"djill_t2.tim"},
+	{2847,0,"djill_t3.tim"},
+	{2859,0,"djill_t4.tim"},
+	{2871,0,"djill_t5.tim"},
+	{2883,0,"djill_t6.tim"},
+	{2895,0,"djill_t7.tim"},
+	{2907,0,"fileif.tim"},
+	{2924,0,"filei.tim"},
+	{2941,0,"fontst0f.tim"},
+	{3006,0,"fontst1f.tim"},
+	{3071,0,"fontst2f.tim"},
+	{3136,0,"fontst3f.tim"},
+	{3201,0,"fontst4f.tim"},
+	{3266,0,"fontst5f.tim"},
+	{3331,0,"fontst6f.tim"},
+	{3396,0,"fontst7f.tim"},
+	{3461,0,"nemesis_icon.tim"},
+	{3505,0,"colt1.tim"},
+	{3510,0,"knife.tim"},
+	{3515,0,"colt2.tim"},
+	{3520,0,"colt3.tim"},
+	{3525,0,"shotgun1.tim"},
+	{3530,0,"magnum.tim"},
+	{3535,0,"grenade_launcher1.tim"},
+	{3540,0,"grenade_launcher2.tim"},
+	{3545,0,"grenade_launcher3.tim"},
+	{3550,0,"grenade_launcher4.tim"},
+	{3555,0,"rocket_launcher.tim"},
+	{3560,0,"gattling.tim"},
+	{3565,0,"supercolt.tim"},
+	{3570,0,"lasercolt.tim"},
+	{3575,0,"m16_1.tim"},
+	{3580,0,"m16_2.tim"},
+	{3585,0,"shotgun2.tim"},
+	{3590,0,"colt4.tim"}, copy
+	{3595,0,"colt5.tim"}, copy
+	{3600,0,"shotgun.tim"}, copy
+	{3605,0,"supercolt.tim"}, copy
+	{3610,0,"photoa_t2.tim"},
+	{3615,0,"photoa_t2.tim"},
+	{3620,0,"photoa_t2.tim"},
+	{3625,0,"photoa_t2.tim"},
 
-	{1290,0,"report_t1.tim"},
-	{1302,0,"report_t1.tim"},
-	{1314,0,"report_t1.tim"},
-	{1326,0,"report_t1.tim"},
-	{1338,0,"report_t1.tim"},
-	{1350,0,"report_t1.tim"},
-	{1362,0,"report_t1.tim"},
-	{1379,0,"report_t1.tim"},
-	{1391,0,"report_t1.tim"},
-	{1403,0,"report_t1.tim"},
-	{1415,0,"report_t1.tim"},
-	{1432,0,"report_t1.tim"},
-	{1444,0,"report_t1.tim"},
-	{1456,0,"report_t1.tim"},
-	{1468,0,"report_t1.tim"},
-	{1480,0,"report_t1.tim"},
-	{1492,0,"report_t1.tim"},
-	{1504,0,"report_t1.tim"},
-	{1521,0,"report_t1.tim"},
-	{1533,0,"report_t1.tim"},
-	{1545,0,"report_t1.tim"},
-	{1557,0,"report_t1.tim"},
-	{1574,0,"report_t1.tim"},
-	{1586,0,"report_t1.tim"},
-	{1598,0,"report_t1.tim"},
-	{1610,0,"report_t1.tim"},
-	{1622,0,"report_t1.tim"},
-	{1634,0,"report_t1.tim"},
-	{1646,0,"report_t1.tim"},
-	{1658,0,"report_t1.tim"},
-	{1675,0,"report_t1.tim"},
-	{1687,0,"report_t1.tim"},
-	{1699,0,"report_t1.tim"},
-	{1711,0,"report_t1.tim"},
-	{1723,0,"report_t1.tim"},
-	{1735,0,"report_t1.tim"},
-	{1747,0,"report_t1.tim"},
-	{1759,0,"report_t1.tim"},
-	{1771,0,"report_t1.tim"},
-	{1788,0,"report_t1.tim"},
-	{1800,0,"report_t1.tim"},
-	{1812,0,"report_t1.tim"},
-	{1824,0,"report_t1.tim"},
-	{1836,0,"report_t1.tim"},
-	{1853,0,"report_t1.tim"},
-	{1865,0,"report_t1.tim"},
-	{1877,0,"report_t1.tim"},
-	{1889,0,"report_t1.tim"},
-	{1901,0,"report_t1.tim"},
-	{1913,0,"report_t1.tim"},
-	{1930,0,"report_t1.tim"},
-	{1942,0,"report_t1.tim"},
-	{1954,0,"report_t1.tim"},
-	{1966,0,"report_t1.tim"},
-	{1978,0,"report_t1.tim"},
-	{1990,0,"report_t1.tim"},
-
-Sector 2002 (offset 0x0047d978): 8 bits TIM image
-Sector 2019 (offset 0x004875a8): 4 bits TIM image
-Sector 2031 (offset 0x0048e3e8): 4 bits TIM image
-Sector 2043 (offset 0x00495228): 4 bits TIM image
-Sector 2055 (offset 0x0049c068): 4 bits TIM image
-Sector 2067 (offset 0x004a2ea8): 4 bits TIM image
-Sector 2079 (offset 0x004a9ce8): 4 bits TIM image
-Sector 2091 (offset 0x004b0b28): 8 bits TIM image
-Sector 2108 (offset 0x004ba758): 4 bits TIM image
-Sector 2120 (offset 0x004c1598): 4 bits TIM image
-Sector 2132 (offset 0x004c83d8): 4 bits TIM image
-Sector 2144 (offset 0x004cf218): 4 bits TIM image
-Sector 2156 (offset 0x004d6058): 8 bits TIM image
-Sector 2173 (offset 0x004dfc88): 4 bits TIM image
-Sector 2185 (offset 0x004e6ac8): 4 bits TIM image
-Sector 2197 (offset 0x004ed908): 8 bits TIM image
-Sector 2214 (offset 0x004f7538): 4 bits TIM image
-Sector 2226 (offset 0x004fe378): 4 bits TIM image
-Sector 2238 (offset 0x005051b8): 4 bits TIM image
-Sector 2250 (offset 0x0050bff8): 4 bits TIM image
-Sector 2262 (offset 0x00512e38): 8 bits TIM image
-Sector 2279 (offset 0x0051ca68): 4 bits TIM image
-Sector 2291 (offset 0x005238a8): 4 bits TIM image
-Sector 2303 (offset 0x0052a6e8): 4 bits TIM image
-Sector 2315 (offset 0x00531528): 4 bits TIM image
-Sector 2327 (offset 0x00538368): 8 bits TIM image
-Sector 2344 (offset 0x00541f98): 4 bits TIM image
-Sector 2356 (offset 0x00548dd8): 4 bits TIM image
-Sector 2368 (offset 0x0054fc18): 4 bits TIM image
-Sector 2380 (offset 0x00556a58): 4 bits TIM image
-Sector 2392 (offset 0x0055d898): 8 bits TIM image
-Sector 2409 (offset 0x005674c8): 4 bits TIM image
-Sector 2421 (offset 0x0056e308): 4 bits TIM image
-Sector 2433 (offset 0x00575148): 4 bits TIM image
-Sector 2445 (offset 0x0057bf88): 8 bits TIM image
-Sector 2462 (offset 0x00585bb8): 4 bits TIM image
-Sector 2474 (offset 0x0058c9f8): 4 bits TIM image
-Sector 2486 (offset 0x00593838): 4 bits TIM image
-Sector 2498 (offset 0x0059a678): 8 bits TIM image
-Sector 2515 (offset 0x005a42a8): 4 bits TIM image
-Sector 2527 (offset 0x005ab0e8): 4 bits TIM image
-Sector 2539 (offset 0x005b1f28): 4 bits TIM image
-Sector 2551 (offset 0x005b8d68): 4 bits TIM image
-Sector 2563 (offset 0x005bfba8): 8 bits TIM image
-Sector 2580 (offset 0x005c97d8): 4 bits TIM image
-Sector 2592 (offset 0x005d0618): 4 bits TIM image
-Sector 2604 (offset 0x005d7458): 4 bits TIM image
-Sector 2616 (offset 0x005de298): 4 bits TIM image
-Sector 2628 (offset 0x005e50d8): 8 bits TIM image
-Sector 2645 (offset 0x005eed08): 4 bits TIM image
-Sector 2657 (offset 0x005f5b48): 4 bits TIM image
-Sector 2669 (offset 0x005fc988): 4 bits TIM image
-Sector 2681 (offset 0x006037c8): 4 bits TIM image
-Sector 2693 (offset 0x0060a608): 4 bits TIM image
-Sector 2705 (offset 0x00611448): 4 bits TIM image
-Sector 2717 (offset 0x00618288): 4 bits TIM image
-Sector 2729 (offset 0x0061f0c8): 4 bits TIM image
-Sector 2741 (offset 0x00625f08): 8 bits TIM image
-Sector 2758 (offset 0x0062fb38): 4 bits TIM image
-Sector 2770 (offset 0x00636978): 4 bits TIM image
-Sector 2782 (offset 0x0063d7b8): 4 bits TIM image
-Sector 2794 (offset 0x006445f8): 8 bits TIM image
-Sector 2811 (offset 0x0064e228): 4 bits TIM image
-Sector 2823 (offset 0x00655068): 4 bits TIM image
-Sector 2835 (offset 0x0065bea8): 4 bits TIM image
-Sector 2847 (offset 0x00662ce8): 4 bits TIM image
-Sector 2859 (offset 0x00669b28): 4 bits TIM image
-Sector 2871 (offset 0x00670968): 4 bits TIM image
-Sector 2883 (offset 0x006777a8): 4 bits TIM image
-Sector 2895 (offset 0x0067e5e8): 4 bits TIM image
-Sector 2907 (offset 0x00685428): 8 bits TIM image
-Sector 2924 (offset 0x0068f058): 8 bits TIM image
-Sector 2941 (offset 0x00698c88): 4 bits TIM image
-Sector 3006 (offset 0x006be1b8): 4 bits TIM image
-Sector 3071 (offset 0x006e36e8): 4 bits TIM image
-Sector 3136 (offset 0x00708c18): 4 bits TIM image
-Sector 3201 (offset 0x0072e148): 4 bits TIM image
-Sector 3266 (offset 0x00753678): 4 bits TIM image
-Sector 3331 (offset 0x00778ba8): 4 bits TIM image
-Sector 3396 (offset 0x0079e0d8): 4 bits TIM image
-Sector 3461 (offset 0x007c3608): 4 bits TIM image
-Sector 3505 (offset 0x007dca48): 8 bits TIM image
-Sector 3510 (offset 0x007df838): 8 bits TIM image
-Sector 3515 (offset 0x007e2628): 8 bits TIM image
-Sector 3520 (offset 0x007e5418): 8 bits TIM image
-Sector 3525 (offset 0x007e8208): 8 bits TIM image
-Sector 3530 (offset 0x007eaff8): 8 bits TIM image
-Sector 3535 (offset 0x007edde8): 8 bits TIM image
-Sector 3540 (offset 0x007f0bd8): 8 bits TIM image
-Sector 3545 (offset 0x007f39c8): 8 bits TIM image
-Sector 3550 (offset 0x007f67b8): 8 bits TIM image
-Sector 3555 (offset 0x007f95a8): 8 bits TIM image
-Sector 3560 (offset 0x007fc398): 8 bits TIM image
-Sector 3565 (offset 0x007ff188): 8 bits TIM image
-Sector 3570 (offset 0x00801f78): 8 bits TIM image
-Sector 3575 (offset 0x00804d68): 8 bits TIM image
-Sector 3580 (offset 0x00807b58): 8 bits TIM image
-Sector 3585 (offset 0x0080a948): 8 bits TIM image
-Sector 3590 (offset 0x0080d738): 8 bits TIM image
-Sector 3595 (offset 0x00810528): 8 bits TIM image
-Sector 3600 (offset 0x00813318): 8 bits TIM image
-Sector 3605 (offset 0x00816108): 8 bits TIM image
-Sector 3610 (offset 0x00818ef8): 8 bits TIM image
-Sector 3615 (offset 0x0081bce8): 8 bits TIM image
-Sector 3620 (offset 0x0081ead8): 8 bits TIM image
-Sector 3625 (offset 0x008218c8): 8 bits TIM image
 Sector 3630 (offset 0x008246b8): 8 bits TIM image
 Sector 3635 (offset 0x008274a8): 8 bits TIM image
 Sector 3640 (offset 0x0082a298): 8 bits TIM image
