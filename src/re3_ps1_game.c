@@ -51,8 +51,8 @@ typedef struct {
 } ard_object_t;
 
 typedef struct {
-	Uint32	start;	/* Start sector */
-	Uint16	count;	/* Number of sectors */
+	Uint32 start;	/* Start sector */
+	Uint16 count;	/* Number of sectors */
 	const char *filename;	/* File stored there */
 } re3_cdraw_t;
 
@@ -79,19 +79,7 @@ static const char *re3ps1game_movies[] = {
 	NULL
 };
 
-/*
-	(0x10),	(0x11),	(0x12),	0x13,	(0x14),	(0x15),	(0x16),	(0x17),
-	(0x18),	(0x19),	(0x1a),	(0x1b),	(0x1c),	(0x1d),	0x1e,	(0x1f),
-	(0x20),	(0x21),	(0x22),	(0x23),	(0x24),	(0x25),	(0x26),	(0x27),
-	(0x28),	(0x2c),	(0x2d),	0x2e,	(0x2f),	(0x30),	(0x32),	(0x33),
-	(0x34),	(0x35),	(0x36),	(0x37),	(0x38),	(0x39),	(0x3a),	0x3b,
-	(0x3e),	(0x3f),	(0x40),	(0x50),	(0x51),	(0x52),	(0x53),	(0x54),
-	(0x55),	(0x56),	0x57,	(0x58),	(0x59),	(0x5a),	(0x5b),	(0x5c),
-	0x5d,	0x5e,	(0x5f),	(0x60),	(0x61),	(0x62),	(0x63),	(0x64),
-	(0x65),	(0x66),	(0x67),	0x70,	0x71
-*/
-
-static const re3cd_raw_t re3_sles_02530[]={
+static const re3_cdraw_t re3_sles_02530[]={
 	{126,76,"capcom.tim"},
 	{202,82,"continue.tim"},
 	{284,32,"core00f.tim"},
@@ -614,12 +602,10 @@ static const re3cd_raw_t re3_sles_02530[]={
 	{191825,223,"room/emd08/em1d.emd"},
 	{196580,72,"room/emd08/em17.emd"},
 	{202819,62,"room/emd08/em18.emd"},
-	{202930,223,"room/emd/em57.emd"},
-
-	{0,0,""}
+	{202930,223,"room/emd/em57.emd"}
 };
 
-static const re3cd_raw_t re3_sles_02532[]={
+static const re3_cdraw_t re3_sles_02532[]={
 	{202,82,""},
 	{284,32,""},
 	{316,25,""},
@@ -1140,12 +1126,10 @@ static const re3cd_raw_t re3_sles_02532[]={
 	{191408,223,"room/emd08/em1d.emd"},
 	{196163,72,"room/emd08/em17.emd"},
 	{202402,62,"room/emd08/em18.emd"},
-	{202513,223,"room/emd/em57.emd"},
-
-	{0,0,""}
+	{202513,223,"room/emd/em57.emd"}
 };
 
-static const re3cd_raw_t re3_slus_00923[]={
+static const re3_cdraw_t re3_slus_00923[]={
 	{199,76,""},
 	{275,82,""},
 	{357,32,""},
@@ -1848,9 +1832,7 @@ static const re3cd_raw_t re3_slus_00923[]={
 	{195137,223,"room/emd08/em1d.emd"},
 	{199891,72,"room/emd08/em17.emd"},
 	{206130,62,"room/emd08/em18.emd"},
-	{206241,223,"room/emd/em57.emd"},
-
-	{0,0,""}
+	{206241,223,"room/emd/em57.emd"}
 };
 
 /*--- Variables ---*/
