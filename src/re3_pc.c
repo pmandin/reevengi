@@ -161,7 +161,12 @@ void re3pc_init(state_t *game_state)
 			break;
 		case GAME_RE3_PC_GAME:
 			game_state->movies_list = (char **) re3pcgame_movies;
-			game_lang = 'f';
+			if (state_game_file_exists("data_e/etc2/died00e.tim")) {
+				game_lang = 'e';
+			}
+			if (state_game_file_exists("data_f/etc2/died00f.tim")) {
+				game_lang = 'f';
+			}
 			break;
 	}
 
