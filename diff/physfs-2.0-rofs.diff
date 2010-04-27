@@ -1,0 +1,1214 @@
+diff -r 5491e6c69162 CMakeLists.txt
+--- a/CMakeLists.txt	Thu Apr 08 09:56:51 2010 -0400
++++ b/CMakeLists.txt	Tue Apr 27 21:15:53 2010 +0200
+@@ -149,6 +149,7 @@
+     src/archiver_wad.c
+     src/archiver_zip.c
+     src/archiver_iso9660.c
++    src/archiver_rofs.c
+     ${PHYSFS_BEOS_SRCS}
+ )
+ 
+@@ -277,6 +286,11 @@
+     ADD_DEFINITIONS(-DPHYSFS_SUPPORTS_ISO9660=1)
+ ENDIF(PHYSFS_ARCHIVE_ISO9660)
+ 
++OPTION(PHYSFS_ARCHIVE_ROFS "Enable Resident Evil 3 ROFS support" TRUE)
++IF(PHYSFS_ARCHIVE_ROFS)
++    ADD_DEFINITIONS(-DPHYSFS_SUPPORTS_ROFS=1)
++ENDIF(PHYSFS_ARCHIVE_ROFS)
++
+ 
+ # See if some archiver required zlib, and see about using system version.
+ 
+@@ -593,6 +607,7 @@
+ MESSAGE_BOOL_OPTION("HOG support" PHYSFS_ARCHIVE_HOG)
+ MESSAGE_BOOL_OPTION("MVL support" PHYSFS_ARCHIVE_MVL)
+ MESSAGE_BOOL_OPTION("QPAK support" PHYSFS_ARCHIVE_QPAK)
++MESSAGE_BOOL_OPTION("ROFS support" PHYSFS_ARCHIVE_ROFS)
+ MESSAGE_BOOL_OPTION("CD-ROM drive support" PHYSFS_HAVE_CDROM_SUPPORT)
+ MESSAGE_BOOL_OPTION("Thread safety" PHYSFS_HAVE_THREAD_SUPPORT)
+ MESSAGE_BOOL_OPTION("Build own zlib" PHYSFS_INTERNAL_ZLIB)
+diff -r 5491e6c69162 src/archiver_rofs.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/archiver_rofs.c	Tue Apr 27 21:15:53 2010 +0200
+@@ -0,0 +1,1095 @@
++/*
++ * Resident Evil 3 rofs<n>.dat support routines for PhysicsFS.
++ *
++ * This driver handles Resident Evil 3 archives.
++ *
++ * Please see the file LICENSE in the source's root directory.
++ *
++ * This file written by Patrice Mandin, based on the QPAK archiver by
++ *  Ryan C. Gordon.
++ */
++
++#if (defined PHYSFS_SUPPORTS_ROFS)
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <ctype.h>
++#include "physfs.h"
++
++#define __PHYSICSFS_INTERNAL__
++#include "physfs_internal.h"
++
++typedef struct
++{
++    PHYSFS_uint32 startPos;
++    PHYSFS_uint32 size;
++    char name[16+16+16]; /* room to store /dir1/dir2/filename */
++
++    int compression;
++
++    /* Block infos */
++    int num_blocks;
++    PHYSFS_uint32 *block_alloc;
++    PHYSFS_uint32 *block_startkey;
++    PHYSFS_uint32 *block_length;
++} ROFSentry;
++
++/* rofsinfo -> rofsentry level1 -> rofsentry level2 -> rofsentry files */
++
++typedef struct
++{
++    char *filename;
++    PHYSFS_sint64 last_mod_time;
++    PHYSFS_uint32 entryCount;
++    ROFSentry dirs[2];
++    ROFSentry *entries;
++} ROFSinfo;
++
++typedef struct {
++    /* Current decryption infos */
++    PHYSFS_uint32 curblock, curoffset;
++    PHYSFS_uint32 curkey, blockindex;
++    PHYSFS_uint8 xorkey, baseindex;
++} rofs_decrypt_t;
++
++enum {
++	ROFS_STATE_UNPACK_BYTE,
++	ROFS_STATE_UNPACK_BLOCK,
++	ROFS_STATE_COPY_BLOCK,
++	ROFS_STATE_ERROR
++};
++
++typedef struct {
++    int state;	/* above enum */
++
++    int src_num_bit, src_byte_num;
++    PHYSFS_uint8 src_bytes[2];
++    int lzss_pos, lzss_start, lzss_length, copy_length;
++    PHYSFS_uint8 *lzss_dict;
++} rofs_depack_t;
++
++typedef struct
++{
++    void *handle;
++    ROFSentry *entry;
++    PHYSFS_uint32 curPos;
++
++    rofs_decrypt_t decrypt;
++    rofs_depack_t depack;
++} ROFSfileinfo;
++
++typedef struct {
++	PHYSFS_uint16 offset;
++	PHYSFS_uint16 num_keys;
++	PHYSFS_uint32 length;
++	char ident[8];
++} rofs_dat_file_t;
++
++/*--- Decryption ---*/
++
++static const unsigned short base_array[64]={
++	0x00e6, 0x01a4, 0x00e6, 0x01c5,
++	0x0130, 0x00e8, 0x03db, 0x008b,
++	0x0141, 0x018e, 0x03ae, 0x0139,
++	0x00f0, 0x027a, 0x02c9, 0x01b0,
++	0x01f7, 0x0081, 0x0138, 0x0285,
++	0x025a, 0x015b, 0x030f, 0x0335,
++	0x02e4, 0x01f6, 0x0143, 0x00d1,
++	0x0337, 0x0385, 0x007b, 0x00c6,
++	0x0335, 0x0141, 0x0186, 0x02a1,
++	0x024d, 0x0342, 0x01fb, 0x03e5,
++	0x01b0, 0x006d, 0x0140, 0x00c0,
++	0x0386, 0x016b, 0x020b, 0x009a,
++	0x0241, 0x00de, 0x015e, 0x035a,
++	0x025b, 0x0154, 0x0068, 0x02e8,
++	0x0321, 0x0071, 0x01b0, 0x0232,
++	0x02d9, 0x0263, 0x0164, 0x0290
++};
++
++static PHYSFS_uint8 rofs_next_key(PHYSFS_uint32 *key)
++{
++	*key *= 0x5d588b65;
++	*key += 0x8000000b;
++
++	return (*key >> 24);
++}
++
++static PHYSFS_uint8 rofs_decrypt_byte(fvoid *opaque, PHYSFS_uint8 value)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++
++    if (finfo->decrypt.blockindex>base_array[finfo->decrypt.baseindex]) {
++        finfo->decrypt.baseindex = rofs_next_key(&finfo->decrypt.curkey) % 0x3f;
++        finfo->decrypt.xorkey = rofs_next_key(&finfo->decrypt.curkey);
++        finfo->decrypt.blockindex = 0;
++    }
++    finfo->decrypt.blockindex++;
++
++    return (value ^ finfo->decrypt.xorkey);
++}
++
++static void rofs_decrypt_block_init(fvoid *opaque)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++
++    finfo->decrypt.curoffset = 0;
++    finfo->decrypt.curkey = entry->block_startkey[finfo->decrypt.curblock];
++    finfo->decrypt.blockindex = 0;
++    finfo->decrypt.xorkey = rofs_next_key(&finfo->decrypt.curkey);
++    finfo->decrypt.baseindex = rofs_next_key(&finfo->decrypt.curkey) % 0x3f;
++}
++
++
++/*--- Decompression ---*/
++
++static void rofs_depack_block_init(fvoid *opaque)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    int i;
++
++    if (!finfo->depack.lzss_dict) {
++        finfo->depack.lzss_dict = (PHYSFS_uint8 *) allocator.Malloc(4096+256);
++    }
++
++    if (finfo->depack.lzss_dict) {
++        for (i=0; i<256; i++) {
++            memset(&(finfo->depack.lzss_dict)[i*16], i, 16);
++        }
++	memset(&(finfo->depack.lzss_dict)[4096], 0, 256);
++    }
++
++    finfo->depack.state = ROFS_STATE_UNPACK_BYTE;
++    finfo->depack.src_num_bit = 8;
++    finfo->depack.src_byte_num = 1;
++    finfo->depack.src_bytes[0] = 0;
++    finfo->depack.src_bytes[1] = 0;
++    finfo->depack.lzss_pos = 0;
++    finfo->depack.lzss_start = 0;
++    finfo->depack.lzss_length = 0;
++}
++
++#define ROFS_READ_BYTE() \
++{	\
++	PHYSFS_uint8 dummy;	\
++\
++        if (finfo->decrypt.curoffset >= entry->block_length[finfo->decrypt.curblock]) {	\
++		finfo->depack.state = ROFS_STATE_ERROR;	\
++		break;	\
++	}	\
++\
++	if (__PHYSFS_platformRead(finfo->handle, &dummy, 1, 1) != 1) {	\
++		finfo->depack.state = ROFS_STATE_ERROR;	\
++		break;	\
++	}	\
++\
++	dummy = rofs_decrypt_byte(opaque, dummy);	\
++        finfo->decrypt.curoffset++;	\
++\
++	finfo->depack.src_byte_num ^= 1;	\
++	finfo->depack.src_bytes[finfo->depack.src_byte_num] = dummy;	\
++}
++
++static int rofs_depack_block(fvoid *opaque, void *buffer,
++                             PHYSFS_uint32 srcLength, PHYSFS_uint32 dstLength)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++    PHYSFS_uint8 *dstBuffer = (PHYSFS_uint8 *) buffer;
++    int dstIndex = 0;
++
++    if (!finfo->depack.lzss_dict) {
++        return(0);
++    }
++
++    while ((dstIndex < dstLength) && (finfo->depack.state!=ROFS_STATE_ERROR)) {
++        switch(finfo->depack.state) {
++            case ROFS_STATE_UNPACK_BYTE:
++	        {
++	            PHYSFS_uint16 src_bitfield;
++
++                    if (finfo->depack.lzss_pos > 4095) {
++                        finfo->depack.lzss_pos = 0;
++                    }
++
++                    if (finfo->depack.src_num_bit==8) {
++                        finfo->depack.src_num_bit = 0;
++			ROFS_READ_BYTE();
++                    }
++
++                    finfo->depack.src_num_bit++;
++
++                    src_bitfield =
++		        finfo->depack.src_bytes[finfo->depack.src_byte_num] << finfo->depack.src_num_bit;
++
++                    ROFS_READ_BYTE();
++
++                    src_bitfield |=
++		        finfo->depack.src_bytes[finfo->depack.src_byte_num] >> (8-finfo->depack.src_num_bit);
++
++                    if (src_bitfield & (1<<8)) {
++                        /* Init copy from lzss dict */
++                        int value2;
++
++                        value2 =
++			    finfo->depack.src_bytes[finfo->depack.src_byte_num] << finfo->depack.src_num_bit;
++
++                        ROFS_READ_BYTE();
++
++                        value2 |= 
++			    finfo->depack.src_bytes[finfo->depack.src_byte_num] >> (8-finfo->depack.src_num_bit);
++			
++			finfo->depack.lzss_start = (value2 >> 4) & 0xfff;
++			finfo->depack.lzss_start |= (src_bitfield & 0xff) << 4;
++			finfo->depack.lzss_length = (value2 & 0x0f)+2;
++			finfo->depack.copy_length = finfo->depack.lzss_length;
++                        finfo->depack.state = ROFS_STATE_UNPACK_BLOCK;
++                    } else {
++                        /* Copy byte */
++                        dstBuffer[dstIndex++] =
++                            finfo->depack.lzss_dict[finfo->depack.lzss_pos++] =
++                            src_bitfield;
++                    }
++		}
++		break;
++            case ROFS_STATE_UNPACK_BLOCK:
++	    	{
++		    /* Copy from dictionnary */
++                    dstBuffer[dstIndex++] =
++		        finfo->depack.lzss_dict[finfo->depack.lzss_start++];
++		    if (--finfo->depack.lzss_length <= 0) {
++                        finfo->depack.state = ROFS_STATE_COPY_BLOCK;
++		    }
++		}
++		break;
++            case ROFS_STATE_COPY_BLOCK:
++                {
++                    int i;
++                    PHYSFS_uint8 *src =
++                        &(dstBuffer[dstIndex - finfo->depack.copy_length]);
++
++                    for (i=0; i<finfo->depack.copy_length; i++) {
++                        finfo->depack.lzss_dict[finfo->depack.lzss_pos++] = *src++;
++                    }
++                    finfo->depack.state = ROFS_STATE_UNPACK_BYTE;
++                }
++                break;
++        }
++    }
++
++    return(dstIndex);
++}
++
++
++/*--- Physfs driver ---*/
++
++static void ROFS_dirClose(dvoid *opaque)
++{
++    int i;
++
++    ROFSinfo *info = (ROFSinfo *) opaque;
++    allocator.Free(info->filename);
++    for (i=0; i<info->entryCount; i++) {
++        if (info->entries[i].block_alloc) {
++            allocator.Free(info->entries[i].block_alloc);
++	}
++    }
++    allocator.Free(info->entries);
++    allocator.Free(info);
++} /* ROFS_dirClose */
++
++static PHYSFS_sint64 ROFS_read(fvoid *opaque, void *buffer,
++                              PHYSFS_uint32 objSize, PHYSFS_uint32 objCount)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++    PHYSFS_uint32 bytesLeft = entry->size - finfo->curPos;
++    PHYSFS_uint32 objsLeft = (bytesLeft / objSize);
++    PHYSFS_uint8 *dstBuffer = (PHYSFS_uint8 *) buffer;
++    int srcLength, dstLength;
++
++    if (objsLeft < objCount)
++        objCount = objsLeft;
++
++    dstLength = objCount * objSize;
++    while (dstLength>0) {
++        /* Limit to number of bytes to read */
++        srcLength = entry->block_length[finfo->decrypt.curblock] - finfo->decrypt.curoffset;
++
++        if (entry->compression) {
++            /* read max srcLength, or depack max 32K */
++            int dstDepacked;
++
++            /* Read till end of current block */
++            dstDepacked = rofs_depack_block(opaque, dstBuffer, srcLength, dstLength);
++
++            dstBuffer += dstDepacked;
++            finfo->curPos += dstDepacked;
++            dstLength -= dstDepacked;
++	} else {
++            int i;
++
++            if (srcLength > dstLength) {
++                srcLength = dstLength;
++            }
++
++            if (__PHYSFS_platformRead(finfo->handle, dstBuffer, srcLength, 1) != 1) {
++                return(0);
++            }
++
++            for (i=0; i<srcLength; i++) {
++		PHYSFS_uint8 c = rofs_decrypt_byte(opaque, *dstBuffer);
++                *dstBuffer++ = c;        
++            }
++
++            finfo->decrypt.curoffset += srcLength;
++            finfo->curPos += srcLength;
++            dstLength -= srcLength;
++	}
++
++        /* Next block ? */
++        if (finfo->decrypt.curoffset >= entry->block_length[finfo->decrypt.curblock]) {
++            finfo->decrypt.curblock++;
++            rofs_decrypt_block_init(opaque);
++            if (entry->compression) {
++                rofs_depack_block_init(opaque);
++            }
++        }
++    }
++
++    return(objCount - (dstLength / objSize));
++} /* ROFS_read */
++
++
++static PHYSFS_sint64 ROFS_write(fvoid *opaque, const void *buffer,
++                               PHYSFS_uint32 objSize, PHYSFS_uint32 objCount)
++{
++    BAIL_MACRO(ERR_NOT_SUPPORTED, -1);
++} /* ROFS_write */
++
++
++static int ROFS_eof(fvoid *opaque)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++    return(finfo->curPos >= entry->size);
++} /* ROFS_eof */
++
++
++static PHYSFS_sint64 ROFS_tell(fvoid *opaque)
++{
++    return(((ROFSfileinfo *) opaque)->curPos);
++} /* ROFS_tell */
++
++
++static int rofs_seek_start(fvoid *opaque)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++
++    /* Init decryption */
++    finfo->decrypt.curblock = 0;
++    rofs_decrypt_block_init(opaque);
++
++    /* Init decompression */
++    if (entry->compression) {
++        rofs_depack_block_init(opaque);
++    }
++
++    finfo->curPos = 0;
++
++    return __PHYSFS_platformSeek(finfo->handle, entry->startPos);
++}
++
++
++static int rofs_seek_relative(fvoid *opaque, PHYSFS_uint64 rel_offset)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++    int i, srcLength;
++
++    /* Number of source bytes to read till next block */
++    srcLength = entry->block_length[finfo->decrypt.curblock] - finfo->decrypt.curoffset;
++
++    /* Skip to next block ? */
++    while (rel_offset > srcLength) {
++        finfo->decrypt.curblock++;
++        rofs_decrypt_block_init(opaque);
++        if (entry->compression) {
++            rofs_depack_block_init(opaque);
++        }
++
++        rel_offset -= srcLength;
++        finfo->curPos += srcLength;
++        srcLength = entry->block_length[finfo->decrypt.curblock] - finfo->decrypt.curoffset;
++    }
++
++    /* Now skip remaining bytes */
++    if (entry->compression) {
++        for (i=0; i<rel_offset; i++) {
++            PHYSFS_uint8 dummy;
++            if (!rofs_depack_block(opaque, &dummy, 32768, 1)) {
++                return(0);
++	    }
++        }
++    } else {
++        /* Run decryption steps */
++        for (i=0; i<rel_offset; i++) {
++            PHYSFS_uint8 dummy;
++            if (__PHYSFS_platformRead(finfo->handle, &dummy, 1, 1) != 1) {
++                return(0);
++            }
++            dummy = rofs_decrypt_byte(opaque, dummy);
++        }
++        finfo->curPos += rel_offset;
++    }
++
++    return(1);
++}
++
++
++static int ROFS_seek(fvoid *opaque, PHYSFS_uint64 offset)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    ROFSentry *entry = finfo->entry;
++    int rc = 1;
++
++    BAIL_IF_MACRO(offset < 0, ERR_INVALID_ARGUMENT, 0);
++    BAIL_IF_MACRO(offset >= entry->size, ERR_PAST_EOF, 0);
++
++    if (offset < finfo->curPos) {
++        rc = rofs_seek_start(opaque);
++    }
++    if (rc) {
++        rc = rofs_seek_relative(opaque, offset - finfo->curPos);
++    }
++
++    return(rc);
++} /* ROFS_seek */
++
++
++static PHYSFS_sint64 ROFS_fileLength(fvoid *opaque)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    return((PHYSFS_sint64) finfo->entry->size);
++} /* ROFS_fileLength */
++
++
++static int ROFS_fileClose(fvoid *opaque)
++{
++    ROFSfileinfo *finfo = (ROFSfileinfo *) opaque;
++    BAIL_IF_MACRO(!__PHYSFS_platformClose(finfo->handle), NULL, 0);
++    if (finfo->depack.lzss_dict) {
++        allocator.Free(finfo->depack.lzss_dict);
++	finfo->depack.lzss_dict = NULL;
++    }
++    allocator.Free(finfo);
++    return(1);
++} /* ROFS_fileClose */
++
++
++/* All rofs<n>.dat files start with this */
++static const char rofs_id[21]={
++	3, 0, 0, 0,
++	1, 0, 0, 0,
++	4, 0, 0, 0,
++	0, 1, 1, 0,
++	0, 4, 0, 0,
++	0
++};
++
++static int rofs_open(const char *filename, int forWriting, void **fh)
++{
++    PHYSFS_uint8 buf[21];
++
++    *fh = NULL;
++    BAIL_IF_MACRO(forWriting, ERR_ARC_IS_READ_ONLY, 0);
++
++    *fh = __PHYSFS_platformOpenRead(filename);
++    BAIL_IF_MACRO(*fh == NULL, NULL, 0);
++    
++    /* Check if known header */
++    if (__PHYSFS_platformRead(*fh, buf, sizeof(rofs_id), 1) != 1)
++        goto openRofs_failed;
++
++    if (memcmp(buf, rofs_id, sizeof(rofs_id)) != 0)
++    {
++        __PHYSFS_setError(ERR_UNSUPPORTED_ARCHIVE);
++        goto openRofs_failed;
++    } /* if */
++
++    return(1);
++
++openRofs_failed:
++    if (*fh != NULL)
++        __PHYSFS_platformClose(*fh);
++
++    *fh = NULL;
++    return(0);
++} /* rofs_open */
++
++
++static int ROFS_isArchive(const char *filename, int forWriting)
++{
++    void *fh;
++    int retval = rofs_open(filename, forWriting, &fh);
++
++    if (fh != NULL)
++        __PHYSFS_platformClose(fh);
++
++    return(retval);
++} /* ROFS_isArchive */
++
++
++static int rofs_entry_cmp(void *_a, PHYSFS_uint32 one, PHYSFS_uint32 two)
++{
++    ROFSentry *a = (ROFSentry *) _a;
++    return(strcmp(a[one].name, a[two].name));
++} /* rofs_entry_cmp */
++
++
++static void rofs_entry_swap(void *_a, PHYSFS_uint32 one, PHYSFS_uint32 two)
++{
++    ROFSentry tmp;
++    ROFSentry *first = &(((ROFSentry *) _a)[one]);
++    ROFSentry *second = &(((ROFSentry *) _a)[two]);
++    memcpy(&tmp, first, sizeof (ROFSentry));
++    memcpy(first, second, sizeof (ROFSentry));
++    memcpy(second, &tmp, sizeof (ROFSentry));
++} /* rofs_entry_swap */
++
++
++static int rofs_read_filename(void *fh, char *dst, PHYSFS_uint32 dst_len)
++{
++    int i = 0;
++
++    memset(dst, '\0', dst_len);
++
++    do {
++        char c;
++
++        if (__PHYSFS_platformRead(fh, &c, 1, 1) != 1) {
++            return(0);
++        }
++        dst[i] = tolower(c);
++    } while (dst[i++] != '\0');
++
++    return(1);
++}
++
++static int rofs_load_header(void *fh, ROFSinfo *info)
++{
++    PHYSFS_uint32 dir_location, dir_length;
++
++    /* Till now all tested rofs.dat file archives have 2 levels */
++    if (!rofs_read_filename(fh, info->dirs[0].name, sizeof(info->dirs[0].name))) {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    }
++
++    if (__PHYSFS_platformRead(fh, &dir_location, sizeof(dir_location), 1) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    dir_location = PHYSFS_swapULE32(dir_location) << 3;
++
++    if (__PHYSFS_platformRead(fh, &dir_length, sizeof(dir_length), 1) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    dir_length = PHYSFS_swapULE32(dir_length);
++
++    if (!rofs_read_filename(fh, info->dirs[1].name, sizeof(info->dirs[1].name))) {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    }
++
++    info->dirs[0].startPos = info->dirs[1].startPos = dir_location;
++    info->dirs[0].size = info->dirs[1].size = dir_length;
++
++    return(1);
++}
++
++static int rofs_load_entries(const char *name, int forWriting, ROFSinfo *info)
++{
++    void *fh = NULL;
++    PHYSFS_uint32 fileCount;
++    PHYSFS_sint64 location;
++    ROFSentry *entry;
++    char shortname[16];
++    int i, retval;
++
++    BAIL_IF_MACRO(!rofs_open(name, forWriting, &fh), NULL, 0);
++
++    if (!rofs_load_header(fh, info)) {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    }
++
++    if (__PHYSFS_platformSeek(fh, info->dirs[0].startPos) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    if (__PHYSFS_platformRead(fh, &info->entryCount, sizeof(info->entryCount), 1) != 1)
++    {
++        __PHYSFS_platformClose(fh);
++        return(0);
++    } /* if */
++
++    info->entryCount = PHYSFS_swapULE32(info->entryCount);
++    fileCount = info->entryCount;
++
++    info->entries = (ROFSentry *) calloc(fileCount, sizeof (ROFSentry));
++    if (info->entries == NULL)
++    {
++        __PHYSFS_platformClose(fh);
++        BAIL_MACRO(ERR_OUT_OF_MEMORY, 0);
++    } /* if */
++
++    retval = 1;
++    for (entry = info->entries; fileCount > 0; fileCount--, entry++)
++    {
++        rofs_dat_file_t fileHeader;
++
++        if (__PHYSFS_platformRead(fh, &entry->startPos, sizeof(entry->startPos), 1) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++
++        entry->startPos = PHYSFS_swapULE32(entry->startPos) << 3;
++
++        if (__PHYSFS_platformRead(fh, &entry->size, sizeof(entry->size), 1) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++
++        entry->size = 0; /* This was compressed size */
++
++        /* Read NULL terminated string */
++        if (!rofs_read_filename(fh, shortname, sizeof(shortname))) {
++            retval = 0;
++	    break;
++        }
++
++        /* Generate long filename */
++	sprintf(entry->name, "%s/%s/%s", info->dirs[0].name,
++		info->dirs[1].name, shortname);
++
++        /* Now go read real file size */
++        location = __PHYSFS_platformTell(fh);
++
++        if (__PHYSFS_platformSeek(fh, entry->startPos) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++
++        if (__PHYSFS_platformRead(fh, &fileHeader, sizeof(fileHeader), 1) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++
++        fileHeader.offset = PHYSFS_swapULE16(fileHeader.offset);
++	fileHeader.num_keys = PHYSFS_swapULE16(fileHeader.num_keys);
++	fileHeader.length = PHYSFS_swapULE32(fileHeader.length);
++	for (i=0; i<8; i++) {
++		fileHeader.ident[i] ^= fileHeader.ident[7];
++	}
++
++        entry->size = fileHeader.length;
++
++	/* Decryption info */
++	entry->num_blocks = fileHeader.num_keys;
++	entry->block_alloc = (PHYSFS_uint32 *) calloc(fileHeader.num_keys, 2*sizeof(PHYSFS_uint32));
++	if (!entry->block_alloc) {
++            retval = 0;
++	    break;
++	}
++	
++        if (__PHYSFS_platformRead(fh, entry->block_alloc, fileHeader.num_keys*2*sizeof(PHYSFS_uint32), 1) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++
++	entry->block_startkey = entry->block_alloc;
++	entry->block_length = &entry->block_alloc[fileHeader.num_keys];
++	for (i=0; i<entry->num_blocks; i++) {
++		entry->block_startkey[i] = PHYSFS_swapULE32(entry->block_startkey[i]);
++		entry->block_length[i] = PHYSFS_swapULE32(entry->block_length[i]);
++	}
++
++	/* Decompression info */
++	entry->compression = (strcmp("Hi_Comp", fileHeader.ident)==0);
++
++	/* Fix offset to start of encrypted/packed data */
++	entry->startPos += fileHeader.offset;
++
++        /* Back to directory */
++        if (__PHYSFS_platformSeek(fh, location) != 1)
++        {
++            retval = 0;
++	    break;
++        } /* if */
++    } /* for */
++
++    __PHYSFS_platformClose(fh);
++    if (retval) {
++        __PHYSFS_sort(info->entries, info->entryCount, rofs_entry_cmp,
++	    rofs_entry_swap);
++    } else {
++        /* Cleanup */
++        for (i=0; i<info->entryCount; i++) {
++            if (info->entries[i].block_alloc) {
++                allocator.Free(info->entries[i].block_alloc);
++		info->entries[i].block_alloc = NULL;
++	    }
++	}
++    }
++
++    return(retval);
++} /* rofs_load_entries */
++
++
++static void *ROFS_openArchive(const char *name, int forWriting)
++{
++    ROFSinfo *info = allocator.Malloc(sizeof (ROFSinfo));
++    PHYSFS_sint64 modtime = __PHYSFS_platformGetLastModTime(name);
++
++    BAIL_IF_MACRO(info == NULL, ERR_OUT_OF_MEMORY, NULL);
++    memset(info, '\0', sizeof (ROFSinfo));
++
++    info->filename = (char *) allocator.Malloc(strlen(name) + 1);
++    if (info->filename == NULL)
++    {
++        __PHYSFS_setError(ERR_OUT_OF_MEMORY);
++        goto ROFS_openArchive_failed;
++    } /* if */
++
++    if (!rofs_load_entries(name, forWriting, info))
++        goto ROFS_openArchive_failed;
++
++    strcpy(info->filename, name);
++    info->last_mod_time = modtime;
++    return(info);
++
++ROFS_openArchive_failed:
++    if (info != NULL)
++    {
++        if (info->filename != NULL)
++            allocator.Free(info->filename);
++        if (info->entries != NULL)
++            allocator.Free(info->entries);
++        allocator.Free(info);
++    } /* if */
++
++    return(NULL);
++} /* ROFS_openArchive */
++
++
++static PHYSFS_sint32 rofs_find_start_of_dir(ROFSinfo *info, const char *path,
++                                            int stop_on_first_find)
++{
++    PHYSFS_sint32 lo = 0;
++    PHYSFS_sint32 hi = (PHYSFS_sint32) (info->entryCount - 1);
++    PHYSFS_sint32 middle;
++    PHYSFS_uint32 dlen = strlen(path);
++    PHYSFS_sint32 retval = -1;
++    const char *name;
++    int rc;
++
++    if (*path == '\0')  /* root dir? */
++        return(0);
++
++    if ((dlen > 0) && (path[dlen - 1] == '/')) /* ignore trailing slash. */
++        dlen--;
++
++    while (lo <= hi)
++    {
++        middle = lo + ((hi - lo) / 2);
++        name = info->entries[middle].name;
++        rc = strncmp(path, name, dlen);
++        if (rc == 0)
++        {
++            char ch = name[dlen];
++            if (ch < '/') /* make sure this isn't just a substr match. */
++                rc = -1;
++            else if (ch > '/')
++                rc = 1;
++            else 
++            {
++                if (stop_on_first_find) /* Just checking dir's existance? */
++                    return(middle);
++
++                if (name[dlen + 1] == '\0') /* Skip initial dir entry. */
++                    return(middle + 1);
++
++                /* there might be more entries earlier in the list. */
++                retval = middle;
++                hi = middle - 1;
++            } /* else */
++        } /* if */
++
++        if (rc > 0)
++            lo = middle + 1;
++        else
++            hi = middle - 1;
++    } /* while */
++
++    return(retval);
++} /* rofs_find_start_of_dir */
++
++
++/*
++ * Moved to seperate function so we can use alloca then immediately throw
++ *  away the allocated stack space...
++ */
++static void doEnumCallback(PHYSFS_EnumFilesCallback cb, void *callbackdata,
++                           const char *odir, const char *str, PHYSFS_sint32 ln)
++{
++    char *newstr = __PHYSFS_smallAlloc(ln + 1);
++    if (newstr == NULL)
++        return;
++
++    memcpy(newstr, str, ln);
++    newstr[ln] = '\0';
++    cb(callbackdata, odir, newstr);
++    __PHYSFS_smallFree(newstr);
++} /* doEnumCallback */
++
++
++static void ROFS_enumerateFiles(dvoid *opaque, const char *dname,
++                                int omitSymLinks, PHYSFS_EnumFilesCallback cb,
++                                const char *origdir, void *callbackdata)
++{
++    ROFSinfo *info = (ROFSinfo *) opaque;
++    PHYSFS_sint32 dlen, dlen_inc, max, i;
++
++    i = rofs_find_start_of_dir(info, dname, 0);
++    if (i == -1)  /* no such directory. */
++        return;
++
++    dlen = strlen(dname);
++    if ((dlen > 0) && (dname[dlen - 1] == '/')) /* ignore trailing slash. */
++        dlen--;
++
++    dlen_inc = ((dlen > 0) ? 1 : 0) + dlen;
++    max = (PHYSFS_sint32) info->entryCount;
++    while (i < max)
++    {
++        char *add;
++        char *ptr;
++        PHYSFS_sint32 ln;
++        char *e = info->entries[i].name;
++        if ((dlen) && ((strncmp(e, dname, dlen)) || (e[dlen] != '/')))
++            break;  /* past end of this dir; we're done. */
++
++        add = e + dlen_inc;
++        ptr = strchr(add, '/');
++        ln = (PHYSFS_sint32) ((ptr) ? ptr-add : strlen(add));
++        doEnumCallback(cb, callbackdata, origdir, add, ln);
++        ln += dlen_inc;  /* point past entry to children... */
++
++        /* increment counter and skip children of subdirs... */
++        while ((++i < max) && (ptr != NULL))
++        {
++            char *e_new = info->entries[i].name;
++            if ((strncmp(e, e_new, ln) != 0) || (e_new[ln] != '/'))
++                break;
++        } /* while */
++    } /* while */
++} /* ROFS_enumerateFiles */
++
++
++static ROFSentry *rofs_find_entry(ROFSinfo *info, const char *path, int *isDir)
++{
++    ROFSentry *a = info->entries;
++    PHYSFS_sint32 pathlen = strlen(path);
++    PHYSFS_sint32 lo = 0;
++    PHYSFS_sint32 hi = (PHYSFS_sint32) (info->entryCount - 1);
++    PHYSFS_sint32 middle;
++    const char *thispath = NULL;
++    int rc;
++
++    while (lo <= hi)
++    {
++        middle = lo + ((hi - lo) / 2);
++        thispath = a[middle].name;
++        rc = strncmp(path, thispath, pathlen);
++
++        if (rc > 0)
++            lo = middle + 1;
++
++        else if (rc < 0)
++            hi = middle - 1;
++
++        else /* substring match...might be dir or entry or nothing. */
++        {
++            if (isDir != NULL)
++            {
++                *isDir = (thispath[pathlen] == '/');
++                if (*isDir)
++                    return(NULL);
++            } /* if */
++
++            if (thispath[pathlen] == '\0') /* found entry? */
++                return(&a[middle]);
++            else
++                hi = middle - 1;  /* adjust search params, try again. */
++        } /* if */
++    } /* while */
++
++    if (isDir != NULL)
++        *isDir = 0;
++
++    BAIL_MACRO(ERR_NO_SUCH_FILE, NULL);
++} /* rofs_find_entry */
++
++
++static int ROFS_exists(dvoid *opaque, const char *name)
++{
++    int isDir;    
++    ROFSinfo *info = (ROFSinfo *) opaque;
++    ROFSentry *entry = rofs_find_entry(info, name, &isDir);
++    return((entry != NULL) || (isDir));
++} /* ROFS_exists */
++
++
++static int ROFS_isDirectory(dvoid *opaque, const char *name, int *fileExists)
++{
++    ROFSinfo *info = (ROFSinfo *) opaque;
++    int isDir;
++    ROFSentry *entry = rofs_find_entry(info, name, &isDir);
++
++    *fileExists = ((isDir) || (entry != NULL));
++    if (isDir)
++        return(1); /* definitely a dir. */
++
++    BAIL_MACRO(ERR_NO_SUCH_FILE, 0);
++} /* ROFS_isDirectory */
++
++
++static int ROFS_isSymLink(void *opaque, const char *name, int *fileExists)
++{
++    *fileExists = ROFS_exists(opaque, name);
++    return(0);  /* never symlinks in a rofs. */
++} /* ROFS_isSymLink */
++
++
++static PHYSFS_sint64 ROFS_getLastModTime(void *opaque,
++                                        const char *name,
++                                        int *fileExists)
++{
++    int isDir;
++    ROFSinfo *info = (ROFSinfo *) opaque;
++    PHYSFS_sint64 retval = -1;
++    ROFSentry *entry = rofs_find_entry(info, name, &isDir);
++
++    *fileExists = ((isDir) || (entry != NULL));
++    if (*fileExists)  /* use time of ROFS itself in the physical filesystem. */
++        retval = info->last_mod_time;
++
++    return(retval);
++} /* ROFS_getLastModTime */
++
++
++static fvoid *ROFS_openRead(void *opaque, const char *fnm, int *fileExists)
++{
++    ROFSinfo *info = (ROFSinfo *) opaque;
++    ROFSfileinfo *finfo;
++    ROFSentry *entry;
++    int isDir;
++
++    entry = rofs_find_entry(info, fnm, &isDir);
++    *fileExists = ((entry != NULL) || (isDir));
++    BAIL_IF_MACRO(isDir, ERR_NOT_A_FILE, NULL);
++    BAIL_IF_MACRO(entry == NULL, ERR_NO_SUCH_FILE, NULL);
++
++    finfo = (ROFSfileinfo *) calloc(1, sizeof (ROFSfileinfo));
++    BAIL_IF_MACRO(finfo == NULL, ERR_OUT_OF_MEMORY, NULL);
++
++    finfo->handle = __PHYSFS_platformOpenRead(info->filename);
++    if ( (finfo->handle == NULL) ||
++         (!__PHYSFS_platformSeek(finfo->handle, entry->startPos)) )
++    {
++        allocator.Free(finfo);
++        return(NULL);
++    } /* if */
++
++    finfo->entry = entry;
++    rofs_seek_start((dvoid *) finfo);
++
++    return finfo;
++} /* ROFS_openRead */
++
++
++static fvoid *ROFS_openWrite(dvoid *opaque, const char *name)
++{
++    BAIL_MACRO(ERR_NOT_SUPPORTED, NULL);
++} /* ROFS_openWrite */
++
++
++static fvoid *ROFS_openAppend(dvoid *opaque, const char *name)
++{
++    BAIL_MACRO(ERR_NOT_SUPPORTED, NULL);
++} /* ROFS_openAppend */
++
++
++static int ROFS_remove(dvoid *opaque, const char *name)
++{
++    BAIL_MACRO(ERR_NOT_SUPPORTED, 0);
++} /* ROFS_remove */
++
++
++static int ROFS_mkdir(dvoid *opaque, const char *name)
++{
++    BAIL_MACRO(ERR_NOT_SUPPORTED, 0);
++} /* ROFS_mkdir */
++
++const PHYSFS_ArchiveInfo __PHYSFS_ArchiveInfo_ROFS =
++{
++    "ROFS",
++    ROFS_ARCHIVE_DESCRIPTION,
++    "Patrice Mandin <patmandin@gmail.com>",
++    "http://pmandin.atari.org/",
++};
++
++
++const PHYSFS_Archiver __PHYSFS_Archiver_ROFS =
++{
++    &__PHYSFS_ArchiveInfo_ROFS,
++    ROFS_isArchive,          /* isArchive() method      */
++    ROFS_openArchive,        /* openArchive() method    */
++    ROFS_enumerateFiles,     /* enumerateFiles() method */
++    ROFS_exists,             /* exists() method         */
++    ROFS_isDirectory,        /* isDirectory() method    */
++    ROFS_isSymLink,          /* isSymLink() method      */
++    ROFS_getLastModTime,     /* getLastModTime() method */
++    ROFS_openRead,           /* openRead() method       */
++    ROFS_openWrite,          /* openWrite() method      */
++    ROFS_openAppend,         /* openAppend() method     */
++    ROFS_remove,             /* remove() method         */
++    ROFS_mkdir,              /* mkdir() method          */
++    ROFS_dirClose,           /* dirClose() method       */
++    ROFS_read,               /* read() method           */
++    ROFS_write,              /* write() method          */
++    ROFS_eof,                /* eof() method            */
++    ROFS_tell,               /* tell() method           */
++    ROFS_seek,               /* seek() method           */
++    ROFS_fileLength,         /* fileLength() method     */
++    ROFS_fileClose           /* fileClose() method      */
++};
++
++#endif  /* defined PHYSFS_SUPPORTS_ROFS */
++
++/* end of rofs.c ... */
+diff -r 5491e6c69162 src/physfs.c
+--- a/src/physfs.c	Thu Apr 08 09:56:51 2010 -0400
++++ b/src/physfs.c	Tue Apr 27 21:15:53 2010 +0200
+@@ -68,7 +68,8 @@
+ extern const PHYSFS_Archiver       __PHYSFS_Archiver_DIR;
+ extern const PHYSFS_ArchiveInfo    __PHYSFS_ArchiveInfo_ISO9660;
+ extern const PHYSFS_Archiver       __PHYSFS_Archiver_ISO9660;
+-
++extern const PHYSFS_ArchiveInfo    __PHYSFS_ArchiveInfo_ROFS;
++extern const PHYSFS_Archiver       __PHYSFS_Archiver_ROFS;
+ 
+ static const PHYSFS_ArchiveInfo *supported_types[] =
+ {
+@@ -95,6 +96,9 @@
+ #endif
+ #if (defined PHYSFS_SUPPORTS_ISO9660)
+     &__PHYSFS_ArchiveInfo_ISO9660,
++#endif
++#if (defined PHYSFS_SUPPORTS_ROFS)
++    &__PHYSFS_ArchiveInfo_ROFS,
+ #endif
+     NULL
+ };
+@@ -125,6 +129,9 @@
+ #endif
+ #if (defined PHYSFS_SUPPORTS_ISO9660)
+     &__PHYSFS_Archiver_ISO9660,
++#endif
++#if (defined PHYSFS_SUPPORTS_ROFS)
++    &__PHYSFS_Archiver_ROFS,
+ #endif
+     NULL
+ };
+diff -r 5491e6c69162 src/physfs_internal.h
+--- a/src/physfs_internal.h	Thu Apr 08 09:56:51 2010 -0400
++++ b/src/physfs_internal.h	Tue Apr 27 21:15:53 2010 +0200
+@@ -112,6 +112,7 @@
+  #define ZIP_ARCHIVE_DESCRIPTION  "PkZip/WinZip/Info-Zip compatible"
+  #define WAD_ARCHIVE_DESCRIPTION  "DOOM engine format"
+  #define LZMA_ARCHIVE_DESCRIPTION "LZMA (7zip) format"
++ #define ROFS_ARCHIVE_DESCRIPTION "Resident Evil 3 ROFS format"
+ 
+  #define ERR_IS_INITIALIZED       "Already initialized"
+  #define ERR_NOT_INITIALIZED      "Not initialized"
+@@ -211,6 +212,7 @@
+  #define ZIP_ARCHIVE_DESCRIPTION  "PkZip/WinZip/Info-Zip kompatibel"
+  #define WAD_ARCHIVE_DESCRIPTION  "DOOM engine format" /* !!! FIXME: translate this line if needed */
+  #define LZMA_ARCHIVE_DESCRIPTION "LZMA (7zip) format" /* !!! FIXME: translate this line if needed */
++ #define ROFS_ARCHIVE_DESCRIPTION "Resident Evil 3 ROFS format"  /* !!! FIXME: translate this line if needed */
+ 
+  #define ERR_IS_INITIALIZED       "Bereits initialisiert"
+  #define ERR_NOT_INITIALIZED      "Nicht initialisiert"
+@@ -309,6 +311,7 @@
+  #define ZIP_ARCHIVE_DESCRIPTION  "PkZip/WinZip/Info-Zip совместимый"
+  #define WAD_ARCHIVE_DESCRIPTION  "DOOM engine format" /* !!! FIXME: translate this line if needed */
+  #define LZMA_ARCHIVE_DESCRIPTION "LZMA (7zip) format" /* !!! FIXME: translate this line if needed */
++ #define ROFS_ARCHIVE_DESCRIPTION "Resident Evil 3 ROFS format"  /* !!! FIXME: translate this line if needed */
+ 
+  #define ERR_IS_INITIALIZED       "Уже инициализирован"
+  #define ERR_NOT_INITIALIZED      "Не инициализирован"
+@@ -409,6 +412,7 @@
+  #define ZIP_ARCHIVE_DESCRIPTION  "Compatible PkZip/WinZip/Info-Zip"
+  #define WAD_ARCHIVE_DESCRIPTION  "Format WAD du moteur DOOM"
+  #define LZMA_ARCHIVE_DESCRIPTION "LZMA (7zip) format" /* !!! FIXME: translate this line if needed */
++ #define ROFS_ARCHIVE_DESCRIPTION "Resident Evil 3 ROFS format"  /* !!! FIXME: translate this line if needed */
+ 
+  #define ERR_IS_INITIALIZED       "Déjà initialisé"
+  #define ERR_NOT_INITIALIZED      "Non initialisé"
+@@ -509,6 +513,7 @@
+  #define WAD_ARCHIVE_DESCRIPTION  "Formato WAD do engine DOOM"
+  #define WAD_ARCHIVE_DESCRIPTION  "DOOM engine format" /* !!! FIXME: translate this line if needed */
+  #define LZMA_ARCHIVE_DESCRIPTION "LZMA (7zip) format" /* !!! FIXME: translate this line if needed */
++ #define ROFS_ARCHIVE_DESCRIPTION "Resident Evil 3 ROFS format"  /* !!! FIXME: translate this line if needed */
+ 
+  #define ERR_IS_INITIALIZED       "Já inicializado"
+  #define ERR_NOT_INITIALIZED      "Não inicializado"
+@@ -608,6 +613,7 @@
+  #define ZIP_ARCHIVE_DESCRIPTION  "Compatible con PkZip/WinZip/Info-Zip"
+  #define WAD_ARCHIVE_DESCRIPTION  "DOOM engine format" /* !!! FIXME: translate this line if needed */
+  #define LZMA_ARCHIVE_DESCRIPTION "LZMA (7zip) format" /* !!! FIXME: translate this line if needed */
++ #define ROFS_ARCHIVE_DESCRIPTION "Resident Evil 3 ROFS format"  /* !!! FIXME: translate this line if needed */
+ 
+  #define ERR_IS_INITIALIZED       "Ya estaba inicializado"
+  #define ERR_NOT_INITIALIZED      "No está inicializado"
