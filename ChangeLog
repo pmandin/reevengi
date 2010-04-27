@@ -6,6 +6,7 @@ v 0.16
 - Added preliminary menu (display stage/room/camera and player pos).
 - Movie player: Updated for latest FFmpeg revision. Added separate project
   file for vs2005.
+- Updated for latest Physfs 2.x revision.
 
 v 0.15
 
