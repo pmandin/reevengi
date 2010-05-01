@@ -256,7 +256,7 @@ int re3pc_load_tim_bgmask(const char *filename)
 	int retval = 0;
 	PHYSFS_sint64 length;
 
-#if 1
+#if 0
 	void *file;
 
 	file = FS_Load(filename, &length);
@@ -330,7 +330,7 @@ int re3pc_load_tim_bgmask(const char *filename)
 
 		SDL_RWclose(src);
 	}
-#if 1
+#if 0
 	free(file);
 #endif
 
