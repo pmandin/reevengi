@@ -546,7 +546,7 @@ __asm__ __volatile__ (
 						for (i=0; i<dx; i++) {
 							Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-							if (/*c*/ alpha_pal[c]) {
+							if (c /*alpha_pal[c]*/) {
 								*dst_col = palette[c];
 							}
 							dst_col++;
@@ -650,7 +650,7 @@ __asm__ __volatile__ (
 						for (i=0; i<dx; i++) {
 							Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-							if (/*c*/ alpha_pal[c]) {
+							if (c /*alpha_pal[c]*/) {
 								*dst_col = palette[c];
 							}
 							dst_col++;
@@ -679,7 +679,7 @@ __asm__ __volatile__ (
 					for (i=0; i<dx; i++) {
 						Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-						if (/*c*/ alpha_pal[c]) {
+						if (c /*alpha_pal[c]*/) {
 							Uint32 color = palette[c];
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 							dst_col[0] = color>>16;
@@ -725,7 +725,7 @@ __asm__ __volatile__ (
 					for (i=0; i<dx; i++) {
 						Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-						if (/*c*/ alpha_pal[c]) {
+						if (c /*alpha_pal[c]*/) {
 							*dst_col = palette[c];
 						}
 						dst_col++;
