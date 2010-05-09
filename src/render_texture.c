@@ -284,6 +284,10 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	}
 	this->resize(this, w,h);
 
+	logMsg(2, "texture: R=0x%08x, G=0x%08x, B=0x%08x, A=0x%08x\n",
+		this->format.Rmask, this->format.Gmask,
+		this->format.Bmask, this->format.Amask);
+
 	/* Copy data */
 	switch(tim_type) {
 		case TIM_TYPE_4:
