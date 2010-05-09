@@ -293,7 +293,7 @@ static void drawImage(video_t *video)
 
 static void drawImageDepth(void)
 {
-	vertexf_t poly[16];
+	vertexf_t poly[4];
 	int i;
 
 	poly[0].pos[0] = render.bitmap.dstRect.x;
