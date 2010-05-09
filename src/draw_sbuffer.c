@@ -250,7 +250,7 @@ static void draw_flushFrame(draw_t *this)
 			{
 			}
 
-			if (/*!current->masking &&*/ (segdata[j].x1 <= segdata[last].x2)) {
+			if (!current->masking && (segdata[j].x1 <= segdata[last].x2)) {
 				Uint8 *dst_line = dst + segdata[j].x1 * surf->format->BytesPerPixel;
 				switch(current->render_mode) {
 					case RENDER_FILLED:
@@ -542,11 +542,10 @@ __asm__ __volatile__ (
 					/* Float calculations */
 					if (tex->paletted) {
 						Uint32 *palette = tex->palettes[segment->tex_num_pal];
-						Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 						for (i=0; i<dx; i++) {
 							Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-							if (c /*alpha_pal[c]*/) {
+							if (c) {
 								*dst_col = palette[c];
 							}
 							dst_col++;
@@ -646,11 +645,10 @@ __asm__ __volatile__ (
 					/* Float calculations */
 					if (tex->paletted) {
 						Uint32 *palette = tex->palettes[segment->tex_num_pal];
-						Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 						for (i=0; i<dx; i++) {
 							Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-							if (c /*alpha_pal[c]*/) {
+							if (c) {
 								*dst_col = palette[c];
 							}
 							dst_col++;
@@ -675,11 +673,10 @@ __asm__ __volatile__ (
 
 				if (tex->paletted) {
 					Uint32 *palette = tex->palettes[segment->tex_num_pal];
-					Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 					for (i=0; i<dx; i++) {
 						Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-						if (c /*alpha_pal[c]*/) {
+						if (c) {
 							Uint32 color = palette[c];
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 							dst_col[0] = color>>16;
@@ -721,11 +718,10 @@ __asm__ __volatile__ (
 
 				if (tex->paletted) {
 					Uint32 *palette = tex->palettes[segment->tex_num_pal];
-					Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 					for (i=0; i<dx; i++) {
 						Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-						if (c /*alpha_pal[c]*/) {
+						if (c) {
 							*dst_col = palette[c];
 						}
 						dst_col++;
