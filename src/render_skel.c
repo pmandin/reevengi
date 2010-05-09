@@ -68,7 +68,7 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 
 	skel->texture = texture;
 
-	logMsg(2, "render_skel: skel 0x%p created\n", skel);
+	logMsg(3, "render_skel: skel 0x%p created\n", skel);
 
 	list_render_skel_add(skel);
 
@@ -97,7 +97,7 @@ static void shutdown(render_skel_t *this)
 		this->texture->shutdown(this->texture);
 	}
 
-	logMsg(2, "render_skel: skel 0x%p destroyed\n", this);
+	logMsg(3, "render_skel: skel 0x%p destroyed\n", this);
 
 	list_render_skel_remove(this);
 
