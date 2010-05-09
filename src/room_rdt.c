@@ -354,5 +354,9 @@ static void rdt_loadMasks(room_t *this, int num_camera)
 
 		game_state.bg_mask->load_from_tim(game_state.bg_mask, tim_hdr);
 		logMsg(1, "rdt: Loaded masks from embedded TIM image\n");
+
+		game_state.bg_mask->mark_trans(game_state.bg_mask, 0,
+			0,0,
+			game_state.bg_mask->w, game_state.bg_mask->h);
 	}
 }

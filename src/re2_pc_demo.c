@@ -194,6 +194,11 @@ static int re2pcdemo_load_adt_bgmask(const char *filename)
 			game_state.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
 			if (game_state.bg_mask) {
 				game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
+
+				game_state.bg_mask->mark_trans(game_state.bg_mask, 0,
+					0,0,
+					game_state.bg_mask->w, game_state.bg_mask->h);
+
 				retval = 1;
 			}
 			free(dstBuffer);
