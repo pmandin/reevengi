@@ -48,6 +48,8 @@ static void prepare_resize(render_texture_t *this, int *w, int *h);
 
 static int logbase2(int n);
 
+static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);
+
 /*--- Functions ---*/
 
 render_texture_t *render_texture_gl_create(int flags)
@@ -74,6 +76,7 @@ render_texture_t *render_texture_gl_create(int flags)
 	tex->upload = upload;
 	tex->download = download;
 	tex->prepare_resize = prepare_resize;
+	tex->mark_trans = mark_trans;
 
 	tex->must_pot = tex->cacheable = 0;
 
@@ -258,6 +261,11 @@ static int logbase2(int n)
 	}
 
 	return r;
+}
+
+static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
+{
+	/* Nothing to do */
 }
 
 #endif /* ENABLE_OPENGL */
