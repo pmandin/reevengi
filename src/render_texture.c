@@ -192,6 +192,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format /*&(this->format)*/;
 	int bytes_per_pixel;
+	Uint8 pal_opaque[256];	/* Flag each palette index as transparent or opaque */
 
 	if (!this || !tim_ptr) {
 		return;
@@ -250,6 +251,9 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	this->paletted = paletted;
 	this->num_palettes = paletted ? num_palettes : 0;
 
+	/* All transparent as default */
+	memset(pal_opaque, 0, sizeof(pal_opaque));
+
 	if (paletted) {
 		pal_header = & ((Uint16 *) tim_ptr)[sizeof(tim_header_t)/2];
 		for (i=0; i<num_palettes; i++) {
@@ -260,6 +264,9 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				color = SDL_SwapLE16(color);
 
 				read_rgba(color, &r,&g,&b,&a);
+				if (a) {
+					pal_opaque[j] = 1;
+				}
 
 				if (params.use_opengl) {
 					this->palettes[i][j] = (a<<24)|(r<<16)|(g<<8)|b;
@@ -297,9 +304,13 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				for (i=0; i<h; i++) {
 					Uint8 *tex_line = tex_pixels;
 					for (j=0; j<w>>1; j++) {
+						Uint8 idx;
 						Uint8 color = *src_pixels++;
-						*tex_line++ = color & 15;
-						*tex_line++ = (color>>4) & 15;
+
+						idx = color & 15;
+						*tex_line++ = (pal_opaque[idx] ? idx : 0);
+						idx = (color>>4) & 15;
+						*tex_line++ = (pal_opaque[idx] ? idx : 0);
 					}
 					tex_pixels += this->pitch;
 				}
@@ -310,8 +321,12 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
 				Uint8 *tex_pixels = this->pixels;
 				for (i=0; i<h; i++) {
-					memcpy(tex_pixels, src_pixels, w);
-					src_pixels += w;
+					Uint8 *tex_line = tex_pixels;
+					for (j=0; j<w; j++) {
+						Uint8 color = *src_pixels++;
+
+						*tex_line++ = (pal_opaque[color] ? color : 0);
+					}
 					tex_pixels += this->pitch;
 				}
 			}
