@@ -27,6 +27,12 @@
 #include "video.h"
 #include "render.h"
 #include "log.h"
+#include "parameters.h"
+
+/*--- Defines ---*/
+
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define MIN(x,y) ((x)<(y)?(x):(y))
 
 /*--- Functions prototypes ---*/
 
@@ -39,6 +45,8 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 	int items, int stride, void *data, int byteswap);
 static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri);
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad);
+
+static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count);
 
 static void draw(render_mesh_t *this);
 
@@ -184,7 +192,7 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 
 static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 {
-	render_mesh_tri_t *new_tris;
+	render_mesh_tri_t *new_tris, *new_tri;
 	int num_tris = this->num_tris + 1;
 
 	new_tris = realloc(this->triangles, num_tris * sizeof(render_mesh_tri_t));
@@ -192,17 +200,20 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 		return;
 	}
 
-	memcpy(&(new_tris[this->num_tris]), tri, sizeof(render_mesh_tri_t));
+	new_tri = &(new_tris[this->num_tris]);
+	memcpy(new_tri, tri, sizeof(render_mesh_tri_t));
 
 	this->num_tris++;
 	this->triangles = new_tris;
+
+	markTrans(this, new_tri->txpal, new_tri->tx, 3);
 
 	/* TODO: sort per texture palette index */
 }
 
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 {
-	render_mesh_quad_t *new_quads;
+	render_mesh_quad_t *new_quads, *new_quad;
 	int num_quads = this->num_quads + 1;
 
 	new_quads = realloc(this->quads, num_quads * sizeof(render_mesh_quad_t));
@@ -210,12 +221,58 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 		return;
 	}
 
-	memcpy(&(new_quads[this->num_quads]), quad, sizeof(render_mesh_quad_t));
+	new_quad = &(new_quads[this->num_quads]);
+	memcpy(new_quad, quad, sizeof(render_mesh_quad_t));
 
 	this->num_quads++;
 	this->quads = new_quads;
 
+	markTrans(this, new_quad->txpal, new_quad->tx, 4);
+
 	/* TODO: sort per texture palette index */
+}
+
+static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count)
+{
+	int i,j, u,v, minx,maxx,miny,maxy;
+
+	if (params.use_opengl || !this->texcoord.data || !this->texture) {
+		return;
+	}
+
+	minx = miny = 32768;
+	maxx = maxy = 0;
+
+	switch(this->texcoord.type) {
+		case RENDER_ARRAY_BYTE:
+			{
+				Uint8 *src = (Uint8 *) this->texcoord.data;
+				for (j=0; j<count; j++) {
+					u = src[(start_idx[j]*this->texcoord.stride)+0];
+					v = src[(start_idx[j]*this->texcoord.stride)+1];
+					minx = MIN(minx, u);
+					maxx = MAX(maxx, u);
+					miny = MIN(miny, v);
+					maxy = MAX(maxy, v);
+				}
+			}
+			break;
+		case RENDER_ARRAY_SHORT:
+			{
+				Sint16 *src = (Sint16 *) this->texcoord.data;
+				for (j=0; j<count; j++) {
+					u = src[(start_idx[j]*(this->texcoord.stride>>1))+0];
+					v = src[(start_idx[j]*(this->texcoord.stride>>1))+1];
+					minx = MIN(minx, u);
+					maxx = MAX(maxx, u);
+					miny = MIN(miny, v);
+					maxy = MAX(maxy, v);
+				}
+			}
+			break;
+	}
+
+	this->texture->mark_trans(this->texture, num_pal, minx,miny, maxx,maxy);
 }
 
 static void draw(render_mesh_t *this)
