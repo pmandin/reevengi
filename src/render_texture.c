@@ -29,6 +29,11 @@
 #include "log.h"
 #include "render_texture_list.h"
 
+/*--- Defines ---*/
+
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define MIN(x,y) ((x)<(y)?(x):(y))
+
 /*--- Functions prototypes ---*/
 
 static void shutdown(render_texture_t *this);
@@ -276,6 +281,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				} else {
 					this->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
 				}
+				this->alpha_palettes[i][j] = a;
 			}
 		}
 	}
@@ -428,6 +434,7 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 			} else {
 				this->palettes[0][i] = SDL_MapRGBA(surf->format, r,g,b,a);
 			}
+			this->alpha_palettes[0][i] = a;
 		}
 	}
 
@@ -605,5 +612,27 @@ static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
 {
-}
+	Uint8 *src_line;
+	int x,y;
 
+	if (!this) {
+		return;
+	}
+	if (this->bpp != 1) {
+		return;
+	}
+	x1 = MAX(0, MIN(this->w-1, x1));
+	y1 = MAX(0, MIN(this->h-1, y1));
+	x2 = MAX(0, MIN(this->w-1, x2));
+	y2 = MAX(0, MIN(this->h-1, y2));
+
+	src_line = this->pixels;
+	src_line += y1 * this->pitch;
+	src_line += x1;
+	for (y=y1; y<y2; y++) {
+		Uint8 *src_col = src_line;
+		for (x=x1; x<x2; x++) {
+		}
+		src_line += this->pitch;
+	}
+}

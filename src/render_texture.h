@@ -57,8 +57,10 @@ struct render_texture_s {
 	Uint8 num_palettes, paletted;
 	Uint8 must_pot, cacheable;
 	
-	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture */
+	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture, in screen format */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */
+
+	Uint8 alpha_palettes[MAX_TEX_PALETTE][256];	/* Original alpha component of palettes */
 
 	SDL_PixelFormat format;
 
