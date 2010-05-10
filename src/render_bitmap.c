@@ -56,7 +56,12 @@ static void setMasking(int enabled);
 static void drawImage(video_t *video);
 
 static void drawImageDepth(void);
+
 static void drawImageMask(void);
+static void drawImageMask8(void);
+static void drawImageMask16(void);
+static void drawImageMask24(void);
+static void drawImageMask32(void);
 
 /*--- Functions ---*/
 
@@ -938,15 +943,21 @@ static void drawImageDepth(void)
 
 static void drawImageMask(void)
 {
-	int dstX, dstY, srcX, srcY;
 	render_texture_t *tex = render.texture;
-	render_bitmap_t *this = &render.bitmap;
 
-	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
-		srcY = this->scaley_dst2src[dstY];
-		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
-			srcX = this->scalex_dst2src[dstX];
-		}
+	switch(tex->bpp) {
+		case 1:
+			drawImageMask8();
+			break;
+		case 2:
+			drawImageMask16();
+			break;
+		case 3:
+			drawImageMask24();
+			break;
+		case 4:
+			drawImageMask32();
+			break;
 	}
 
 	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
@@ -955,4 +966,94 @@ static void drawImageMask(void)
 	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 		video.viewport.x+render.bitmap.dstRect.x, video.viewport.y+render.bitmap.dstRect.y,
 		render.bitmap.dstRect.w, render.bitmap.dstRect.h);
+}
+
+static void drawImageMask8(void)
+{
+	int dstX, dstY, srcX, srcY;
+	render_texture_t *tex = render.texture;
+	render_bitmap_t *this = &render.bitmap;
+	int startx = -1;
+	float w = 1.0f / render.bitmap.depth;
+	int lastx = render.bitmap.dstRect.x+render.bitmap.dstRect.w - 1;
+	Uint8 *alpha_pal = tex->alpha_palettes[render.tex_pal];
+
+	for (dstY=this->dstRect.y; dstY<this->dstRect.y+this->dstRect.h; dstY++) {
+		Uint8 *src_line = tex->pixels;
+
+		srcY = this->scaley_dst2src[dstY];
+		src_line += srcY * tex->pitch;
+#if 0
+		for (dstX=this->dstRect.x; dstX<this->dstRect.x+this->dstRect.w; dstX++) {
+			srcX = this->scalex_dst2src[dstX];
+
+			if (!alpha_pal[src_line[srcX]]) {
+				/* Transparent pixel, draw previous opaque */
+				if (startx>0) {
+					render.draw.addMaskSegment(&render.draw, dstY, startx, dstX-1, w);
+					startx = -1;
+				}
+			} else {
+				/* Opaque, set start */
+				if (startx<0) {
+					startx = dstX;
+				}
+				/* Draw if EOL */
+				if (dstX == lastx) {
+					render.draw.addMaskSegment(&render.draw, dstY, startx, lastx, w);
+					startx = -1;
+				}
+			}
+		}
+#else
+		render.draw.addMaskSegment(&render.draw, dstY, this->dstRect.x, this->dstRect.x+this->dstRect.w-1, w);
+#endif
+	}
+}
+
+static void drawImageMask16(void)
+{
+	int dstX, dstY, srcX, srcY;
+	render_texture_t *tex = render.texture;
+	render_bitmap_t *this = &render.bitmap;
+	int num_pal = render.tex_pal;
+
+	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
+		srcY = this->scaley_dst2src[dstY];
+		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
+			srcX = this->scalex_dst2src[dstX];
+		}
+	}
+}
+
+static void drawImageMask24(void)
+{
+#if 0
+	int dstX, dstY, srcX, srcY;
+	render_texture_t *tex = render.texture;
+	render_bitmap_t *this = &render.bitmap;
+	int num_pal = render.tex_pal;
+
+	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
+		srcY = this->scaley_dst2src[dstY];
+		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
+			srcX = this->scalex_dst2src[dstX];
+		}
+	}
+#endif
+}
+
+static void drawImageMask32(void)
+{
+	int dstX, dstY, srcX, srcY;
+	render_texture_t *tex = render.texture;
+	render_bitmap_t *this = &render.bitmap;
+	int num_pal = render.tex_pal;
+
+	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
+		srcY = this->scaley_dst2src[dstY];
+		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
+			srcX = this->scalex_dst2src[dstX];
+		}
+	}
 }

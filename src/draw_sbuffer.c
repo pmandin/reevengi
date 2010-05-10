@@ -1665,13 +1665,18 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 		return;
 	}
 
+	/*printf("mask segment %d: %d,%d\n",y,x1,x2);*/
+
 	segment.start.x = x1;
 	segment.end.x = x2;
 	segment.start.w = segment.end.w = w;
-	segment.render_mode = render.render_mode;
-	segment.tex_num_pal = render.tex_pal;
-	segment.texture = render.texture;
-	segment.masking = 1 /*render.bitmap.masking*/;
+	segment.start.r = segment.end.r = 0xff;
+	segment.start.g = segment.end.g = 0;
+	segment.start.b = segment.end.b = 0xff;
+	segment.render_mode = RENDER_FILLED;
+	segment.tex_num_pal = 0;
+	segment.texture = NULL;
+	segment.masking = 0 /*render.bitmap.masking*/;
 
 	draw_add_segment(y, &segment);
 
