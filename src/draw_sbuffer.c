@@ -96,6 +96,8 @@ typedef struct {
 	sbuffer_segdata_t segdata[NUM_SEGMENTS_DATA];
 } sbuffer_row_t;
 
+typedef void (*sbuffer_draw_f)(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+
 /*--- Variables ---*/
 
 /* for poly rendering */
@@ -124,9 +126,20 @@ static void draw_startFrame(draw_t *this);
 static void draw_flushFrame(draw_t *this);
 static void draw_endFrame(draw_t *this);
 
-static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
-static void draw_render_gouraud(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
-static void draw_render_textured(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_fill16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_fill24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+
+static void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+
+static void draw_render_textured8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_textured16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_textured24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+static void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
 
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx);
 
@@ -223,11 +236,34 @@ static void draw_flushFrame(draw_t *this)
 	SDL_Surface *surf = video.screen;
 	int i,j;
 	Uint8 *dst = (Uint8 *) surf->pixels;
+	sbuffer_draw_f draw_render_fill = draw_render_fill8;
+	sbuffer_draw_f draw_render_gouraud = draw_render_gouraud8;
+	sbuffer_draw_f draw_render_textured = draw_render_textured8;
 
 	/*check_sbuffer();*/
 
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_LockSurface(surf);
+	}
+
+	switch(surf->format->BytesPerPixel) {
+		case 2:
+			draw_render_fill = draw_render_fill16;
+			draw_render_gouraud = draw_render_gouraud16;
+			draw_render_textured = draw_render_textured16;
+			break;
+		case 3:
+			draw_render_fill = draw_render_fill24;
+			draw_render_gouraud = draw_render_gouraud24;
+			draw_render_textured = draw_render_textured24;
+			break;
+		case 4:
+			draw_render_fill = draw_render_fill32;
+			draw_render_gouraud = draw_render_gouraud32;
+			draw_render_textured = draw_render_textured32;
+			break;
+		default:
+			break;
 	}
 
 	dst += video.viewport.y * surf->pitch;
@@ -254,13 +290,13 @@ static void draw_flushFrame(draw_t *this)
 				Uint8 *dst_line = dst + segdata[j].x1 * surf->format->BytesPerPixel;
 				switch(current->render_mode) {
 					case RENDER_FILLED:
-						draw_render_fill(surf, dst_line, current, segdata[j].x1, segdata[last].x2);
+						(*draw_render_fill)(surf, dst_line, current, segdata[j].x1, segdata[last].x2);
 						break;
 					case RENDER_GOURAUD:
-						draw_render_gouraud(surf, dst_line, current, segdata[j].x1, segdata[last].x2);
+						(*draw_render_gouraud)(surf, dst_line, current, segdata[j].x1, segdata[last].x2);
 						break;
 					case RENDER_TEXTURED:
-						draw_render_textured(surf, dst_line, current, segdata[j].x1, segdata[last].x2);
+						(*draw_render_textured)(surf, dst_line, current, segdata[j].x1, segdata[last].x2);
 						break;
 				}
 			}
@@ -283,7 +319,7 @@ static void draw_endFrame(draw_t *this)
 	draw_flushFrame(this);
 }
 
-static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+static void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	Uint32 color;
 	int i;
@@ -291,60 +327,73 @@ static void draw_render_fill(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment
 	int g = segment->start.g;
 	int b = segment->start.b;
 
-	switch(surf->format->BytesPerPixel) {
-		case 1:
-			{
-				Uint8 *dst_col = dst_line;
-				color = dither_nearest_index(r,g,b);
+	Uint8 *dst_col = dst_line;
+	color = dither_nearest_index(r,g,b);
 
-				memset(dst_col, color, x2 - x1 + 1);
-			}
-			break;
-		case 2:
-			{
-				Uint16 *dst_col = (Uint16 *) dst_line;
-				color = SDL_MapRGB(surf->format, r,g,b);
+	memset(dst_col, color, x2 - x1 + 1);
+}
 
-				for (i=x1; i<=x2; i++) {
-					*dst_col++ = color;
-				}
-			}
-			break;
-		case 3:
-			{
-				Uint8 *dst_col = dst_line;
-				color = SDL_MapRGB(surf->format, r,g,b);
- 
-				for (i=x1; i<=x2; i++) {
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-					*dst_col++ = color>>16;
-					*dst_col++ = color>>8;
-					*dst_col++ = color;
-#else
-					*dst_col++ = color;
-					*dst_col++ = color>>8;
-					*dst_col++ = color>>16;
-#endif
-				}
-			}
-			break;
-		case 4:
-			{
-				Uint32 *dst_col =  (Uint32 *) dst_line;
-				color = SDL_MapRGB(surf->format, r,g,b);
+static void draw_render_fill16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	Uint32 color;
+	int i;
+	int r = segment->start.r;
+	int g = segment->start.g;
+	int b = segment->start.b;
 
-				for (i=x1; i<=x2; i++) {
-					*dst_col++ = color;
-				}
-			}
-			break;
+	Uint16 *dst_col = (Uint16 *) dst_line;
+	color = SDL_MapRGB(surf->format, r,g,b);
+
+	for (i=x1; i<=x2; i++) {
+		*dst_col++ = color;
 	}
 }
 
-static void draw_render_gouraud(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+static void draw_render_fill24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	Uint32 color;
+	int i;
+	int r = segment->start.r;
+	int g = segment->start.g;
+	int b = segment->start.b;
+
+	Uint8 *dst_col = dst_line;
+	color = SDL_MapRGB(surf->format, r,g,b);
+ 
+	for (i=x1; i<=x2; i++) {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		*dst_col++ = color>>16;
+		*dst_col++ = color>>8;
+		*dst_col++ = color;
+#else
+		*dst_col++ = color;
+		*dst_col++ = color>>8;
+		*dst_col++ = color>>16;
+#endif
+	}
+}
+
+static void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	Uint32 color;
+	int i;
+	int r = segment->start.r;
+	int g = segment->start.g;
+	int b = segment->start.b;
+
+	Uint32 *dst_col =  (Uint32 *) dst_line;
+	color = SDL_MapRGB(surf->format, r,g,b);
+
+	for (i=x1; i<=x2; i++) {
+		*dst_col++ = color;
+	}
+}
+
+static void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 	int dx, dxtotal, i;
+	Uint8 *dst_col = dst_line;
 
 	r1 = segment->start.r;
 	g1 = segment->start.g;
@@ -374,72 +423,155 @@ static void draw_render_gouraud(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 
 	dx = x2 - x1 + 1;
  
-	switch(surf->format->BytesPerPixel) {
-		case 1:
-			{
-				Uint8 *dst_col = dst_line;
-
-				for (i=0; i<dx; i++) {
-					*dst_col++ = dither_nearest_index(r,g,b);
-					r += dr;
-					g += dg;
-					b += db;
-				}
-			}
-			break;
-		case 2:
-			{
-				Uint16 *dst_col = (Uint16 *) dst_line;
-
-				for (i=0; i<dx; i++) {
-					*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
-					r += dr;
-					g += dg;
-					b += db;
-				}
-			}
-			break;
-		case 3:
-			{
-				Uint8 *dst_col = dst_line;
-
-				for (i=0; i<dx; i++) {
-					Uint32 color = SDL_MapRGB(surf->format, r,g,b);
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-					*dst_col++ = color>>16;
-					*dst_col++ = color>>8;
-					*dst_col++ = color;
-#else
-					*dst_col++ = color;
-					*dst_col++ = color>>8;
-					*dst_col++ = color>>16;
-#endif
-					r += dr;
-					g += dg;
-					b += db;
-				}
-			}
-			break;
-		case 4:
-			{
-				Uint32 *dst_col =  (Uint32 *) dst_line;
-
-				for (i=0; i<dx; i++) {
-					*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
-					r += dr;
-					g += dg;
-					b += db;
-				}
-			}
-			break;
+	for (i=0; i<dx; i++) {
+		*dst_col++ = dither_nearest_index(r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
 	}
 }
 
-static void draw_render_textured(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+static void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	int dx, dxtotal, i;
+	Uint16 *dst_col = (Uint16 *) dst_line;
+
+	r1 = segment->start.r;
+	g1 = segment->start.g;
+	b1 = segment->start.b;
+	r2 = segment->end.r;
+	g2 = segment->end.g;
+	b2 = segment->end.b;
+
+	if (drawCorrectPerspective>0) {
+		r1 = segment->start.r / segment->start.w;
+		g1 = segment->start.g / segment->start.w;
+		b1 = segment->start.b / segment->start.w;
+		r2 = segment->end.r / segment->end.w;
+		g2 = segment->end.g / segment->end.w;
+		b2 = segment->end.b / segment->end.w;
+	}
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+
+	dx = x2 - x1 + 1;
+ 
+	for (i=0; i<dx; i++) {
+		*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
+	}
+}
+
+static void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	int dx, dxtotal, i;
+	Uint8 *dst_col = dst_line;
+
+	r1 = segment->start.r;
+	g1 = segment->start.g;
+	b1 = segment->start.b;
+	r2 = segment->end.r;
+	g2 = segment->end.g;
+	b2 = segment->end.b;
+
+	if (drawCorrectPerspective>0) {
+		r1 = segment->start.r / segment->start.w;
+		g1 = segment->start.g / segment->start.w;
+		b1 = segment->start.b / segment->start.w;
+		r2 = segment->end.r / segment->end.w;
+		g2 = segment->end.g / segment->end.w;
+		b2 = segment->end.b / segment->end.w;
+	}
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+
+	dx = x2 - x1 + 1;
+ 
+	for (i=0; i<dx; i++) {
+		Uint32 color = SDL_MapRGB(surf->format, r,g,b);
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		*dst_col++ = color>>16;
+		*dst_col++ = color>>8;
+		*dst_col++ = color;
+#else
+		*dst_col++ = color;
+		*dst_col++ = color>>8;
+		*dst_col++ = color>>16;
+#endif
+		r += dr;
+		g += dg;
+		b += db;
+	}
+}
+
+static void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	int dx, dxtotal, i;
+	Uint32 *dst_col =  (Uint32 *) dst_line;
+
+	r1 = segment->start.r;
+	g1 = segment->start.g;
+	b1 = segment->start.b;
+	r2 = segment->end.r;
+	g2 = segment->end.g;
+	b2 = segment->end.b;
+
+	if (drawCorrectPerspective>0) {
+		r1 = segment->start.r / segment->start.w;
+		g1 = segment->start.g / segment->start.w;
+		b1 = segment->start.b / segment->start.w;
+		r2 = segment->end.r / segment->end.w;
+		g2 = segment->end.g / segment->end.w;
+		b2 = segment->end.b / segment->end.w;
+	}
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+
+	dx = x2 - x1 + 1;
+ 
+	for (i=0; i<dx; i++) {
+		*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
+	}
+}
+
+static void draw_render_textured8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, du,dv, u,v;
 	int dx, dxtotal, i;
 	render_texture_t *tex = segment->texture;
+	Uint8 *dst_col = dst_line;
 
 	u1 = segment->start.u;
 	v1 = segment->start.v;
@@ -463,44 +595,39 @@ static void draw_render_textured(SDL_Surface *surf, Uint8 *dst_line, sbuffer_seg
 
 	dx = x2 - x1 + 1;
 
-	switch(surf->format->BytesPerPixel) {
-		case 1:
-			{
-				Uint8 *dst_col = dst_line;
-
 #if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
 /*
 	XXxxYYyy	uv/uvd
 	XXxx--YY	lsr.w
 	xx--YYXX	rol.l
 */
-				if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
-					/* Integer calculations */
-					Sint32 vi = v * 65536.0f;
-					Sint32 vd = dv * 65536.0f;
-					Sint32 ui = u * 65536.0f;
-					Sint32 ud = du * 65536.0f;
-					int ushift = 16-logbase2(tex->pitchw);
-					int vshift = logbase2(tex->pitchh);
-					Uint32 uv = (vi>>vshift) & 0x0000ffff;
-					Uint32 uvd = (vd>>vshift) & 0x0000ffff;
-					uv |= (ui<<ushift) & 0xffff0000;
-					uvd |= (ud<<ushift) & 0xffff0000;
+	if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
+		/* Integer calculations */
+		Sint32 vi = v * 65536.0f;
+		Sint32 vd = dv * 65536.0f;
+		Sint32 ui = u * 65536.0f;
+		Sint32 ud = du * 65536.0f;
+		int ushift = 16-logbase2(tex->pitchw);
+		int vshift = logbase2(tex->pitchh);
+		Uint32 uv = (vi>>vshift) & 0x0000ffff;
+		Uint32 uvd = (vd>>vshift) & 0x0000ffff;
+		uv |= (ui<<ushift) & 0xffff0000;
+		uvd |= (ud<<ushift) & 0xffff0000;
 
-					ushift = 16-ushift;
-					vshift = 16-vshift;
+		ushift = 16-ushift;
+		vshift = 16-vshift;
 
-					if (tex->paletted) {
-						Uint32 *palette = tex->palettes[segment->tex_num_pal];
-						Uint8 *tex_pixels = (Uint8 *) tex->pixels;
+		if (tex->paletted) {
+			Uint32 *palette = tex->palettes[segment->tex_num_pal];
+			Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
-						/* for signed d0:w addressing */
-						if (tex->pitchh*tex->pitchw>32768) {
-							tex_pixels += 32768;
-							uv ^= 0x8000;
-						}
+			/* for signed d0:w addressing */
+			if (tex->pitchh*tex->pitchw>32768) {
+				tex_pixels += 32768;
+				uv ^= 0x8000;
+			}
 
-						--dx;
+			--dx;
 __asm__ __volatile__ (
 	"movel	%5,d0\n\t"
 	"moveql	#0,d1\n"
@@ -525,48 +652,73 @@ __asm__ __volatile__ (
 	: /* clobbered registers */
 		"d0", "d1", "cc", "memory" 
 );						
-					}/* else {
-						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+		}/* else {
+			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 
-						for (k=dx-1; k>=0; k--) {
-							Uint32 uv = (vi & vm) | (ui & 0xffff);
-							uv >>= rshift;
-							ui += ud;
-							*dst_col++ = tex_pixels[uv];
-							vi += vd;
-						}
-					}*/
-				} else
-#endif
-				{
-					/* Float calculations */
-					if (tex->paletted) {
-						Uint32 *palette = tex->palettes[segment->tex_num_pal];
-						for (i=0; i<dx; i++) {
-							Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
-
-							if (c) {
-								*dst_col = palette[c];
-							}
-							dst_col++;
-							u += du;
-							v += dv;
-						}
-					}/* else {
-						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
-				
-						for (k=0; k<dx; k++) {
-							*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
-							u += du;
-							v += dv;
-						}
-					}*/
-				}
+			for (k=dx-1; k>=0; k--) {
+				Uint32 uv = (vi & vm) | (ui & 0xffff);
+				uv >>= rshift;
+				ui += ud;
+				*dst_col++ = tex_pixels[uv];
+				vi += vd;
 			}
-			break;
-		case 2:
-			{
-				Uint16 *dst_col = (Uint16 *) dst_line;
+		}*/
+	} else
+#endif
+	{
+		/* Float calculations */
+		if (tex->paletted) {
+			Uint32 *palette = tex->palettes[segment->tex_num_pal];
+			for (i=0; i<dx; i++) {
+				Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+
+				if (c) {
+					*dst_col = palette[c];
+				}
+				dst_col++;
+				u += du;
+				v += dv;
+			}
+		}/* else {
+			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+	
+			for (k=0; k<dx; k++) {
+				*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+				u += du;
+				v += dv;
+			}
+		}*/
+	}
+}
+
+static void draw_render_textured16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float u1,v1, u2,v2, du,dv, u,v;
+	int dx, dxtotal, i;
+	render_texture_t *tex = segment->texture;
+	Uint16 *dst_col = (Uint16 *) dst_line;
+
+	u1 = segment->start.u;
+	v1 = segment->start.v;
+	u2 = segment->end.u;
+	v2 = segment->end.v;
+
+	if (drawCorrectPerspective>0) {
+		u1 = segment->start.u / segment->start.w;
+		v1 = segment->start.v / segment->start.w;
+		u2 = segment->end.u / segment->end.w;
+		v2 = segment->end.v / segment->end.w;
+	}
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	du = (u2-u1)/dxtotal;
+	dv = (v2-v1)/dxtotal;
+
+	u = u1 + du * (x1-segment->start.x);
+	v = v1 + dv * (x1-segment->start.x);
+
+	dx = x2 - x1 + 1;
 
 #if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
 /*
@@ -574,33 +726,33 @@ __asm__ __volatile__ (
 	XXxx--YY	lsr.w
 	xx--YYXX	rol.l
 */
-				if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
-					/* Integer calculations */
-					Sint32 vi = v * 65536.0f;
-					Sint32 vd = dv * 65536.0f;
-					Sint32 ui = u * 65536.0f;
-					Sint32 ud = du * 65536.0f;
-					int ushift = 16-logbase2(tex->pitchw);
-					int vshift = logbase2(tex->pitchh);
-					Uint32 uv = (vi>>vshift) & 0x0000ffff;
-					Uint32 uvd = (vd>>vshift) & 0x0000ffff;
-					uv |= (ui<<ushift) & 0xffff0000;
-					uvd |= (ud<<ushift) & 0xffff0000;
+	if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
+		/* Integer calculations */
+		Sint32 vi = v * 65536.0f;
+		Sint32 vd = dv * 65536.0f;
+		Sint32 ui = u * 65536.0f;
+		Sint32 ud = du * 65536.0f;
+		int ushift = 16-logbase2(tex->pitchw);
+		int vshift = logbase2(tex->pitchh);
+		Uint32 uv = (vi>>vshift) & 0x0000ffff;
+		Uint32 uvd = (vd>>vshift) & 0x0000ffff;
+		uv |= (ui<<ushift) & 0xffff0000;
+		uvd |= (ud<<ushift) & 0xffff0000;
 
-					ushift = 16-ushift;
-					vshift = 16-vshift;
+		ushift = 16-ushift;
+		vshift = 16-vshift;
 
-					if (tex->paletted) {
-						Uint32 *palette = tex->palettes[segment->tex_num_pal];
-						Uint8 *tex_pixels = (Uint8 *) tex->pixels;
+		if (tex->paletted) {
+			Uint32 *palette = tex->palettes[segment->tex_num_pal];
+			Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
-						/* for signed d0:w addressing */
-						if (tex->pitchh*tex->pitchw>32768) {
-							tex_pixels += 32768;
-							uv ^= 0x8000;
-						}
+			/* for signed d0:w addressing */
+			if (tex->pitchh*tex->pitchw>32768) {
+				tex_pixels += 32768;
+				uv ^= 0x8000;
+			}
 
-						--dx;
+			--dx;
 __asm__ __volatile__ (
 	"movel	%5,d0\n\t"
 	"moveql	#0,d1\n"
@@ -626,119 +778,166 @@ __asm__ __volatile__ (
 	: /* clobbered registers */
 		"d0", "d1", "d2", "cc", "memory" 
 );						
-					} else {
-						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
-						Uint32 vm = (0xffffffff>>vshift) & 0xffff0000;
-						int rshift = 16-ushift;
+		} else {
+			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+			Uint32 vm = (0xffffffff>>vshift) & 0xffff0000;
+			int rshift = 16-ushift;
 
-						for (i=dx-1; i>=0; i--) {
-							Uint32 uv = (vi & vm) | (ui & 0xffff);
-							uv >>= rshift;
-							ui += ud;
-							*dst_col++ = tex_pixels[uv];
-							vi += vd;
-						}
-					}
-				} else
-#endif
-				{
-					/* Float calculations */
-					if (tex->paletted) {
-						Uint32 *palette = tex->palettes[segment->tex_num_pal];
-						for (i=0; i<dx; i++) {
-							Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
-
-							if (c) {
-								*dst_col = palette[c];
-							}
-							dst_col++;
-							u += du;
-							v += dv;
-						}
-					} else {
-						Uint16 *tex_pixels = (Uint16 *) tex->pixels;
-			
-						for (i=0; i<dx; i++) {
-							*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
-							u += du;
-							v += dv;
-						}
-					}
-				}
+			for (i=dx-1; i>=0; i--) {
+				Uint32 uv = (vi & vm) | (ui & 0xffff);
+				uv >>= rshift;
+				ui += ud;
+				*dst_col++ = tex_pixels[uv];
+				vi += vd;
 			}
-			break;
-		case 3:
-			{
-				Uint8 *dst_col = dst_line;
+		}
+	} else
+#endif
+	{
+		/* Float calculations */
+		if (tex->paletted) {
+			Uint32 *palette = tex->palettes[segment->tex_num_pal];
+			for (i=0; i<dx; i++) {
+				Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-				if (tex->paletted) {
-					Uint32 *palette = tex->palettes[segment->tex_num_pal];
-					for (i=0; i<dx; i++) {
-						Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+				if (c) {
+					*dst_col = palette[c];
+				}
+				dst_col++;
+				u += du;
+				v += dv;
+			}
+		} else {
+			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 
-						if (c) {
-							Uint32 color = palette[c];
+			for (i=0; i<dx; i++) {
+				*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+				u += du;
+				v += dv;
+			}
+		}
+	}
+}
+
+static void draw_render_textured24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float u1,v1, u2,v2, du,dv, u,v;
+	int dx, dxtotal, i;
+	render_texture_t *tex = segment->texture;
+	Uint8 *dst_col = dst_line;
+
+	u1 = segment->start.u;
+	v1 = segment->start.v;
+	u2 = segment->end.u;
+	v2 = segment->end.v;
+
+	if (drawCorrectPerspective>0) {
+		u1 = segment->start.u / segment->start.w;
+		v1 = segment->start.v / segment->start.w;
+		u2 = segment->end.u / segment->end.w;
+		v2 = segment->end.v / segment->end.w;
+	}
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	du = (u2-u1)/dxtotal;
+	dv = (v2-v1)/dxtotal;
+
+	u = u1 + du * (x1-segment->start.x);
+	v = v1 + dv * (x1-segment->start.x);
+
+	dx = x2 - x1 + 1;
+
+	if (tex->paletted) {
+		Uint32 *palette = tex->palettes[segment->tex_num_pal];
+		for (i=0; i<dx; i++) {
+			Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+
+			if (c) {
+				Uint32 color = palette[c];
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-							dst_col[0] = color>>16;
-							dst_col[1] = color>>8;
-							dst_col[2] = color;
+				dst_col[0] = color>>16;
+				dst_col[1] = color>>8;
+				dst_col[2] = color;
 #else
-							dst_col[0] = color;
-							dst_col[1] = color>>8;
-							dst_col[2] = color>>16;
+				dst_col[0] = color;
+				dst_col[1] = color>>8;
+				dst_col[2] = color>>16;
 #endif
-						}
-						dst_col += 3;
-						u += du;
-						v += dv;
-					}
-				} else {
-					Uint32 *tex_pixels = (Uint32 *) tex->pixels;
-			
-					for (i=0; i<dx; i++) {
-						Uint32 color = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
+			}
+			dst_col += 3;
+			u += du;
+			v += dv;
+		}
+	} else {
+		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+	
+		for (i=0; i<dx; i++) {
+			Uint32 color = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-						*dst_col++ = color>>16;
-						*dst_col++ = color>>8;
-						*dst_col++ = color;
+			*dst_col++ = color>>16;
+			*dst_col++ = color>>8;
+			*dst_col++ = color;
 #else
-						*dst_col++ = color;
-						*dst_col++ = color>>8;
-						*dst_col++ = color>>16;
+			*dst_col++ = color;
+			*dst_col++ = color>>8;
+			*dst_col++ = color>>16;
 #endif
-						u += du;
-						v += dv;
-					}
-				}
-			}
-			break;
-		case 4:
-			{
-				Uint32 *dst_col =  (Uint32 *) dst_line;
+			u += du;
+			v += dv;
+		}
+	}
+}
 
-				if (tex->paletted) {
-					Uint32 *palette = tex->palettes[segment->tex_num_pal];
-					for (i=0; i<dx; i++) {
-						Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+static void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float u1,v1, u2,v2, du,dv, u,v;
+	int dx, dxtotal, i;
+	render_texture_t *tex = segment->texture;
+	Uint32 *dst_col =  (Uint32 *) dst_line;
 
-						if (c) {
-							*dst_col = palette[c];
-						}
-						dst_col++;
-						u += du;
-						v += dv;
-					}
-				} else {
-					Uint32 *tex_pixels = (Uint32 *) tex->pixels;
-			
-					for (i=0; i<dx; i++) {
-						*dst_col++ = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
-						u += du;
-						v += dv;
-					}
-				}
+	u1 = segment->start.u;
+	v1 = segment->start.v;
+	u2 = segment->end.u;
+	v2 = segment->end.v;
+
+	if (drawCorrectPerspective>0) {
+		u1 = segment->start.u / segment->start.w;
+		v1 = segment->start.v / segment->start.w;
+		u2 = segment->end.u / segment->end.w;
+		v2 = segment->end.v / segment->end.w;
+	}
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	du = (u2-u1)/dxtotal;
+	dv = (v2-v1)/dxtotal;
+
+	u = u1 + du * (x1-segment->start.x);
+	v = v1 + dv * (x1-segment->start.x);
+
+	dx = x2 - x1 + 1;
+
+	if (tex->paletted) {
+		Uint32 *palette = tex->palettes[segment->tex_num_pal];
+		for (i=0; i<dx; i++) {
+			Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+
+			if (c) {
+				*dst_col = palette[c];
 			}
-			break;
+			dst_col++;
+			u += du;
+			v += dv;
+		}
+	} else {
+		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+
+		for (i=0; i<dx; i++) {
+			*dst_col++ = tex_pixels[((int)v)*tex->pitchw + ((int) u)];
+			u += du;
+			v += dv;
+		}
 	}
 }
 
