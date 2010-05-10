@@ -973,87 +973,52 @@ static void drawImageMask8(void)
 	int dstX, dstY, srcX, srcY;
 	render_texture_t *tex = render.texture;
 	render_bitmap_t *this = &render.bitmap;
-	int startx = -1;
 	float w = 1.0f / render.bitmap.depth;
 	int lastx = render.bitmap.dstRect.x+render.bitmap.dstRect.w - 1;
 	Uint8 *alpha_pal = tex->alpha_palettes[render.tex_pal];
 
-	for (dstY=this->dstRect.y; dstY<this->dstRect.y+this->dstRect.h; dstY++) {
+	for (dstY=0; dstY<this->dstRect.h; dstY++) {
 		Uint8 *src_line = tex->pixels;
+		int startx = -1;
 
-		srcY = this->scaley_dst2src[dstY];
+		srcY = this->scaley_dst2src[dstY] + this->srcRect.y;
 		src_line += srcY * tex->pitch;
-#if 0
-		for (dstX=this->dstRect.x; dstX<this->dstRect.x+this->dstRect.w; dstX++) {
-			srcX = this->scalex_dst2src[dstX];
+
+		for (dstX=0; dstX<this->dstRect.w; dstX++) {
+			srcX = this->scalex_dst2src[dstX] + this->srcRect.x;
 
 			if (!alpha_pal[src_line[srcX]]) {
-				/* Transparent pixel, draw previous opaque */
-				if (startx>0) {
-					render.draw.addMaskSegment(&render.draw, dstY, startx, dstX-1, w);
+				/* Transparent pixel, draw previous opaque segment */
+				if (startx>=0) {
+					render.draw.addMaskSegment(&render.draw, dstY+this->dstRect.y, startx, dstX+this->dstRect.x-1, w);
 					startx = -1;
 				}
 			} else {
 				/* Opaque, set start */
 				if (startx<0) {
-					startx = dstX;
-				}
-				/* Draw if EOL */
-				if (dstX == lastx) {
-					render.draw.addMaskSegment(&render.draw, dstY, startx, lastx, w);
-					startx = -1;
+					startx = dstX+this->dstRect.x;
 				}
 			}
 		}
-#else
-		render.draw.addMaskSegment(&render.draw, dstY, this->dstRect.x, this->dstRect.x+this->dstRect.w-1, w);
-#endif
+
+		/* Draw till EOL */
+		if (startx>=0) {
+			render.draw.addMaskSegment(&render.draw, dstY+this->dstRect.y, startx, lastx, w);
+		}
 	}
 }
 
 static void drawImageMask16(void)
 {
-	int dstX, dstY, srcX, srcY;
-	render_texture_t *tex = render.texture;
-	render_bitmap_t *this = &render.bitmap;
-	int num_pal = render.tex_pal;
-
-	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
-		srcY = this->scaley_dst2src[dstY];
-		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
-			srcX = this->scalex_dst2src[dstX];
-		}
-	}
+	/* TODO */
 }
 
 static void drawImageMask24(void)
 {
-#if 0
-	int dstX, dstY, srcX, srcY;
-	render_texture_t *tex = render.texture;
-	render_bitmap_t *this = &render.bitmap;
-	int num_pal = render.tex_pal;
-
-	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
-		srcY = this->scaley_dst2src[dstY];
-		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
-			srcX = this->scalex_dst2src[dstX];
-		}
-	}
-#endif
+	/* TODO */
 }
 
 static void drawImageMask32(void)
 {
-	int dstX, dstY, srcX, srcY;
-	render_texture_t *tex = render.texture;
-	render_bitmap_t *this = &render.bitmap;
-	int num_pal = render.tex_pal;
-
-	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
-		srcY = this->scaley_dst2src[dstY];
-		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
-			srcX = this->scalex_dst2src[dstX];
-		}
-	}
+	/* TODO */
 }
