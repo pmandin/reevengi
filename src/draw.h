@@ -58,6 +58,9 @@ struct draw_s {
 
 	/* Textured */
 	void (*polyTexture)(draw_t *this, struct vertexf_s *vtx, int num_vtx);
+
+	/* Add mask segment */
+	void (*addMaskSegment)(draw_t *this, int y1, int x1, int x2, float w);
 };
 
 #endif /* DRAW_H */

@@ -142,6 +142,7 @@ static void draw_render_textured24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_s
 static void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
 
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx);
+static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w);
 
 /*--- Functions ---*/
 
@@ -160,6 +161,7 @@ void draw_init_sbuffer(draw_t *draw)
 	draw->polyFill = draw_poly_sbuffer;
 	draw->polyGouraud = draw_poly_sbuffer;
 	draw->polyTexture = draw_poly_sbuffer;
+	draw->addMaskSegment = draw_mask_segment;
 
 	clear_sbuffer();
 }
@@ -1630,4 +1632,48 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
+}
+
+static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
+{
+	sbuffer_segment_t segment;
+
+	if ((y<0) || (y>=video.viewport.h)) {
+		return;
+	}
+	if ((x1>=video.viewport.w) || (x2<0)) {
+		return;
+	}
+
+	if (video.viewport.h>size_poly_minmaxx) {
+		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
+		size_poly_minmaxx = video.viewport.h;
+	}
+
+	if (!poly_hlines) {
+		fprintf(stderr, "Not enough memory for poly rendering\n");
+		return;
+	}
+
+	if (video.viewport.h>sbuffer_numrows) {
+		sbuffer_rows = realloc(sbuffer_rows, sizeof(sbuffer_row_t) * video.viewport.h);
+		sbuffer_numrows = video.viewport.h;
+	}
+
+	if (!sbuffer_rows) {
+		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
+		return;
+	}
+
+	segment.start.x = x1;
+	segment.end.x = x2;
+	segment.start.w = segment.end.w = w;
+	segment.render_mode = render.render_mode;
+	segment.tex_num_pal = render.tex_pal;
+	segment.texture = render.texture;
+	segment.masking = 1 /*render.bitmap.masking*/;
+
+	draw_add_segment(y, &segment);
+
+	/* Upper layer will update dirty rectangles */
 }

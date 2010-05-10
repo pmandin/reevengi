@@ -56,6 +56,7 @@ static void setMasking(int enabled);
 static void drawImage(video_t *video);
 
 static void drawImageDepth(void);
+static void drawImageMask(void);
 
 /*--- Functions ---*/
 
@@ -255,7 +256,11 @@ static void drawImage(video_t *video)
 		render.bitmap.dstRect.x -= video->viewport.x;
 		render.bitmap.dstRect.y -= video->viewport.y;
 
-		drawImageDepth();
+		if (render.bitmap.masking && render.draw.addMaskSegment) {
+			drawImageMask();
+		} else {
+			drawImageDepth();
+		}
 		return;
 	}
 
@@ -289,41 +294,6 @@ static void drawImage(video_t *video)
 			SDL_UnlockSurface(video->screen);
 		}
 	}
-}
-
-static void drawImageDepth(void)
-{
-	vertexf_t poly[4];
-	int i;
-
-	poly[0].pos[0] = render.bitmap.dstRect.x;
-	poly[0].pos[1] = render.bitmap.dstRect.y;
-	poly[0].tx[0] = render.bitmap.srcRect.x;
-	poly[0].tx[1] = render.bitmap.srcRect.y;
-
-	poly[1].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
-	poly[1].pos[1] = render.bitmap.dstRect.y;
-	poly[1].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
-	poly[1].tx[1] = render.bitmap.srcRect.y;
-
-	poly[2].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
-	poly[2].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
-	poly[2].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
-	poly[2].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
-
-	poly[3].pos[0] = render.bitmap.dstRect.x;
-	poly[3].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
-	poly[3].tx[0] = render.bitmap.srcRect.x;
-	poly[3].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
-
-	for (i=0; i<4; i++) {
-		poly[i].pos[0] *= render.bitmap.depth;
-		poly[i].pos[1] *= render.bitmap.depth;
-		poly[i].pos[2] = render.bitmap.depth;
-		poly[i].pos[3] = 1.0f;
-	}
-
-	render.draw.polyTexture(&render.draw, poly, 4);
 }
 
 static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
@@ -929,4 +899,60 @@ static void rescale_linear(render_texture_t *src, SDL_Surface *dst)
 			}
 			break;
 	}
+}
+
+static void drawImageDepth(void)
+{
+	vertexf_t poly[4];
+	int i;
+
+	poly[0].pos[0] = render.bitmap.dstRect.x;
+	poly[0].pos[1] = render.bitmap.dstRect.y;
+	poly[0].tx[0] = render.bitmap.srcRect.x;
+	poly[0].tx[1] = render.bitmap.srcRect.y;
+
+	poly[1].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
+	poly[1].pos[1] = render.bitmap.dstRect.y;
+	poly[1].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
+	poly[1].tx[1] = render.bitmap.srcRect.y;
+
+	poly[2].pos[0] = render.bitmap.dstRect.x+render.bitmap.dstRect.w;
+	poly[2].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
+	poly[2].tx[0] = render.bitmap.srcRect.x+render.bitmap.srcRect.w;
+	poly[2].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
+
+	poly[3].pos[0] = render.bitmap.dstRect.x;
+	poly[3].pos[1] = render.bitmap.dstRect.y+render.bitmap.dstRect.h;
+	poly[3].tx[0] = render.bitmap.srcRect.x;
+	poly[3].tx[1] = render.bitmap.srcRect.y+render.bitmap.srcRect.h;
+
+	for (i=0; i<4; i++) {
+		poly[i].pos[0] *= render.bitmap.depth;
+		poly[i].pos[1] *= render.bitmap.depth;
+		poly[i].pos[2] = render.bitmap.depth;
+		poly[i].pos[3] = 1.0f;
+	}
+
+	render.draw.polyTexture(&render.draw, poly, 4);
+}
+
+static void drawImageMask(void)
+{
+	int dstX, dstY, srcX, srcY;
+	render_texture_t *tex = render.texture;
+	render_bitmap_t *this = &render.bitmap;
+
+	for (dstY=render.bitmap.dstRect.y; dstY<render.bitmap.dstRect.y+render.bitmap.dstRect.h; dstY++) {
+		srcY = this->scaley_dst2src[dstY];
+		for (dstX=render.bitmap.dstRect.x; dstX<render.bitmap.dstRect.x+render.bitmap.dstRect.w; dstX++) {
+			srcX = this->scalex_dst2src[dstX];
+		}
+	}
+
+	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+		video.viewport.x+render.bitmap.dstRect.x, video.viewport.y+render.bitmap.dstRect.y,
+		render.bitmap.dstRect.w, render.bitmap.dstRect.h);
+	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+		video.viewport.x+render.bitmap.dstRect.x, video.viewport.y+render.bitmap.dstRect.y,
+		render.bitmap.dstRect.w, render.bitmap.dstRect.h);
 }
