@@ -68,6 +68,7 @@ render_mask_t *render_mask_opengl_create(render_texture_t *texture)
 
 	mask->shutdown = shutdown;
 	mask->addZone = addZone;
+	mask->finishedZones = finishedZones;
 	mask->drawMask = drawMask;
 
 	gl_mask->num_zones = 0;
