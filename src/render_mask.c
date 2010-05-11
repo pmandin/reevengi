@@ -71,11 +71,8 @@ render_mask_t *render_mask_soft_create(render_texture_t *texture)
 
 static void shutdown(render_mask_t *this)
 {
-	assert(this);
-
-	if (this->texture) {
-		this->texture->shutdown(this->texture);
-		this->texture = NULL;
+	if (!this) {
+		return;
 	}
 
 	free(this);
@@ -95,7 +92,7 @@ static void addZone(render_mask_t *this,
 
 	tex = this->texture;
 	if (tex->bpp > 1) {
-		fprintf(stderr, "Need paletted mask\n");
+		fprintf(stderr, "render_mask: Need paletted texture as mask\n");
 		return;
 	}
 	alpha_pal = tex->alpha_palettes[0];
@@ -128,7 +125,7 @@ static void addZone(render_mask_t *this,
 			}
 		}
 
-		/* Draw till EOL */
+		/* Add segment till EOL */
 		if (startx>=0) {
 			addMaskSegment(this, dstY+y, startx, dstX+w-1, depth);
 		}
@@ -202,28 +199,33 @@ static void finishedZones(render_mask_t *this)
 
 static void drawMask(render_mask_t *this)
 {
-	int x,y;
+	int y, dstYstart, dstYend;
 
 	assert(this);
 
-	if (this->miny > this->maxy) {
+	if ((this->miny > this->maxy) || !render.draw.addMaskSegment) {
 		return;
 	}
 
-	for (y=this->miny; y<this->maxy; y++) {
-		mask_row_t	*mask_row = &(this->mask_row[y]);
-		mask_seg_t	*mask_seg = mask_row->segs;
+	dstYstart = (this->miny * video.viewport.h) / RENDER_MASK_HEIGHT;
+	dstYend = (this->maxy * video.viewport.h) / RENDER_MASK_HEIGHT;
+
+	for (y=dstYstart; y<dstYend; y++) {
+		int x, srcY = (y * RENDER_MASK_HEIGHT) / video.viewport.h;
+		mask_row_t *mask_row = &(this->mask_row[srcY]);
+		mask_seg_t *mask_seg = mask_row->segs;
 
 		for (x=0; x<mask_row->num_segs; x++) {
-			int x1 = mask_seg->x1;
-			int x2 = mask_seg->x2;
-			int y1 = y;
+			int dstXstart = (mask_seg->x1 * video.viewport.w ) / RENDER_MASK_WIDTH;
+			int dstXwidth = ((mask_seg->x2-mask_seg->x1+1) * video.viewport.w ) / RENDER_MASK_WIDTH;
 
-			/* Scale x1,x2,y1 to video resolution */
+			render.draw.addMaskSegment(&render.draw, y,
+				dstXstart,dstXstart+dstXwidth-1,
+				mask_seg->w);
 
-			render.draw.addMaskSegment(&render.draw, y1, x1,x2, mask_seg->w);
-
-			mask_seg++;
+			++mask_seg;
 		}
 	}
+
+	/* Mark dirty rectangles */
 }

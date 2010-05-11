@@ -62,6 +62,7 @@ struct render_mask_s {
 
 	render_texture_t *texture;
 
+	/* Sbuffer like structure for masking segments */
 	int miny, maxy;
 	mask_row_t	mask_row[RENDER_MASK_HEIGHT];	
 };
