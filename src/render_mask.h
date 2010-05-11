@@ -44,6 +44,15 @@ typedef struct {
 	mask_seg_t	segs[RENDER_MASK_SEGS];	
 } mask_row_t;
 
+typedef struct {
+	Uint16 x1, x2;
+} mask_dirty_seg_t;
+
+typedef struct {
+	Uint16 num_segs;
+	mask_dirty_seg_t	segs[RENDER_MASK_SEGS];	
+} mask_dirty_row_t;
+
 typedef struct render_mask_s render_mask_t;
 
 struct render_mask_s {
@@ -65,6 +74,10 @@ struct render_mask_s {
 	/* Sbuffer like structure for masking segments */
 	int miny, maxy;
 	mask_row_t	mask_row[RENDER_MASK_HEIGHT];	
+
+	/* Sbuffer like structure for dirty rectangles */
+	int dirty_miny, dirty_maxy;
+	mask_dirty_row_t	mask_dirty_row[RENDER_MASK_HEIGHT/16];
 };
 
 render_mask_t *render_mask_soft_create(render_texture_t *texture);

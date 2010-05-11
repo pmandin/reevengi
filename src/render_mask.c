@@ -66,6 +66,12 @@ render_mask_t *render_mask_soft_create(render_texture_t *texture)
 		mask->mask_row[y].num_segs = 0;
 	}
 
+	mask->dirty_miny = RENDER_MASK_HEIGHT/16;
+	mask->dirty_maxy = 0;
+	for (y=0; y<RENDER_MASK_HEIGHT/16; y++) {
+		mask->mask_dirty_row[y].num_segs = 0;
+	}
+
 	return mask;
 }
 
@@ -139,6 +145,7 @@ static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth
 	mask_row_t *mask_row = &(this->mask_row[y]);
 	mask_seg_t *mask_seg = &(mask_row->segs[mask_row->num_segs]);
 	float w = 1.0f / ((float) depth);
+	int dirty_y;
 
 	if (mask_row->num_segs == RENDER_MASK_SEGS) {
 		return;
@@ -195,11 +202,73 @@ static void finishedZones(render_mask_t *this)
 	}
 
 	/* Create dirty rectangle list for mask */
+	this->dirty_miny = this->miny>>4;
+	this->dirty_maxy = this->maxy>>4;
+	if (this->maxy & 15) {
+		++this->dirty_maxy;
+	}
+	for (y=this->miny; y<this->maxy; y++) {
+		mask_row_t *mask_row = &(this->mask_row[y]);
+		mask_dirty_row_t *mask_dirty_row = &(this->mask_dirty_row[y>>4]);
+
+		for (x=0; x<mask_row->num_segs; x++) {
+			int k, must_add = 1;
+
+			int dirty_x1 = mask_row->segs[x].x1>>4;
+			int dirty_x2 = mask_row->segs[x].x2;
+			if (dirty_x2 & 15) {
+				dirty_x2 = (dirty_x2 | 15)+1;
+				dirty_x2 = (dirty_x2>>4)-1; 
+			} else {
+				dirty_x2 >>= 4;
+			}
+
+			for (k=0; k<mask_dirty_row->num_segs; k++) {
+				mask_dirty_seg_t *mask_dirty_seg = &(mask_dirty_row->segs[k]);
+
+				/* New start overlap? merge */
+				if ((mask_dirty_seg->x1 >= dirty_x1) && (dirty_x1 <= mask_dirty_seg->x2) && (mask_dirty_seg->x2 < dirty_x2)) {
+					mask_dirty_seg->x2 = dirty_x2;
+					must_add = 0;
+					break;
+				}
+
+				/* New end overlap? merge */
+				if ((mask_dirty_seg->x1 >= dirty_x2) && (dirty_x2 <= mask_dirty_seg->x2) && (dirty_x1 < mask_dirty_seg->x1)) {
+					mask_dirty_seg->x1 = dirty_x1;
+					must_add = 0;
+					break;
+				}
+
+				/* New touch current ? merge */
+				if (mask_dirty_seg->x2+1 == dirty_x1) {
+					mask_dirty_seg->x2 = dirty_x2;
+					must_add = 0;
+					break;
+				}
+
+				if (dirty_x2+1 == mask_dirty_seg->x1) {
+					mask_dirty_seg->x1 = dirty_x1;
+					must_add = 0;
+					break;
+				}
+			}
+
+			/* Add at end of list */
+			if (must_add && (mask_dirty_row->num_segs < RENDER_MASK_WIDTH>>4)) {
+				mask_dirty_seg_t *mask_dirty_seg = &(mask_dirty_row->segs[mask_dirty_row->num_segs]);
+				
+				mask_dirty_seg->x1 = dirty_x1;
+				mask_dirty_seg->x2 = dirty_x2;
+				++mask_dirty_row->num_segs;
+			}
+		}
+	}
 }
 
 static void drawMask(render_mask_t *this)
 {
-	int y, dstYstart, dstYend;
+	int x,y, dstYstart, dstYend;
 
 	assert(this);
 
@@ -228,4 +297,22 @@ static void drawMask(render_mask_t *this)
 	}
 
 	/* Mark dirty rectangles */
+	for (y=this->dirty_miny; y<this->dirty_maxy; y++) {
+		mask_dirty_row_t *mask_dirty_row = &(this->mask_dirty_row[y]);
+		int recty = ((y<<4) * video.viewport.h) / RENDER_MASK_HEIGHT;
+		int recth = ((1<<4) * video.viewport.h) / RENDER_MASK_HEIGHT;
+
+		for (x=0; x<mask_dirty_row->num_segs; x++) {
+			int rectx = mask_dirty_row->segs[x].x1;
+			int rectw = mask_dirty_row->segs[x].x2-rectx+1;
+
+			rectx = ((rectx<<4) * video.viewport.w ) / RENDER_MASK_WIDTH;
+			rectw = ((rectw<<4) * video.viewport.w ) / RENDER_MASK_WIDTH;
+
+			video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+				video.viewport.x+rectx, video.viewport.y+recty, rectw,recth);
+			video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+				video.viewport.x+rectx, video.viewport.y+recty, rectw,recth);
+		}
+	}
 }
