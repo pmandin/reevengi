@@ -286,10 +286,10 @@ static void drawMask(render_mask_t *this)
 
 		for (x=0; x<mask_row->num_segs; x++) {
 			int dstXstart = (mask_seg->x1 * video.viewport.w ) / RENDER_MASK_WIDTH;
-			int dstXwidth = ((mask_seg->x2-mask_seg->x1+1) * video.viewport.w ) / RENDER_MASK_WIDTH;
+			int dstXend = ((mask_seg->x2+1) * video.viewport.w ) / RENDER_MASK_WIDTH;
 
 			render.draw.addMaskSegment(&render.draw, y,
-				dstXstart,dstXstart+dstXwidth-1,
+				dstXstart,dstXend-1,
 				mask_seg->w);
 
 			++mask_seg;
