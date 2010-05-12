@@ -1,9 +1,13 @@
-v 0.15
+v 0.16
 
-- Preliminary support for background masks, togglable
-  (RE1 pc/ps1, RE2 pc demo, RE3 pc).
-  Note: No transparency for software renderer.
-- OpenGL: Add toggle to display depth buffer.
+- Software renderer: Flush all 3D rendering before drawing 2D stuff.
+- Software renderer: Rewritten SBuffer implementation.
+- Software renderer: Background image masks.
+- Added -fps parameter.
+- Added preliminary menu (display stage/room/camera and player pos).
+- Movie player: Updated for latest FFmpeg revision. Added separate project
+  file for vs2005.
+- Updated for latest Physfs 2.x revision.
 
 
 See ChangeLog for older changes.

@@ -25,7 +25,7 @@ Use at your own risks.
   http://ffmpeg.mplayerhq.hu/
   Unofficial win32 builds available at http://ffmpeg.arrozcru.org/
 
-- PhysicsFS for all filesystem access (mandatory).
+- PhysicsFS 2.x for all filesystem access (mandatory).
   http://www.icculus.org/physfs/
 
   Note: You need to apply the patch in the diff directory to the stable 1.0
