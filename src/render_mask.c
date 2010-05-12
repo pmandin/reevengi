@@ -94,7 +94,7 @@ static void addZone(render_mask_t *this,
 
 	assert(this);
 	assert(this->texture);
-	assert((dstY>=0) && (dstY+h<RENDER_MASK_HEIGHT) && (dstX>=0) && (dstX+w<RENDER_MASK_WIDTH));
+	assert((dstY>=0) && (dstY+h<=RENDER_MASK_HEIGHT) && (dstX>=0) && (dstX+w<=RENDER_MASK_WIDTH));
 
 	tex = this->texture;
 	if (tex->bpp > 1) {
