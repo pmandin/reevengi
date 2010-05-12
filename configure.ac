@@ -134,6 +134,15 @@ if test "x$WANT_SCRIPT_DISASM" = "xyes"; then
 	AC_DEFINE(ENABLE_SCRIPT_DISASM, 1, [Define if you want script disassembly])
 fi
 
+# Debugging stuff
+
+AC_ARG_ENABLE(assert,
+	[  --disable-assert        Disable debugging with assert (default=yes)],
+	, [enable_assert="no"])
+if test "x$enable_assert" = "xno"; then
+	AC_DEFINE(NDEBUG, 1, [Define if you do not want debugging with assert])
+fi
+
 # Outputs
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)

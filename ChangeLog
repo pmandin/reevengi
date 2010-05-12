@@ -2,6 +2,7 @@ v 0.16
 
 - Software renderer: Flush all 3D rendering before drawing 2D stuff.
 - Software renderer: Rewritten SBuffer implementation.
+- Software renderer: Background image masks.
 - Added -fps parameter.
 - Added preliminary menu (display stage/room/camera and player pos).
 - Movie player: Updated for latest FFmpeg revision. Added separate project
