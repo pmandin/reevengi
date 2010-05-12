@@ -389,8 +389,8 @@ static void processPlayerMovement(void)
 	was_inside = (room_checkBoundary(game_state.room, game_state.num_camera, game_state.player_x, game_state.player_z) == 0);
 
 	if (player_moveforward) {
-		new_x = playerstart_x + cos((game_state.player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		new_z = playerstart_z - sin((game_state.player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		new_x = playerstart_x + cos((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
+		new_z = playerstart_z - sin((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
 		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
 #ifdef DISABLE_CAM_SWITCH
 		is_inside = was_inside;
@@ -411,8 +411,8 @@ static void processPlayerMovement(void)
 		}
 	}
 	if (player_movebackward) {
-		new_x = playerstart_x - cos((game_state.player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
-		new_z = playerstart_z + sin((game_state.player_a*M_PI)/180.0f)*5.0f*(tick_current-tick_movement);
+		new_x = playerstart_x - cos((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
+		new_z = playerstart_z + sin((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
 		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
 #ifdef DISABLE_CAM_SWITCH
 		is_inside = was_inside;
@@ -439,15 +439,15 @@ static void processPlayerMovement(void)
 		game_state.player_y = playerstart_y + 5.0f*(tick_current-tick_movement);
 	}
 	if (player_turnleft) {
-		game_state.player_a = playerstart_a - 0.1f*(tick_current-tick_movement);
+		game_state.player_a = playerstart_a - 1.0f*(tick_current-tick_movement);
 		while (game_state.player_a < 0.0f) {
-			game_state.player_a += 360.0f;
+			game_state.player_a += 4096.0f;
 		}
 	}
 	if (player_turnright) {
-		game_state.player_a = playerstart_a + 0.1f*(tick_current-tick_movement);
-		while (game_state.player_a > 360.0f) {
-			game_state.player_a -= 360.0f;
+		game_state.player_a = playerstart_a + 1.0f*(tick_current-tick_movement);
+		while (game_state.player_a > 4096.0f) {
+			game_state.player_a -= 4096.0f;
 		}
 	}
 }
@@ -468,7 +468,7 @@ static void processEnterDoor(void)
 		game_state.player_x = door->next_x;
 		game_state.player_y = door->next_y;
 		game_state.player_z = door->next_z;
-		game_state.player_a = (door->next_dir * 360.0f) / 4096.0f;
+		game_state.player_a = door->next_dir;
 
 		game_state.num_stage = door->next_stage;
 		game_state.num_room = door->next_room;
@@ -630,7 +630,7 @@ static void drawPlayer(void)
 
 	render.push_matrix();
 	render.translate(game_state.player_x, game_state.player_y+2000.0f, game_state.player_z);
-	render.rotate(game_state.player_a, 0.0f,1.0f,0.0f);
+	render.rotate((game_state.player_a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
 	if (player_model) {
 		if (render_model!=prev_render_model) {

@@ -164,7 +164,7 @@ void state_init(void)
 	game_state.player_x = 13148.0f;
 	game_state.player_y = -2466.0f;
 	game_state.player_z = 3367.0f;
-	game_state.player_a = 157.0f;
+	game_state.player_a = (157.0f * 4096.0f) / 360.0f;
 #endif
 }
 

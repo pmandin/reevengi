@@ -548,24 +548,24 @@ void room_map_drawPlayer(float x, float y, float angle)
 
 	render.set_color(MAP_COLOR_PLAYER);
 
-	v[0].x = (x - radius * cos((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
-	v[0].y = (y - radius * sin((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
+	v[0].x = (x - radius * cos((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
+	v[0].y = (y - radius * sin((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
 	v[0].z = 1.0f;
 
-	v[1].x = (x + radius * cos((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
-	v[1].y = (y + radius * sin((-angle * M_PI) / 180.0f) * 0.5f) * 0.5f;
+	v[1].x = (x + radius * cos((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
+	v[1].y = (y + radius * sin((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
 	v[1].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
 
-	v[0].x = (x + radius * cos((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
-	v[0].y = (y + radius * sin((-(angle-20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].x = (x + radius * cos((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].y = (y + radius * sin((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
 
-	v[0].x = (x + radius * cos((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
-	v[0].y = (y + radius * sin((-(angle+20.0f) * M_PI) / 180.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].x = (x + radius * cos((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].y = (y + radius * sin((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
