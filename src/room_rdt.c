@@ -59,7 +59,7 @@ typedef struct {
 typedef struct {
 	Uint16 count;
 	Uint16 unknown;
-	Uint16 dst_x, dst_y;
+	Sint16 dst_x, dst_y;
 } rdt_mask_offset_t;
 
 typedef struct {
@@ -310,6 +310,21 @@ static void rdt_initMasks(room_t *this, int num_camera)
 				offset += sizeof(rdt_mask_square_t);
 			}
 
+			if (dst_x<0) {
+				width += dst_x;
+				dst_x = 0;
+			}
+			if (dst_y<0) {
+				height += dst_y;
+				dst_y = 0;
+			}
+			if (dst_x+width >= RENDER_MASK_WIDTH) {
+				width = RENDER_MASK_WIDTH-dst_x;
+			}
+			if (dst_y+height >= RENDER_MASK_HEIGHT) {
+				height = RENDER_MASK_HEIGHT-dst_y;
+			}
+
 			rdr_mask->addZone(rdr_mask,
 				src_x,src_y, width,height,
 				dst_x,dst_y, 16*depth);
@@ -323,7 +338,6 @@ static void rdt_initMasks(room_t *this, int num_camera)
 
 static void rdt_drawMasks(room_t *this, int num_camera)
 {
-#if 1
 	render_mask_t *rdr_mask;
 
 	if (!game_state.rdr_mask) {
@@ -335,108 +349,6 @@ static void rdt_drawMasks(room_t *this, int num_camera)
 	}
 
 	rdr_mask->drawMask(rdr_mask);
-#else
-	Uint32 offset;
-	rdt_camera_pos_t *cam_array;
-	rdt_mask_header_t *mask_hdr;
-	rdt_mask_offset_t *mask_offsets;
-	int num_offset;
-
-	if (num_camera>=this->num_cameras) {
-		return;
-	}
-
-	if (game_state.bg_mask==NULL) {
-		rdt_loadMasks(this, num_camera);
-	}
-	if (game_state.bg_mask==NULL) {
-		return;
-	}
-
-	cam_array = (rdt_camera_pos_t *) &((Uint8 *) this->file)[sizeof(rdt1_header_t)];
-
-	offset = SDL_SwapLE32(cam_array[num_camera].masks_offset);
-	if (offset == 0xffffffffUL) {
-		return;
-	}
-
-	/*render.set_dithering(params.dithering);*/
-	render.set_dithering(0);
-	render.set_useDirtyRects(0);
-	render.set_texture(0, game_state.bg_mask);
-	render.bitmap.setMasking(1);
-	render.bitmap.setScaler(
-		game_state.bg_mask->w, game_state.bg_mask->h,
-		(game_state.bg_mask->w*video.viewport.w)/320,
-		(game_state.bg_mask->h*video.viewport.h)/240);
-	render.set_blending(1);
-
-	mask_hdr = (rdt_mask_header_t *) &((Uint8 *) this->file)[offset];
-	offset += sizeof(rdt_mask_header_t);
-
-	mask_offsets = (rdt_mask_offset_t *) &((Uint8 *) this->file)[offset];
-	offset += sizeof(rdt_mask_offset_t) * SDL_SwapLE16(mask_hdr->num_offset);
-
-	for (num_offset=0; num_offset<SDL_SwapLE16(mask_hdr->num_offset); num_offset++) {
-		int num_mask;
-		
-		for (num_mask=0; num_mask<SDL_SwapLE16(mask_offsets->count); num_mask++) {
-			rdt_mask_square_t *square_mask;
-			int src_x, src_y, width, height, depth;
-			int dst_x = SDL_SwapLE16(mask_offsets->dst_x);
-			int dst_y = SDL_SwapLE16(mask_offsets->dst_y);
-			int scaled_dst_x, scaled_dst_y;
-			int scaled_dst_w, scaled_dst_h;
-
-			square_mask = (rdt_mask_square_t *) &((Uint8 *) this->file)[offset];
-			if (square_mask->size == 0) {
-				/* Rect mask */
-				rdt_mask_rect_t *rect_mask = (rdt_mask_rect_t *) square_mask;
-
-				src_x = rect_mask->src_x;
-				src_y = rect_mask->src_y;
-				dst_x += rect_mask->dst_x;
-				dst_y += rect_mask->dst_y;
-				width = SDL_SwapLE16(rect_mask->width);
-				height = SDL_SwapLE16(rect_mask->height);
-				depth = SDL_SwapLE16(rect_mask->depth);
-
-				offset += sizeof(rdt_mask_rect_t);
-			} else {
-				/* Square mask */
-
-				src_x = square_mask->src_x;
-				src_y = square_mask->src_y;
-				dst_x += square_mask->dst_x;
-				dst_y += square_mask->dst_y;
-				width = height = square_mask->size;
-				depth = SDL_SwapLE16(square_mask->depth);
-
-				offset += sizeof(rdt_mask_square_t);
-			}
-
-			scaled_dst_x = (dst_x*video.viewport.w)/320;
-			scaled_dst_y = (dst_y*video.viewport.h)/240;
-			scaled_dst_w = (width*video.viewport.w)/320;
-			scaled_dst_h = (height*video.viewport.h)/240;
-
-			render.bitmap.clipSource(src_x,src_y,width,height);
-			render.bitmap.clipDest(
-				video.viewport.x+scaled_dst_x,
-				video.viewport.y+scaled_dst_y,
-				scaled_dst_w,scaled_dst_h);
-			render.bitmap.setDepth(1, (float) depth * 16.0f);
-			render.bitmap.drawImage(&video);
-		}
-
-		mask_offsets++;
-	}
-
-	render.bitmap.setDepth(0, 0.0f);
-	render.bitmap.setMasking(0);
-	render.set_blending(0);
-	render.set_dithering(0);
-#endif
 }
 
 static void rdt_loadMasks(room_t *this, int num_camera)
@@ -457,9 +369,5 @@ static void rdt_loadMasks(room_t *this, int num_camera)
 
 		game_state.bg_mask->load_from_tim(game_state.bg_mask, tim_hdr);
 		logMsg(1, "rdt: Loaded masks from embedded TIM image\n");
-
-		/*game_state.bg_mask->mark_trans(game_state.bg_mask, 0,
-			0,0,
-			game_state.bg_mask->w, game_state.bg_mask->h);*/
 	}
 }

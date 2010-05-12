@@ -57,12 +57,6 @@ static void drawImage(video_t *video);
 
 static void drawImageDepth(void);
 
-static void drawImageMask(void);
-static void drawImageMask8(void);
-static void drawImageMask16(void);
-static void drawImageMask24(void);
-static void drawImageMask32(void);
-
 /*--- Functions ---*/
 
 void render_bitmap_soft_init(render_bitmap_t *render_bitmap)
@@ -261,11 +255,7 @@ static void drawImage(video_t *video)
 		render.bitmap.dstRect.x -= video->viewport.x;
 		render.bitmap.dstRect.y -= video->viewport.y;
 
-		if (render.bitmap.masking && render.draw.addMaskSegment) {
-			drawImageMask();
-		} else {
-			drawImageDepth();
-		}
+		drawImageDepth();
 		return;
 	}
 
@@ -939,86 +929,4 @@ static void drawImageDepth(void)
 	}
 
 	render.draw.polyTexture(&render.draw, poly, 4);
-}
-
-static void drawImageMask(void)
-{
-	render_texture_t *tex = render.texture;
-
-	switch(tex->bpp) {
-		case 1:
-			drawImageMask8();
-			break;
-		case 2:
-			drawImageMask16();
-			break;
-		case 3:
-			drawImageMask24();
-			break;
-		case 4:
-			drawImageMask32();
-			break;
-	}
-
-	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
-		video.viewport.x+render.bitmap.dstRect.x, video.viewport.y+render.bitmap.dstRect.y,
-		render.bitmap.dstRect.w, render.bitmap.dstRect.h);
-	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
-		video.viewport.x+render.bitmap.dstRect.x, video.viewport.y+render.bitmap.dstRect.y,
-		render.bitmap.dstRect.w, render.bitmap.dstRect.h);
-}
-
-static void drawImageMask8(void)
-{
-	int dstX, dstY, srcX, srcY;
-	render_texture_t *tex = render.texture;
-	render_bitmap_t *this = &render.bitmap;
-	float w = 1.0f / render.bitmap.depth;
-	int lastx = render.bitmap.dstRect.x+render.bitmap.dstRect.w - 1;
-	Uint8 *alpha_pal = tex->alpha_palettes[render.tex_pal];
-
-	for (dstY=0; dstY<this->dstRect.h; dstY++) {
-		Uint8 *src_line = tex->pixels;
-		int startx = -1;
-
-		srcY = this->scaley_dst2src[dstY] + this->srcRect.y;
-		src_line += srcY * tex->pitch;
-
-		for (dstX=0; dstX<this->dstRect.w; dstX++) {
-			srcX = this->scalex_dst2src[dstX] + this->srcRect.x;
-
-			if (!alpha_pal[src_line[srcX]]) {
-				/* Transparent pixel, draw previous opaque segment */
-				if (startx>=0) {
-					render.draw.addMaskSegment(&render.draw, dstY+this->dstRect.y, startx, dstX+this->dstRect.x-1, w);
-					startx = -1;
-				}
-			} else {
-				/* Opaque, set start */
-				if (startx<0) {
-					startx = dstX+this->dstRect.x;
-				}
-			}
-		}
-
-		/* Draw till EOL */
-		if (startx>=0) {
-			render.draw.addMaskSegment(&render.draw, dstY+this->dstRect.y, startx, lastx, w);
-		}
-	}
-}
-
-static void drawImageMask16(void)
-{
-	/* TODO */
-}
-
-static void drawImageMask24(void)
-{
-	/* TODO */
-}
-
-static void drawImageMask32(void)
-{
-	/* TODO */
 }
