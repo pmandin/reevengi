@@ -198,23 +198,18 @@ static void draw_resize(draw_t *this, int w, int h, int bpp)
 		sbuffer_numrows = h;
 	}
 
+	if (!sbuffer_rows) {
+		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
+		return;
+	}
+
 	if (h>size_poly_minmaxx) {
-		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * h);
+		poly_hlines = realloc(poly_hlines, h * sizeof(poly_hline_t));
 		size_poly_minmaxx = h;
 	}
 
 	if (!poly_hlines) {
 		fprintf(stderr, "Not enough memory for poly rendering\n");
-		return;
-	}
-
-	if (h>sbuffer_numrows) {
-		sbuffer_rows = realloc(sbuffer_rows, sizeof(sbuffer_row_t) * h);
-		sbuffer_numrows = h;
-	}
-
-	if (!sbuffer_rows) {
-		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
 		return;
 	}
 }
