@@ -1,7 +1,7 @@
 /*
 	Game state
 
-	Copyright (C) 2007	Patrice Mandin
+	Copyright (C) 2007-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "room.h"
 #include "render_texture.h"
 #include "render_skel.h"
+#include "render_mask.h"
 
 /*--- Defines ---*/
 
@@ -77,6 +78,7 @@ typedef struct {
 
 	/* and its masks */
 	render_texture_t *bg_mask;
+	render_mask_t *rdr_mask;
 
 	/* List of movies */
 	char **movies_list;

@@ -1,7 +1,7 @@
 /*
 	Game state
 
-	Copyright (C) 2007	Patrice Mandin
+	Copyright (C) 2007-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -231,6 +231,11 @@ void state_unloadbackground(void)
 	if (game_state.bg_mask) {
 		game_state.bg_mask->shutdown(game_state.bg_mask);
 		game_state.bg_mask = NULL;
+	}
+
+	if (game_state.rdr_mask) {
+		game_state.rdr_mask->shutdown(game_state.rdr_mask);
+		game_state.rdr_mask = NULL;
 	}
 }
 
