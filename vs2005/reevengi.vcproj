@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib physfs.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib physfs.lib advapi32.lib"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
@@ -139,7 +139,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib physfs.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib physfs.lib advapi32.lib"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
@@ -255,6 +255,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\menu.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\model_emd.c"
 				>
 			</File>
@@ -315,6 +319,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\render_mask.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_mask_opengl.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\render_mesh.c"
 				>
 			</File>
@@ -336,6 +348,10 @@
 			</File>
 			<File
 				RelativePath="..\src\render_skel_opengl.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_text.c"
 				>
 			</File>
 			<File
@@ -473,6 +489,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\menu.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\model.h"
 				>
 			</File>
@@ -529,6 +549,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\render_mask.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_mask_opengl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\render_mesh.h"
 				>
 			</File>
@@ -546,6 +574,10 @@
 			</File>
 			<File
 				RelativePath="..\src\render_skel_opengl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\render_text.h"
 				>
 			</File>
 			<File
