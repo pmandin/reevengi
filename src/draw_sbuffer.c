@@ -111,6 +111,10 @@ static Uint32 sbuffer_seg_id;
 
 static int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pixels */
 
+static sbuffer_draw_f draw_render_fill;
+static sbuffer_draw_f draw_render_gouraud;
+static sbuffer_draw_f draw_render_textured;
+
 /*--- Functions prototypes ---*/
 
 static void draw_shutdown(draw_t *this);
@@ -163,6 +167,10 @@ void draw_init_sbuffer(draw_t *draw)
 	draw->polyTexture = draw_poly_sbuffer;
 	draw->addMaskSegment = draw_mask_segment;
 
+	draw_render_fill = draw_render_fill8;
+	draw_render_gouraud = draw_render_gouraud8;
+	draw_render_textured = draw_render_textured8;
+
 	clear_sbuffer();
 }
 
@@ -212,6 +220,31 @@ static void draw_resize(draw_t *this, int w, int h, int bpp)
 		fprintf(stderr, "Not enough memory for poly rendering\n");
 		return;
 	}
+
+	switch(bpp) {
+		case 15:
+		case 16:
+			draw_render_fill = draw_render_fill16;
+			draw_render_gouraud = draw_render_gouraud16;
+			draw_render_textured = draw_render_textured16;
+			break;
+		case 24:
+			draw_render_fill = draw_render_fill24;
+			draw_render_gouraud = draw_render_gouraud24;
+			draw_render_textured = draw_render_textured24;
+			break;
+		case 32:
+			draw_render_fill = draw_render_fill32;
+			draw_render_gouraud = draw_render_gouraud32;
+			draw_render_textured = draw_render_textured32;
+			break;
+		default:
+		case 8:
+			draw_render_fill = draw_render_fill8;
+			draw_render_gouraud = draw_render_gouraud8;
+			draw_render_textured = draw_render_textured8;
+			break;
+	}
 }
 
 static void clear_sbuffer(void)
@@ -253,34 +286,11 @@ static void draw_flushFrame(draw_t *this)
 	SDL_Surface *surf = video.screen;
 	int i,j;
 	Uint8 *dst = (Uint8 *) surf->pixels;
-	sbuffer_draw_f draw_render_fill = draw_render_fill8;
-	sbuffer_draw_f draw_render_gouraud = draw_render_gouraud8;
-	sbuffer_draw_f draw_render_textured = draw_render_textured8;
 
 	/*check_sbuffer();*/
 
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_LockSurface(surf);
-	}
-
-	switch(surf->format->BytesPerPixel) {
-		case 2:
-			draw_render_fill = draw_render_fill16;
-			draw_render_gouraud = draw_render_gouraud16;
-			draw_render_textured = draw_render_textured16;
-			break;
-		case 3:
-			draw_render_fill = draw_render_fill24;
-			draw_render_gouraud = draw_render_gouraud24;
-			draw_render_textured = draw_render_textured24;
-			break;
-		case 4:
-			draw_render_fill = draw_render_fill32;
-			draw_render_gouraud = draw_render_gouraud32;
-			draw_render_textured = draw_render_textured32;
-			break;
-		default:
-			break;
 	}
 
 	dst += video.viewport.y * surf->pitch;
