@@ -1677,8 +1677,10 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 	segment.render_mode = RENDER_FILLED;
 	segment.tex_num_pal = 0;
 	segment.texture = NULL;
+	segment.masking = 0;
+#else
+	segment.masking = 1;
 #endif
-	segment.masking = 1 /*render.bitmap.masking*/;
 
 	draw_add_segment(y, &segment);
 
