@@ -121,7 +121,7 @@ static unsigned logbase2(unsigned n);
 
 static void clear_sbuffer(void);
 
-static void draw_resize(draw_t *this, int w, int h);
+static void draw_resize(draw_t *this, int w, int h, int bpp);
 static void draw_startFrame(draw_t *this);
 static void draw_flushFrame(draw_t *this);
 static void draw_endFrame(draw_t *this);
@@ -191,11 +191,31 @@ static unsigned logbase2(unsigned n)
 }
 #endif
 
-static void draw_resize(draw_t *this, int w, int h)
+static void draw_resize(draw_t *this, int w, int h, int bpp)
 {
 	if (h>sbuffer_numrows) {
 		sbuffer_rows = realloc(sbuffer_rows, h * sizeof(sbuffer_row_t));
 		sbuffer_numrows = h;
+	}
+
+	if (h>size_poly_minmaxx) {
+		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * h);
+		size_poly_minmaxx = h;
+	}
+
+	if (!poly_hlines) {
+		fprintf(stderr, "Not enough memory for poly rendering\n");
+		return;
+	}
+
+	if (h>sbuffer_numrows) {
+		sbuffer_rows = realloc(sbuffer_rows, sizeof(sbuffer_row_t) * h);
+		sbuffer_numrows = h;
+	}
+
+	if (!sbuffer_rows) {
+		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
+		return;
 	}
 }
 
@@ -1465,26 +1485,6 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
 
-	if (video.viewport.h>size_poly_minmaxx) {
-		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
-		size_poly_minmaxx = video.viewport.h;
-	}
-
-	if (!poly_hlines) {
-		fprintf(stderr, "Not enough memory for poly rendering\n");
-		return;
-	}
-
-	if (video.viewport.h>sbuffer_numrows) {
-		sbuffer_rows = realloc(sbuffer_rows, sizeof(sbuffer_row_t) * video.viewport.h);
-		sbuffer_numrows = video.viewport.h;
-	}
-
-	if (!sbuffer_rows) {
-		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
-		return;
-	}
-
 	/* Fill poly min/max array with segments */
 	p1 = num_vtx-1;
 	for (p2=0; p2<num_vtx; p2++) {
@@ -1642,26 +1642,6 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 		return;
 	}
 	if ((x1>=video.viewport.w) || (x2<0)) {
-		return;
-	}
-
-	if (video.viewport.h>size_poly_minmaxx) {
-		poly_hlines = realloc(poly_hlines, sizeof(poly_hline_t) * video.viewport.h);
-		size_poly_minmaxx = video.viewport.h;
-	}
-
-	if (!poly_hlines) {
-		fprintf(stderr, "Not enough memory for poly rendering\n");
-		return;
-	}
-
-	if (video.viewport.h>sbuffer_numrows) {
-		sbuffer_rows = realloc(sbuffer_rows, sizeof(sbuffer_row_t) * video.viewport.h);
-		sbuffer_numrows = video.viewport.h;
-	}
-
-	if (!sbuffer_rows) {
-		fprintf(stderr, "Not enough memory for Sbuffer rendering\n");
 		return;
 	}
 

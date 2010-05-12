@@ -1,7 +1,7 @@
 /*
 	Main
 
-	Copyright (C) 2007	Patrice Mandin
+	Copyright (C) 2007-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

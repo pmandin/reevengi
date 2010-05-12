@@ -68,7 +68,7 @@ static poly_hline_t *poly_hlines = NULL;
 
 static void draw_shutdown(draw_t *this);
 
-static void draw_resize(draw_t *this, int w, int h);
+static void draw_resize(draw_t *this, int w, int h, int bpp);
 static void draw_startFrame(draw_t *this);
 static void draw_flushFrame(draw_t *this);
 static void draw_endFrame(draw_t *this);
@@ -119,7 +119,7 @@ static void draw_shutdown(draw_t *this)
 	size_poly_minmaxx = 0;
 }
 
-static void draw_resize(draw_t *this, int w, int h)
+static void draw_resize(draw_t *this, int w, int h, int bpp)
 {
 }
 

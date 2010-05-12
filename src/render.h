@@ -62,7 +62,7 @@ typedef struct render_s render_t;
 struct render_s {
 	void (*shutdown)(render_t *this);
 
-	void (*resize)(render_t *this, int w, int h);
+	void (*resize)(render_t *this, int w, int h, int bpp);
 	void (*startFrame)(render_t *this);
 	void (*flushFrame)(render_t *this);
 	void (*endFrame)(render_t *this);

@@ -52,7 +52,7 @@ static int gouraud;
 
 static void render_opengl_shutdown(render_t *render);
 
-static void render_resize(render_t *this, int w, int h);
+static void render_resize(render_t *this, int w, int h, int bpp);
 static void render_startFrame(render_t *this);
 static void render_flushFrame(render_t *this);
 static void render_endFrame(render_t *this);
@@ -153,7 +153,7 @@ static void render_opengl_shutdown(render_t *render)
 	list_render_skel_shutdown();
 }
 
-static void render_resize(render_t *this, int w, int h)
+static void render_resize(render_t *this, int w, int h, int bpp)
 {
 }
 

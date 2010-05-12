@@ -388,6 +388,11 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 			break;
 	}
 
+	/* Single palette, 8 bit image ? Mark transparent zones now */
+	/*if ((this->bpp == 1) && (this->paletted) && (this->num_palettes == 1)) {
+		mark_trans(this, 0, 0,0, this->w,this->h);
+	}*/
+
 	this->download(this);
 }
 

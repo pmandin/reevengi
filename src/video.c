@@ -237,7 +237,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
-	render.resize(&render, this->width, this->height);
+	render.resize(&render, this->width, this->height, this->bpp);
 	video.initViewport(&video);
 }
 
