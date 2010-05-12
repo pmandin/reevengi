@@ -124,10 +124,6 @@ f/(f-n) * 1-n/z
 		bitmap_depth = 1.0f - (RENDER_Z_NEAR / render.bitmap.depth);
 		bitmap_depth *= RENDER_Z_FAR / (RENDER_Z_FAR - RENDER_Z_NEAR);
 
-		/* Avoid some holes */
-		render.bitmap.dstRect.w ++;
-		render.bitmap.dstRect.h ++;
-
 		if (render.bitmap.masking) {
 			gl.ColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		}

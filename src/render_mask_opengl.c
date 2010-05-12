@@ -150,18 +150,18 @@ static void drawMask(render_mask_t *this)
 	for (i=0; i<gl_mask->num_zones; i++) {
 		render_mask_gl_zone_t *zone = &(gl_mask->zones[i]);
 
-		int scaled_dst_x = (zone->dstx*video.viewport.w)/RENDER_MASK_WIDTH;
-		int scaled_dst_y = (zone->dsty*video.viewport.h)/RENDER_MASK_HEIGHT;
-		int scaled_dst_w = (zone->width*video.viewport.w)/RENDER_MASK_WIDTH;
-		int scaled_dst_h = (zone->height*video.viewport.h)/RENDER_MASK_HEIGHT;
+		int x1 = (zone->dstx*video.viewport.w)/RENDER_MASK_WIDTH;
+		int y1 = (zone->dsty*video.viewport.h)/RENDER_MASK_HEIGHT;
+		int x2 = ((zone->dstx+zone->width)*video.viewport.w)/RENDER_MASK_WIDTH;
+		int y2 = ((zone->dsty+zone->height)*video.viewport.h)/RENDER_MASK_HEIGHT;
 
 		render.bitmap.clipSource(
 			zone->srcx, zone->srcy,
 			zone->width, zone->height);
 		render.bitmap.clipDest(
-			video.viewport.x+scaled_dst_x,
-			video.viewport.y+scaled_dst_y,
-			scaled_dst_w,scaled_dst_h);
+			video.viewport.x+x1,
+			video.viewport.y+y1,
+			x2-x1,y2-y1);
 		render.bitmap.setDepth(1, zone->depth);
 		render.bitmap.drawImage(&video);
 	}
