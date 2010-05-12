@@ -157,6 +157,8 @@ void render_soft_init(render_t *render)
 
 	/*draw_init_simple(&render->draw);*/
 	draw_init_sbuffer(&render->draw);
+
+	render->render_mask_create = render_mask_soft_create;
 }
 
 static void render_soft_shutdown(render_t *render)

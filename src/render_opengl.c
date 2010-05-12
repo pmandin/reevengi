@@ -38,6 +38,7 @@
 #include "render_texture_opengl.h"
 #include "render_mesh_opengl.h"
 #include "render_skel_opengl.h"
+#include "render_mask_opengl.h"
 #include "matrix.h"
 #include "render_texture_list.h"
 #include "render_skel_list.h"
@@ -141,6 +142,8 @@ void render_opengl_init(render_t *render)
 	render->render_depth = 0;
 	render->setRenderDepth = setRenderDepth;
 	render->copyDepthToColor = copyDepthToColor;
+
+	render->render_mask_create = render_mask_opengl_create;
 }
 
 static void render_opengl_shutdown(render_t *render)

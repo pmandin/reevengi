@@ -25,6 +25,7 @@
 #include "render_mesh.h"
 #include "render_skel.h"
 #include "render_bitmap.h"
+#include "render_mask.h"
 #include "draw.h"
 
 /*--- Defines ---*/
@@ -122,6 +123,9 @@ struct render_s {
 	int render_depth;
 	void (*setRenderDepth)(render_t *this, int show_depth);
 	void (*copyDepthToColor)(void);
+
+	/* Background image mask */
+	render_mask_t * (*render_mask_create)(render_texture_t *texture);
 };
 
 void render_soft_init(render_t *render);
