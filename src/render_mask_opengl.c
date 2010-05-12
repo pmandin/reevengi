@@ -23,8 +23,6 @@
 #include "config.h"
 #endif
 
-#ifdef ENABLE_OPENGL
-
 #include <assert.h>
 
 #include <SDL.h>
@@ -32,6 +30,9 @@
 #include "video.h"
 #include "render.h"
 #include "render_mask.h"
+
+#ifdef ENABLE_OPENGL
+
 #include "render_mask_opengl.h"
 
 /*--- Functions prototypes ---*/
