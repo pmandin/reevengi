@@ -234,7 +234,7 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 
 static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count)
 {
-	int i,j, u,v, minx,maxx,miny,maxy;
+	int j, u,v, minx,maxx,miny,maxy;
 
 	if (params.use_opengl || !this->texcoord.data || !this->texture) {
 		return;

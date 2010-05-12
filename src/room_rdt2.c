@@ -501,8 +501,6 @@ static void rdt2_initMasks(room_t *this, int num_camera)
 			int src_x, src_y, width, height, depth;
 			int dst_x = SDL_SwapLE16(mask_offsets->dst_x);
 			int dst_y = SDL_SwapLE16(mask_offsets->dst_y);
-			int scaled_dst_x, scaled_dst_y;
-			int scaled_dst_w, scaled_dst_h;
 
 			square_mask = (rdt_mask_square_t *) &((Uint8 *) this->file)[offset];
 			if (square_mask->size == 0) {

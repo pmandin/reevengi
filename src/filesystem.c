@@ -47,9 +47,11 @@
 
 int FS_Init(char *argv0)
 {
+#if 0
 	const char *userdir;
 	char *pathname;
 	int pathlen;
+#endif
 
 	if (!PHYSFS_init(argv0)) {
 		fprintf(stderr,"fs: PHYSFS_init() failed.\n  reason: %s.\n", PHYSFS_getLastError());

@@ -96,6 +96,22 @@ static void addZone(render_mask_t *this,
 	render_texture_t *tex;
 	Uint8 *alpha_pal, *src_line;
 
+	/* Clip to dest */
+	if (dstX<0) {
+		w += dstX;
+		dstX = 0;
+	}
+	if (dstY<0) {
+		h += dstY;
+		dstY = 0;
+	}
+	if (dstX+w >= RENDER_MASK_WIDTH) {
+		w = RENDER_MASK_WIDTH-dstX;
+	}
+	if (dstY+h >= RENDER_MASK_HEIGHT) {
+		h = RENDER_MASK_HEIGHT-dstY;
+	}
+
 	assert(this);
 	assert(this->texture);
 	assert((dstY>=0) && (dstY+h<=RENDER_MASK_HEIGHT) && (dstX>=0) && (dstX+w<=RENDER_MASK_WIDTH));
@@ -149,7 +165,6 @@ static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth
 	mask_row_t *mask_row = &(this->mask_row[y]);
 	mask_seg_t *mask_seg = &(mask_row->segs[mask_row->num_segs]);
 	float w = 1.0f / ((float) depth);
-	int dirty_y;
 
 	if (mask_row->num_segs == RENDER_MASK_SEGS) {
 		return;

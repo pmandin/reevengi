@@ -30,7 +30,6 @@
 void render_text(const char *str, int x, int y)
 {
 	Uint8 c;
-	int i;
 	int sx=0,sy=0,sw=8,sh=8;
 	int dx=video.viewport.x+x,dy=video.viewport.y+y,dw=8,dh=8; /* dirtied zone */
 

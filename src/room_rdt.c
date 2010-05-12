@@ -280,8 +280,6 @@ static void rdt_initMasks(room_t *this, int num_camera)
 			int src_x, src_y, width, height, depth;
 			int dst_x = SDL_SwapLE16(mask_offsets->dst_x);
 			int dst_y = SDL_SwapLE16(mask_offsets->dst_y);
-			int scaled_dst_x, scaled_dst_y;
-			int scaled_dst_w, scaled_dst_h;
 
 			square_mask = (rdt_mask_square_t *) &((Uint8 *) this->file)[offset];
 			if (square_mask->size == 0) {
@@ -308,21 +306,6 @@ static void rdt_initMasks(room_t *this, int num_camera)
 				depth = SDL_SwapLE16(square_mask->depth);
 
 				offset += sizeof(rdt_mask_square_t);
-			}
-
-			if (dst_x<0) {
-				width += dst_x;
-				dst_x = 0;
-			}
-			if (dst_y<0) {
-				height += dst_y;
-				dst_y = 0;
-			}
-			if (dst_x+width >= RENDER_MASK_WIDTH) {
-				width = RENDER_MASK_WIDTH-dst_x;
-			}
-			if (dst_y+height >= RENDER_MASK_HEIGHT) {
-				height = RENDER_MASK_HEIGHT-dst_y;
 			}
 
 			rdr_mask->addZone(rdr_mask,

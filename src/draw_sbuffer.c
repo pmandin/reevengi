@@ -349,7 +349,6 @@ static void draw_endFrame(draw_t *this)
 static void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	Uint32 color;
-	int i;
 	int r = segment->start.r;
 	int g = segment->start.g;
 	int b = segment->start.b;
