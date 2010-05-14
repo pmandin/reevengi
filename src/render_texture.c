@@ -614,6 +614,8 @@ static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x
 	Uint8 *alpha_pal;
 	int x,y;
 
+	return;
+
 	if (!this) {
 		return;
 	}

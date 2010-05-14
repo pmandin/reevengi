@@ -695,10 +695,11 @@ __asm__ __volatile__ (
 		/* Float calculations */
 		if (tex->paletted) {
 			Uint32 *palette = tex->palettes[segment->tex_num_pal];
+			Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 			for (i=0; i<dx; i++) {
 				Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-				if (c) {
+				if (alpha_pal[c]) {
 					*dst_col = palette[c];
 				}
 				dst_col++;
@@ -823,10 +824,11 @@ __asm__ __volatile__ (
 		/* Float calculations */
 		if (tex->paletted) {
 			Uint32 *palette = tex->palettes[segment->tex_num_pal];
+			Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 			for (i=0; i<dx; i++) {
 				Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 
-				if (c) {
+				if (alpha_pal[c]) {
 					*dst_col = palette[c];
 				}
 				dst_col++;
