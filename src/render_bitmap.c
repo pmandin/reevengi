@@ -611,6 +611,20 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		SDL_FreeSurface(texture->scaled);
 		texture->scaled = dithered_surf;
 	}
+
+#if 0
+	/* Set color key */
+	if (texture->num_palettes==1) {
+		int i;
+
+		for (i=0; i<256; i++) {
+			if (!texture->alpha_palettes[0][i]) {
+				SDL_SetColorKey(texture->scaled, SDL_SRCCOLORKEY, texture->palettes[0][i]);
+				break;
+			}
+		}
+	}
+#endif
 }
 
 static void rescale_nearest(render_texture_t *src, SDL_Surface *dst)
