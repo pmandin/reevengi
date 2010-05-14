@@ -3,22 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "reevengi", "reevengi.vcproj", "{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "reevengi-ffmpeg", "reevengi-ffmpeg.vcproj", "{0AD8D5BF-5AC5-422A-B644-156EB3863EDB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		Debug-ffmpeg|Win32 = Debug-ffmpeg|Win32
 		Release|Win32 = Release|Win32
+		Release-ffmpeg|Win32 = Release-ffmpeg|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Debug|Win32.Build.0 = Debug|Win32
+		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Debug-ffmpeg|Win32.ActiveCfg = Debug-ffmpeg|Win32
+		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Debug-ffmpeg|Win32.Build.0 = Debug-ffmpeg|Win32
 		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Release|Win32.ActiveCfg = Release|Win32
 		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Release|Win32.Build.0 = Release|Win32
-		{0AD8D5BF-5AC5-422A-B644-156EB3863EDB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{0AD8D5BF-5AC5-422A-B644-156EB3863EDB}.Debug|Win32.Build.0 = Debug|Win32
-		{0AD8D5BF-5AC5-422A-B644-156EB3863EDB}.Release|Win32.ActiveCfg = Release|Win32
-		{0AD8D5BF-5AC5-422A-B644-156EB3863EDB}.Release|Win32.Build.0 = Release|Win32
+		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Release-ffmpeg|Win32.ActiveCfg = Release-ffmpeg|Win32
+		{BB1D5BC0-C1C6-44C1-832D-C7A9743CF58D}.Release-ffmpeg|Win32.Build.0 = Release-ffmpeg|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
