@@ -38,6 +38,8 @@ typedef struct render_skel_s render_skel_t;
 struct render_skel_s {
 	void (*shutdown)(render_skel_t *this);
 
+	void *emd_file;	/* EMD file for model */
+
 	/* Send/remove skeleton from video card */
 	void (*upload)(render_skel_t *this);
 	void (*download)(render_skel_t *this);
@@ -58,6 +60,6 @@ struct render_skel_s {
 /*--- Functions prototypes ---*/
 
 /* Create a skeleton */
-render_skel_t *render_skel_create(render_texture_t *texture);
+render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture);
 
 #endif /* RENDER_SKEL_H */

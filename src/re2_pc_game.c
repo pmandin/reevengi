@@ -356,7 +356,7 @@ render_skel_t *re2pcgame_load_model(int num_model)
 			model = model_emd2_load(emd, tim, emd_length, tim_length);
 			free(tim);
 		}
-		free(emd);
+		/*free(emd);*/
 	}	
 
 	logMsg(1, "emd: %s loading model %s ...\n",

@@ -48,12 +48,12 @@ static void draw(render_skel_t *this, render_skel_mesh_t *parent);
 
 /*--- Functions ---*/
 
-render_skel_t *render_skel_gl_create(render_texture_t *texture)
+render_skel_t *render_skel_gl_create(void *emd_file, render_texture_t *texture)
 {
 	render_skel_t *skel;
 	render_skel_gl_t *gl_skel;
 
-	skel = render_skel_create(texture);
+	skel = render_skel_create(emd_file, texture);
 	if (!skel) {
 		return NULL;
 	}

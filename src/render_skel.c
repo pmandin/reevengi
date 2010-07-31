@@ -46,7 +46,7 @@ static void drawBones(render_skel_t *this, render_skel_mesh_t *parent);
 
 /*--- Functions ---*/
 
-render_skel_t *render_skel_create(render_texture_t *texture)
+render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture)
 {
 	render_skel_t *skel;
 
@@ -57,6 +57,8 @@ render_skel_t *render_skel_create(render_texture_t *texture)
 	}
 
 	skel->shutdown = shutdown;
+
+	skel->emd_file = emd_file;
 
 	skel->upload = upload;
 	skel->download = download;
@@ -95,6 +97,10 @@ static void shutdown(render_skel_t *this)
 
 	if (this->texture) {
 		this->texture->shutdown(this->texture);
+	}
+
+	if (this->emd_file) {
+		free(this->emd_file);
 	}
 
 	logMsg(3, "render_skel: skel 0x%p destroyed\n", this);

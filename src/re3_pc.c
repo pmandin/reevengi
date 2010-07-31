@@ -421,7 +421,7 @@ render_skel_t *re3pc_load_model(int num_model)
 
 			free(tim);
 		}
-		free(emd);
+		/*free(emd);*/
 	}	
 
 	logMsg(1, "emd: %s loading model %s\n",

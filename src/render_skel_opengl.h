@@ -37,6 +37,6 @@ struct render_skel_gl_s {
 /*--- Functions prototypes ---*/
 
 /* Create a skeleton */
-render_skel_t *render_skel_gl_create(render_texture_t *texture);
+render_skel_t *render_skel_gl_create(void *emd_file, render_texture_t *texture);
 
 #endif /* RENDER_SKEL_OPENGL_H */

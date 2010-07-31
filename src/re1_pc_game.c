@@ -381,7 +381,7 @@ render_skel_t *re1pcgame_load_model(int num_model)
 	emd = FS_Load(filepath, &emd_length);
 	if (emd) {
 		model = model_emd_load(emd, emd_length);
-		free(emd);
+		/*free(emd);*/
 	}
 
 	logMsg(1, "emd: %s loading model %s...\n",

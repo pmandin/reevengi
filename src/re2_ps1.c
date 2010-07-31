@@ -1160,7 +1160,7 @@ render_skel_t *re2ps1_load_model(int num_model)
 
 				model = model_emd2_load(emdBuf, timBuf, emd_length, tim_length);
 
-				free(emdBuf);
+				/*free(emdBuf);*/
 			}
 			free(timBuf);
 		}
