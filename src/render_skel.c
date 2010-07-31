@@ -44,6 +44,11 @@ static void setParent(render_skel_t *this, int parent, int child);
 static void draw(render_skel_t *this, render_skel_mesh_t *parent);
 static void drawBones(render_skel_t *this, render_skel_mesh_t *parent);
 
+static void setAnimFrame(int num_anim, int num_step);
+static void getAnimPosition(int *x, int *y, int *z);
+static void getAnimSpeed(int *x, int *y, int *z);
+static void getAnimAngles(int num_mesh, int *x, int *y, int *z); 
+
 /*--- Functions ---*/
 
 render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture)
@@ -69,6 +74,12 @@ render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture)
 	skel->drawBones = drawBones;
 
 	skel->texture = texture;
+
+	skel->num_anim = skel->num_frame = 0;
+	skel->setAnimFrame = setAnimFrame;
+	skel->getAnimPosition = getAnimPosition;
+	skel->getAnimSpeed = getAnimSpeed;
+	skel->getAnimAngles = getAnimAngles;
 
 	logMsg(3, "render_skel: skel 0x%p created\n", skel);
 
@@ -262,4 +273,24 @@ static void drawBones(render_skel_t *this, render_skel_mesh_t *parent)
 			break;
 		}
 	}
+}
+
+static void setAnimFrame(int num_anim, int num_step)
+{
+}
+
+static void getAnimPosition(int *x, int *y, int *z)
+{
+	*x = *z = 0;
+	*y = -2000;
+}
+
+static void getAnimSpeed(int *x, int *y, int *z)
+{
+	*x = *y = *z = 0;
+}
+
+static void getAnimAngles(int num_mesh, int *x, int *y, int *z)
+{
+	*x = *y = *z = 0;
 }

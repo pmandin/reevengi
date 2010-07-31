@@ -55,6 +55,15 @@ struct render_skel_s {
 	render_skel_mesh_t *meshes;
 
 	render_texture_t *texture;
+
+	/* For animation */
+	int num_anim;
+	int num_frame;
+
+	void (*setAnimFrame)(int num_anim, int num_step);
+	void (*getAnimPosition)(int *x, int *y, int *z);
+	void (*getAnimSpeed)(int *x, int *y, int *z);
+	void (*getAnimAngles)(int num_mesh, int *x, int *y, int *z); 
 };
 
 /*--- Functions prototypes ---*/
