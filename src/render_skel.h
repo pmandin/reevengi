@@ -56,7 +56,12 @@ struct render_skel_s {
 
 	render_texture_t *texture;
 
-	/* For animation */
+	/*--- Hierarchy ---*/
+
+	/* Returns num_child-th child mesh of num_parent mesh, -1 if end of list */
+	int (*getChild)(int num_parent, int num_child);
+
+	/*--- For animation ---*/
 	int num_anim;
 	int num_frame;
 
