@@ -59,16 +59,16 @@ struct render_skel_s {
 	/*--- Hierarchy ---*/
 
 	/* Returns num_child-th child mesh of num_parent mesh, -1 if end of list */
-	int (*getChild)(int num_parent, int num_child);
+	int (*getChild)(render_skel_t *this, int num_parent, int num_child);
 
 	/*--- For animation ---*/
 	int num_anim;
 	int num_frame;
 
-	void (*setAnimFrame)(int num_anim, int num_step);
-	void (*getAnimPosition)(int *x, int *y, int *z);
-	void (*getAnimSpeed)(int *x, int *y, int *z);
-	void (*getAnimAngles)(int num_mesh, int *x, int *y, int *z); 
+	void (*setAnimFrame)(render_skel_t *this, int num_anim, int num_frame);
+	void (*getAnimPosition)(render_skel_t *this, int *x, int *y, int *z);
+	void (*getAnimSpeed)(render_skel_t *this, int *x, int *y, int *z);
+	void (*getAnimAngles)(render_skel_t *this, int num_mesh, int *x, int *y, int *z); 
 };
 
 /*--- Functions prototypes ---*/

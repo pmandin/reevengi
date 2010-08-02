@@ -44,12 +44,12 @@ static void setParent(render_skel_t *this, int parent, int child);
 static void draw(render_skel_t *this, render_skel_mesh_t *parent);
 static void drawBones(render_skel_t *this, render_skel_mesh_t *parent);
 
-static int getChild(int num_parent, int num_child);
+static int getChild(render_skel_t *this, int num_parent, int num_child);
 
-static void setAnimFrame(int num_anim, int num_step);
-static void getAnimPosition(int *x, int *y, int *z);
-static void getAnimSpeed(int *x, int *y, int *z);
-static void getAnimAngles(int num_mesh, int *x, int *y, int *z); 
+static void setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
+static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
+static void getAnimSpeed(render_skel_t *this, int *x, int *y, int *z);
+static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z); 
 
 /*--- Functions ---*/
 
@@ -279,27 +279,29 @@ static void drawBones(render_skel_t *this, render_skel_mesh_t *parent)
 	}
 }
 
-static int getChild(int num_parent, int num_child)
+static int getChild(render_skel_t *this, int num_parent, int num_child)
 {
 	return -1;
 }
 
-static void setAnimFrame(int num_anim, int num_step)
+static void setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 {
+	this->num_anim = num_anim;
+	this->num_frame = num_frame;
 }
 
-static void getAnimPosition(int *x, int *y, int *z)
+static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
 {
 	*x = *z = 0;
 	*y = -2000;
 }
 
-static void getAnimSpeed(int *x, int *y, int *z)
+static void getAnimSpeed(render_skel_t *this, int *x, int *y, int *z)
 {
 	*x = *y = *z = 0;
 }
 
-static void getAnimAngles(int num_mesh, int *x, int *y, int *z)
+static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z)
 {
 	*x = *y = *z = 0;
 }
