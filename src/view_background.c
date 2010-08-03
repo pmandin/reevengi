@@ -629,16 +629,23 @@ static void drawPlayer(void)
 	render.set_color(0x004488cc);
 
 	render.push_matrix();
-	render.translate(game_state.player_x, game_state.player_y+2000.0f, game_state.player_z);
+	render.translate(game_state.player_x, game_state.player_y, game_state.player_z);
 	render.rotate((game_state.player_a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
 	if (player_model) {
+		int posx, posy, posz;
+
 		if (render_model!=prev_render_model) {
 			player_model->download(player_model);
 			prev_render_model = render_model;
 		}
 
 		render.set_blending(1);
+
+		player_model->setAnimFrame(player_model, 0,0);
+		player_model->getAnimPosition(player_model, &posx, &posy, &posz);
+		render.translate(-posx, -posy, -posz);
+
 		player_model->draw(player_model, 0);
 		render.set_blending(0);
 		if (render_bones) {
@@ -647,6 +654,8 @@ static void drawPlayer(void)
 		}
 #if 0
 	} else {
+		render.translate(0.0f, 2000.0f, 0.0f);
+
 		render.set_texture(0, NULL);
 		render.scale(2500.0, 2500.0, 2500.0);
 
