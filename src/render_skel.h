@@ -64,7 +64,9 @@ struct render_skel_s {
 	int num_anim;
 	int num_frame;
 
-	void (*setAnimFrame)(render_skel_t *this, int num_anim, int num_frame);
+	/* Set anim frame, returns 1 if OK, 0 if wrong (animation stopped) */
+	int (*setAnimFrame)(render_skel_t *this, int num_anim, int num_frame);
+
 	void (*getAnimPosition)(render_skel_t *this, int *x, int *y, int *z);
 	void (*getAnimSpeed)(render_skel_t *this, int *x, int *y, int *z);
 	void (*getAnimAngles)(render_skel_t *this, int num_mesh, int *x, int *y, int *z); 

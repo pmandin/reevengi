@@ -47,7 +47,7 @@ static void drawBones(render_skel_t *this, int num_parent);
 
 static int getChild(render_skel_t *this, int num_parent, int num_child);
 
-static void setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
+static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
 static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
 static void getAnimSpeed(render_skel_t *this, int *x, int *y, int *z);
 static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z); 
@@ -250,12 +250,13 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	return -1;
 }
 
-static void setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
+static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 {
 	assert(this);
 
-	this->num_anim = num_anim;
-	this->num_frame = num_frame;
+	this->num_anim = 0;
+	this->num_frame = 0;
+	return 1;
 }
 
 static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
