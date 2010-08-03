@@ -136,6 +136,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child);
 static int getNumAnims(render_skel_t *this);
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
 static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
+static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z);
 
 /*--- Functions ---*/
 
@@ -160,6 +161,7 @@ render_skel_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 t
 	skel->getNumAnims = getNumAnims;
 	skel->setAnimFrame = setAnimFrame;
 	skel->getAnimPosition = getAnimPosition;
+	skel->getAnimAngles = getAnimAngles;
 
 	return skel;
 }
@@ -553,4 +555,71 @@ static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
 	*x = SDL_SwapLE16(emd_skel_anim->pos[0]);
 	*y = SDL_SwapLE16(emd_skel_anim->pos[1]);
 	*z = SDL_SwapLE16(emd_skel_anim->pos[2]);
+}
+
+static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z)
+{
+	Uint32 *hdr_offsets, skel_offset, anim_offset, *ptr_skel_frame;
+	emd_header_t *emd_header;
+	emd_skel_header_t *emd_skel_header;
+	Uint8 *ptr_angles;
+	emd_anim_header_t *emd_anim_header;
+	int num_anims, num_skel_frame, start_byte;
+
+	assert(this);
+	assert(this->emd_file);
+
+	emd_header = (emd_header_t *) this->emd_file;
+
+	hdr_offsets = (Uint32 *)
+		(&((char *) (this->emd_file))[SDL_SwapLE32(emd_header->offset)]);
+
+	/* Offset 1: Animation frames */
+	anim_offset = SDL_SwapLE32(hdr_offsets[EMD_ANIM_FRAMES]);
+
+	emd_anim_header = (emd_anim_header_t *)
+		(&((char *) (this->emd_file))[anim_offset]);
+
+	num_anims = SDL_SwapLE16(emd_anim_header->offset) / sizeof(emd_anim_header_t);
+	assert(this->num_anim < num_anims);
+	assert(this->num_frame < SDL_SwapLE16(emd_anim_header[this->num_anim].count));
+
+	/* Go to start of current animation */
+	anim_offset += SDL_SwapLE16(emd_anim_header[this->num_anim].offset);
+
+	ptr_skel_frame = (Uint32 *)
+		(&((char *) (this->emd_file))[anim_offset]);
+	num_skel_frame = SDL_SwapLE32(ptr_skel_frame[this->num_frame]);
+
+	/* Offset 2: Skeleton */
+	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
+
+	emd_skel_header = (emd_skel_header_t *)
+		(&((char *) (this->emd_file))[skel_offset]);
+	ptr_angles = (Uint8 *)
+		(&((char *) (this->emd_file))[
+			skel_offset
+			+SDL_SwapLE16(emd_skel_header->anim_offset)
+			+num_skel_frame*SDL_SwapLE16(emd_skel_header->size)
+			+sizeof(emd_skel_anim_t)
+		]);
+
+	assert(num_mesh >= 0);
+	assert(num_mesh < SDL_SwapLE16(emd_skel_header->count));
+	/*--num_mesh;*/
+
+	*x = *y = *z = 0;
+	start_byte = (num_mesh>>1) * 9; 
+	if ((num_mesh & 1)==0) {
+		/* XX, YX, YY, ZZ, -Z */
+		*x = ptr_angles[start_byte] + ((ptr_angles[start_byte+1] & 15)<<8);
+		*y = (ptr_angles[start_byte+1]>>4) + (ptr_angles[start_byte+2]<<4);
+		*z = ptr_angles[start_byte+3] + ((ptr_angles[start_byte+4] & 15)<<8);
+	} else {
+		/* X-, XX, YY, ZY, ZZ */
+		ptr_angles += 4;
+		*x = (ptr_angles[start_byte]>>4) + (ptr_angles[start_byte+1]<<4);
+		*y = ptr_angles[start_byte+2] + ((ptr_angles[start_byte+3] & 15)<<8);
+		*z = (ptr_angles[start_byte+3]>>4) + (ptr_angles[start_byte+4]<<4);
+	}
 }
