@@ -644,7 +644,7 @@ static void drawPlayer(void)
 
 		{
 			Uint32 cur_tick = clockGet();
-			int num_frame = (cur_tick - tick_anim)/50;
+			int num_frame = ((cur_tick - tick_anim)*15)/1000;
 			/*printf(" frame %d:", num_frame);*/
 			if (player_model->setAnimFrame(player_model, 0,num_frame)==0) {
 				tick_anim = cur_tick;
