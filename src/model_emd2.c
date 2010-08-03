@@ -133,6 +133,7 @@ typedef struct {
 static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, render_texture_t *texture);
 
 static int getChild(render_skel_t *this, int num_parent, int num_child);
+static int getNumAnims(render_skel_t *this);
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
 static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
 
@@ -156,6 +157,7 @@ render_skel_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 t
 	}
 
 	skel->getChild = getChild;
+	skel->getNumAnims = getNumAnims;
 	skel->setAnimFrame = setAnimFrame;
 	skel->getAnimPosition = getAnimPosition;
 
@@ -441,6 +443,29 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 
 	mesh_numbers = (Uint8 *) emd_skel_data;
 	return mesh_numbers[SDL_SwapLE16(emd_skel_data[num_parent].offset)+num_child];
+}
+
+static int getNumAnims(render_skel_t *this)
+{
+	Uint32 *hdr_offsets, anim_offset;
+	emd_header_t *emd_header;
+	emd_anim_header_t *emd_anim_header;
+
+	assert(this);
+	assert(this->emd_file);
+
+	emd_header = (emd_header_t *) this->emd_file;
+
+	hdr_offsets = (Uint32 *)
+		(&((char *) (this->emd_file))[SDL_SwapLE32(emd_header->offset)]);
+
+	/* Offset 1: Animation frames */
+	anim_offset = SDL_SwapLE32(hdr_offsets[EMD_ANIM_FRAMES]);
+
+	emd_anim_header = (emd_anim_header_t *)
+		(&((char *) (this->emd_file))[anim_offset]);
+
+	return (SDL_SwapLE16(emd_anim_header->offset) / sizeof(emd_anim_header_t));
 }
 
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)

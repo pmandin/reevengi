@@ -64,6 +64,8 @@ struct render_skel_s {
 	int num_anim;
 	int num_frame;
 
+	int (*getNumAnims)(render_skel_t *this);
+
 	/* Set anim frame, returns 1 if OK, 0 if wrong (animation stopped) */
 	int (*setAnimFrame)(render_skel_t *this, int num_anim, int num_frame);
 

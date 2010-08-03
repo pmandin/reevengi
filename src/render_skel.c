@@ -47,6 +47,7 @@ static void drawBones(render_skel_t *this, int num_parent);
 
 static int getChild(render_skel_t *this, int num_parent, int num_child);
 
+static int getNumAnims(render_skel_t *this);
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
 static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
 static void getAnimSpeed(render_skel_t *this, int *x, int *y, int *z);
@@ -81,6 +82,7 @@ render_skel_t *render_skel_create(void *emd_file, Uint32 emd_length, render_text
 	skel->getChild = getChild;
 
 	skel->num_anim = skel->num_frame = 0;
+	skel->getNumAnims = getNumAnims;
 	skel->setAnimFrame = setAnimFrame;
 	skel->getAnimPosition = getAnimPosition;
 	skel->getAnimSpeed = getAnimSpeed;
@@ -248,6 +250,11 @@ static void drawBones(render_skel_t *this, int num_parent)
 static int getChild(render_skel_t *this, int num_parent, int num_child)
 {
 	return -1;
+}
+
+static int getNumAnims(render_skel_t *this)
+{
+	return 0;
 }
 
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
