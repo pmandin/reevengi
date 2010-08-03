@@ -117,6 +117,7 @@ static int player_turnleft = 0;
 static int player_turnright = 0;
 static float playerstart_x = 0, playerstart_y = 0, playerstart_z = 0, playerstart_a = 0;
 static Uint32 tick_movement = 0;
+static Uint32 tick_anim = 0;
 
 /*--- Functions prototypes ---*/
 
@@ -137,6 +138,7 @@ void view_background_init(void)
 		render_model = RENDER_TEXTURED;
 	}
 #endif
+	tick_anim = clockGet();
 }
 
 void view_background_input(SDL_Event *event)
@@ -633,16 +635,25 @@ static void drawPlayer(void)
 	render.rotate((game_state.player_a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
 	if (player_model) {
-		int posx, posy, posz;
+		int posx,posy,posz;
 
 		if (render_model!=prev_render_model) {
 			player_model->download(player_model);
 			prev_render_model = render_model;
 		}
 
+		{
+			Uint32 cur_tick = clockGet();
+			int num_frame = (cur_tick - tick_anim)/50;
+			/*printf(" frame %d:", num_frame);*/
+			if (player_model->setAnimFrame(player_model, 0,num_frame)==0) {
+				tick_anim = cur_tick;
+			}
+			/*printf(" got it\n");*/
+		}
+
 		render.set_blending(1);
 
-		player_model->setAnimFrame(player_model, 0,0);
 		player_model->getAnimPosition(player_model, &posx, &posy, &posz);
 		render.translate(-posx, -posy, -posz);
 

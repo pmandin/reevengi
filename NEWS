@@ -1,13 +1,7 @@
-v 0.16
+v 0.17
 
-- Software renderer: Flush all 3D rendering before drawing 2D stuff.
-- Software renderer: Rewritten SBuffer implementation.
-- Software renderer: Background image masks.
-- Added -fps parameter.
-- Added preliminary menu (display stage/room/camera and player pos).
-- Movie player: Updated for latest FFmpeg revision. Added separate project
-  file for vs2005.
-- Updated for latest Physfs 2.x revision.
+- VS2005: Create configurations for ffmpeg, instead of separate project.
+- Preliminary model animation.
 
 
 See ChangeLog for older changes.

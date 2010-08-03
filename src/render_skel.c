@@ -188,6 +188,9 @@ static void draw(render_skel_t *this, int num_parent)
 {
 	int i=0, num_child;
 	render_skel_mesh_t *skel_mesh = &(this->meshes[num_parent]);
+	int angles[3];
+
+	this->getAnimAngles(this, num_parent, &angles[0], &angles[1], &angles[2]);
 
 	/* Draw mesh */
 	render.push_matrix();
@@ -196,6 +199,9 @@ static void draw(render_skel_t *this, int num_parent)
 		skel_mesh->y,
 		skel_mesh->z
 	);
+	render.rotate((angles[0] * 360.0f) / 4096.0f, 1.0f, 0.0f, 0.0f);
+	render.rotate((angles[1] * 360.0f) / 4096.0f, 0.0f, 1.0f, 0.0f);
+	render.rotate((angles[2] * 360.0f) / 4096.0f, 0.0f, 0.0f, 1.0f);
 
 	skel_mesh->mesh->draw(skel_mesh->mesh);
 
