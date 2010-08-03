@@ -234,8 +234,6 @@ static void drawBones(render_skel_t *this, int num_parent)
 	vertex_t v[2];
 	render_skel_mesh_t *skel_mesh = &(this->meshes[num_parent]);
 
-	render.set_color(0x0000ff00);
-
 	/* Draw mesh */
 	v[0].x = 0;
 	v[0].y = 0;

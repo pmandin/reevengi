@@ -642,6 +642,7 @@ static void drawPlayer(void)
 		player_model->draw(player_model, 0);
 		render.set_blending(0);
 		if (render_bones) {
+			render.set_color(0x0000ff00);
 			player_model->drawBones(player_model, 0);
 		}
 #if 0
