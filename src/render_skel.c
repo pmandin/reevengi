@@ -59,7 +59,7 @@ static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int
 
 /*--- Functions ---*/
 
-render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture)
+render_skel_t *render_skel_create(void *emd_file, Uint32 emd_length, render_texture_t *texture)
 {
 	render_skel_t *skel;
 
@@ -72,6 +72,7 @@ render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture)
 	skel->shutdown = shutdown;
 
 	skel->emd_file = emd_file;
+	skel->emd_length = emd_length;
 
 	skel->upload = upload;
 	skel->download = download;

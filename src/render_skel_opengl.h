@@ -31,12 +31,16 @@ typedef struct render_skel_gl_s render_skel_gl_t;
 struct render_skel_gl_s {
 	render_skel_t render_skel;
 
+#if 0
 	void (*softDraw)(render_skel_t *this, render_skel_mesh_t *parent);
+#else
+	void (*softDraw)(render_skel_t *this, int num_parent);
+#endif
 };
 
 /*--- Functions prototypes ---*/
 
 /* Create a skeleton */
-render_skel_t *render_skel_gl_create(void *emd_file, render_texture_t *texture);
+render_skel_t *render_skel_gl_create(void *emd_file, Uint32 emd_length, render_texture_t *texture);
 
 #endif /* RENDER_SKEL_OPENGL_H */

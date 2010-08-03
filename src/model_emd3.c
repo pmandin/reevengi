@@ -108,7 +108,7 @@ typedef struct {
 
 /*--- Functions prototypes ---*/
 
-static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *texture);
+static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, render_texture_t *texture);
 
 static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t *skel_data,
 	int num_mesh);
@@ -128,7 +128,7 @@ render_skel_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 t
 	}
 	texture->load_from_tim(texture, tim);
 
-	skel = emd_load_render_skel(emd, texture);
+	skel = emd_load_render_skel(emd, emd_length, texture);
 	if (!skel) {
 		texture->shutdown(texture);
 		return NULL;
@@ -139,7 +139,7 @@ render_skel_t *model_emd3_load(void *emd, void *tim, Uint32 emd_length, Uint32 t
 	return skel;
 }
 
-static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *texture)
+static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, render_texture_t *texture)
 {
 	Uint32 *hdr_offsets, skel_offset, mesh_offset;
 	int i,j;
@@ -168,7 +168,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, render_texture_t *tex
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
 
-	skeleton = render.createSkel(emd_file, texture);
+	skeleton = render.createSkel(emd_file, emd_length, texture);
 	if (!skeleton) {
 		fprintf(stderr, "Can not create skeleton\n");
 		return NULL;
@@ -377,6 +377,9 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	assert(num_child>=0);
 
 	emd_header = (emd_header_t *) this->emd_file;
+
+	hdr_offsets = (Uint32 *)
+		(&((char *) (this->emd_file))[SDL_SwapLE32(emd_header->offset)]);
 
 	/* Offset 3: Skeleton */
 	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);

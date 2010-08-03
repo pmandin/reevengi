@@ -39,6 +39,7 @@ struct render_skel_s {
 	void (*shutdown)(render_skel_t *this);
 
 	void *emd_file;	/* EMD file for model */
+	Uint32 emd_length;
 
 	/* Send/remove skeleton from video card */
 	void (*upload)(render_skel_t *this);
@@ -48,7 +49,7 @@ struct render_skel_s {
 		Sint16 x, Sint16 y, Sint16 z);
 	void (*setParent)(render_skel_t *this, int parent, int child);
 
-#if 1
+#if 0
 	void (*draw)(render_skel_t *this, render_skel_mesh_t *parent);
 #else
 	void (*draw)(render_skel_t *this, int num_parent);
@@ -78,6 +79,6 @@ struct render_skel_s {
 /*--- Functions prototypes ---*/
 
 /* Create a skeleton */
-render_skel_t *render_skel_create(void *emd_file, render_texture_t *texture);
+render_skel_t *render_skel_create(void *emd_file, Uint32 emd_length, render_texture_t *texture);
 
 #endif /* RENDER_SKEL_H */

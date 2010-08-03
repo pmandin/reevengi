@@ -162,7 +162,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
 
-	skeleton = render.createSkel(emd_file, texture);
+	skeleton = render.createSkel(emd_file, emd_length, texture);
 	if (!skeleton) {
 		fprintf(stderr, "Can not create skeleton\n");
 		return NULL;
@@ -313,6 +313,9 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	assert(num_child>=0);
 
 	emd_header = (emd_header_t *) this->emd_file;
+
+	hdr_offsets = (Uint32 *)
+		(&((char *) (this->emd_file))[(this->emd_length)-16]);
 
 	/* Offset 0: Skeleton */
 	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
