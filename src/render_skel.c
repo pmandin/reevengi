@@ -41,7 +41,6 @@ static void download(render_skel_t *this);
 
 static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	Sint16 x, Sint16 y, Sint16 z);
-static void setParent(render_skel_t *this, int parent, int child);
 
 static void draw(render_skel_t *this, int num_parent);
 static void drawBones(render_skel_t *this, int num_parent);
@@ -74,7 +73,6 @@ render_skel_t *render_skel_create(void *emd_file, Uint32 emd_length, render_text
 	skel->download = download;
 
 	skel->addMesh = addMesh;
-	skel->setParent = setParent;
 	skel->draw = draw;
 	skel->drawBones = drawBones;
 
@@ -183,22 +181,6 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	this->meshes[this->num_meshes].parent = NULL;
 
 	this->num_meshes++;
-}
-
-static void setParent(render_skel_t *this, int parent, int child)
-{
-	render_skel_mesh_t *parent_mesh, *child_mesh;
-
-	if ((parent>=this->num_meshes) || (child>=this->num_meshes) || (parent==child)) {
-		return;
-	}
-
-	logMsg(3, "render_skel: skel 0x%p, setting mesh %d as parent for mesh %d\n", this, parent, child);
-
-	parent_mesh = &(this->meshes[parent]);
-	child_mesh = &(this->meshes[child]);
-
-	child_mesh->parent = parent_mesh;
 }
 
 static void draw(render_skel_t *this, int num_parent)

@@ -82,7 +82,7 @@ static void draw(render_skel_t *this, int num_parent)
 {
 	render_skel_gl_t *gl_skel = (render_skel_gl_t *) this;
 
-	if (num_parent == 0 /*parent == NULL*/) {
+	if (num_parent == 0) {
 		/* Init OpenGL rendering */
 
 		switch(render.render_mode) {
@@ -115,7 +115,7 @@ static void draw(render_skel_t *this, int num_parent)
 
 	gl_skel->softDraw(this, num_parent);
 
-	if (num_parent == 0 /*parent == NULL*/) {
+	if (num_parent == 0) {
 		switch(render.render_mode) {
 			case RENDER_WIREFRAME:
 				gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);

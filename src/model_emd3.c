@@ -110,9 +110,6 @@ typedef struct {
 
 static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, render_texture_t *texture);
 
-static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t *skel_data,
-	int num_mesh);
-
 static int getChild(render_skel_t *this, int num_parent, int num_child);
 
 /*--- Functions ---*/
@@ -339,27 +336,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 		emd_mesh_object++;
 	}
 
-	/* Define hierarchy */
-	emd_load_render_skel_hierarchy(skeleton, emd_skel_data, 0);
-
 	return skeleton;
-}
-
-static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t *skel_data,
-	int num_mesh)
-{
-	int i;
-	Uint8 *mesh_numbers = (Uint8 *) skel_data;
-
-	for (i=0; i<SDL_SwapLE16(skel_data[num_mesh].num_mesh); i++) {
-		int child = mesh_numbers[SDL_SwapLE16(skel_data[num_mesh].offset)+i];
-
-		if (num_mesh != child) {
-			skel->setParent(skel, num_mesh, child);
-
-			emd_load_render_skel_hierarchy(skel, skel_data, child);
-		}
-	}
 }
 
 static int getChild(render_skel_t *this, int num_parent, int num_child)
