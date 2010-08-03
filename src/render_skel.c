@@ -178,7 +178,6 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	this->meshes[this->num_meshes].y = y;
 	this->meshes[this->num_meshes].z = z;
 	this->meshes[this->num_meshes].mesh = mesh;
-	this->meshes[this->num_meshes].parent = NULL;
 
 	this->num_meshes++;
 }

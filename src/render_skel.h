@@ -30,7 +30,6 @@ typedef struct render_skel_mesh_s render_skel_mesh_t;
 struct render_skel_mesh_s {
 	Sint16 x,y,z;	/* Relative mesh position */
 	render_mesh_t *mesh;
-	render_skel_mesh_t *parent;
 };
 
 typedef struct render_skel_s render_skel_t;
