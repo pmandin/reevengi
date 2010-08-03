@@ -368,7 +368,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	emd_header_t *emd_header;
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_data_t *emd_skel_data;
-	int i;
+	int i, num_meshes;
 	Uint8 *mesh_numbers;
 
 	assert(this);
@@ -386,7 +386,10 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	emd_skel_data = (emd_skel_data_t *)
 		(&((char *) (this->emd_file))[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
 
-	assert(num_child < SDL_SwapLE16(emd_skel_data[num_parent].num_mesh));
+	num_meshes = SDL_SwapLE16(emd_skel_data[num_parent].num_mesh);
+	if (num_child>=num_meshes) {
+		return -1;
+	}
 
 	mesh_numbers = (Uint8 *) emd_skel_data;
 	return mesh_numbers[SDL_SwapLE16(emd_skel_data[num_parent].offset)+num_child];

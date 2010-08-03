@@ -43,7 +43,11 @@ static void addMesh(render_skel_t *this, render_mesh_t *mesh,
 	Sint16 x, Sint16 y, Sint16 z);
 static void setParent(render_skel_t *this, int parent, int child);
 
+#if 1
+static void draw(render_skel_t *this, int num_parent);
+#else
 static void draw(render_skel_t *this, render_skel_mesh_t *parent);
+#endif
 static void drawBones(render_skel_t *this, render_skel_mesh_t *parent);
 
 static int getChild(render_skel_t *this, int num_parent, int num_child);
@@ -200,6 +204,34 @@ static void setParent(render_skel_t *this, int parent, int child)
 	child_mesh->parent = parent_mesh;
 }
 
+#if 1
+static void draw(render_skel_t *this, int num_parent)
+{
+	int i=0, num_child;
+	render_skel_mesh_t *skel_mesh = &(this->meshes[num_parent]);
+
+	/* Draw mesh */
+	render.push_matrix();
+	render.translate(
+		skel_mesh->x,
+		skel_mesh->y,
+		skel_mesh->z
+	);
+
+	skel_mesh->mesh->draw(skel_mesh->mesh);
+
+	/* Draw children, relative to parent */
+	num_child = this->getChild(this, num_parent, i);
+	while (num_child != -1) {
+		this->draw(this, num_child);
+		
+		++i;
+		num_child = this->getChild(this, num_parent, i);
+	}
+
+	render.pop_matrix();
+}
+#else
 static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 {
 	int i;
@@ -235,6 +267,7 @@ static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 		}
 	}
 }
+#endif
 
 static void drawBones(render_skel_t *this, render_skel_mesh_t *parent)
 {
