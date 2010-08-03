@@ -45,10 +45,11 @@ static void setParent(render_skel_t *this, int parent, int child);
 
 #if 1
 static void draw(render_skel_t *this, int num_parent);
+static void drawBones(render_skel_t *this, int num_parent);
 #else
 static void draw(render_skel_t *this, render_skel_mesh_t *parent);
-#endif
 static void drawBones(render_skel_t *this, render_skel_mesh_t *parent);
+#endif
 
 static int getChild(render_skel_t *this, int num_parent, int num_child);
 
@@ -232,7 +233,47 @@ static void draw(render_skel_t *this, int num_parent)
 
 	render.pop_matrix();
 }
+
+static void drawBones(render_skel_t *this, int num_parent)
+{
+	int i=0, num_child;
+	vertex_t v[2];
+	render_skel_mesh_t *skel_mesh = &(this->meshes[num_parent]);
+
+	render.set_color(0x0000ff00);
+
+	/* Draw mesh */
+	v[0].x = 0;
+	v[0].y = 0;
+	v[0].z = 0;
+
+	v[1].x = skel_mesh->x;
+	v[1].y = skel_mesh->y;
+	v[1].z = skel_mesh->z;
+
+	render.line(&v[0], &v[1]);
+
+	render.push_matrix();
+	render.translate(
+		skel_mesh->x,
+		skel_mesh->y,
+		skel_mesh->z
+	);
+
+	/* Draw children, relative to parent */
+	num_child = this->getChild(this, num_parent, i);
+	while (num_child != -1) {
+		this->drawBones(this, num_child);
+		
+		++i;
+		num_child = this->getChild(this, num_parent, i);
+	}
+
+	render.pop_matrix();
+}
+
 #else
+
 static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 {
 	int i;
@@ -268,7 +309,6 @@ static void draw(render_skel_t *this, render_skel_mesh_t *parent)
 		}
 	}
 }
-#endif
 
 static void drawBones(render_skel_t *this, render_skel_mesh_t *parent)
 {
@@ -314,6 +354,7 @@ static void drawBones(render_skel_t *this, render_skel_mesh_t *parent)
 		}
 	}
 }
+#endif
 
 static int getChild(render_skel_t *this, int num_parent, int num_child)
 {

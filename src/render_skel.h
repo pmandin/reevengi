@@ -51,10 +51,11 @@ struct render_skel_s {
 
 #if 0
 	void (*draw)(render_skel_t *this, render_skel_mesh_t *parent);
+	void (*drawBones)(render_skel_t *this, render_skel_mesh_t *parent);
 #else
 	void (*draw)(render_skel_t *this, int num_parent);
+	void (*drawBones)(render_skel_t *this, int num_parent);
 #endif
-	void (*drawBones)(render_skel_t *this, render_skel_mesh_t *parent);
 
 	int num_meshes;
 	render_skel_mesh_t *meshes;
