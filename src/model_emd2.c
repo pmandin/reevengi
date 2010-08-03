@@ -497,12 +497,9 @@ static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 	if (num_anim>=num_anims) {
 		return 0;
 	}
-	if (num_frame>=SDL_SwapLE16(emd_anim_header[num_anim].count)) {
-		return 0;
-	}
 
 	this->num_anim = num_anim;
-	this->num_frame = num_frame;
+	this->num_frame = num_frame % SDL_SwapLE16(emd_anim_header[num_anim].count);
 	return 1;
 }
 

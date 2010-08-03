@@ -72,6 +72,7 @@
 #define KEY_TOGGLE_MAP		SDLK_n
 #define KEY_TOGGLE_BONES	SDLK_j
 #define KEY_TOGGLE_MASKS	SDLK_i
+#define KEY_TOGGLE_ANIM		SDLK_k
 
 #define KEY_FORCE_REFRESH	SDLK_SPACE
 
@@ -107,6 +108,7 @@ static int render_map = 0;
 static int render_bones = 0;
 static int render_masks = 1;
 static int render_depth = 0;
+static int render_anim = 0;
 
 static int refresh_player_pos = 1;
 static int player_moveforward = 0;
@@ -301,6 +303,14 @@ void view_background_input(SDL_Event *event)
 			case KEY_RENDER_DEPTH:
 				render_depth ^= 1;
 				render.setRenderDepth(&render, render_depth);
+				break;
+			case KEY_TOGGLE_ANIM:
+				switch(render_anim) {
+					case -1:render_anim=0;	break;
+					case 0:	render_anim=1;	break;
+					case 1:	render_anim=-1;	break;
+				}
+				tick_anim = clockGet();
 				break;
 			default:
 				break;
@@ -636,20 +646,28 @@ static void drawPlayer(void)
 
 	if (player_model) {
 		int posx,posy,posz;
+		Uint32 cur_tick = clockGet();
+		int num_frame = 0;
 
 		if (render_model!=prev_render_model) {
 			player_model->download(player_model);
 			prev_render_model = render_model;
 		}
 
-		{
-			Uint32 cur_tick = clockGet();
-			int num_frame = ((cur_tick - tick_anim)*15)/1000;
-			/*printf(" frame %d:", num_frame);*/
-			if (player_model->setAnimFrame(player_model, 0,num_frame)==0) {
-				tick_anim = cur_tick;
-			}
-			/*printf(" got it\n");*/
+		switch(render_anim) {
+			case -1:
+				num_frame = ((tick_anim - cur_tick)*15)/1000;
+				break;
+			case 1:
+				num_frame = ((cur_tick - tick_anim)*15)/1000;
+				break;
+			case 0:
+			default:
+				break;
+		}
+
+		if (player_model->setAnimFrame(player_model, 0,num_frame)==0) {
+			tick_anim = cur_tick;
 		}
 
 		render.set_blending(1);
