@@ -2,7 +2,7 @@
 	Load EMD model
 	Resident Evil 2
 
-	Copyright (C) 2008	Patrice Mandin
+	Copyright (C) 2008-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -422,6 +422,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	int i;
 	Uint8 *mesh_numbers;
 
+	assert(this);
 	assert(this->emd_file);
 	assert(num_parent>=0);
 	assert(num_child>=0);

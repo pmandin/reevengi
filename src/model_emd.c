@@ -2,7 +2,7 @@
 	Load EMD model
 	Resident Evil
 
-	Copyright (C) 2008	Patrice Mandin
+	Copyright (C) 2008-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+#include <assert.h>
 
 #include <SDL.h>
 
@@ -101,6 +103,8 @@ static render_skel_t *emd_load_render_skel(void *emd, Uint32 emd_length, render_
 static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t *skel_data,
 	int num_mesh);
 
+static int getChild(render_skel_t *this, int num_parent, int num_child);
+
 /*--- Functions ---*/
 
 render_skel_t *model_emd_load(void *emd, Uint32 emd_length)
@@ -126,6 +130,8 @@ render_skel_t *model_emd_load(void *emd, Uint32 emd_length)
 		texture->shutdown(texture);
 		return NULL;
 	}
+
+	skel->getChild = getChild;
 
 	return skel;
 }
@@ -290,4 +296,34 @@ static void emd_load_render_skel_hierarchy(render_skel_t *skel, emd_skel_data_t 
 			emd_load_render_skel_hierarchy(skel, skel_data, child);
 		}
 	}
+}
+
+static int getChild(render_skel_t *this, int num_parent, int num_child)
+{
+	Uint32 *hdr_offsets, skel_offset;
+	emd_header_t *emd_header;
+	emd_skel_header_t *emd_skel_header;
+	emd_skel_data_t *emd_skel_data;
+	int i;
+	Uint8 *mesh_numbers;
+
+	assert(this);
+	assert(this->emd_file);
+	assert(num_parent>=0);
+	assert(num_child>=0);
+
+	emd_header = (emd_header_t *) this->emd_file;
+
+	/* Offset 0: Skeleton */
+	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
+
+	emd_skel_header = (emd_skel_header_t *)
+		(&((char *) (this->emd_file))[skel_offset]);
+	emd_skel_data = (emd_skel_data_t *)
+		(&((char *) (this->emd_file))[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
+
+	assert(num_child < SDL_SwapLE16(emd_skel_data[num_parent].num_mesh));
+
+	mesh_numbers = (Uint8 *) emd_skel_data;
+	return mesh_numbers[SDL_SwapLE16(emd_skel_data[num_parent].offset)+num_child];
 }

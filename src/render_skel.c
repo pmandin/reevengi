@@ -1,7 +1,7 @@
 /*
 	3D skeleton, composed of meshes
 
-	Copyright (C) 2009	Patrice Mandin
+	Copyright (C) 2009-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+
 #include <SDL.h>
 
 #include "render_texture.h"
@@ -286,6 +288,8 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 
 static void setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 {
+	assert(this);
+
 	this->num_anim = num_anim;
 	this->num_frame = num_frame;
 }
