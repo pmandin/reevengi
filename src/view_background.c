@@ -639,10 +639,10 @@ static void drawPlayer(void)
 		}
 
 		render.set_blending(1);
-		player_model->draw(player_model, 0 /*NULL*/);
+		player_model->draw(player_model, 0);
 		render.set_blending(0);
 		if (render_bones) {
-			player_model->drawBones(player_model, 0 /*NULL*/);
+			player_model->drawBones(player_model, 0);
 		}
 #if 0
 	} else {

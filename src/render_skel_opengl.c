@@ -44,11 +44,7 @@
 
 /*--- Functions prototypes ---*/
 
-#if 1
 static void draw(render_skel_t *this, int num_parent);
-#else
-static void draw(render_skel_t *this, render_skel_mesh_t *parent);
-#endif
 
 /*--- Functions ---*/
 
@@ -82,7 +78,6 @@ render_skel_t *render_skel_gl_create(void *emd_file, Uint32 emd_length, render_t
 	return skel;
 }
 
-#if 1
 static void draw(render_skel_t *this, int num_parent)
 {
 	render_skel_gl_t *gl_skel = (render_skel_gl_t *) this;
@@ -135,59 +130,5 @@ static void draw(render_skel_t *this, int num_parent)
 		}
 	}
 }
-#else
-static void draw(render_skel_t *this, render_skel_mesh_t *parent)
-{
-	render_skel_gl_t *gl_skel = (render_skel_gl_t *) this;
-
-	if (parent == NULL) {
-		/* Init OpenGL rendering */
-
-		switch(render.render_mode) {
-			case RENDER_WIREFRAME:
-				gl.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				break;
-			case RENDER_FILLED:
-				gl.ShadeModel(GL_FLAT);
-				break;
-			case RENDER_GOURAUD:
-				gl.ShadeModel(GL_SMOOTH);
-				break;
-			case RENDER_TEXTURED:
-				{
-					render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
-
-					gl.MatrixMode(GL_TEXTURE);
-					gl.LoadIdentity();
-					if (gl_tex->textureTarget == GL_TEXTURE_2D) {
-						gl.Scalef(1.0f / this->texture->pitchw, 1.0f / this->texture->pitchh, 1.0f);
-					}
-
-					gl.MatrixMode(GL_MODELVIEW);
-
-					gl.Enable(gl_tex->textureTarget);
-				}
-				break;
-		}
-	}
-
-	gl_skel->softDraw(this, parent);
-
-	if (parent == NULL) {
-		switch(render.render_mode) {
-			case RENDER_WIREFRAME:
-				gl.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				break;
-			case RENDER_TEXTURED:
-				{
-					render_texture_gl_t *gl_tex = (render_texture_gl_t *) this->texture;
-
-					gl.Disable(gl_tex->textureTarget);
-				}
-				break;
-		}
-	}
-}
-#endif
 
 #endif /* ENABLE_OPENGL */

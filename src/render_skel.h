@@ -49,13 +49,8 @@ struct render_skel_s {
 		Sint16 x, Sint16 y, Sint16 z);
 	void (*setParent)(render_skel_t *this, int parent, int child);
 
-#if 0
-	void (*draw)(render_skel_t *this, render_skel_mesh_t *parent);
-	void (*drawBones)(render_skel_t *this, render_skel_mesh_t *parent);
-#else
 	void (*draw)(render_skel_t *this, int num_parent);
 	void (*drawBones)(render_skel_t *this, int num_parent);
-#endif
 
 	int num_meshes;
 	render_skel_mesh_t *meshes;
