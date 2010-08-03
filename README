@@ -118,6 +118,7 @@ N		toggle map display.
 J		toggle model skeleton display.
 I		toggle background masks display
 		(only for RE1 PC/PS1, RE2 PC demo, RE3 PC).
+K		toggle model animation (off/forward/backward)
 
 SPACE		refresh background, move player at current camera position
 U		Enter a door (only for RE2/RE3)
