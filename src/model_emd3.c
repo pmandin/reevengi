@@ -65,7 +65,7 @@ typedef struct {
 } emd_skel_header_t;
 
 typedef struct {
-	Uint32	unknown;
+	Uint16	unknown[3];
 	Sint16	pos[1];
 	/*Sint16	speed[3];*/
 
