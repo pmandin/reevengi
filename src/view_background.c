@@ -72,7 +72,10 @@
 #define KEY_TOGGLE_MAP		SDLK_n
 #define KEY_TOGGLE_BONES	SDLK_j
 #define KEY_TOGGLE_MASKS	SDLK_i
-#define KEY_TOGGLE_ANIM		SDLK_k
+
+#define KEY_ANIM_DOWN		SDLK_k
+#define KEY_ANIM_UP		SDLK_l
+#define KEY_TOGGLE_ANIM		SDLK_m
 
 #define KEY_FORCE_REFRESH	SDLK_SPACE
 
@@ -304,6 +307,22 @@ void view_background_input(SDL_Event *event)
 				render_depth ^= 1;
 				render.setRenderDepth(&render, render_depth);
 				break;
+			case KEY_ANIM_DOWN:
+				if (game_state.num_anim>0) {
+					--game_state.num_anim;
+				}
+				break;
+			case KEY_ANIM_UP:
+				{
+					if (player_model) {
+						int num_anims = player_model->getNumAnims(player_model);
+
+						if (game_state.num_anim<num_anims-1) {
+							++game_state.num_anim;
+						}
+					}
+				}
+				break;
 			case KEY_TOGGLE_ANIM:
 				switch(render_anim) {
 					case -1:render_anim=0;	break;
@@ -384,6 +403,17 @@ void view_background_update(void)
 		if (reload_model) {
 			player_model = game_state.load_model(game_state.num_model);
 			reload_model = 0;
+
+			if (player_model) {
+				int num_anims = player_model->getNumAnims(player_model);
+
+				if (game_state.num_anim>=num_anims) {
+					game_state.num_anim = num_anims-1;
+				}
+				if (game_state.num_anim<0) {
+					game_state.num_anim = 0;
+				}
+			}
 		}
 
 		clockUnpause();
@@ -666,7 +696,7 @@ static void drawPlayer(void)
 				break;
 		}
 
-		if (player_model->setAnimFrame(player_model, 0,num_frame)==0) {
+		if (player_model->setAnimFrame(player_model, game_state.num_anim,num_frame)==0) {
 			tick_anim = cur_tick;
 		}
 

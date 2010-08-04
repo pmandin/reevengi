@@ -99,6 +99,8 @@ typedef struct {
 	int model_list_count;
 	model_item_t *model_list;
 
+	int num_anim;
+
 	/*--- Player position and angle */
 	float player_x, player_y, player_z, player_a;
 

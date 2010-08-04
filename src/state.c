@@ -149,6 +149,7 @@ void state_init(void)
 	game_state.cur_movie = NULL;
 
 	game_state.num_model = 0;
+	game_state.num_anim = 0;
 
 	state_detect();
 

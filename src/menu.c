@@ -59,7 +59,7 @@ static char model_name[32];
 
 /*--- Constants ---*/
 
-menu_t main_menu[1+8+8]={
+menu_t main_menu[1+10+8]={
 	{0,0, STR_TYPE_TEXT, PACKAGE_STRING},
 
 	{0,2, STR_TYPE_TEXT, "Stage :"},
@@ -70,15 +70,17 @@ menu_t main_menu[1+8+8]={
 	{8,4, STR_TYPE_HEXA2, &game_state.num_camera},
 	{0,5, STR_TYPE_TEXT, "Model :"},
 	{8,5, STR_TYPE_TEXT, model_name},
+	{0,6, STR_TYPE_TEXT, "Anim  :"},
+	{8,6, STR_TYPE_INT, &game_state.num_anim},
 
-	{0,7, STR_TYPE_TEXT, "Player X:"},
-	{10,7, STR_TYPE_FLOAT_AS_INT, &game_state.player_x},
-	{0,8, STR_TYPE_TEXT, "Player Y:"},
-	{10,8, STR_TYPE_FLOAT_AS_INT, &game_state.player_y},
-	{0,9, STR_TYPE_TEXT, "Player Z:"},
-	{10,9, STR_TYPE_FLOAT_AS_INT, &game_state.player_z},
-	{0,10, STR_TYPE_TEXT, "Player A:"},
-	{10,10, STR_TYPE_FLOAT_AS_INT, &game_state.player_a}
+	{0,8, STR_TYPE_TEXT, "Player X:"},
+	{10,8, STR_TYPE_FLOAT_AS_INT, &game_state.player_x},
+	{0,9, STR_TYPE_TEXT, "Player Y:"},
+	{10,9, STR_TYPE_FLOAT_AS_INT, &game_state.player_y},
+	{0,10, STR_TYPE_TEXT, "Player Z:"},
+	{10,10, STR_TYPE_FLOAT_AS_INT, &game_state.player_z},
+	{0,11, STR_TYPE_TEXT, "Player A:"},
+	{10,11, STR_TYPE_FLOAT_AS_INT, &game_state.player_a}
 };
 
 /*--- Functions ---*/
