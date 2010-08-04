@@ -135,7 +135,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 static int getChild(render_skel_t *this, int num_parent, int num_child);
 static int getNumAnims(render_skel_t *this);
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
-static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
+static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z);
 static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z);
 
 /*--- Functions ---*/
@@ -417,7 +417,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	emd_header_t *emd_header;
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_data_t *emd_skel_data;
-	int i, num_meshes;
+	int num_meshes;
 	Uint8 *mesh_numbers;
 
 	assert(this);
@@ -503,7 +503,7 @@ static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 	return 1;
 }
 
-static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
+static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z)
 {
 	Uint32 *hdr_offsets, skel_offset, anim_offset, *ptr_skel_frame;
 	emd_header_t *emd_header;

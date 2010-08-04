@@ -128,7 +128,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 static int getChild(render_skel_t *this, int num_parent, int num_child);
 static int getNumAnims(render_skel_t *this);
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
-static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
+static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z);
 static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z);
 
 /*--- Functions ---*/
@@ -368,7 +368,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	emd_header_t *emd_header;
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_data_t *emd_skel_data;
-	int i, num_meshes;
+	int num_meshes;
 	Uint8 *mesh_numbers;
 
 	assert(this);
@@ -454,7 +454,7 @@ static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 	return 1;
 }
 
-static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
+static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z)
 {
 	Uint32 *hdr_offsets, skel_offset, anim_offset;
 	Uint16 *ptr_skel_frame;
@@ -510,7 +510,6 @@ static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
 	*x = 0 /*SDL_SwapLE16(emd_skel_anim->pos[0])*/;
 	*y = SDL_SwapLE16(emd_skel_anim->pos[0]);
 	*z = 0 /*SDL_SwapLE16(emd_skel_anim->pos[2])*/;
-	/*printf(" %d,%d,%d\n",*x,*y,*z);*/
 }
 
 static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z)
@@ -573,7 +572,6 @@ static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int
 	/*--num_mesh;*/
 
 	*x = *y = *z = 0;
-#if 1
 	start_byte = (num_mesh>>1) * 9; 
 	if ((num_mesh & 1)==0) {
 		/* XX, YX, YY, ZZ, -Z */
@@ -587,5 +585,4 @@ static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int
 		*y = ptr_angles[start_byte+2] + ((ptr_angles[start_byte+3] & 15)<<8);
 		*z = (ptr_angles[start_byte+3]>>4) + (ptr_angles[start_byte+4]<<4);
 	}
-#endif
 }

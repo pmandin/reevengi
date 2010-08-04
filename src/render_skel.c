@@ -49,7 +49,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child);
 
 static int getNumAnims(render_skel_t *this);
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame);
-static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z);
+static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z);
 static void getAnimSpeed(render_skel_t *this, int *x, int *y, int *z);
 static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z); 
 
@@ -222,6 +222,9 @@ static void drawBones(render_skel_t *this, int num_parent)
 	int i=0, num_child;
 	vertex_t v[2];
 	render_skel_mesh_t *skel_mesh = &(this->meshes[num_parent]);
+	int angles[3];
+
+	this->getAnimAngles(this, num_parent, &angles[0], &angles[1], &angles[2]);
 
 	/* Draw mesh */
 	v[0].x = 0;
@@ -240,6 +243,9 @@ static void drawBones(render_skel_t *this, int num_parent)
 		skel_mesh->y,
 		skel_mesh->z
 	);
+	render.rotate((angles[0] * 360.0f) / 4096.0f, 1.0f, 0.0f, 0.0f);
+	render.rotate((angles[1] * 360.0f) / 4096.0f, 0.0f, 1.0f, 0.0f);
+	render.rotate((angles[2] * 360.0f) / 4096.0f, 0.0f, 0.0f, 1.0f);
 
 	/* Draw children, relative to parent */
 	num_child = this->getChild(this, num_parent, i);
@@ -272,7 +278,7 @@ static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 	return 1;
 }
 
-static void getAnimPosition(render_skel_t *this, int *x, int *y, int *z)
+static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z)
 {
 	*x = *z = 0;
 	*y = -2000;

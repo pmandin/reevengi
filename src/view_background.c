@@ -645,7 +645,7 @@ static void drawPlayer(void)
 	render.rotate((game_state.player_a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
 	if (player_model) {
-		int posx,posy,posz;
+		Sint16 posx,posy,posz;
 		Uint32 cur_tick = clockGet();
 		int num_frame = 0;
 
@@ -673,7 +673,7 @@ static void drawPlayer(void)
 		render.set_blending(1);
 
 		player_model->getAnimPosition(player_model, &posx, &posy, &posz);
-		render.translate(-posx, -posy, -posz);
+		render.translate((float) -posx, (float) -posy, (float) -posz);
 
 		player_model->draw(player_model, 0);
 		render.set_blending(0);
