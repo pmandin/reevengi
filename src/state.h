@@ -100,6 +100,7 @@ typedef struct {
 	model_item_t *model_list;
 
 	int num_anim;
+	int num_frame;
 
 	/*--- Player position and angle */
 	float player_x, player_y, player_z, player_a;

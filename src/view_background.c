@@ -677,7 +677,6 @@ static void drawPlayer(void)
 	if (player_model) {
 		Sint16 posx,posy,posz;
 		Uint32 cur_tick = clockGet();
-		int num_frame = 0;
 
 		if (render_model!=prev_render_model) {
 			player_model->download(player_model);
@@ -686,17 +685,17 @@ static void drawPlayer(void)
 
 		switch(render_anim) {
 			case -1:
-				num_frame = ((tick_anim - cur_tick)*15)/1000;
+				game_state.num_frame = ((tick_anim - cur_tick)*15)/1000;
 				break;
 			case 1:
-				num_frame = ((cur_tick - tick_anim)*15)/1000;
+				game_state.num_frame = ((cur_tick - tick_anim)*15)/1000;
 				break;
 			case 0:
 			default:
 				break;
 		}
 
-		if (player_model->setAnimFrame(player_model, game_state.num_anim,num_frame)==0) {
+		if (player_model->setAnimFrame(player_model, game_state.num_anim, game_state.num_frame)==0) {
 			tick_anim = cur_tick;
 		}
 

@@ -150,6 +150,7 @@ void state_init(void)
 
 	game_state.num_model = 0;
 	game_state.num_anim = 0;
+	game_state.num_frame = 0;
 
 	state_detect();
 
