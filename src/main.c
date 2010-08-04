@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 		params.use_opengl = 0;
 #else
 		logMsg(0,"Movie player disabled\n");
-		params.viewmode == VIEWMODE_BACKGROUND;
+		params.viewmode = VIEWMODE_BACKGROUND;
 #endif
 	}
 
