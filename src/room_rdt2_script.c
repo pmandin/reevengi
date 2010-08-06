@@ -41,6 +41,7 @@
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x0a
+#define INST_LOOP	0x0d
 
 #define INST_FUNC	0x18
 #define INST_NOP1C	0x1c
@@ -140,6 +141,13 @@ typedef struct {
 	Uint8 delay;
 	Uint8 unknown;
 } script_sleepn_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 block_length;
+	Uint16 count;
+} script_loop_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -355,6 +363,7 @@ typedef union {
 	script_if_t		i_if;
 	script_else_t		i_else;
 	script_sleepn_t		sleepn;
+	script_loop_t		loop;
 	script_func_t		func;
 	script_door_set_t	door_set;
 	script_espr_set_t	espr_set;
@@ -440,7 +449,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
 	{0x0b,		1},
 	{0x0c,		1},
-	{0x0d,		6},
+	{INST_LOOP,	sizeof(script_loop_t)},
 	{0x0e,		2},
 	{0x0f,		2},
 
@@ -867,6 +876,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_SLEEP_N:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
+			strcat(strBuf, tmpBuf);
+			break;
+		case INST_LOOP:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "BEGIN_LOOP #%d\n", SDL_SwapLE16(inst->loop.count));
 			strcat(strBuf, tmpBuf);
 			break;
 
