@@ -36,6 +36,7 @@
 #define INST_NOP	0x00
 #define INST_RETURN	0x01
 #define INST_DO_EVENTS	0x02
+#define INST_RESET	0x03
 #define INST_EVT_EXEC	0x04
 #define INST_IF		0x06
 #define INST_ELSE	0x07
@@ -43,6 +44,7 @@
 #define INST_SLEEP_N	0x0a
 #define INST_LOOP	0x0d
 
+#define INST_NOP14	0x14	/* switch ? 0x1a: end switch ? */
 #define INST_FUNC	0x18
 #define INST_NOP1C	0x1c
 #define INST_NOP1E	0x1e
@@ -102,7 +104,7 @@
 #define ESPR_FIRE	0x0b
 
 /* possible room objects: */
-/* inst2c: espr */
+/* inst2c: espr , fire can do damage */
 /* inst3b: door */
 /* inst4e: item */
 /* inst67: wall */
@@ -116,6 +118,12 @@ typedef struct {
 	Uint8 type;
 	Uint8 unknown[3];
 } script_condition_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown[2];
+	Uint8 num_func;
+} script_reset_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -359,6 +367,7 @@ typedef struct {
 
 typedef union {
 	Uint8 opcode;
+	script_reset_t		reset;
 	script_evtexec_t	evtexec;
 	script_if_t		i_if;
 	script_else_t		i_else;
@@ -439,7 +448,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_NOP,	1},
 	{INST_RETURN,	2},
 	{INST_DO_EVENTS,	1},
-	{0x03,		2},
+	{INST_RESET,	sizeof(script_reset_t)},
 	{INST_EVT_EXEC,	sizeof(script_evtexec_t)},
 	{0x05,		2},
 	{INST_IF,	sizeof(script_if_t)},
@@ -458,7 +467,7 @@ static const script_inst_len_t inst_length[]={
 	{0x11,		4},
 	{0x12,		2},
 	{0x13,		4},
-	{0x14,		6},
+	{INST_NOP14,	6},
 	{0x16,		2},
 	{0x17,		6},
 	{INST_FUNC,	sizeof(script_func_t)},
@@ -823,6 +832,7 @@ static void scriptPrintInst(room_t *this)
 		/* Nops */
 
 		case INST_NOP:
+		case INST_NOP14:
 		case INST_NOP1C:
 		case INST_NOP1E:
 		case INST_NOP1F:
@@ -849,6 +859,11 @@ static void scriptPrintInst(room_t *this)
 		case INST_DO_EVENTS:
 			reindent(indentLevel);
 			strcat(strBuf, "PROCESS_EVENTS\n");
+			break;
+		case INST_RESET:
+			reindent(indentLevel);
+			sprintf(tmpBuf, "RESET func%02x()\n",
+				inst->reset.num_func);
 			break;
 		case INST_EVT_EXEC:
 			reindent(indentLevel);
