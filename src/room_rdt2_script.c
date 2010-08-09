@@ -19,11 +19,12 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <SDL.h>
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <SDL.h>
+#include <assert.h>
 
 #include "room.h"
 #include "room_rdt2.h"
@@ -648,6 +649,10 @@ static void scriptPrintInst(room_t *this);
 
 static void scriptDisasmInit(void);
 
+static void scriptDumpAll(room_t *this, int num_script);
+static int scriptDumpGetInstLen(Uint8 opcode);
+static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int indent);
+
 /*--- Functions ---*/
 
 void room_rdt2_scriptInit(room_t *this)
@@ -703,6 +708,8 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 	logMsg(1, "rdt2: Script %d at offset 0x%08x, length 0x%04x\n", num_script, offset, this->script_length);
 
 	scriptDisasmInit();
+
+	scriptDumpAll(this, num_script);
 
 	return this->cur_inst;
 }
@@ -807,6 +814,19 @@ static void scriptDisasmInit(void)
 {
 }
 
+static void scriptDumpAll(room_t *this, int num_script)
+{
+}
+
+static int scriptDumpGetInstLen(Uint8 opcode)
+{
+	return 0;
+}
+
+static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int indent)
+{
+}
+
 #else
 
 /*--- Variables ---*/
@@ -842,6 +862,8 @@ static void scriptDisasmInit(void)
 static void scriptPrintInst(room_t *this)
 {
 	script_inst_t *inst;
+
+	return;
 
 	if (!this) {
 		return;
@@ -1211,6 +1233,410 @@ static void scriptPrintInst(room_t *this)
 	}
 
 	logMsg(1, "%s", strBuf);
+}
+
+static void scriptDumpAll(room_t *this, int num_script)
+{
+	rdt2_header_t *rdt_header;
+	Uint32 offset, smaller_offset, script_length;
+	Uint16 *functionArrayPtr;
+	int i, num_funcs, room_script = RDT2_OFFSET_INIT_SCRIPT;
+
+	assert(this);
+
+	if (num_script == ROOM_SCRIPT_RUN) {
+		room_script = RDT2_OFFSET_ROOM_SCRIPT;
+	}
+
+	rdt_header = (rdt2_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
+
+	if (offset==0) {
+		return;
+	}
+
+	/* Search smaller offset after script to calc length */
+	smaller_offset = this->file_length;
+	for (i=0; i<21; i++) {
+		Uint32 next_offset = SDL_SwapLE32(rdt_header->offsets[i]);
+		if ((next_offset>0) && (next_offset<smaller_offset) && (next_offset>offset)) {
+			smaller_offset = next_offset;
+		}
+	}
+	if (smaller_offset>offset) {
+		script_length = smaller_offset - offset;
+	}
+
+	if (script_length==0) {
+		return;
+	}
+
+	/* Start of script is an array of offsets to the various script functions
+	 * The first offset also gives the first instruction to execute
+	 */
+	functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
+
+	num_funcs = SDL_SwapLE16(functionArrayPtr[0]) >> 1;
+	logMsg(1, "Dump all\n");
+	for (i=0; i<num_funcs; i++) {
+		Uint16 func_offset = SDL_SwapLE16(functionArrayPtr[i]);
+		Uint32 func_len = script_length - func_offset;
+		script_inst_t *startInst = (script_inst_t *) (& ((Uint8 *) this->file)[offset + func_offset]);
+
+		if (i<num_funcs-1) {
+			func_len = SDL_SwapLE16(functionArrayPtr[i+1]) - func_offset;
+		}
+
+		logMsg(1, "BEGIN_FUNC func%02x\n", i);
+		scriptDumpBlock(startInst, offset+func_offset, func_len, 1);
+		logMsg(1, "END_FUNC\n\n");
+	}
+}
+
+static int scriptDumpGetInstLen(Uint8 opcode)
+{
+	int i;
+
+	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
+		if (inst_length[i].opcode == opcode) {
+			return inst_length[i].length;
+		}
+	}
+
+	return 0;
+}
+
+static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int indent)
+{
+	while (length>0) {
+		script_inst_t *block_ptr = NULL;
+		int inst_len = 0, block_len;
+
+		memset(strBuf, 0, sizeof(strBuf));
+		reindent(indent);
+
+		switch(inst->opcode) {
+			/* Nops */
+
+			case INST_NOP:
+			case INST_NOP14:
+			case INST_NOP1C:
+			case INST_NOP1E:
+			case INST_NOP1F:
+			case INST_NOP20:
+			case INST_NOP63:
+			case INST_NOP8A:
+			case INST_NOP8B:
+			case INST_NOP8C:
+				strcat(strBuf, "nop\n");
+				break;
+
+			/* 0x00-0x0f */
+
+			case INST_RETURN:
+				strcat(strBuf, "RETURN\n");
+				break;
+			case INST_DO_EVENTS:
+				strcat(strBuf, "PROCESS_EVENTS\n");
+				break;
+			case INST_RESET:
+				sprintf(tmpBuf, "RESET func%02x()\n",
+					inst->reset.num_func);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_EVT_EXEC:
+				if (inst->evtexec.ex_opcode == INST_FUNC) {
+					sprintf(tmpBuf, "EVT_EXEC #0x%02x, func%02x()\n",
+						inst->evtexec.cond, inst->evtexec.num_func);
+				} else {
+					sprintf(tmpBuf, "EVT_EXEC #0x%02x, xxx\n",
+						inst->evtexec.cond);
+				}
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_IF:
+				strcat(strBuf, "BEGIN_IF\n");
+				block_len = SDL_SwapLE16(inst->i_if.block_length);
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_if_t)]);
+				break;
+			case INST_ELSE:
+				strcat(strBuf, "ELSE_IF\n");
+				block_len = SDL_SwapLE16(inst->i_else.block_length);
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_else_t)]);
+				break;
+			case INST_END_IF:
+				strcat(strBuf, "END_IF\n");
+				break;
+			case INST_SLEEP_N:
+				sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_LOOP:
+				sprintf(tmpBuf, "BEGIN_LOOP #%d\n", SDL_SwapLE16(inst->loop.count));
+				strcat(strBuf, tmpBuf);
+				break;
+
+			/* 0x10-0x1f */
+
+			case INST_FUNC:
+				sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
+				strcat(strBuf, tmpBuf);
+				break;
+
+			/* 0x20-0x2f */
+
+			case INST_BIT_TEST:
+				sprintf(tmpBuf, "BIT_TEST array #0x%02x, bit #0x%04x\n", inst->bittest.num_array, inst->bittest.bit_number);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_BIT_CHG:
+				sprintf(tmpBuf, "BIT_CHG %s array #0x%02x, bit #0x%04x\n",
+					(inst->bitchg.op_chg == 0 ? "CLEAR" :
+						(inst->bitchg.op_chg == 1 ? "SET" :
+							(inst->bitchg.op_chg == 7 ? "CHG" :
+							"INVALID")
+						)
+					),
+					inst->bitchg.num_array,
+					inst->bitchg.bit_number);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_CAM_SET:
+				sprintf(tmpBuf, "CAM_SET #0x%02x\n", inst->cam_set.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_PRINT_TEXT:
+				{
+					char tmpBuf[512];
+
+					sprintf(tmpBuf, "PRINT_TEXT #0x%02x\n", inst->print_text.id);
+					strcat(strBuf, tmpBuf);
+					/*logMsg(1, "%s", strBuf);*/
+
+					/*room_rdt2_getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+					logMsg(1, "#\tL0\t%s\n", tmpBuf);*/
+
+					/*room_rdt2_getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);*/
+				}
+				break;
+			case INST_ESPR_SET:
+				sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx\n", inst->espr_set.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_INST2D_SET:
+				sprintf(tmpBuf, "OBJECT #0x%02x = ???_SET xxx\n", inst->inst2d_set.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_SET_REG_MEM:
+				sprintf(tmpBuf, "SET_REG_MEM %d,%d\n",
+					inst->set_reg_mem.component, inst->set_reg_mem.index);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_SET_REG_IMM:
+				sprintf(tmpBuf, "SET_REG_IMM %d,%d\n",
+					inst->set_reg_imm.component, SDL_SwapLE16(inst->set_reg_imm.value));
+				strcat(strBuf, tmpBuf);
+				break;
+
+			/* 0x30-0x3f */
+
+			case INST_SET_REG_TMP:
+				strcat(strBuf, "SET_REG_TMP\n");
+				break;
+			case INST_ADD_REG:
+				strcat(strBuf, "ADD_REG\n");
+				break;
+			case INST_SET_REG2:
+				sprintf(tmpBuf, "SET_REG2 %d,%d,%d\n",
+					SDL_SwapLE16(inst->set_reg_3w.value[0]),
+					SDL_SwapLE16(inst->set_reg_3w.value[1]),
+					SDL_SwapLE16(inst->set_reg_3w.value[2]));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_SET_REG3:
+				sprintf(tmpBuf, "SET_REG3 %d,%d,%d\n",
+					SDL_SwapLE16(inst->set_reg_3w.value[0]),
+					SDL_SwapLE16(inst->set_reg_3w.value[1]),
+					SDL_SwapLE16(inst->set_reg_3w.value[2]));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_SET_VAR:
+				sprintf(tmpBuf, "SET_VAR #0x%02x,%d\n",
+					inst->set_var.id,
+					SDL_SwapLE16(inst->set_var.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_CAM_CHG:
+				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
+					inst->cam_chg.unknown0, inst->cam_chg.camera);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_DOOR_SET:
+				sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_BCHG8:
+				sprintf(tmpBuf, "B%s #8,xxx\n",
+					(inst->bchg8.operation == 1 ? "SET" : "CLR"));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_CMP_IMM:
+				{
+					int compare = inst->cmp_imm.compare;
+					if (compare>6) {
+						compare = 6;
+					}
+
+					sprintf(tmpBuf, "CMP_IMM %s xxx,0x%04x\n",
+						cmp_imm_name[compare],
+						SDL_SwapLE16(inst->cmp_imm.value));
+					strcat(strBuf, tmpBuf);
+				}
+				break;
+
+			/* 0x40-0x4f */
+
+			case INST_EM_SET:
+				sprintf(tmpBuf, "ENTITY #0x%02x = EM_SET model 0x%02x, killed 0x%02x\n",
+					inst->em_set.id, inst->em_set.model, inst->em_set.killed);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_ACTIVATE_OBJECT:
+				sprintf(tmpBuf, "ACTIVATE_OBJECT #0x%02x\n", inst->set_cur_obj.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_ITEM_SET:
+				{
+					sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET %d, amount %d\n",
+						inst->item_set.id,
+						SDL_SwapLE16(inst->item_set.type),
+						SDL_SwapLE16(inst->item_set.amount));
+					strcat(strBuf, tmpBuf);
+					logMsg(1, "%s", strBuf);
+
+					if (inst->item_set.type < 64) {
+						sprintf(strBuf, "#\t%s\n", item_name[inst->item_set.type]);
+					} else {
+						sprintf(strBuf, "#\tUnknown item\n");
+					}
+				}
+				break;
+
+			/* 0x50-0x5f */
+
+			case INST_SND_PLAY:
+				sprintf(tmpBuf, "SND_PLAY %d,%d\n", inst->snd_play.id, SDL_SwapLE16(inst->snd_play.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_ITEM_HAVE:
+				sprintf(tmpBuf, "ITEM_HAVE %d\n", inst->item_have.id);
+				strcat(strBuf, tmpBuf);
+				break;
+
+			/* 0x60-0x6f */
+
+			case INST_ITEM_BELOW:
+				sprintf(tmpBuf, "ITEM_BELOW %d\n", inst->item_below.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_WALL_SET:
+				sprintf(tmpBuf, "OBJECT #0x%02x = WALL_SET xxx\n", inst->wall_set.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_LIGHT_POS_SET:
+				sprintf(tmpBuf, "LIGHT_POS_SET %d,%c=%d\n",
+					inst->light_pos_set.id,
+					'x'+inst->light_pos_set.param-11,
+					SDL_SwapLE16(inst->light_pos_set.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_LIGHT3_POS_SET:
+				sprintf(tmpBuf, "LIGHT3_POS_SET %c=%d\n",
+					'x'+inst->light3_pos_set.param,
+					SDL_SwapLE16(inst->light3_pos_set.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_MOVIE_PLAY:
+				sprintf(tmpBuf, "MOVIE_PLAY #0x%02x\n", inst->movie_play.id);
+				strcat(strBuf, tmpBuf);
+				break;
+
+			/* 0x70-0x7f */
+
+			case INST_ITEM_ADD:
+				{
+					sprintf(tmpBuf, "ITEM_ADD %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
+					strcat(strBuf, tmpBuf);
+					logMsg(1, "%s", strBuf);
+
+					if (inst->item_add.id < 64) {
+						sprintf(strBuf, "#\t%s\n", item_name[inst->item_add.id]);
+					} else {
+						sprintf(strBuf, "#\tUnknown item\n");
+					}
+				}
+				break;
+			case INST_LIGHT_COLOR_SET:
+				sprintf(tmpBuf, "LIGHT_COLOR_SET %d,r=0x%02x,g=0x%02x,b=0x%02x\n",
+					inst->light_color_set.id, inst->light_color_set.r,
+					inst->light_color_set.g, inst->light_color_set.b);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_LIGHT_POS_CAM_SET:
+				sprintf(tmpBuf, "LIGHT_POS_CAM_SET camera %d,%d,%c=%d\n",
+					inst->light_pos_cam_set.camera,
+					inst->light_pos_cam_set.id,
+					'x'+inst->light_pos_cam_set.param-11,
+					SDL_SwapLE16(inst->light_pos_cam_set.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_LIGHT3_POS_CAM_SET:
+				sprintf(tmpBuf, "LIGHT3_POS_CAM_SET camera %d,%c=%d\n",
+					inst->light3_pos_cam_set.camera,
+					'x'+inst->light3_pos_cam_set.param,
+					SDL_SwapLE16(inst->light3_pos_cam_set.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_LIGHT_COLOR_CAM_SET:
+				sprintf(tmpBuf, "LIGHT_COLOR_CAM_SET camera %d,%d,r=0x%02x,g=0x%02x,b=0x%02x\n",
+					inst->light_color_cam_set.camera,
+					inst->light_color_cam_set.id, inst->light_color_cam_set.r,
+					inst->light_color_cam_set.g, inst->light_color_cam_set.b);
+				strcat(strBuf, tmpBuf);
+				break;
+
+			/* 0x80-0x8f */
+
+			case INST_ITEM_ABOVE:
+				sprintf(tmpBuf, "ITEM_ABOVE %d\n", inst->item_above.id);
+				strcat(strBuf, tmpBuf);
+				break;
+
+			default:
+				sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
+				strcat(strBuf, tmpBuf);
+				break;
+		}
+
+		logMsg(1, "0x%08x: %s", offset, strBuf);
+
+		inst_len = scriptDumpGetInstLen(inst->opcode); 
+		if (block_ptr) {
+			/*logMsg(1, " block 0x%04x inst 0x%04x\n", block_len, inst_len);*/
+			scriptDumpBlock((script_inst_t *) block_ptr, offset+inst_len, block_len - inst_len, indent+1);
+			inst_len = block_len;
+		}
+
+		if (inst_len==0) {
+			break;
+		}
+
+		length -= inst_len;
+		offset += inst_len;
+		inst = (script_inst_t *) (&((Uint8 *) inst)[inst_len]);
+		/*printf("instlen %d, len %d\n", inst_len, length);*/
+	}
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */
