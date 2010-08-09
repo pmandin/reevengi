@@ -52,6 +52,7 @@
 #define INST_FUNC	0x18
 #define INST_BREAK	0x1a
 #define INST_NOP1C	0x1c
+#define INST_CHG_SCRIPT	0x1d
 #define INST_NOP1E	0x1e
 #define INST_NOP1F	0x1f
 
@@ -449,6 +450,13 @@ typedef struct {
 	Uint8 srcw;
 } script_op_varw_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 varw;
+	Uint8 offset;
+	Uint8 flag; /* 0 byte, 1 word */
+} script_chg_script_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -495,6 +503,7 @@ typedef union {
 	script_set_varw_t	set_varw;
 	script_op_varw_imm_t	op_varw_imm;
 	script_op_varw_t	op_varw;
+	script_chg_script_t	chg_script;
 } script_inst_t;
 
 typedef struct {
@@ -568,7 +577,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_BREAK,	2},
 	{0x1b,		6},
 	{INST_NOP1C,	1},
-	{0x1d,		4},
+	{INST_CHG_SCRIPT,	sizeof(script_chg_script_t)},
 	{INST_NOP1E,	1},
 	{INST_NOP1F,	1},
 
@@ -1429,6 +1438,10 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_END_IF:
 				strcat(strBuf, "END_IF\n");
 				break;
+			case INST_SLEEP_INIT:
+				sprintf(tmpBuf, "sleep_init #%d\n", SDL_SwapLE16(inst->sleep_init.count));
+				strcat(strBuf, tmpBuf);
+				break;
 			case INST_SLEEP_LOOP:
 				strcat(strBuf, "sleep_loop\n");
 				break;
@@ -1462,6 +1475,27 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_BREAK:
 				strcat(strBuf, "BREAK\n");
+				break;
+			case INST_CHG_SCRIPT:
+				{
+					char myTmpBuf[512];
+
+					sprintf(myTmpBuf, "script[0x%08x] = var%02x.W & 0xff\n",
+						offset + sizeof(script_chg_script_t) + inst->chg_script.offset,
+						inst->chg_script.varw);
+					strcat(strBuf, myTmpBuf);
+
+					if (inst->chg_script.flag == 1) {
+						logMsg(1, "0x%08x: %s", offset, strBuf);
+
+						memset(strBuf, 0, sizeof(strBuf));
+						reindent(indent);
+						sprintf(tmpBuf, "script[0x%08x] = (var%02x.W >> 8) & 0xff\n",
+							offset + sizeof(script_chg_script_t) + inst->chg_script.offset + 1,
+							inst->chg_script.varw);
+						strcat(strBuf, tmpBuf);
+					}
+				}				
 				break;
 
 			/* 0x20-0x2f */
