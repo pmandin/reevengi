@@ -61,7 +61,8 @@
 #define INST_EVAL_CMP	0x23
 #define INST_SET_VARW	0x24
 #define INST_COPY_VARW	0x25
-#define INST_OP_VARW	0x26
+#define INST_OP_VARW_IMM	0x26
+#define INST_OP_VARW	0x27
 #define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
 #define INST_ESPR_SET	0x2c
@@ -439,6 +440,13 @@ typedef struct {
 	Uint8 operation; /* add,sub,mul,div, mod,or,and,xor, not,lsl,lsr,asr */
 	Uint8 varw;
 	Uint16 value;
+} script_op_varw_imm_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 operation; /* add,sub,mul,div, mod,or,and,xor, not,lsl,lsr,asr */
+	Uint8 varw;
+	Uint8 srcw;
 } script_op_varw_t;
 
 typedef union {
@@ -485,6 +493,7 @@ typedef union {
 	script_light_color_cam_set_t	light_color_cam_set;
 	script_copy_varw_t	copy_varw;
 	script_set_varw_t	set_varw;
+	script_op_varw_imm_t	op_varw_imm;
 	script_op_varw_t	op_varw;
 } script_inst_t;
 
@@ -570,8 +579,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_EVAL_CMP,	6},
 	{INST_SET_VARW,		sizeof(script_set_varw_t)},
 	{INST_COPY_VARW,	sizeof(script_copy_varw_t)},
+	{INST_OP_VARW_IMM,	sizeof(script_op_varw_imm_t)},
 	{INST_OP_VARW,		sizeof(script_op_varw_t)},
-	{0x27,		4},
 	{0x28,		1},
 	{INST_CAM_SET,	sizeof(script_cam_set_t)},
 	{0x2a,		1},
@@ -1481,44 +1490,91 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				sprintf(tmpBuf, "var%02x.W = var%02x.w\n", inst->copy_varw.dst, inst->copy_varw.src);
 				strcat(strBuf, tmpBuf);
 				break;
+			case INST_OP_VARW_IMM:
+				{
+					switch(inst->op_varw_imm.operation) {
+						case 0:
+							sprintf(tmpBuf, "var%02x.W += %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 1:
+							sprintf(tmpBuf, "var%02x.W -= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 2:
+							sprintf(tmpBuf, "var%02x.W *= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 3:
+							sprintf(tmpBuf, "var%02x.W /= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 4:
+							sprintf(tmpBuf, "var%02x.W %%= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 5:
+							sprintf(tmpBuf, "var%02x.W |= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 6:
+							sprintf(tmpBuf, "var%02x.W &= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 7:
+							sprintf(tmpBuf, "var%02x.W ^= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 8:
+							sprintf(tmpBuf, "var%02x.W = !var%02x.W\n", inst->op_varw_imm.varw, inst->op_varw_imm.varw);
+							break;
+						case 9:
+							sprintf(tmpBuf, "var%02x.W >>= %d /*logical */ \n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 10:
+							sprintf(tmpBuf, "var%02x.W <<= %d /*logical */\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						case 11:
+							sprintf(tmpBuf, "var%02x.W >>= %d /* arithmetical */\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							break;
+						default:
+							sprintf(tmpBuf, "# Invalid operation 0x%02x\n", inst->op_varw_imm.operation);
+							break;
+					}
+
+					strcat(strBuf, tmpBuf);
+				}
+				break;
 			case INST_OP_VARW:
 				{
 					switch(inst->op_varw.operation) {
 						case 0:
-							sprintf(tmpBuf, "var%02x.W += %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W += var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 1:
-							sprintf(tmpBuf, "var%02x.W -= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W -= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 2:
-							sprintf(tmpBuf, "var%02x.W *= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W *= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 3:
-							sprintf(tmpBuf, "var%02x.W /= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W /= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 4:
-							sprintf(tmpBuf, "var%02x.W %%= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W %%= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 5:
-							sprintf(tmpBuf, "var%02x.W |= 0x%04x\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W |= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 6:
-							sprintf(tmpBuf, "var%02x.W &= 0x%04x\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W &= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 7:
-							sprintf(tmpBuf, "var%02x.W ^= 0x%04x\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W ^= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 8:
 							sprintf(tmpBuf, "var%02x.W = !var%02x.W\n", inst->op_varw.varw, inst->op_varw.varw);
 							break;
 						case 9:
-							sprintf(tmpBuf, "var%02x.W >>= %d /*logical */ \n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W >>= var%02x.W /*logical */ \n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 10:
-							sprintf(tmpBuf, "var%02x.W <<= %d /*logical */\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W <<= var%02x.W /*logical */\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 11:
-							sprintf(tmpBuf, "var%02x.W >>= %d /* arithmetical */\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							sprintf(tmpBuf, "var%02x.W >>= var%02x.W /* arithmetical */\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						default:
 							sprintf(tmpBuf, "# Invalid operation 0x%02x\n", inst->op_varw.operation);
