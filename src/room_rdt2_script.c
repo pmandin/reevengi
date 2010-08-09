@@ -59,6 +59,9 @@
 #define INST_BIT_TEST	0x21
 #define INST_BIT_CHG	0x22
 #define INST_EVAL_CMP	0x23
+#define INST_SET_VARW	0x24
+#define INST_COPY_VARW	0x25
+#define INST_OP_VARW	0x26
 #define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
 #define INST_ESPR_SET	0x2c
@@ -407,7 +410,7 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown;
+	Uint8 varw;
 	Uint16 block_length;
 } script_switch_t;
 
@@ -417,6 +420,26 @@ typedef struct {
 	Uint16 block_length;
 	Uint16 value;
 } script_case_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dst;
+	Uint8 src;
+} script_copy_varw_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 varw;
+	Uint16 value;
+} script_set_varw_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint8 operation; /* add,sub,mul,div, mod,or,and,xor, not,lsl,lsr,asr */
+	Uint8 varw;
+	Uint16 value;
+} script_op_varw_t;
 
 typedef union {
 	Uint8 opcode;
@@ -460,6 +483,9 @@ typedef union {
 	script_light_pos_cam_set_t	light_pos_cam_set;
 	script_light3_pos_cam_set_t	light3_pos_cam_set;
 	script_light_color_cam_set_t	light_color_cam_set;
+	script_copy_varw_t	copy_varw;
+	script_set_varw_t	set_varw;
+	script_op_varw_t	op_varw;
 } script_inst_t;
 
 typedef struct {
@@ -542,9 +568,9 @@ static const script_inst_len_t inst_length[]={
 	{INST_BIT_TEST,	sizeof(script_bittest_t)},
 	{INST_BIT_CHG,	sizeof(script_bitchg_t)},
 	{INST_EVAL_CMP,	6},
-	{0x24,		4},
-	{0x25,		3},
-	{0x26,		6},
+	{INST_SET_VARW,		sizeof(script_set_varw_t)},
+	{INST_COPY_VARW,	sizeof(script_copy_varw_t)},
+	{INST_OP_VARW,		sizeof(script_op_varw_t)},
 	{0x27,		4},
 	{0x28,		1},
 	{INST_CAM_SET,	sizeof(script_cam_set_t)},
@@ -676,7 +702,7 @@ static void scriptDisasmInit(void);
 
 static void scriptDumpAll(room_t *this, int num_script);
 static int scriptDumpGetInstLen(Uint8 opcode);
-static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int indent);
+static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
 
 /*--- Functions ---*/
 
@@ -1316,7 +1342,7 @@ static void scriptDumpAll(room_t *this, int num_script)
 		}
 
 		logMsg(1, "BEGIN_FUNC func%02x\n", i);
-		scriptDumpBlock(startInst, offset+func_offset, func_len, 1);
+		scriptDumpBlock(this, startInst, offset+func_offset, func_len, 1);
 		logMsg(1, "END_FUNC\n\n");
 	}
 }
@@ -1334,7 +1360,7 @@ static int scriptDumpGetInstLen(Uint8 opcode)
 	return 0;
 }
 
-static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int indent)
+static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent)
 {
 	while (length>0) {
 		script_inst_t *block_ptr = NULL;
@@ -1407,7 +1433,7 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 			/* 0x10-0x1f */
 
 			case INST_BEGIN_SWITCH:
-				sprintf(tmpBuf, "BEGIN_SWITCH #0x%02x\n", inst->i_switch.unknown);
+				sprintf(tmpBuf, "BEGIN_SWITCH var%02x\n", inst->i_switch.varw);
 				strcat(strBuf, tmpBuf);
 				block_len = SDL_SwapLE16(inst->i_switch.block_length)+2;
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_switch_t)]);
@@ -1447,6 +1473,61 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 					inst->bitchg.bit_number);
 				strcat(strBuf, tmpBuf);
 				break;
+			case INST_SET_VARW:
+				sprintf(tmpBuf, "var%02x.W = %d\n", inst->set_varw.varw, (Sint16) SDL_SwapLE16(inst->set_varw.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_COPY_VARW:
+				sprintf(tmpBuf, "var%02x.W = var%02x.w\n", inst->copy_varw.dst, inst->copy_varw.src);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_OP_VARW:
+				{
+					switch(inst->op_varw.operation) {
+						case 0:
+							sprintf(tmpBuf, "var%02x.W += %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 1:
+							sprintf(tmpBuf, "var%02x.W -= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 2:
+							sprintf(tmpBuf, "var%02x.W *= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 3:
+							sprintf(tmpBuf, "var%02x.W /= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 4:
+							sprintf(tmpBuf, "var%02x.W %%= %d\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 5:
+							sprintf(tmpBuf, "var%02x.W |= 0x%04x\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 6:
+							sprintf(tmpBuf, "var%02x.W &= 0x%04x\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 7:
+							sprintf(tmpBuf, "var%02x.W ^= 0x%04x\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 8:
+							sprintf(tmpBuf, "var%02x.W = !var%02x.W\n", inst->op_varw.varw, inst->op_varw.varw);
+							break;
+						case 9:
+							sprintf(tmpBuf, "var%02x.W >>= %d /*logical */ \n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 10:
+							sprintf(tmpBuf, "var%02x.W <<= %d /*logical */\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						case 11:
+							sprintf(tmpBuf, "var%02x.W >>= %d /* arithmetical */\n", inst->op_varw.varw, (Sint16) (SDL_SwapLE16(inst->op_varw.value)));
+							break;
+						default:
+							sprintf(tmpBuf, "# Invalid operation 0x%02x\n", inst->op_varw.operation);
+							break;
+					}
+
+					strcat(strBuf, tmpBuf);
+				}
+				break;
 			case INST_CAM_SET:
 				sprintf(tmpBuf, "CAM_SET #0x%02x\n", inst->cam_set.id);
 				strcat(strBuf, tmpBuf);
@@ -1457,13 +1538,13 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 
 					sprintf(tmpBuf, "PRINT_TEXT #0x%02x\n", inst->print_text.id);
 					strcat(strBuf, tmpBuf);
-					/*logMsg(1, "%s", strBuf);*/
+					logMsg(1, "0x%08x: %s", offset, strBuf);
 
-					/*room_rdt2_getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
-					logMsg(1, "#\tL0\t%s\n", tmpBuf);*/
+					room_rdt2_getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+					logMsg(1, "#\tL0\t%s\n", tmpBuf);
 
-					/*room_rdt2_getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
-					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);*/
+					room_rdt2_getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
 				}
 				break;
 			case INST_ESPR_SET:
@@ -1671,7 +1752,7 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 		if (block_ptr) {
 			/*logMsg(1, " block 0x%04x inst 0x%04x\n", block_len, inst_len);*/
 			int next_len = (inst->opcode == INST_CASE ? block_len : block_len - inst_len);
-			scriptDumpBlock((script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
+			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 			inst_len = (inst->opcode == INST_CASE ? block_len+inst_len : block_len);
 		}
 
