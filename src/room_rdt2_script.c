@@ -51,7 +51,8 @@
 #define INST_NOP1F	0x1f
 
 #define INST_NOP20	0x20
-#define INST_EVAL_CK	0x21
+#define INST_BIT_TEST	0x21
+#define INST_BIT_CHG	0x22
 #define INST_EVAL_CMP	0x23
 #define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
@@ -365,6 +366,35 @@ typedef struct {
 	Uint8 r,g,b;
 } script_light_color_cam_set_t;
 
+/* 21 00 19 00: skip if player=claire */
+/* 21 06 23 00: skip if entity 23 killed */
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 num_array;
+	Uint16 bit_number;	
+} script_bittest_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 num_array;
+	Uint8 bit_number;
+	Uint8 op_chg;
+} script_bitchg_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 anim[4];
+} script_inst4c_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy0;
+	Uint8 anim[4];	/* Anim ID, same as inst 4c */
+	Uint8 dummy1;
+	Uint8 w,h;	/* Width,height of animation */
+} script_inst3a_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -374,6 +404,8 @@ typedef union {
 	script_sleepn_t		sleepn;
 	script_loop_t		loop;
 	script_func_t		func;
+	script_bittest_t	bittest;
+	script_bitchg_t		bitchg;
 	script_door_set_t	door_set;
 	script_espr_set_t	espr_set;
 	script_print_text_t	print_text;
@@ -481,8 +513,8 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x20-0x2f */
 	{INST_NOP20,	1},
-	{INST_EVAL_CK,	4},
-	{0x22,		4},
+	{INST_BIT_TEST,	sizeof(script_bittest_t)},
+	{INST_BIT_CHG,	sizeof(script_bitchg_t)},
 	{INST_EVAL_CMP,	6},
 	{0x24,		4},
 	{0x25,		3},
@@ -909,13 +941,23 @@ static void scriptPrintInst(room_t *this)
 
 		/* 0x20-0x2f */
 
-		case INST_EVAL_CK:
+		case INST_BIT_TEST:
 			reindent(indentLevel);
-			strcat(strBuf, "EXIT_IF CK xxx\n");
+			sprintf(tmpBuf, "BIT_TEST array #0x%02x, bit #0x%04x\n", inst->bittest.num_array, inst->bittest.bit_number);
+			strcat(strBuf, tmpBuf);
 			break;
-		case INST_EVAL_CMP:
+		case INST_BIT_CHG:
 			reindent(indentLevel);
-			strcat(strBuf, "EXIT_IF_CMP xxx\n");
+			sprintf(tmpBuf, "BIT_CHG %s array #0x%02x, bit #0x%04x\n",
+				(inst->bitchg.op_chg == 0 ? "CLEAR" :
+					(inst->bitchg.op_chg == 1 ? "SET" :
+						(inst->bitchg.op_chg == 7 ? "CHG" :
+						"INVALID")
+					)
+				),
+				inst->bitchg.num_array,
+				inst->bitchg.bit_number);
+			strcat(strBuf, tmpBuf);
 			break;
 		case INST_CAM_SET:
 			reindent(indentLevel);
