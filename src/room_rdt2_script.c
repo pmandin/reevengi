@@ -42,11 +42,15 @@
 #define INST_IF		0x06
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
-#define INST_SLEEP_N	0x0a
+#define INST_SLEEP_INIT	0x09	/* 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN */
+#define INST_SLEEP_LOOP	0x0a
 #define INST_LOOP	0x0d
 
-#define INST_NOP14	0x14	/* switch ? 0x1a: end switch ? */
+#define INST_BEGIN_SWITCH	0x13
+#define INST_CASE	0x14
+#define INST_END_SWITCH	0x16
 #define INST_FUNC	0x18
+#define INST_BREAK	0x1a
 #define INST_NOP1C	0x1c
 #define INST_NOP1E	0x1e
 #define INST_NOP1F	0x1f
@@ -148,9 +152,14 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 delay;
-	Uint8 unknown;
-} script_sleepn_t;
+	Uint8 dummy;
+	Uint16 count;
+} script_sleep_init_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 count[2];
+} script_sleep_loop_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -396,14 +405,30 @@ typedef struct {
 	Uint8 w,h;	/* Width,height of animation */
 } script_inst3a_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown;
+	Uint16 block_length;
+} script_switch_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 block_length;
+	Uint16 value;
+} script_case_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
 	script_evtexec_t	evtexec;
 	script_if_t		i_if;
 	script_else_t		i_else;
-	script_sleepn_t		sleepn;
+	script_sleep_init_t	sleep_init;
+	script_sleep_loop_t	sleep_loop;
 	script_loop_t		loop;
+	script_switch_t		i_switch;
+	script_case_t		i_case;
 	script_func_t		func;
 	script_bittest_t	bittest;
 	script_bitchg_t		bitchg;
@@ -487,8 +512,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_IF,	sizeof(script_if_t)},
 	{INST_ELSE,	sizeof(script_else_t)},
 	{INST_END_IF,	2},
-	{0x09,		1},
-	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
+	{INST_SLEEP_INIT,	1},
+	{INST_SLEEP_LOOP,	sizeof(script_sleep_loop_t)},
 	{0x0b,		1},
 	{0x0c,		1},
 	{INST_LOOP,	sizeof(script_loop_t)},
@@ -499,13 +524,13 @@ static const script_inst_len_t inst_length[]={
 	{0x10,		2},
 	{0x11,		4},
 	{0x12,		2},
-	{0x13,		4},
-	{INST_NOP14,	6},
-	{0x16,		2},
+	{INST_BEGIN_SWITCH,	sizeof(script_switch_t)},
+	{INST_CASE,	sizeof(script_case_t)},
+	{INST_END_SWITCH,	2},
 	{0x17,		6},
 	{INST_FUNC,	sizeof(script_func_t)},
 	/*{0x19,		2},*/
-	{0x1a,		2},
+	{INST_BREAK,	2},
 	{0x1b,		6},
 	{INST_NOP1C,	1},
 	{0x1d,		4},
@@ -709,7 +734,7 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 
 	scriptDisasmInit();
 
-	scriptDumpAll(this, num_script);
+	/*scriptDumpAll(this, num_script);*/
 
 	return this->cur_inst;
 }
@@ -863,7 +888,7 @@ static void scriptPrintInst(room_t *this)
 {
 	script_inst_t *inst;
 
-	return;
+	/*return;*/
 
 	if (!this) {
 		return;
@@ -886,7 +911,6 @@ static void scriptPrintInst(room_t *this)
 		/* Nops */
 
 		case INST_NOP:
-		case INST_NOP14:
 		case INST_NOP1C:
 		case INST_NOP1E:
 		case INST_NOP1F:
@@ -942,10 +966,14 @@ static void scriptPrintInst(room_t *this)
 			reindent(--indentLevel);
 			strcat(strBuf, "END_IF\n");
 			break;
-		case INST_SLEEP_N:
+		case INST_SLEEP_INIT:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
+			sprintf(tmpBuf, "sleep_init #%d\n", SDL_SwapLE16(inst->sleep_init.count));
 			strcat(strBuf, tmpBuf);
+			break;
+		case INST_SLEEP_LOOP:
+			reindent(indentLevel);
+			strcat(strBuf, "sleep_loop\n");
 			break;
 		case INST_LOOP:
 			reindent(indentLevel);
@@ -1319,7 +1347,6 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 			/* Nops */
 
 			case INST_NOP:
-			case INST_NOP14:
 			case INST_NOP1C:
 			case INST_NOP1E:
 			case INST_NOP1F:
@@ -1367,20 +1394,39 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 			case INST_END_IF:
 				strcat(strBuf, "END_IF\n");
 				break;
-			case INST_SLEEP_N:
-				sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
-				strcat(strBuf, tmpBuf);
+			case INST_SLEEP_LOOP:
+				strcat(strBuf, "sleep_loop\n");
 				break;
 			case INST_LOOP:
 				sprintf(tmpBuf, "BEGIN_LOOP #%d\n", SDL_SwapLE16(inst->loop.count));
 				strcat(strBuf, tmpBuf);
+				block_len = SDL_SwapLE16(inst->loop.block_length);
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_loop_t)]);
 				break;
 
 			/* 0x10-0x1f */
 
+			case INST_BEGIN_SWITCH:
+				sprintf(tmpBuf, "BEGIN_SWITCH #0x%02x\n", inst->i_switch.unknown);
+				strcat(strBuf, tmpBuf);
+				block_len = SDL_SwapLE16(inst->i_switch.block_length);
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_switch_t)]);
+				break;
+			case INST_CASE:
+				sprintf(tmpBuf, "CASE 0x%04x\n", SDL_SwapLE16(inst->i_case.value));
+				strcat(strBuf, tmpBuf);
+				block_len = SDL_SwapLE16(inst->i_case.block_length);
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_case_t)]);
+				break;
+			case INST_END_SWITCH:
+				strcat(strBuf, "END_SWITCH\n");
+				break;
 			case INST_FUNC:
 				sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
 				strcat(strBuf, tmpBuf);
+				break;
+			case INST_BREAK:
+				strcat(strBuf, "BREAK\n");
 				break;
 
 			/* 0x20-0x2f */
