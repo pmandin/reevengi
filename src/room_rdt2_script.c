@@ -734,7 +734,7 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 
 	scriptDisasmInit();
 
-	/*scriptDumpAll(this, num_script);*/
+	scriptDumpAll(this, num_script);
 
 	return this->cur_inst;
 }
@@ -888,7 +888,7 @@ static void scriptPrintInst(room_t *this)
 {
 	script_inst_t *inst;
 
-	/*return;*/
+	return;
 
 	if (!this) {
 		return;
@@ -1409,7 +1409,7 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 			case INST_BEGIN_SWITCH:
 				sprintf(tmpBuf, "BEGIN_SWITCH #0x%02x\n", inst->i_switch.unknown);
 				strcat(strBuf, tmpBuf);
-				block_len = SDL_SwapLE16(inst->i_switch.block_length);
+				block_len = SDL_SwapLE16(inst->i_switch.block_length)+2;
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_switch_t)]);
 				break;
 			case INST_CASE:
@@ -1670,8 +1670,9 @@ static void scriptDumpBlock(script_inst_t *inst, Uint32 offset, int length, int 
 		inst_len = scriptDumpGetInstLen(inst->opcode); 
 		if (block_ptr) {
 			/*logMsg(1, " block 0x%04x inst 0x%04x\n", block_len, inst_len);*/
-			scriptDumpBlock((script_inst_t *) block_ptr, offset+inst_len, block_len - inst_len, indent+1);
-			inst_len = block_len;
+			int next_len = (inst->opcode == INST_CASE ? block_len : block_len - inst_len);
+			scriptDumpBlock((script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
+			inst_len = (inst->opcode == INST_CASE ? block_len+inst_len : block_len);
 		}
 
 		if (inst_len==0) {
