@@ -53,6 +53,8 @@
 
 static Sint16 minx, maxx, minz, maxz;
 
+static Uint8 instUsage[256];
+
 /*--- Functions prototypes ---*/
 
 static void shutdown(room_t *this);
@@ -772,8 +774,12 @@ static void scriptDump(room_t *this, int num_script)
 	Uint8 *inst;
 	char strBuf[1024];
 
+	memset(instUsage, 0, sizeof(instUsage));
+
 	inst = this->scriptPrivFirstInst(this, num_script);
 	while (inst) {
+		++instUsage[inst[0]];
+
 		if (params.verbose>=2) {
 			int i, inst_len;
 			char tmpBuf[16];
@@ -796,6 +802,19 @@ static void scriptDump(room_t *this, int num_script)
 
 		this->scriptPrivPrintInst(this);
 		inst = scriptNextInst(this);
+	}
+
+	/* Print instruction usage */
+	if (params.verbose>=1) {
+		int i;
+
+		logMsg(1, "Instruction usage:\n");
+		for (i=0; i<256; i++) {
+			if (instUsage[i]>0) {
+				sprintf(strBuf, " 0x%02x: %d\n", i, instUsage[i]);
+				logMsg(1, strBuf);
+			}
+		}
 	}
 }
 
