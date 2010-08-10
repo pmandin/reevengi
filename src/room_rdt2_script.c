@@ -46,6 +46,7 @@
 #define INST_SLEEP_LOOP	0x0a
 #define INST_LOOP	0x0d
 
+/*#define INST_EXIT_LOOP	0x12*/
 #define INST_BEGIN_SWITCH	0x13
 #define INST_CASE	0x14
 #define INST_END_SWITCH	0x16
@@ -59,7 +60,7 @@
 #define INST_NOP20	0x20
 #define INST_BIT_TEST	0x21
 #define INST_BIT_CHG	0x22
-#define INST_EVAL_CMP	0x23
+#define INST_CMP_VARW	0x23
 #define INST_SET_VARW	0x24
 #define INST_COPY_VARW	0x25
 #define INST_OP_VARW_IMM	0x26
@@ -387,7 +388,8 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 num_array;
-	Uint16 bit_number;	
+	Uint8 bit_number;
+	Uint8 value;
 } script_bittest_t;
 
 typedef struct {
@@ -457,6 +459,14 @@ typedef struct {
 	Uint8 flag; /* 0 byte, 1 word */
 } script_chg_script_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint8 varw;
+	Uint8 compare;
+	Uint16 value;
+} script_cmp_varw_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -504,6 +514,7 @@ typedef union {
 	script_op_varw_imm_t	op_varw_imm;
 	script_op_varw_t	op_varw;
 	script_chg_script_t	chg_script;
+	script_cmp_varw_t	cmp_varw;
 } script_inst_t;
 
 typedef struct {
@@ -567,7 +578,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x10-0x1f */
 	{0x10,		2},
 	{0x11,		4},
-	{0x12,		2},
+	{0x12,	2},
 	{INST_BEGIN_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
 	{INST_END_SWITCH,	2},
@@ -585,7 +596,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_NOP20,	1},
 	{INST_BIT_TEST,	sizeof(script_bittest_t)},
 	{INST_BIT_CHG,	sizeof(script_bitchg_t)},
-	{INST_EVAL_CMP,	6},
+	{INST_CMP_VARW,	sizeof(script_cmp_varw_t)},
 	{INST_SET_VARW,		sizeof(script_set_varw_t)},
 	{INST_COPY_VARW,	sizeof(script_copy_varw_t)},
 	{INST_OP_VARW_IMM,	sizeof(script_op_varw_imm_t)},
@@ -1454,6 +1465,9 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x10-0x1f */
 
+			/*case INST_EXIT_LOOP:
+				strcat(strBuf, "EXIT_LOOP\n");
+				break;*/
 			case INST_BEGIN_SWITCH:
 				sprintf(tmpBuf, "BEGIN_SWITCH var%02x\n", inst->i_switch.varw);
 				strcat(strBuf, tmpBuf);
@@ -1501,11 +1515,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* 0x20-0x2f */
 
 			case INST_BIT_TEST:
-				sprintf(tmpBuf, "BIT_TEST array #0x%02x, bit #0x%04x\n", inst->bittest.num_array, inst->bittest.bit_number);
+				sprintf(tmpBuf, "BIT_TEST array #0x%02x, bit #0x%02x = %d\n",
+					inst->bittest.num_array,
+					inst->bittest.bit_number,
+					inst->bittest.value);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_BIT_CHG:
-				sprintf(tmpBuf, "BIT_CHG %s array #0x%02x, bit #0x%04x\n",
+				sprintf(tmpBuf, "BIT_CHG %s array #0x%02x, bit #0x%02x\n",
 					(inst->bitchg.op_chg == 0 ? "CLEAR" :
 						(inst->bitchg.op_chg == 1 ? "SET" :
 							(inst->bitchg.op_chg == 7 ? "CHG" :
@@ -1615,6 +1632,21 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 							break;
 					}
 
+					strcat(strBuf, tmpBuf);
+				}
+				break;
+			case INST_CMP_VARW:
+				{
+					int compare = inst->cmp_varw.compare;
+					if (compare>6) {
+						compare = 6;
+					}
+
+					reindent(indentLevel);
+					sprintf(tmpBuf, "CMP_VARW var%02x.W %s %d\n",
+						inst->cmp_varw.varw,
+						cmp_imm_name[compare],
+						(Sint16) SDL_SwapLE16(inst->cmp_varw.value));
 					strcat(strBuf, tmpBuf);
 				}
 				break;
