@@ -60,7 +60,7 @@
 #define INST_NOP20	0x20
 #define INST_BIT_TEST	0x21
 #define INST_BIT_CHG	0x22
-#define INST_CMP_VARW	0x23
+#define INST_CMP_VARW	0x23	/* var1a is current camera */
 #define INST_SET_VARW	0x24
 #define INST_COPY_VARW	0x25
 #define INST_OP_VARW_IMM	0x26
@@ -86,6 +86,7 @@
 #define INST_ACTIVATE_OBJECT	0x47
 #define INST_ITEM_SET	0x4e
 
+#define INST_SND_SET	0x51
 #define INST_SND_PLAY	0x59
 #define INST_ITEM_HAVE	0x5e
 
@@ -115,14 +116,17 @@
 #define ESPR_BOX	0x0a
 #define ESPR_FIRE	0x0b
 
-/* possible room objects: */
-/* inst2c: espr , fire can do damage */
-/* inst3b: door */
-/* inst4e: item */
-/* inst67: wall */
-/* inst68: ?, ptr+2 stored in object list, like others */
-/* inst69: ?, ptr+2 stored in object list, like others */
-/* inst8d: ?, ptr+2 stored in object list, like others */
+/* possible room objects:
+	inst2c: espr , fire can do damage
+	inst3b: door
+	inst4e: item
+	inst67: wall
+	inst68: ?, ptr+2 stored in object list, like others
+	inst69: ?, ptr+2 stored in object list, like others
+	inst8d: ?, ptr+2 stored in object list, like others
+	inst51	1-
+		22334455
+*/
 
 /*--- Types ---*/
 
@@ -185,7 +189,8 @@ typedef struct {
 	Uint8 type;	/* ptr to this stored in room object list */
 	Uint8 unknown0[3];
 	Sint16 x,y,w,h;
-	Uint16 unknown1[3];
+	Uint8 func;	/* Function to call when examining object, or 0xff */
+	Uint8 unknown1[5];
 } script_espr_set_t;
 
 typedef struct {
@@ -467,6 +472,11 @@ typedef struct {
 	Uint16 value;
 } script_cmp_varw_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown[5];
+} script_snd_set_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -515,6 +525,7 @@ typedef union {
 	script_op_varw_t	op_varw;
 	script_chg_script_t	chg_script;
 	script_cmp_varw_t	cmp_varw;
+	script_snd_set_t	snd_set;
 } script_inst_t;
 
 typedef struct {
@@ -648,7 +659,7 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x50-0x5f */
 	{0x50,		4},
-	{0x51,		6},
+	{INST_SND_SET,	sizeof(script_snd_set_t)},
 	{0x52,		6},
 	{0x53,		6},
 	{0x54,		22},
@@ -789,7 +800,7 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 
 	scriptDisasmInit();
 
-	scriptDumpAll(this, num_script);
+	/*scriptDumpAll(this, num_script);*/
 
 	return this->cur_inst;
 }
@@ -943,7 +954,7 @@ static void scriptPrintInst(room_t *this)
 {
 	script_inst_t *inst;
 
-	return;
+	/*return;*/
 
 	if (!this) {
 		return;
@@ -1670,7 +1681,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}
 				break;
 			case INST_ESPR_SET:
-				sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx\n", inst->espr_set.id);
+				sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx, function #0x%02x\n", inst->espr_set.id, inst->espr_set.func);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_INST2D_SET:
@@ -1678,7 +1689,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_SET_REG_MEM:
-				sprintf(tmpBuf, "SET_REG_MEM %d,%d\n",
+				sprintf(tmpBuf, "SET_ACTIVE_OBJECT #%d,#%d\n",
 					inst->set_reg_mem.component, inst->set_reg_mem.index);
 				strcat(strBuf, tmpBuf);
 				break;
@@ -1722,7 +1733,10 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_DOOR_SET:
-				sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
+				sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET %d,%d %dx%d\n",
+					inst->door_set.id,
+					(Sint16) SDL_SwapLE16(inst->door_set.x), (Sint16) SDL_SwapLE16(inst->door_set.y),
+					(Sint16) SDL_SwapLE16(inst->door_set.w), (Sint16) SDL_SwapLE16(inst->door_set.h));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_BCHG8:
@@ -1747,8 +1761,10 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* 0x40-0x4f */
 
 			case INST_EM_SET:
-				sprintf(tmpBuf, "ENTITY #0x%02x = EM_SET model 0x%02x, killed 0x%02x\n",
-					inst->em_set.id, inst->em_set.model, inst->em_set.killed);
+				sprintf(tmpBuf, "ENTITY #0x%02x = EM_SET model 0x%02x, killed 0x%02x, %d,%d,%d\n",
+					inst->em_set.id, inst->em_set.model, inst->em_set.killed,
+					(Sint16) SDL_SwapLE16(inst->em_set.x), (Sint16) SDL_SwapLE16(inst->em_set.y),
+					(Sint16) SDL_SwapLE16(inst->em_set.z));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_ACTIVATE_OBJECT:
@@ -1762,7 +1778,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						SDL_SwapLE16(inst->item_set.type),
 						SDL_SwapLE16(inst->item_set.amount));
 					strcat(strBuf, tmpBuf);
-					logMsg(1, "%s", strBuf);
+					logMsg(1, "0x%08x: %s", offset, strBuf);
 
 					if (inst->item_set.type < 64) {
 						sprintf(strBuf, "#\t%s\n", item_name[inst->item_set.type]);
@@ -1774,6 +1790,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x50-0x5f */
 
+			case INST_SND_SET:
+				sprintf(tmpBuf, "SND_SET %d,%d,%d,%d,%d\n", inst->snd_set.unknown[0], inst->snd_set.unknown[1],
+					inst->snd_set.unknown[2], inst->snd_set.unknown[3], inst->snd_set.unknown[4]);
+				strcat(strBuf, tmpBuf);
+				break;
 			case INST_SND_PLAY:
 				sprintf(tmpBuf, "SND_PLAY %d,%d\n", inst->snd_play.id, SDL_SwapLE16(inst->snd_play.value));
 				strcat(strBuf, tmpBuf);
@@ -1817,7 +1838,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				{
 					sprintf(tmpBuf, "ITEM_ADD %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
 					strcat(strBuf, tmpBuf);
-					logMsg(1, "%s", strBuf);
+					logMsg(1, "0x%08x: %s", offset, strBuf);
 
 					if (inst->item_add.id < 64) {
 						sprintf(strBuf, "#\t%s\n", item_name[inst->item_add.id]);
