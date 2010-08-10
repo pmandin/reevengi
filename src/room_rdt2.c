@@ -462,7 +462,7 @@ static void rdt2_initMasks(room_t *this, int num_camera)
 	rdt_camera_pos_t *cam_array;
 	rdt_mask_header_t *mask_hdr;
 	rdt_mask_offset_t *mask_offsets;
-	int num_offset;
+	int num_offset, count_offsets;
 	render_mask_t *rdr_mask;
 
 	if (num_camera>=this->num_cameras) {
@@ -491,7 +491,12 @@ static void rdt2_initMasks(room_t *this, int num_camera)
 	offset += sizeof(rdt_mask_header_t);
 
 	mask_offsets = (rdt_mask_offset_t *) &((Uint8 *) this->file)[offset];
-	offset += sizeof(rdt_mask_offset_t) * SDL_SwapLE16(mask_hdr->num_offset);
+	count_offsets = (Sint16) SDL_SwapLE16(mask_hdr->num_offset);
+	if (count_offsets < 0) {
+		return;
+	}
+
+	offset += sizeof(rdt_mask_offset_t) * count_offsets;
 
 	for (num_offset=0; num_offset<SDL_SwapLE16(mask_hdr->num_offset); num_offset++) {
 		int num_mask;
