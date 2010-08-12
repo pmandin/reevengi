@@ -70,7 +70,7 @@
 #define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
 #define INST_ESPR_SET	0x2c
-#define INST_INST2D_SET	0x2d
+#define INST_TRIGGER_SET	0x2d
 #define INST_SET_REG_MEM	0x2e
 #define INST_SET_REG_IMM	0x2f
 
@@ -86,6 +86,7 @@
 
 #define INST_EM_SET	0x44
 #define INST_ACTIVATE_OBJECT	0x47
+#define INST_CAMSWITCH_SWAP	0x4b
 #define INST_ITEM_SET	0x4e
 
 #define INST_SND_SET	0x51
@@ -191,8 +192,7 @@ typedef struct {
 	Uint8 type;	/* ptr to this stored in room object list */
 	Uint8 unknown0[3];
 	Sint16 x,y,w,h;
-	Uint8 func;	/* Function to call when examining object, or 0xff */
-	Uint8 unknown1[5];
+	Uint16 inst[3];	/* Instructions to execute. 0:examine 1:activate 2:? or 0xff */
 } script_espr_set_t;
 
 typedef struct {
@@ -299,7 +299,7 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 id;
 	Uint16 unknown[18];
-} script_inst2d_set_t;
+} script_trigger_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -504,6 +504,11 @@ typedef struct {
 	Sint16 rel_offset;
 } script_goto_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 cam[2];
+} script_camswitch_swap_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -531,7 +536,7 @@ typedef union {
 	script_item_set_t	item_set;
 	script_em_set_t		em_set;
 	script_wall_set_t	wall_set;
-	script_inst2d_set_t	inst2d_set;
+	script_trigger_set_t	trigger_set;
 	script_cam_set_t	cam_set;
 	script_set_var_t	set_var;
 	script_snd_play_t	snd_play;
@@ -556,6 +561,7 @@ typedef union {
 	script_inst46_t		inst46;
 	script_inst3a_t		inst3a;
 	script_goto_t		i_goto;
+	script_camswitch_swap_t	camswitch_swap;
 } script_inst_t;
 
 typedef struct {
@@ -647,7 +653,7 @@ static const script_inst_len_t inst_length[]={
 	{0x2a,		1},
 	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
 	{INST_ESPR_SET,		sizeof(script_espr_set_t)},
-	{INST_INST2D_SET,	sizeof(script_inst2d_set_t)},
+	{INST_TRIGGER_SET,	sizeof(script_trigger_set_t)},
 	{INST_SET_REG_MEM,	sizeof(script_setregmem_t)},
 	{INST_SET_REG_IMM,	sizeof(script_setregimm_t)},
 
@@ -681,7 +687,7 @@ static const script_inst_len_t inst_length[]={
 	{0x48,		16},
 	{0x49,		8},
 	{0x4a,		2},
-	{0x4b,		3},
+	{INST_CAMSWITCH_SWAP,	sizeof(script_camswitch_swap_t)},
 	{0x4c,		5},
 	{0x4d,		22},
 	{INST_ITEM_SET,	sizeof(script_item_set_t)},
@@ -1135,9 +1141,9 @@ static void scriptPrintInst(room_t *this)
 			sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx\n", inst->espr_set.id);
 			strcat(strBuf, tmpBuf);
 			break;
-		case INST_INST2D_SET:
+		case INST_TRIGGER_SET:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "OBJECT #0x%02x = ???_SET xxx\n", inst->inst2d_set.id);
+			sprintf(tmpBuf, "OBJECT #0x%02x = TRIGGER_SET xxx\n", inst->trigger_set.id);
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_SET_REG_MEM:
@@ -1425,7 +1431,7 @@ static void scriptDumpAll(room_t *this, int num_script)
 		}
 
 		logMsg(1, "BEGIN_FUNC func%02x\n", i);
-		scriptDumpBlock(this, startInst, offset+func_offset, func_len, 1);
+		scriptDumpBlock(this, startInst, func_offset, func_len, 1);
 		logMsg(1, "END_FUNC\n\n");
 	}
 }
@@ -1738,11 +1744,24 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}
 				break;
 			case INST_ESPR_SET:
-				sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx, function #0x%02x\n", inst->espr_set.id, inst->espr_set.func);
-				strcat(strBuf, tmpBuf);
+				{
+					char myTmpBuf[3][32];
+					int i;
+
+					for (i=0; i<3; i++) {
+						sprintf(myTmpBuf[i], "0x%04x", SDL_SwapLE16(inst->espr_set.inst[i]));
+						if ((SDL_SwapLE16(inst->espr_set.inst[i]) & 0xff) == 0x18) {
+							sprintf(myTmpBuf[i], "function 0x%02x", (SDL_SwapLE16(inst->espr_set.inst[i])>>8) & 0xff);
+						}	
+					}
+
+					sprintf(tmpBuf, "OBJECT #0x%02x = ESPR_SET xxx, examine %s, activate %s, ??? %s\n",
+						inst->espr_set.id, myTmpBuf[0], myTmpBuf[1], myTmpBuf[2]);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
-			case INST_INST2D_SET:
-				sprintf(tmpBuf, "OBJECT #0x%02x = ???_SET xxx\n", inst->inst2d_set.id);
+			case INST_TRIGGER_SET:
+				sprintf(tmpBuf, "TRIGGER #0x%02x = TRIGGER_SET xxx\n", inst->trigger_set.id);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_SET_REG_MEM:
@@ -1834,14 +1853,28 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 			case 0x46:
-				sprintf(tmpBuf, "INST46 OBJECT #0x%02x, %d,%d 0x%04x,0x%04x,0x%04x\n",
-					inst->inst46.id, inst->inst46.unknown0[0], inst->inst46.unknown0[1],
-					SDL_SwapLE16(inst->inst46.unknown1[0]), SDL_SwapLE16(inst->inst46.unknown1[1]),
-					SDL_SwapLE16(inst->inst46.unknown1[2]));
-				strcat(strBuf, tmpBuf);
+				{
+					char myTmpBuf[32];
+
+					sprintf(myTmpBuf, "0x%04x", SDL_SwapLE16(inst->inst46.unknown1[1]));
+					if ((SDL_SwapLE16(inst->inst46.unknown1[1]) & 0xff) == 0x18) {
+						sprintf(myTmpBuf, "function 0x%02x", (SDL_SwapLE16(inst->inst46.unknown1[1])>>8) & 0xff);
+					}
+
+					sprintf(tmpBuf, "TRIGGER_SET_ACTION TRIGGER #0x%02x, %d,%d 0x%04x,%s,0x%04x\n",
+						inst->inst46.id, inst->inst46.unknown0[0], inst->inst46.unknown0[1],
+						SDL_SwapLE16(inst->inst46.unknown1[0]), myTmpBuf,
+						SDL_SwapLE16(inst->inst46.unknown1[2]));
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_ACTIVATE_OBJECT:
 				sprintf(tmpBuf, "ACTIVATE_OBJECT #0x%02x\n", inst->set_cur_obj.id);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_CAMSWITCH_SWAP:
+				sprintf(tmpBuf, "CAMSWITCH_SWAP %d,%d\n",
+					inst->camswitch_swap.cam[0], inst->camswitch_swap.cam[1]);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_ITEM_SET:
@@ -1967,9 +2000,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		inst_len = scriptDumpGetInstLen(inst->opcode); 
 		if (block_ptr) {
 			/*logMsg(1, " block 0x%04x inst 0x%04x\n", block_len, inst_len);*/
-			int next_len = (inst->opcode == INST_CASE ? block_len : block_len - inst_len);
+			int next_len = block_len - inst_len;
+			if (inst->opcode == INST_CASE) next_len = block_len;
+			if (inst->opcode == INST_BEGIN_LOOP) next_len = block_len - 2;
+
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
-			inst_len = (inst->opcode == INST_CASE ? block_len+inst_len : block_len);
+
+			inst_len += next_len;
 		}
 
 		if (inst_len==0) {
