@@ -805,14 +805,14 @@ static void scriptDump(room_t *this, int num_script)
 	}
 
 	/* Print instruction usage */
-	if (params.verbose>=1) {
+	if (params.verbose>=2) {
 		int i;
 
-		logMsg(1, "Instruction usage:\n");
+		logMsg(2, "Instruction usage:\n");
 		for (i=0; i<256; i++) {
 			if (instUsage[i]>0) {
 				sprintf(strBuf, " 0x%02x: %d\n", i, instUsage[i]);
-				logMsg(1, strBuf);
+				logMsg(2, strBuf);
 			}
 		}
 	}
