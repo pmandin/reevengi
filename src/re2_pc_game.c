@@ -145,6 +145,9 @@ void re2pcgame_init(state_t *game_state)
 			if (state_game_file_exists("PL0/RDF/ROOM1000.RDT")) {
 				game_lang = 'F';
 			}
+			if (state_game_file_exists("PL0/RDT/ROOM1000.RDT")) {
+				game_lang = 'T';
+			}
 			break;
 		case GAME_RE2_PC_GAME_CLAIRE:
 			game_state->movies_list = (char **) re2pcgame_claire_movies;
@@ -157,6 +160,9 @@ void re2pcgame_init(state_t *game_state)
 			}
 			if (state_game_file_exists("PL1/RDF/ROOM1001.RDT")) {
 				game_lang = 'F';
+			}
+			if (state_game_file_exists("PL1/RDT/ROOM1001.RDT")) {
+				game_lang = 'T';
 			}
 			break;
 	}
