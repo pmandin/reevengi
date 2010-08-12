@@ -71,7 +71,7 @@
 #define INST_PRINT_TEXT	0x2b
 #define INST_ESPR_SET	0x2c
 #define INST_TRIGGER_SET	0x2d
-#define INST_SET_REG_MEM	0x2e
+#define INST_SET_REG_MEM	0x2e	/* 0x2e 01 00 : reenable control+animation in room1010 */
 #define INST_SET_REG_IMM	0x2f
 
 #define INST_SET_REG_TMP	0x30
@@ -417,6 +417,7 @@ typedef struct {
 	Uint8 anim[4];	/* Anim ID, same as inst 4c */
 	Uint8 dummy1;
 	Uint8 w,h;	/* Width,height of animation */
+	Uint8 unknown[7];
 } script_inst3a_t;
 
 typedef struct {
@@ -628,6 +629,7 @@ static const script_inst_len_t inst_length[]={
 	{0x12,	2},
 	{INST_BEGIN_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
+	{0x15,		2},
 	{INST_END_SWITCH,	2},
 	{INST_GOTO,	sizeof(script_goto_t)},
 	{INST_FUNC,	sizeof(script_func_t)},
