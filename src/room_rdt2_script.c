@@ -44,12 +44,14 @@
 #define INST_END_IF	0x08
 #define INST_SLEEP_INIT	0x09	/* 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN */
 #define INST_SLEEP_LOOP	0x0a
-#define INST_LOOP	0x0d
+#define INST_BEGIN_LOOP	0x0d
+#define INST_END_LOOP	0x0e
 
 /*#define INST_EXIT_LOOP	0x12*/
 #define INST_BEGIN_SWITCH	0x13
 #define INST_CASE	0x14
 #define INST_END_SWITCH	0x16
+#define INST_GOTO	0x17
 #define INST_FUNC	0x18
 #define INST_BREAK	0x1a
 #define INST_NOP1C	0x1c
@@ -74,9 +76,9 @@
 
 #define INST_SET_REG_TMP	0x30
 #define INST_ADD_REG	0x31
-#define INST_SET_REG2	0x32
+#define INST_EM_SET_POS	0x32
 #define INST_SET_REG3	0x33
-#define INST_SET_VAR	0x34
+#define INST_EM_SET_VAR	0x34
 #define INST_CAM_CHG	0x37
 #define INST_DOOR_SET	0x3b
 #define INST_BCHG8	0x3c
@@ -477,6 +479,31 @@ typedef struct {
 	Uint8 unknown[5];
 } script_snd_set_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint8 unknown0[2];
+	Uint16 unknown1[3];	/* instructions to execute? 3*2 or 1*6 ? */
+} script_inst46_t;
+
+/* inst 3a,4c
+0x0d 0x00 0x00 0x00: autre flamme, crash
+0x0e 0x00 0x00 0x00: grande flamme
+0x04 0x12 0x00 0x00: fumee
+*/
+
+/*typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 unknown[7];
+} script_inst3a_t;*/
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown[3];
+	Sint16 rel_offset;
+} script_goto_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -526,6 +553,9 @@ typedef union {
 	script_chg_script_t	chg_script;
 	script_cmp_varw_t	cmp_varw;
 	script_snd_set_t	snd_set;
+	script_inst46_t		inst46;
+	script_inst3a_t		inst3a;
+	script_goto_t		i_goto;
 } script_inst_t;
 
 typedef struct {
@@ -582,8 +612,8 @@ static const script_inst_len_t inst_length[]={
 	{INST_SLEEP_LOOP,	sizeof(script_sleep_loop_t)},
 	{0x0b,		1},
 	{0x0c,		1},
-	{INST_LOOP,	sizeof(script_loop_t)},
-	{0x0e,		2},
+	{INST_BEGIN_LOOP,	sizeof(script_loop_t)},
+	{INST_END_LOOP,	2},
 	{0x0f,		2},
 
 	/* 0x10-0x1f */
@@ -593,7 +623,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_BEGIN_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
 	{INST_END_SWITCH,	2},
-	{0x17,		6},
+	{INST_GOTO,	sizeof(script_goto_t)},
 	{INST_FUNC,	sizeof(script_func_t)},
 	/*{0x19,		2},*/
 	{INST_BREAK,	2},
@@ -624,15 +654,15 @@ static const script_inst_len_t inst_length[]={
 	/* 0x30-0x3f */
 	{INST_SET_REG_TMP,	1},
 	{INST_ADD_REG,		1},
-	{INST_SET_REG2,		sizeof(script_setreg3w_t)},
+	{INST_EM_SET_POS,	sizeof(script_setreg3w_t)},
 	{INST_SET_REG3,		sizeof(script_setreg3w_t)},
-	{INST_SET_VAR,		sizeof(script_set_var_t)},
+	{INST_EM_SET_VAR,	sizeof(script_set_var_t)},
 	{0x35,		3},
 	{0x36,		12},
 	{INST_CAM_CHG,	sizeof(script_cam_chg_t)},
 	{0x38,		3},
 	{0x39,		8},
-	{0x3a,		16},
+	{0x3a,		sizeof(script_inst3a_t)},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{INST_BCHG8,	sizeof(script_bchg8_t)},
 	{0x3d,		3},
@@ -646,7 +676,7 @@ static const script_inst_len_t inst_length[]={
 	{0x43,		4},
 	{INST_EM_SET,	sizeof(script_em_set_t)},
 	{0x45,		5},
-	{0x46,		10},
+	{0x46,		sizeof(script_inst46_t)},
 	{INST_ACTIVATE_OBJECT,	sizeof(script_set_cur_obj_t)},
 	{0x48,		16},
 	{0x49,		8},
@@ -800,7 +830,7 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 
 	scriptDisasmInit();
 
-	/*scriptDumpAll(this, num_script);*/
+	scriptDumpAll(this, num_script);
 
 	return this->cur_inst;
 }
@@ -954,7 +984,7 @@ static void scriptPrintInst(room_t *this)
 {
 	script_inst_t *inst;
 
-	/*return;*/
+	return;
 
 	if (!this) {
 		return;
@@ -1034,17 +1064,21 @@ static void scriptPrintInst(room_t *this)
 			break;
 		case INST_SLEEP_INIT:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "sleep_init #%d\n", SDL_SwapLE16(inst->sleep_init.count));
+			sprintf(tmpBuf, "SLEEP_INIT #%d\n", SDL_SwapLE16(inst->sleep_init.count));
 			strcat(strBuf, tmpBuf);
 			break;
 		case INST_SLEEP_LOOP:
 			reindent(indentLevel);
-			strcat(strBuf, "sleep_loop\n");
+			strcat(strBuf, "SLEEP_LOOP\n");
 			break;
-		case INST_LOOP:
+		case INST_BEGIN_LOOP:
 			reindent(indentLevel);
 			sprintf(tmpBuf, "BEGIN_LOOP #%d\n", SDL_SwapLE16(inst->loop.count));
 			strcat(strBuf, tmpBuf);
+			break;
+		case INST_END_LOOP:
+			reindent(indentLevel);
+			strcat(strBuf, "END_LOOP\n");
 			break;
 
 		/* 0x10-0x1f */
@@ -1129,9 +1163,9 @@ static void scriptPrintInst(room_t *this)
 			reindent(indentLevel);
 			strcat(strBuf, "ADD_REG\n");
 			break;
-		case INST_SET_REG2:
+		case INST_EM_SET_POS:
 			reindent(indentLevel);
-			sprintf(tmpBuf, "SET_REG2 %d,%d,%d\n",
+			sprintf(tmpBuf, "EM_SET_POS %d,%d,%d\n",
 				SDL_SwapLE16(inst->set_reg_3w.value[0]),
 				SDL_SwapLE16(inst->set_reg_3w.value[1]),
 				SDL_SwapLE16(inst->set_reg_3w.value[2]));
@@ -1145,12 +1179,21 @@ static void scriptPrintInst(room_t *this)
 				SDL_SwapLE16(inst->set_reg_3w.value[2]));
 			strcat(strBuf, tmpBuf);
 			break;
-		case INST_SET_VAR:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "SET_VAR #0x%02x,%d\n",
-				inst->set_var.id,
-				SDL_SwapLE16(inst->set_var.value));
-			strcat(strBuf, tmpBuf);
+		case INST_EM_SET_VAR:
+			{
+				const char *varname = "";
+
+				if (inst->set_var.id == 0x0f) {
+					varname = "/* angle */";
+				}
+
+				reindent(indentLevel);
+				sprintf(tmpBuf, "EM_SET_VAR #0x%02x,%d %s\n",
+					inst->set_var.id,
+					SDL_SwapLE16(inst->set_var.value),
+					varname);
+				strcat(strBuf, tmpBuf);
+			}
 			break;
 		case INST_CAM_CHG:
 			reindent(indentLevel);
@@ -1451,6 +1494,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, "BEGIN_IF\n");
 				block_len = SDL_SwapLE16(inst->i_if.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_if_t)]);
+				{
+					script_inst_t *end_block_ptr = (script_inst_t *) (&((Uint8 *) inst)[block_len]);
+					if (end_block_ptr->opcode != INST_ELSE) {
+						block_len += 2;
+					}
+				}				
 				break;
 			case INST_ELSE:
 				strcat(strBuf, "ELSE_IF\n");
@@ -1461,17 +1510,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, "END_IF\n");
 				break;
 			case INST_SLEEP_INIT:
-				sprintf(tmpBuf, "sleep_init #%d\n", SDL_SwapLE16(inst->sleep_init.count));
+				sprintf(tmpBuf, "SLEEP_INIT #%d\n", SDL_SwapLE16(inst->sleep_init.count));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_SLEEP_LOOP:
-				strcat(strBuf, "sleep_loop\n");
+				strcat(strBuf, "SLEEP_LOOP\n");
 				break;
-			case INST_LOOP:
+			case INST_BEGIN_LOOP:
 				sprintf(tmpBuf, "BEGIN_LOOP #%d\n", SDL_SwapLE16(inst->loop.count));
 				strcat(strBuf, tmpBuf);
 				block_len = SDL_SwapLE16(inst->loop.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_loop_t)]);
+				break;
+			case INST_END_LOOP:
+				strcat(strBuf, "END_LOOP\n");
 				break;
 
 			/* 0x10-0x1f */
@@ -1493,6 +1545,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_END_SWITCH:
 				strcat(strBuf, "END_SWITCH\n");
+				break;
+			case INST_GOTO:
+				sprintf(tmpBuf, "GOTO [0x%08x]\n", offset + /*sizeof(script_goto_t) +*/
+					(Sint16) SDL_SwapLE16(inst->i_goto.rel_offset));
+				strcat(strBuf, tmpBuf);
 				break;
 			case INST_FUNC:
 				sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
@@ -1707,8 +1764,8 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_ADD_REG:
 				strcat(strBuf, "ADD_REG\n");
 				break;
-			case INST_SET_REG2:
-				sprintf(tmpBuf, "SET_REG2 %d,%d,%d\n",
+			case INST_EM_SET_POS:
+				sprintf(tmpBuf, "EM_SET_POS %d,%d,%d\n",
 					SDL_SwapLE16(inst->set_reg_3w.value[0]),
 					SDL_SwapLE16(inst->set_reg_3w.value[1]),
 					SDL_SwapLE16(inst->set_reg_3w.value[2]));
@@ -1721,11 +1778,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					SDL_SwapLE16(inst->set_reg_3w.value[2]));
 				strcat(strBuf, tmpBuf);
 				break;
-			case INST_SET_VAR:
-				sprintf(tmpBuf, "SET_VAR #0x%02x,%d\n",
-					inst->set_var.id,
-					SDL_SwapLE16(inst->set_var.value));
-				strcat(strBuf, tmpBuf);
+			case INST_EM_SET_VAR:
+				{
+					const char *varname = "";
+
+					if (inst->set_var.id == 0x0f) {
+						varname = "/* angle */";
+					}
+
+					sprintf(tmpBuf, "EM_SET_VAR #0x%02x,%d %s\n",
+						inst->set_var.id,
+						SDL_SwapLE16(inst->set_var.value),
+						varname);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_CAM_CHG:
 				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
@@ -1765,6 +1831,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					inst->em_set.id, inst->em_set.model, inst->em_set.killed,
 					(Sint16) SDL_SwapLE16(inst->em_set.x), (Sint16) SDL_SwapLE16(inst->em_set.y),
 					(Sint16) SDL_SwapLE16(inst->em_set.z));
+				strcat(strBuf, tmpBuf);
+				break;
+			case 0x46:
+				sprintf(tmpBuf, "INST46 OBJECT #0x%02x, %d,%d 0x%04x,0x%04x,0x%04x\n",
+					inst->inst46.id, inst->inst46.unknown0[0], inst->inst46.unknown0[1],
+					SDL_SwapLE16(inst->inst46.unknown1[0]), SDL_SwapLE16(inst->inst46.unknown1[1]),
+					SDL_SwapLE16(inst->inst46.unknown1[2]));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_ACTIVATE_OBJECT:
