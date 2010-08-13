@@ -47,7 +47,8 @@
 #define INST_BEGIN_LOOP	0x0d
 #define INST_END_LOOP	0x0e
 
-/*#define INST_EXIT_LOOP	0x12*/
+#define INST_DO		0x11
+#define INST_WHILE	0x12
 #define INST_BEGIN_SWITCH	0x13
 #define INST_CASE	0x14
 #define INST_END_SWITCH	0x16
@@ -510,6 +511,38 @@ typedef struct {
 	Uint8 cam[2];
 } script_camswitch_swap_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint8 unknown0[2];
+	Uint16 unknown1[2];
+} script_inst40_t;
+
+/*
+[    3.724] 0x00000420: 0x40 0x00 0x04 0x21 0xf4 0xc3 0x01 0xc9
+[    3.724] 0x0000042a: 0x40 0x00 0x09 0x21 0xd3 0xd5 0x92 0xc8
+[    3.725] 0x00000464: 0x40 0x00 0x09 0x21 0x07 0xc1 0x3f 0xce
+[    3.747] 0x00000a5c: 0x40 0x00 0x09 0x20 0x92 0xa3 0x0b 0xc8
+[    3.757] 0x00000d02: 0x40 0x00 0x04 0x21 0xdc 0xa4 0x3c 0xa6
+[    3.757] 0x00000d1c: 0x40 0x00 0x04 0x21 0x9c 0xc1 0xaa 0xbc
+[    3.757] 0x00000d2a: 0x40 0x00 0x04 0x21 0x6c 0xc2 0xb8 0xc5
+[    3.758] 0x00000d46: 0x40 0x00 0x09 0x20 0xdc 0xc1 0xc6 0xbe
+[    3.758] 0x00000d50: 0x40 0x00 0x07 0x20 0x97 0xc0 0x3d 0xcf
+[    3.759] 0x00000d8a: 0x40 0x00 0x09 0x21 0x00 0x00 0x00 0x00
+[    3.760] 0x00000e3e: 0x40 0x00 0x15 0x21 0xb8 0x01 0x40 0x00
+*/
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 block_length;
+} script_do_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+} script_while_t;
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -563,6 +596,8 @@ typedef union {
 	script_inst3a_t		inst3a;
 	script_goto_t		i_goto;
 	script_camswitch_swap_t	camswitch_swap;
+	script_do_t		i_do;
+	script_while_t		i_while;
 } script_inst_t;
 
 typedef struct {
@@ -625,8 +660,8 @@ static const script_inst_len_t inst_length[]={
 
 	/* 0x10-0x1f */
 	{0x10,		2},
-	{0x11,		4},
-	{0x12,	2},
+	{INST_DO,	sizeof(script_do_t)},
+	{INST_WHILE,	sizeof(script_while_t)},
 	{INST_BEGIN_SWITCH,	sizeof(script_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
 	{0x15,		2},
@@ -1536,9 +1571,16 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x10-0x1f */
 
-			/*case INST_EXIT_LOOP:
-				strcat(strBuf, "EXIT_LOOP\n");
-				break;*/
+			case INST_DO:
+				strcat(strBuf, "DO\n");
+				block_len = SDL_SwapLE16(inst->i_do.block_length);
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_do_t)]);
+				break;
+			case INST_WHILE:
+				strcat(strBuf, "WHILE\n");
+				block_len = inst->i_while.block_length;
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_while_t)]);
+				break;
 			case INST_BEGIN_SWITCH:
 				sprintf(tmpBuf, "BEGIN_SWITCH var%02x\n", inst->i_switch.varw);
 				strcat(strBuf, tmpBuf);
@@ -2001,13 +2043,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		inst_len = scriptDumpGetInstLen(inst->opcode); 
 		if (block_ptr) {
-			/*logMsg(1, " block 0x%04x inst 0x%04x\n", block_len, inst_len);*/
 			int next_len = block_len - inst_len;
 			if (inst->opcode == INST_CASE) next_len = block_len;
 			if (inst->opcode == INST_BEGIN_LOOP) next_len = block_len - 2;
+			/*logMsg(1, " block 0x%04x inst 0x%04x next 0x%04x\n", block_len, inst_len, next_len);*/
 
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
+			if (inst->opcode == INST_DO) next_len += sizeof(script_do_t);
 			inst_len += next_len;
 		}
 
