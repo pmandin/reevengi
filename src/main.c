@@ -124,6 +124,39 @@ int main(int argc, char **argv)
 			FS_Shutdown();
 			exit(1);
 	}
+
+	/* Init default room and player pos */
+	switch(game_state.version) {
+		case GAME_RE1_PS1_DEMO:
+		case GAME_RE1_PS1_GAME:
+		case GAME_RE1_PS1_SHOCK:
+		case GAME_RE1_PC_DEMO:
+		case GAME_RE1_PC_GAME:
+			game_state.num_room = 6;
+			break;
+		case GAME_RE2_PS1_DEMO:
+		case GAME_RE2_PS1_DEMO2:
+		case GAME_RE2_PS1_GAME_LEON:
+		case GAME_RE2_PS1_GAME_CLAIRE:
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
+		case GAME_RE2_PC_GAME_LEON:
+		case GAME_RE2_PC_GAME_CLAIRE:
+			/*game_state.player_x = -1530.0f;
+			game_state.player_y = 2020.0f;
+			game_state.player_z = 2700.0f;
+			game_state.player_a = 3072.0f;*/
+			break;
+		case GAME_RE3_PS1_DEMO:
+		case GAME_RE3_PS1_GAME:
+		case GAME_RE3_PC_DEMO:
+		case GAME_RE3_PC_GAME:
+			game_state.num_room = 13;
+			break;
+		default:
+			break;
+	}
+
 	if (params.viewmode == VIEWMODE_MOVIE) {	
 #ifdef ENABLE_MOVIES
 		state_newmovie();
