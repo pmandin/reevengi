@@ -128,8 +128,18 @@
 	inst68: ?, ptr+2 stored in object list, like others
 	inst69: ?, ptr+2 stored in object list, like others
 	inst8d: ?, ptr+2 stored in object list, like others
-	inst51	1-
-		22334455
+
+movies	
+	0x04	zmovie/r10b.bin
+	0x05	zmovie/r200.bin
+	0x06	zmovie/r505.bin
+	0x07	zmovie/r602.bin
+	0x08	plX/zmovie/r108X.bin
+	0x09	zmovie/r109.bin
+	0x0a	plX/zmovie/r204X.bin
+	0x0b	plX/zmovie/r408.bin / plX/zmovie/r409.bin
+	0x0c	plX/zmovie/r700X.bin
+	0x0d	plX/zmovie/r703X.bin
 */
 
 /*--- Types ---*/
@@ -543,6 +553,37 @@ typedef struct {
 	Uint8 block_length;
 } script_while_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 entity_type; /* 1:em_set, 2:0x89, 3:0x2e, other:script data */
+	Uint8 unknown0;	/* for entity_type=3 */
+	Uint8 unknown1[3];
+	Uint16 unknown2[4];
+} script_inst60_t;
+
+/*
+[    0.392] 0x00000410: 0x60 0x03 0x00 0xbf 0xbf 0xbf 0x90 0x01 0x58 0x02 0x00 0x00 0x00 0x00
+[    0.393] 0x00000458: 0x60 0x03 0x01 0xbf 0xbf 0xbf 0x90 0x01 0x58 0x02 0x00 0x00 0x00 0x00
+[    0.393] 0x000004a0: 0x60 0x03 0x02 0xbf 0xbf 0xbf 0x90 0x01 0x58 0x02 0x00 0x00 0x00 0x00
+*/
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dstw;
+	Uint8 unknown;
+} script_inst3d_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown;
+	Uint8 srcw;
+} script_inst35_t;
+
+/*
+[    0.484] 0x0000007e: 0x3d 0x10 0x07
+[    0.484] 0x00000088: 0x35 0x07 0x10
+*/
+
 typedef union {
 	Uint8 opcode;
 	script_reset_t		reset;
@@ -598,6 +639,8 @@ typedef union {
 	script_camswitch_swap_t	camswitch_swap;
 	script_do_t		i_do;
 	script_while_t		i_while;
+	script_inst35_t		inst35;
+	script_inst3d_t		inst3d;
 } script_inst_t;
 
 typedef struct {
@@ -758,7 +801,7 @@ static const script_inst_len_t inst_length[]={
 	{0x66,		1},
 	{INST_WALL_SET,		sizeof(script_wall_set_t)},
 	{0x68,		40},
-	/*{0x69,		2},*/
+	{0x69,		30},
 	{INST_LIGHT_POS_SET,	sizeof(script_light_pos_set_t)},
 	{INST_LIGHT3_POS_SET,	sizeof(script_light3_pos_set_t)},
 	{0x6c,		1},
@@ -1856,6 +1899,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
+			case 0x35:
+				sprintf(tmpBuf, "INST35 unknown 0x%02x = var%02x.W\n",
+					inst->inst35.unknown, inst->inst35.srcw);
+				strcat(strBuf, tmpBuf);
+				break;
 			case INST_CAM_CHG:
 				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
 					inst->cam_chg.unknown0, inst->cam_chg.camera);
@@ -1871,6 +1919,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_BCHG8:
 				sprintf(tmpBuf, "B%s #8,xxx\n",
 					(inst->bchg8.operation == 1 ? "SET" : "CLR"));
+				strcat(strBuf, tmpBuf);
+				break;
+			case 0x3d:
+				sprintf(tmpBuf, "INST3D var%02x.W = unknown 0x%02x\n",
+					inst->inst3d.dstw, inst->inst3d.unknown);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_CMP_IMM:
