@@ -711,7 +711,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_END_SWITCH,	2},
 	{INST_GOTO,	sizeof(script_goto_t)},
 	{INST_FUNC,	sizeof(script_func_t)},
-	/*{0x19,		2},*/
+	{0x19,		2},
 	{INST_BREAK,	2},
 	{0x1b,		6},
 	{INST_NOP1C,	1},
