@@ -139,9 +139,9 @@ void state_init(void)
 {
 	memset(&game_state, 0, sizeof(state_t));
 
-	game_state.num_stage = 1;
-	game_state.num_room = 0;
-	game_state.num_camera = 0;
+	game_state.num_stage = params.stage;
+	game_state.num_room = params.room;
+	game_state.num_camera = params.camera;
 
 	game_state.movies_list = NULL;
 	game_state.num_movie = 0;

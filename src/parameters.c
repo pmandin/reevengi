@@ -41,6 +41,9 @@
 #define DEFAULT_WIDTH 320
 #define DEFAULT_HEIGHT 240
 #define DEFAULT_BPP 16
+#define DEFAULT_STAGE 1
+#define DEFAULT_ROOM 0
+#define DEFAULT_CAMERA 0
 
 /*--- Global variables ---*/
 
@@ -60,6 +63,9 @@ params_t params = {
 	0,	/* Height */
 	0,	/* Bpp */
 	0,	/* Fps */
+	DEFAULT_STAGE,
+	DEFAULT_ROOM,
+	DEFAULT_CAMERA
 };
 
 /*---- Variables ---*/
@@ -180,6 +186,22 @@ int CheckParm(int argc,char **argv)
 		params.fps = 1;
 	}
 
+	/*--- Check for stage/room/camera ---*/
+	p = ParmPresent("-stage", argc, argv);
+	if (p && p < argc-1) {
+		params.stage = atoi(argv[p+1]);
+	}
+
+	p = ParmPresent("-room", argc, argv);
+	if (p) {
+		params.room = atoi(argv[p+1]);
+	}
+
+	p = ParmPresent("-camera", argc, argv);
+	if (p) {
+		params.camera = atoi(argv[p+1]);
+	}
+
 	return 1;
 }
 
@@ -188,30 +210,24 @@ void DisplayUsage(void)
 	printf("---- Reevengi slide show ----\n");
 	printf("----  by Patrice Mandin  ----\n");
 	printf("Usage:\n");
-	printf( "  [-basedir </path/to/gamedir>] (default=%s)\n"
-		"  [-movie] (switch to movie player mode)\n"
-		"  [-gamma <n>] (default=%.3f)\n"
-		"  [-verbose <n>] (log verbosity, default=%d)\n"
-		"  [-logfile <filename>] (default=" PACKAGE_NAME ".log)\n"
-		"  [-opengl] (enable opengl mode)\n"
-		"  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n"
-		"  [-dither] (enable dithering in 8 bits mode)\n"
-		"  [-linear] (enable bilinear filtering)\n"
-		"  [-width <w>] (width of video mode, default=%d)\n"
-		"  [-height <h>] (height of video mode, default=%d)\n"
-		"  [-bpp <b>] (bits per pixel for video mode, default=%d)\n"
-		"  [-fps] (enable fps display)\n"
+	printf("  [-basedir </path/to/gamedir>] (default=%s)\n", DEFAULT_BASEDIR);
+	printf("  [-movie] (switch to movie player mode)\n");
+	printf("  [-gamma <n>] (default=%.3f)\n", DEFAULT_GAMMA);
+	printf("  [-verbose <n>] (log verbosity, default=%d)\n", DEFAULT_VERBOSE);
+	printf("  [-logfile <filename>] (default=%s.log)\n", PACKAGE_NAME);
+	printf("  [-opengl] (enable opengl mode)\n");
+	printf("  [-aspect <x>:<y>] (set aspect ratio, default=%d:%d)\n", DEFAULT_ASPECT_X, DEFAULT_ASPECT_Y);
+	printf("  [-dither] (enable dithering in 8 bits mode)\n");
+	printf("  [-linear] (enable bilinear filtering)\n");
+	printf("  [-width <w>] (width of video mode, default=%d)\n", DEFAULT_WIDTH);
+	printf("  [-height <h>] (height of video mode, default=%d)\n", DEFAULT_HEIGHT);
+	printf("  [-bpp <b>] (bits per pixel for video mode, default=%d)\n", DEFAULT_BPP);
+	printf("  [-fps] (enable fps display)\n");
+	printf("  [-stage <n>] (stage, default=%d)\n", DEFAULT_STAGE);
+	printf("  [-room <n>] (room, default=%d)\n", DEFAULT_ROOM);
+	printf("  [-camera <n>] (camera, default=%d)\n", DEFAULT_CAMERA);
 #ifdef ENABLE_SCRIPT_DISASM
-		"  [-dumpscript] (enable script dump when loading room)\n"
+	printf("  [-dumpscript] (enable script dump when loading room)\n");
 #endif
-		"  [-help] (print this message)\n",
-		DEFAULT_BASEDIR,
-		DEFAULT_GAMMA,
-		DEFAULT_VERBOSE,
-		DEFAULT_ASPECT_X,
-		DEFAULT_ASPECT_Y,
-		DEFAULT_WIDTH,
-		DEFAULT_HEIGHT,
-		DEFAULT_BPP
-	);
+	printf("  [-help] (print this message)\n");
 }

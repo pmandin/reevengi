@@ -125,6 +125,7 @@ int main(int argc, char **argv)
 			exit(1);
 	}
 
+#if 0
 	/* Init default room and player pos */
 	switch(game_state.version) {
 		case GAME_RE1_PS1_DEMO:
@@ -156,6 +157,7 @@ int main(int argc, char **argv)
 		default:
 			break;
 	}
+#endif
 
 	if (params.viewmode == VIEWMODE_MOVIE) {	
 #ifdef ENABLE_MOVIES

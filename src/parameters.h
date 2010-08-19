@@ -45,6 +45,9 @@ typedef struct {
 	int height;
 	int bpp;
 	int fps;		/* Display frames per second */
+	int stage;
+	int room;
+	int camera;
 } params_t;
 
 /*--- Variables ---*/

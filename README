@@ -72,6 +72,12 @@ Use at your own risks.
 
 "-fps" to dump frames per second.
 
+"-stage <n>" to set stage.
+
+"-room <n>" to set room.
+
+"-camera <n>" to set camera.
+
 
 3 Controls
 ----------
