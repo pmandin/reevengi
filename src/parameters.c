@@ -48,24 +48,24 @@
 /*--- Global variables ---*/
 
 params_t params = {
-	DEFAULT_VERBOSE,
-	PACKAGE_NAME ".log",
-	DEFAULT_BASEDIR,
-	DEFAULT_GAMMA,
-	VIEWMODE_BACKGROUND,
-	DEFAULT_USE_OPENGL,
-	DEFAULT_ASPECT_X,
-	DEFAULT_ASPECT_Y,
-	0,	/* Dithering */
-	0,	/* Bilinear filtering */
-	0,	/* Dump script */
-	0,	/* Width */
-	0,	/* Height */
-	0,	/* Bpp */
-	0,	/* Fps */
-	DEFAULT_STAGE,
-	DEFAULT_ROOM,
-	DEFAULT_CAMERA
+	.verbose = DEFAULT_VERBOSE,
+	.log_file = PACKAGE_NAME ".log",
+	.basedir = DEFAULT_BASEDIR,
+	.gamma = DEFAULT_GAMMA,
+	.viewmode = VIEWMODE_BACKGROUND,
+	.use_opengl = DEFAULT_USE_OPENGL,
+	.aspect_x = DEFAULT_ASPECT_X,
+	.aspect_y = DEFAULT_ASPECT_Y,
+	.dithering = 0,
+	.linear = 0,
+	.dump_script = 0,
+	.width = 0,
+	.height = 0,
+	.bpp = 0,
+	.fps = 0,
+	.stage = DEFAULT_STAGE,
+	.room = DEFAULT_ROOM,
+	.camera = DEFAULT_CAMERA
 };
 
 /*---- Variables ---*/
