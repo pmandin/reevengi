@@ -1581,8 +1581,8 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				block_len = SDL_SwapLE16(inst->i_if.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_if_t)]);
 				{
-					script_inst_t *end_block_ptr = (script_inst_t *) (&((Uint8 *) inst)[block_len]);
-					if (end_block_ptr->opcode != INST_ELSE) {
+					script_inst_t *end_block_ptr = (script_inst_t *) (&((Uint8 *) block_ptr)[block_len-2]);
+					if (end_block_ptr->opcode == INST_END_IF) {
 						block_len += 2;
 					}
 				}				
