@@ -305,7 +305,7 @@ void view_background_input(SDL_Event *event)
 				break;
 			case KEY_RENDER_DEPTH:
 				render_depth ^= 1;
-				render.setRenderDepth(&render, render_depth);
+				render.setRenderDepth(render_depth);
 				break;
 			case KEY_ANIM_DOWN:
 				if (game_state.num_anim>0) {
@@ -524,7 +524,7 @@ void view_background_draw(void)
 {
 	room_camera_t room_camera;
 
-	render.startFrame(&render);
+	render.startFrame();
 
 	if (render_restore && !params.use_opengl) {
 		SDL_FillRect(video.screen, NULL, 0);
@@ -587,7 +587,7 @@ void view_background_draw(void)
 	drawPlayer();
 
 	/* Flush all 3D rendering to screen before drawing 2D stuff */
-	render.flushFrame(&render);
+	render.flushFrame();
 
 	/* No texture for grid and map */
 	render.set_texture(0, NULL);
@@ -666,7 +666,7 @@ static void drawGrid(void)
 
 static void drawPlayer(void)
 {
-	render.set_render(&render, render_model);
+	render.set_render(render_model);
 
 	render.set_color(0x004488cc);
 
@@ -731,5 +731,5 @@ static void drawPlayer(void)
 
 	render.pop_matrix();
 
-	render.set_render(&render, RENDER_TEXTURED);
+	render.set_render(RENDER_TEXTURED);
 }

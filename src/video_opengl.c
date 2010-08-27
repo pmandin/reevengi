@@ -170,7 +170,7 @@ static void swapBuffers(void)
 {
 	GLenum errCode;
 
-	render.endFrame(&render);
+	render.endFrame();
 
 #if 0
 	{

@@ -60,12 +60,12 @@ struct vertexf_s {
 typedef struct render_s render_t;
 
 struct render_s {
-	void (*shutdown)(render_t *this);
+	void (*shutdown)(void);
 
-	void (*resize)(render_t *this, int w, int h, int bpp);
-	void (*startFrame)(render_t *this);
-	void (*flushFrame)(render_t *this);
-	void (*endFrame)(render_t *this);
+	void (*resize)(int w, int h, int bpp);
+	void (*startFrame)(void);
+	void (*flushFrame)(void);
+	void (*endFrame)(void);
 
 	render_texture_t *(*createTexture)(int flags);
 	render_mesh_t *(*createMesh)(render_texture_t *texture);
@@ -87,7 +87,7 @@ struct render_s {
 	void (*pop_matrix)(void);
 
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
-	void (*set_render)(render_t *this, int num_render);
+	void (*set_render)(int num_render);
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
 	void (*set_blending)(int enable);
 	void (*set_dithering)(int enable);
@@ -121,7 +121,7 @@ struct render_s {
 
 	/* Display depth buffer */
 	int render_depth;
-	void (*setRenderDepth)(render_t *this, int show_depth);
+	void (*setRenderDepth)(int show_depth);
 	void (*copyDepthToColor)(void);
 
 	/* Background image mask */

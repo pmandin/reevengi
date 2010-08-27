@@ -235,7 +235,7 @@ static void setVideoMode(int width, int height, int bpp)
 
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
-	render.resize(&render, video.width, video.height, video.bpp);
+	render.resize(video.width, video.height, video.bpp);
 	video.initViewport();
 }
 
@@ -267,7 +267,7 @@ static void swapBuffers(void)
 
 	video.countFps();
 
-	render.endFrame(&render);
+	render.endFrame();
 
 	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		video.numfb ^= 1;

@@ -244,7 +244,7 @@ int main(int argc, char **argv)
 
 	game_state.shutdown();
 	video.shutDown();
-	render.shutdown(&render);
+	render.shutdown();
 	FS_Shutdown();
 
 	SDL_Quit();

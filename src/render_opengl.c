@@ -50,12 +50,12 @@ static int gouraud;
 
 /*--- Functions prototypes ---*/
 
-static void render_opengl_shutdown(render_t *render);
+static void render_opengl_shutdown(void);
 
-static void render_resize(render_t *this, int w, int h, int bpp);
-static void render_startFrame(render_t *this);
-static void render_flushFrame(render_t *this);
-static void render_endFrame(render_t *this);
+static void render_resize(int w, int h, int bpp);
+static void render_startFrame(void);
+static void render_flushFrame(void);
+static void render_endFrame(void);
 
 static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect, float z_near, float z_far);
@@ -72,7 +72,7 @@ static void push_matrix(void);
 static void pop_matrix(void);
 
 static void set_color(Uint32 color);
-static void set_render(render_t *this, int num_render);
+static void set_render(int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
 static void set_dithering(int enable);
@@ -91,73 +91,73 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-static void setRenderDepth(render_t *this, int show_depth);
+static void setRenderDepth(int show_depth);
 static void copyDepthToColor(void);
 
 /*--- Functions ---*/
 
-void render_opengl_init(render_t *render)
+void render_opengl_init(render_t *this)
 {
-	render->shutdown = render_opengl_shutdown;
+	this->shutdown = render_opengl_shutdown;
 
-	render->resize = render_resize;
-	render->startFrame = render_startFrame;
-	render->flushFrame = render_flushFrame;
-	render->endFrame = render_endFrame;
+	this->resize = render_resize;
+	this->startFrame = render_startFrame;
+	this->flushFrame = render_flushFrame;
+	this->endFrame = render_endFrame;
 
-	render->createTexture = render_texture_gl_create;
-	render->createMesh = render_mesh_gl_create;
-	render->createSkel = render_skel_gl_create;
+	this->createTexture = render_texture_gl_create;
+	this->createMesh = render_mesh_gl_create;
+	this->createSkel = render_skel_gl_create;
 
-	render->set_viewport = set_viewport;
-	render->set_projection = set_projection;
-	render->set_ortho = set_ortho;
-	render->set_modelview = set_modelview;
-	render->set_identity = set_identity;
-	render->scale = scale;
-	render->translate = translate;
-	render->rotate = rotate;
-	render->push_matrix = push_matrix;
-	render->pop_matrix = pop_matrix;
+	this->set_viewport = set_viewport;
+	this->set_projection = set_projection;
+	this->set_ortho = set_ortho;
+	this->set_modelview = set_modelview;
+	this->set_identity = set_identity;
+	this->scale = scale;
+	this->translate = translate;
+	this->rotate = rotate;
+	this->push_matrix = push_matrix;
+	this->pop_matrix = pop_matrix;
 
-	render->set_color = set_color;
-	render->set_render = set_render;
-	render->set_texture = set_texture;
-	render->set_blending = set_blending;
-	render->set_dithering = set_dithering;
-	render->set_useDirtyRects = set_useDirtyRects;
+	this->set_color = set_color;
+	this->set_render = set_render;
+	this->set_texture = set_texture;
+	this->set_blending = set_blending;
+	this->set_dithering = set_dithering;
+	this->set_useDirtyRects = set_useDirtyRects;
 
-	render->sortBackToFront = sortBackToFront;
+	this->sortBackToFront = sortBackToFront;
 
-	render_bitmap_opengl_init(&(render->bitmap));
+	render_bitmap_opengl_init(&this->bitmap);
 
-	render->texture = NULL;
-	render->tex_pal = 0;
+	this->texture = NULL;
+	this->tex_pal = 0;
 
-	set_render(render, RENDER_WIREFRAME);
+	set_render(RENDER_WIREFRAME);
 	blending = 0;
 	gouraud = 0;
-	render->useDirtyRects = 0;
+	this->useDirtyRects = 0;
 
-	render->render_depth = 0;
-	render->setRenderDepth = setRenderDepth;
-	render->copyDepthToColor = copyDepthToColor;
+	this->render_depth = 0;
+	this->setRenderDepth = setRenderDepth;
+	this->copyDepthToColor = copyDepthToColor;
 
-	render->render_mask_create = render_mask_opengl_create;
+	this->render_mask_create = render_mask_opengl_create;
 }
 
-static void render_opengl_shutdown(render_t *render)
+static void render_opengl_shutdown(void)
 {
-	render->bitmap.shutdown(&render->bitmap);
+	render.bitmap.shutdown(&render.bitmap);
 	list_render_texture_shutdown();
 	list_render_skel_shutdown();
 }
 
-static void render_resize(render_t *this, int w, int h, int bpp)
+static void render_resize(int w, int h, int bpp)
 {
 }
 
-static void render_startFrame(render_t *this)
+static void render_startFrame(void)
 {
 	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.ClearDepth(1.0f);
@@ -169,14 +169,14 @@ static void render_startFrame(render_t *this)
 	gl.CullFace(GL_FRONT);
 }
 
-static void render_flushFrame(render_t *this)
+static void render_flushFrame(void)
 {
 }
 
-static void render_endFrame(render_t *this)
+static void render_endFrame(void)
 {
-	if (this->render_depth) {
-		this->copyDepthToColor();
+	if (render.render_depth) {
+		render.copyDepthToColor();
 	}
 
 }
@@ -298,32 +298,32 @@ static void set_useDirtyRects(int enable)
 {
 }
 
-static void set_render(render_t *this, int num_render)
+static void set_render(int num_render)
 {
-	this->line = line;
-	this->triangle_wf = triangle;
-	this->quad_wf = quad;
+	render.line = line;
+	render.triangle_wf = triangle;
+	render.quad_wf = quad;
 
-	this->render_mode = num_render;
+	render.render_mode = num_render;
 
 	switch(num_render) {
 		case RENDER_WIREFRAME:
-			this->triangle = triangle;
-			this->quad = quad;
+			render.triangle = triangle;
+			render.quad = quad;
 			break;
 		case RENDER_FILLED:
 			gouraud = 0;
-			this->triangle = triangle_fill;
-			this->quad = quad_fill;
+			render.triangle = triangle_fill;
+			render.quad = quad_fill;
 			break;
 		case RENDER_GOURAUD:
 			gouraud = 1;
-			this->triangle = triangle_fill;
-			this->quad = quad_fill;
+			render.triangle = triangle_fill;
+			render.quad = quad_fill;
 			break;
 		case RENDER_TEXTURED:
-			this->triangle = triangle_tex;
-			this->quad = quad_tex;
+			render.triangle = triangle_tex;
+			render.quad = quad_tex;
 			break;
 	}
 }
@@ -570,9 +570,9 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Disable(gl_tex->textureTarget);
 }
 
-static void setRenderDepth(render_t *this, int show_depth)
+static void setRenderDepth(int show_depth)
 {
-	this->render_depth = show_depth;
+	render.render_depth = show_depth;
 }
 
 static void copyDepthToColor(void)
@@ -645,7 +645,7 @@ static void copyDepthToColor(void)
 #include "video.h"
 #include "render.h"
 
-void render_opengl_init(render_t *render)
+void render_opengl_init(render_t *this)
 {
 }
 
