@@ -47,7 +47,7 @@ struct render_bitmap_s {
 	void (*setMasking)(int enabled);
 
 	/* Draw scaled image */
-	void (*drawImage)(video_t *video);
+	void (*drawImage)(void);
 
 	SDL_Rect srcRect, dstRect;
 	int srcWidth, srcHeight, dstWidth, dstHeight;

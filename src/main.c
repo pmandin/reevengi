@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 	}
 	logMsg(1,"Calculated aspect ratio %d:%d\n", params.aspect_x, params.aspect_y);
 
-	video.setVideoMode(&video, video.width, video.height, video.bpp);
+	video.setVideoMode(video.width, video.height, video.bpp);
 	if (!video.screen) {
 		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
 		FS_Shutdown();
@@ -243,7 +243,7 @@ int main(int argc, char **argv)
 	}
 
 	game_state.shutdown();
-	video.shutDown(&video);
+	video.shutDown();
 	render.shutdown(&render);
 	FS_Shutdown();
 
@@ -271,7 +271,7 @@ static int viewer_loop(void)
 						}*/
 						break;
 					case SDLK_F1:
-						video.screenShot(&video);
+						video.screenShot();
 						break;
 					case SDLK_F10:
 						disp_menu ^= 1;
@@ -342,7 +342,7 @@ static void viewer_update(void)
 	if (switch_mode) {
 		list_render_texture_download();
 		list_render_skel_download();
-		video.setVideoMode(&video, new_width, new_height, video.bpp);
+		video.setVideoMode(new_width, new_height, video.bpp);
 	}
 
 	switch(params.viewmode) {
@@ -362,6 +362,6 @@ static void viewer_update(void)
 		menu_render();
 	}
 
-	video.swapBuffers(&video);
+	video.swapBuffers();
 	switch_mode = 0;
 }

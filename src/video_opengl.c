@@ -43,9 +43,9 @@ static int first_time = 1;	/* To display OpenGL driver properties */
 
 /*--- Function prototypes ---*/
 
-static void setVideoMode(video_t *this, int width, int height, int bpp);
-static void swapBuffers(video_t *this);
-static void screenShot(video_t *this);
+static void setVideoMode(int width, int height, int bpp);
+static void swapBuffers(void);
+static void screenShot(void);
 
 extern int render_masks;
 
@@ -81,15 +81,15 @@ void video_opengl_init(video_t *this)
 	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
 }
 
-static void setVideoMode(video_t *this, int width, int height, int bpp)
+static void setVideoMode(int width, int height, int bpp)
 {
 	const int gl_bpp[4]={0,16,24,32};
 	int i;
 	SDL_Surface *screen;
 	const char *extensions;
 
-	if (this->flags & SDL_FULLSCREEN) {
-		this->findNearestMode(this, &width, &height, bpp);
+	if (video.flags & SDL_FULLSCREEN) {
+		video.findNearestMode(&width, &height, bpp);
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE,5);
@@ -101,7 +101,7 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 
 	/* Try with default bpp */
 	for (i=0;i<4;i++) {
-		screen = SDL_SetVideoMode(width, height, gl_bpp[i], this->flags);
+		screen = SDL_SetVideoMode(width, height, gl_bpp[i], video.flags);
 		if (screen) {
 			break;
 		}
@@ -109,24 +109,24 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 	if (screen==NULL) {
 		/* Try with default resolution */
 		for (i=0;i<4;i++) {
-			screen = SDL_SetVideoMode(0, 0, gl_bpp[i], this->flags);
+			screen = SDL_SetVideoMode(0, 0, gl_bpp[i], video.flags);
 			if (screen) {
 				break;
 			}
 		}
 	}
-	this->screen = screen;
+	video.screen = screen;
 	if (screen==NULL) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
 		return;
 	}
 
-	this->width = this->screen->w;
-	this->height = this->screen->h;
-	this->bpp = this->screen->format->BitsPerPixel;
-	this->flags = this->screen->flags;
+	video.width = video.screen->w;
+	video.height = video.screen->h;
+	video.bpp = video.screen->format->BitsPerPixel;
+	video.flags = video.screen->flags;
 
-	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
+	video.dirty_rects[video.numfb]->resize(video.dirty_rects[video.numfb], video.width, video.height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
 
 	dyngl_initfuncs();
@@ -145,28 +145,28 @@ static void setVideoMode(video_t *this, int width, int height, int bpp)
 		/* Check OpenGL extensions */
 		extensions = (char *) gl.GetString(GL_EXTENSIONS);
 
-		this->has_gl_arb_texture_non_power_of_two = 0 /*(strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL)*/;
-		logMsg(2, "GL_ARB_texture_non_power_of_two: %d\n", this->has_gl_arb_texture_non_power_of_two);
+		video.has_gl_arb_texture_non_power_of_two = 0 /*(strstr(extensions, "GL_ARB_texture_non_power_of_two") != NULL)*/;
+		logMsg(2, "GL_ARB_texture_non_power_of_two: %d\n", video.has_gl_arb_texture_non_power_of_two);
 
-		this->has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);
-		logMsg(2, "GL_ARB_texture_rectangle: %d\n", this->has_gl_arb_texture_rectangle);
+		video.has_gl_arb_texture_rectangle = (strstr(extensions, "GL_ARB_texture_rectangle") != NULL);
+		logMsg(2, "GL_ARB_texture_rectangle: %d\n", video.has_gl_arb_texture_rectangle);
 
-		this->has_gl_ext_paletted_texture = 0 /*(strstr(extensions, "GL_EXT_paletted_texture") != NULL)*/;
-		logMsg(2, "GL_EXT_paletted_texture: %d\n", this->has_gl_ext_paletted_texture);
+		video.has_gl_ext_paletted_texture = 0 /*(strstr(extensions, "GL_EXT_paletted_texture") != NULL)*/;
+		logMsg(2, "GL_EXT_paletted_texture: %d\n", video.has_gl_ext_paletted_texture);
 
-		this->has_gl_ext_texture_rectangle = (strstr(extensions, "GL_EXT_texture_rectangle") != NULL);
-		logMsg(2, "GL_EXT_texture_rectangle: %d\n", this->has_gl_ext_texture_rectangle);
+		video.has_gl_ext_texture_rectangle = (strstr(extensions, "GL_EXT_texture_rectangle") != NULL);
+		logMsg(2, "GL_EXT_texture_rectangle: %d\n", video.has_gl_ext_texture_rectangle);
 
-		this->has_gl_nv_texture_rectangle = (strstr(extensions, "GL_NV_texture_rectangle") != NULL);
-		logMsg(2, "GL_NV_texture_rectangle: %d\n", this->has_gl_nv_texture_rectangle);
+		video.has_gl_nv_texture_rectangle = (strstr(extensions, "GL_NV_texture_rectangle") != NULL);
+		logMsg(2, "GL_NV_texture_rectangle: %d\n", video.has_gl_nv_texture_rectangle);
 
 		first_time = 0;
 	}
 
-	video.initViewport(&video);
+	video.initViewport();
 }
 
-static void swapBuffers(video_t *this)
+static void swapBuffers(void)
 {
 	GLenum errCode;
 
@@ -183,11 +183,11 @@ static void swapBuffers(video_t *this)
 		static int pmx=-1,pmy=-1;
 
 		SDL_GetMouseState(&mx, &my);
-		my = this->height - my;
+		my = video.height - my;
 
 		gl.MatrixMode(GL_PROJECTION);
 		gl.LoadIdentity();
-		/*gl.Ortho(0.0f, this->width, this->height, 0.0f, -1.0f, 1.0f);*/
+		/*gl.Ortho(0.0f, video.width, video.height, 0.0f, -1.0f, 1.0f);*/
 		gluPerspective(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
 
 		gl.MatrixMode(GL_MODELVIEW);
@@ -222,12 +222,12 @@ static void swapBuffers(video_t *this)
 		logMsg(1, "OpenGL error %d\n", errCode);
 	}
 
-	this->countFps(this);
+	video.countFps();
 
 	SDL_GL_SwapBuffers();
 }
 
-static void screenShot(video_t *this)
+static void screenShot(void)
 {
 	fprintf(stderr, "Screenshot not available in OpenGL mode\n");
 }

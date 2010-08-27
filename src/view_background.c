@@ -546,7 +546,7 @@ void view_background_draw(void)
 			game_state.background->w, game_state.background->h,
 			video.viewport.w,video.viewport.h);
 		render.bitmap.setDepth(0, 0.0f);
-		render.bitmap.drawImage(&video);
+		render.bitmap.drawImage();
 
 		render.set_dithering(0);
 		render.set_useDirtyRects(0);

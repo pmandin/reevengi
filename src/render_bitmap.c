@@ -40,11 +40,11 @@
 
 static void shutdown(render_bitmap_t *this);
 
-static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect);
-static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
-static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledRtNodirty(SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledScDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect);
+static void bitmapScaledRtDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect);
 
-static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h);
+static void refresh_scaled_version(render_texture_t *texture, int new_w, int new_h);
 static void rescale_nearest(render_texture_t *src, SDL_Surface *dst);
 static void rescale_linear(render_texture_t *src, SDL_Surface *dst);
 
@@ -53,7 +53,7 @@ static void clipDest(int x, int y, int w, int h);
 static void setScaler(int srcw, int srch, int dstw, int dsth);
 static void setDepth(int enabled, float depth);
 static void setMasking(int enabled);
-static void drawImage(video_t *video);
+static void drawImage(void);
 
 static void drawImageDepth(void);
 
@@ -176,7 +176,7 @@ static void setScaler(int srcw, int srch, int dstw, int dsth)
 		this->numy_dst2src = dsth;
 	}
 
-	refresh_scaled_version(&video, render.texture, dstw,dsth);
+	refresh_scaled_version(render.texture, dstw,dsth);
 }
 
 static void setDepth(int enabled, float depth)
@@ -190,7 +190,7 @@ static void setMasking(int enabled)
 	render.bitmap.masking = enabled;
 }
 
-static void drawImage(video_t *video)
+static void drawImage(void)
 {
 	render_bitmap_t *this = &render.bitmap;
 
@@ -216,20 +216,20 @@ static void drawImage(video_t *video)
 	}
 
 	/* Clip in dest screen */
-	if (render.bitmap.dstRect.x<video->viewport.x) {
+	if (render.bitmap.dstRect.x<video.viewport.x) {
 		render.bitmap.dstRect.w += render.bitmap.dstRect.x;
 		render.bitmap.srcRect.x -= this->scalex_dst2src[render.bitmap.dstRect.x];
 		render.bitmap.dstRect.x = 0;
-	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video->viewport.x+video->viewport.w) {
-		render.bitmap.dstRect.w = video->viewport.w - render.bitmap.dstRect.x;
+	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video.viewport.x+video.viewport.w) {
+		render.bitmap.dstRect.w = video.viewport.w - render.bitmap.dstRect.x;
 		render.bitmap.srcRect.w = this->scalex_dst2src[render.bitmap.dstRect.w];
 	}
-	if (render.bitmap.dstRect.y<video->viewport.y) {
+	if (render.bitmap.dstRect.y<video.viewport.y) {
 		render.bitmap.dstRect.h += render.bitmap.dstRect.y;
 		render.bitmap.srcRect.y -= this->scaley_dst2src[render.bitmap.dstRect.y];
 		render.bitmap.dstRect.y = 0;
-	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video->viewport.y+video->viewport.h) {
-		render.bitmap.dstRect.h = video->viewport.h - render.bitmap.dstRect.y;
+	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video.viewport.y+video.viewport.h) {
+		render.bitmap.dstRect.h = video.viewport.h - render.bitmap.dstRect.y;
 		render.bitmap.srcRect.h = this->scaley_dst2src[render.bitmap.dstRect.h];
 	}
 
@@ -243,17 +243,17 @@ static void drawImage(video_t *video)
 	}
 
 	/* Clipping for out of bounds in dest */
-	if ((render.bitmap.dstRect.x>=video->viewport.x+video->viewport.w)
-	   || (render.bitmap.dstRect.y>=video->viewport.y+video->viewport.h)
-	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<video->viewport.x)
-	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<video->viewport.y))
+	if ((render.bitmap.dstRect.x>=video.viewport.x+video.viewport.w)
+	   || (render.bitmap.dstRect.y>=video.viewport.y+video.viewport.h)
+	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<video.viewport.x)
+	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<video.viewport.y))
 	{
 		return;
 	}
 
 	if (render.bitmap.depth_test) {
-		render.bitmap.dstRect.x -= video->viewport.x;
-		render.bitmap.dstRect.y -= video->viewport.y;
+		render.bitmap.dstRect.x -= video.viewport.x;
+		render.bitmap.dstRect.y -= video.viewport.y;
 
 		drawImageDepth();
 		return;
@@ -268,36 +268,36 @@ static void drawImage(video_t *video)
 		scaled_src.h = this->scaley_src2dst[render.bitmap.srcRect.h];
 
 		if (render.useDirtyRects) {
-			bitmapScaledScDirty(video, &scaled_src, &render.bitmap.dstRect);
+			bitmapScaledScDirty(&scaled_src, &render.bitmap.dstRect);
 		} else {
 			SDL_BlitSurface(render.texture->scaled, &scaled_src,
-				video->screen, &render.bitmap.dstRect);
-			/*SDL_FillRect(video->screen, &render.bitmap.dstRect, 0xffffffff);*/
+				video.screen, &render.bitmap.dstRect);
+			/*SDL_FillRect(video.screen, &render.bitmap.dstRect, 0xffffffff);*/
 		}
 	} else {
-		if (SDL_MUSTLOCK(video->screen)) {
-			SDL_LockSurface(video->screen);
+		if (SDL_MUSTLOCK(video.screen)) {
+			SDL_LockSurface(video.screen);
 		}
 
 		if (render.useDirtyRects) {
-			bitmapScaledRtDirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
+			bitmapScaledRtDirty(&render.bitmap.srcRect, &render.bitmap.dstRect);
 		} else {
-			bitmapScaledRtNodirty(video, &render.bitmap.srcRect, &render.bitmap.dstRect);
+			bitmapScaledRtNodirty(&render.bitmap.srcRect, &render.bitmap.dstRect);
 		}
 
-		if (SDL_MUSTLOCK(video->screen)) {
-			SDL_UnlockSurface(video->screen);
+		if (SDL_MUSTLOCK(video.screen)) {
+			SDL_UnlockSurface(video.screen);
 		}
 	}
 }
 
-static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledRtNodirty(SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
 	render_texture_t *tex = render.texture;
-	SDL_Surface *surf = video->screen;
+	SDL_Surface *surf = video.screen;
 	int j;
 
-	switch(video->bpp) {
+	switch(video.bpp) {
 		case 8:
 			{
 				Uint8 *src = tex->pixels;
@@ -370,7 +370,7 @@ static void bitmapScaledRtNodirty(video_t *video, SDL_Rect *src_rect, SDL_Rect *
 	}
 }
 
-static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledScDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
 	SDL_Rect blt_src_rect, blt_dst_rect;
 	int x,y, dx,dy, num_rows=0, num_cols=0;
@@ -393,25 +393,25 @@ static void bitmapScaledScDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 
 			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
-			if (this->dirty_rects[this->numfb]->markers[dy*this->dirty_rects[this->numfb]->width + dx] == 0) {
+			if (video.dirty_rects[video.numfb]->markers[dy*video.dirty_rects[video.numfb]->width + dx] == 0) {
 				continue;
 			}
 
-			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, this->screen, &blt_dst_rect);
+			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, video.screen, &blt_dst_rect);
 
-			this->upload_rects[this->numfb]->setDirty(this->upload_rects[this->numfb],
+			video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 				blt_dst_rect.x,blt_dst_rect.y,
 				blt_dst_rect.w,blt_dst_rect.h);
 		}
 	}
 }
 
-static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst_rect)
+static void bitmapScaledRtDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect)
 {
 	SDL_Rect blt_src_rect, blt_dst_rect;
 	int x,y, j, num_rows=0, num_cols=0, dx,dy;
 	render_texture_t *tex = render.texture;
-	SDL_Surface *surf = this->screen;
+	SDL_Surface *surf = video.screen;
 
 	for (y=0; y<dst_rect->h; y+=num_rows) {
 		blt_src_rect.y = src_rect->y + y;
@@ -431,11 +431,11 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 
 			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
-			if (this->dirty_rects[this->numfb]->markers[dy*this->dirty_rects[this->numfb]->width + dx] == 0) {
+			if (video.dirty_rects[video.numfb]->markers[dy*video.dirty_rects[video.numfb]->width + dx] == 0) {
 				continue;
 			}
 
-			switch(this->bpp) {
+			switch(video.bpp) {
 				case 8:
 					{
 						Uint8 *src = tex->pixels;
@@ -507,16 +507,17 @@ static void bitmapScaledRtDirty(video_t *this, SDL_Rect *src_rect, SDL_Rect *dst
 					break;
 			}
 
-			this->upload_rects[this->numfb]->setDirty(this->upload_rects[this->numfb],
+			video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
 				blt_dst_rect.x,blt_dst_rect.y,
 				blt_dst_rect.w,blt_dst_rect.h);
 		}
 	}
 }
 
-static void refresh_scaled_version(video_t *video, render_texture_t *texture, int new_w, int new_h)
+static void refresh_scaled_version(render_texture_t *texture, int new_w, int new_h)
 {
 	int create_scaled = 0, new_bpp;
+	SDL_Surface *screen = video.screen;
 
 	/* Generate a cached version of texture scaled/dithered or both */
 	if (texture->scaled) {
@@ -526,12 +527,12 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		}
 	} else {
 		create_scaled = (texture->w != new_w) || (texture->h != new_h)
-			|| (video->screen->format->BytesPerPixel != texture->bpp)
-			|| (video->screen->format->Rmask != texture->format.Rmask)
-			|| (video->screen->format->Gmask != texture->format.Gmask)
-			|| (video->screen->format->Bmask != texture->format.Bmask)
-			|| (video->screen->format->Amask != texture->format.Amask)
-			|| ((video->bpp == 8) && render.dithering);
+			|| (screen->format->BytesPerPixel != texture->bpp)
+			|| (screen->format->Rmask != texture->format.Rmask)
+			|| (screen->format->Gmask != texture->format.Gmask)
+			|| (screen->format->Bmask != texture->format.Bmask)
+			|| (screen->format->Amask != texture->format.Amask)
+			|| ((video.bpp == 8) && render.dithering);
 	}
 
 	/* Create new render_texture, for scaled size */
@@ -573,7 +574,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 		int i;
 
 		SDL_Palette *palette = texture->scaled->format->palette;
-		SDL_PixelFormat *fmt = video->screen->format;
+		SDL_PixelFormat *fmt = video.screen->format;
 		for (i=0; i<256; i++) {
 			Uint8 r,g,b;
 
@@ -592,7 +593,7 @@ static void refresh_scaled_version(video_t *video, render_texture_t *texture, in
 	}
 
 	/* Dither if needed */
-	if (video->bpp == 8) {
+	if (video.bpp == 8) {
 		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(SDL_SWSURFACE,
 			texture->scaled->w,texture->scaled->h,8, 0,0,0,0);
 		if (!dithered_surf) {

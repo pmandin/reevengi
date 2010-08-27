@@ -54,7 +54,7 @@ void render_text(const char *str, int x, int y)
 
 			render.bitmap.clipSource(sx,sy, sw,sh);
 			render.bitmap.clipDest(video.viewport.x+x,video.viewport.y+y, sw,sh);
-			render.bitmap.drawImage(&video);
+			render.bitmap.drawImage();
 		}
 
 		x+= sw;

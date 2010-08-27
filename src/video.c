@@ -34,18 +34,20 @@
 
 /*--- Function prototypes ---*/
 
-static void shutDown(video_t *this);
-static void findNearestMode(video_t *this, int *width, int *height, int bpp);
-static void setVideoMode(video_t *this, int width, int height, int bpp);
-static void swapBuffers(video_t *this);
-static void countFps(video_t *this);
-static void screenShot(video_t *this);
-static void initViewport(video_t *this);
+static void shutDown(void);
+static void findNearestMode(int *width, int *height, int bpp);
+static void setVideoMode(int width, int height, int bpp);
+static void swapBuffers(void);
+static void countFps(void);
+static void screenShot(void);
+static void initViewport(void);
 
 /*--- Functions ---*/
 
 void video_soft_init(video_t *this)
 {
+	int i;
+
 	memset(this, 0, sizeof(video_t));
 
 	this->width = (params.width ? params.width : 320);
@@ -68,37 +70,31 @@ void video_soft_init(video_t *this)
 		video_detect_aspect();
 	}
 
-	this->dirty_rects[0] = dirty_rects_create(this->width, this->height);
-	this->upload_rects[0] = dirty_rects_create(this->width, this->height);
-
-	this->dirty_rects[1] = dirty_rects_create(this->width, this->height);
-	this->upload_rects[1] = dirty_rects_create(this->width, this->height);
+	for (i=0; i<2; i++) {
+		this->dirty_rects[i] = dirty_rects_create(this->width, this->height);
+		this->upload_rects[i] = dirty_rects_create(this->width, this->height);
+	}
 }
 
-static void shutDown(video_t *this)
+static void shutDown(void)
 {
-	if (this->dirty_rects[0]) {
-		dirty_rects_destroy(this->dirty_rects[0]);
-		this->dirty_rects[0] = NULL;
-	}
-	if (this->upload_rects[0]) {
-		dirty_rects_destroy(this->upload_rects[0]);
-		this->upload_rects[0] = NULL;
+	int i;
+
+	for (i=0; i<2; i++) {
+		if (video.dirty_rects[i]) {
+			dirty_rects_destroy(video.dirty_rects[i]);
+			video.dirty_rects[i] = NULL;
+		}
+		if (video.upload_rects[i]) {
+			dirty_rects_destroy(video.upload_rects[i]);
+			video.upload_rects[i] = NULL;
+		}
 	}
 
-	if (this->dirty_rects[1]) {
-		dirty_rects_destroy(this->dirty_rects[1]);
-		this->dirty_rects[1] = NULL;
-	}
-	if (this->upload_rects[1]) {
-		dirty_rects_destroy(this->upload_rects[1]);
-		this->upload_rects[1] = NULL;
-	}
-
-	if (this->list_rects) {
-		free(this->list_rects);
-		this->list_rects = NULL;
-		this->num_list_rects = 0;
+	if (video.list_rects) {
+		free(video.list_rects);
+		video.list_rects = NULL;
+		video.num_list_rects = 0;
 	}
 }
 
@@ -156,7 +152,7 @@ void video_detect_aspect(void)
 	}
 }
 
-static void findNearestMode(video_t *this, int *width, int *height, int bpp)
+static void findNearestMode(int *width, int *height, int bpp)
 {
 	SDL_Rect **modes;
 	SDL_PixelFormat pixelFormat;
@@ -202,57 +198,59 @@ static void findNearestMode(video_t *this, int *width, int *height, int bpp)
 	}
 }
 
-static void setVideoMode(video_t *this, int width, int height, int bpp)
+static void setVideoMode(int width, int height, int bpp)
 {
+	int i;
+
 	/* Search nearest fullscreen mode */
-	if (this->flags & SDL_FULLSCREEN) {
-		findNearestMode(this, &width, &height, bpp);
+	if (video.flags & SDL_FULLSCREEN) {
+		findNearestMode(&width, &height, bpp);
 		logMsg(1, "video: found nearest %dx%d\n", width, height);
 	}
 
-	this->screen = SDL_SetVideoMode(width, height, bpp, this->flags);
-	if (!this->screen) {
+	video.screen = SDL_SetVideoMode(width, height, bpp, video.flags);
+	if (!video.screen) {
 		/* Try 8 bpp if failed in true color */
-		this->screen = SDL_SetVideoMode(width, height, 8, this->flags);
+		video.screen = SDL_SetVideoMode(width, height, 8, video.flags);
 	}
-	if (!this->screen) {
+	if (!video.screen) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
 		return;
 	}
 
-	this->width = this->screen->w;
-	this->height = this->screen->h;
-	this->bpp = this->screen->format->BitsPerPixel;
-	this->flags = this->screen->flags;
+	video.width = video.screen->w;
+	video.height = video.screen->h;
+	video.bpp = video.screen->format->BitsPerPixel;
+	video.flags = video.screen->flags;
 
 	/* Set 216 color palette */
-	if (this->bpp==8) {
-		dither_setpalette(this->screen);
+	if (video.bpp==8) {
+		dither_setpalette(video.screen);
 	}
 
-	this->dirty_rects[0]->resize(this->dirty_rects[0], this->width, this->height);
-	this->upload_rects[0]->resize(this->upload_rects[0], this->width, this->height);
-	this->dirty_rects[1]->resize(this->dirty_rects[1], this->width, this->height);
-	this->upload_rects[1]->resize(this->upload_rects[1], this->width, this->height);
+	for (i=0; i<2; i++) {
+		video.dirty_rects[i]->resize(video.dirty_rects[i], video.width, video.height);
+		video.upload_rects[i]->resize(video.upload_rects[i], video.width, video.height);
+	}
 
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
 
-	render.resize(&render, this->width, this->height, this->bpp);
-	video.initViewport(&video);
+	render.resize(&render, video.width, video.height, video.bpp);
+	video.initViewport();
 }
 
-static void countFps(video_t *this)
+static void countFps(void)
 {
 	static int cur_fps = 0;
 	Uint32 cur_tick = SDL_GetTicks();
 
-	++this->fps;
-	if (cur_tick-this->start_tick>1000) {
-		cur_fps = this->fps;
+	++video.fps;
+	if (cur_tick-video.start_tick>1000) {
+		cur_fps = video.fps;
 		if (cur_fps>999) cur_fps=999;
 
-		this->fps = 0;
-		this->start_tick = cur_tick;
+		video.fps = 0;
+		video.start_tick = cur_tick;
 	}
 
 	if (params.fps) {
@@ -263,81 +261,81 @@ static void countFps(video_t *this)
 	}
 }
 
-static void swapBuffers(video_t *this)
+static void swapBuffers(void)
 {
 	int i, x, y;
 
-	this->countFps(this);
+	video.countFps();
 
 	render.endFrame(&render);
 
-	if ((this->flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
-		this->numfb ^= 1;
-		SDL_Flip(this->screen);
+	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
+		video.numfb ^= 1;
+		SDL_Flip(video.screen);
 		return;
 	}
 
 	/* Update background from rectangle list */
-	i = this->upload_rects[this->numfb]->width * this->upload_rects[this->numfb]->height;
-	if (i>this->num_list_rects) {
-		this->list_rects = (SDL_Rect *) realloc(this->list_rects, i * sizeof(SDL_Rect));
-		this->num_list_rects = i;
+	i = video.upload_rects[video.numfb]->width * video.upload_rects[video.numfb]->height;
+	if (i>video.num_list_rects) {
+		video.list_rects = (SDL_Rect *) realloc(video.list_rects, i * sizeof(SDL_Rect));
+		video.num_list_rects = i;
 	}
 
 	i = 0;
-	for (y=0; y<this->upload_rects[this->numfb]->height; y++) {
+	for (y=0; y<video.upload_rects[video.numfb]->height; y++) {
 		int num_rows = 16;
 
-		if (((y+1)<<4) > this->height) {
-			num_rows = this->height - (y<<4);
+		if (((y+1)<<4) > video.height) {
+			num_rows = video.height - (y<<4);
 		}
 
-		for (x=0; x<this->upload_rects[this->numfb]->width; x++) {
+		for (x=0; x<video.upload_rects[video.numfb]->width; x++) {
 			int num_cols = 16;
 
-			if (this->upload_rects[this->numfb]->markers[y*this->upload_rects[this->numfb]->width + x] == 0) {
+			if (video.upload_rects[video.numfb]->markers[y*video.upload_rects[video.numfb]->width + x] == 0) {
 				continue;
 			}
 
-			if (((x+1)<<4) > this->width) {
-				num_cols = this->width - (x<<4);
+			if (((x+1)<<4) > video.width) {
+				num_cols = video.width - (x<<4);
 			}
 
 			/* Add rectangle */
-			this->list_rects[i].x = x<<4;
-			this->list_rects[i].y = y<<4;
-			this->list_rects[i].w = num_cols;
-			this->list_rects[i].h = num_rows;
+			video.list_rects[i].x = x<<4;
+			video.list_rects[i].y = y<<4;
+			video.list_rects[i].w = num_cols;
+			video.list_rects[i].h = num_rows;
 			i++;
 		}
 	}
 
-	SDL_UpdateRects(this->screen, i, this->list_rects);
-	this->upload_rects[this->numfb]->clear(this->upload_rects[this->numfb]);
+	SDL_UpdateRects(video.screen, i, video.list_rects);
+	video.upload_rects[video.numfb]->clear(video.upload_rects[video.numfb]);
 }
 
-static void screenShot(video_t *this)
+static void screenShot(void)
 {
 	char filename[16];
 
-	if (!this->screen) {
+	if (!video.screen) {
 		return;
 	}
 
-	sprintf(filename, "%08d.bmp", this->num_screenshot++);
+	sprintf(filename, "%08d.bmp", video.num_screenshot++);
 
 	printf("Screenshot %s: %s\n", filename,
-		SDL_SaveBMP(this->screen, filename)==0 ? "done" : "failed");
+		SDL_SaveBMP(video.screen, filename)==0 ? "done" : "failed");
 }
 
-static void initViewport(video_t *this)
+static void initViewport(void)
 {
 	int cur_asp_w = 1, cur_asp_h = 1;	/* Square pixel as default */
 	int img_w, img_h;
 	int pos_x, pos_y, scr_w, scr_h;
 
 	/* Only keep non 5:4 ratio in fullscreen */
-	if ((this->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
+	if ((video.flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
 		if ((params.aspect_x != 5) || (params.aspect_y != 4)) {
 			cur_asp_w = params.aspect_x * 3;
 			cur_asp_h = params.aspect_y * 4;
@@ -354,34 +352,34 @@ static void initViewport(video_t *this)
 	}
 
 	/* Resize to fill screen */
-	scr_w = (this->height*img_w)/img_h;
-	scr_h = (this->width*img_h)/img_w;
-	if (scr_w>this->width) {
-		scr_w = this->width;
-	} else if (scr_h>this->height) {
-		scr_h = this->height;
+	scr_w = (video.height*img_w)/img_h;
+	scr_h = (video.width*img_h)/img_w;
+	if (scr_w>video.width) {
+		scr_w = video.width;
+	} else if (scr_h>video.height) {
+		scr_h = video.height;
 	}
 
 	/* Center */
-	pos_x = (this->width - scr_w)>>1;
-	pos_y = (this->height - scr_h)>>1;
+	pos_x = (video.width - scr_w)>>1;
+	pos_y = (video.height - scr_h)>>1;
 
 	if (pos_x>0) {
-		this->viewport.x = pos_x;
-		this->viewport.y = 0;
-		this->viewport.w = scr_w;
-		this->viewport.h = this->height;
+		video.viewport.x = pos_x;
+		video.viewport.y = 0;
+		video.viewport.w = scr_w;
+		video.viewport.h = video.height;
 	} else {
-		this->viewport.x = 0;
-		this->viewport.y = pos_y;
-		this->viewport.w = this->width;
-		this->viewport.h = scr_h;
+		video.viewport.x = 0;
+		video.viewport.y = pos_y;
+		video.viewport.w = video.width;
+		video.viewport.h = scr_h;
 	}
 
 	logMsg(2, "video: viewport %d,%d %dx%d\n",
-		this->viewport.x, this->viewport.y,
-		this->viewport.w, this->viewport.h);
+		video.viewport.x, video.viewport.y,
+		video.viewport.w, video.viewport.h);
 
-	render.set_viewport(this->viewport.x, this->viewport.y,
-		this->viewport.w, this->viewport.h);
+	render.set_viewport(video.viewport.x, video.viewport.y,
+		video.viewport.w, video.viewport.h);
 }

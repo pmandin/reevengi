@@ -37,7 +37,7 @@
 
 /*--- Functions prototypes ---*/
 
-static void drawImage(video_t *video);
+static void drawImage(void);
 
 /*--- Functions ---*/
 
@@ -47,7 +47,7 @@ void render_bitmap_opengl_init(render_bitmap_t *render_bitmap)
 	render.bitmap.drawImage = drawImage;
 }
 
-static void drawImage(video_t *video)
+static void drawImage(void)
 {
 	render_texture_t *tex = render.texture;
 	render_texture_gl_t *gl_tex;
@@ -77,20 +77,20 @@ static void drawImage(video_t *video)
 	}
 
 	/* Clip in dest screen */
-	if (render.bitmap.dstRect.x<video->viewport.x) {
+	if (render.bitmap.dstRect.x<video.viewport.x) {
 		render.bitmap.dstRect.w += render.bitmap.dstRect.x;
 		render.bitmap.srcRect.x -= (render.bitmap.dstRect.x*render.bitmap.srcWidth)/render.bitmap.dstWidth;
 		render.bitmap.dstRect.x = 0;
-	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video->viewport.x+video->viewport.w) {
-		render.bitmap.dstRect.w = video->viewport.w - render.bitmap.dstRect.x;
+	} else if (render.bitmap.dstRect.x+render.bitmap.dstRect.w>video.viewport.x+video.viewport.w) {
+		render.bitmap.dstRect.w = video.viewport.w - render.bitmap.dstRect.x;
 		render.bitmap.srcRect.w = (render.bitmap.dstRect.w*render.bitmap.srcWidth)/render.bitmap.dstWidth;
 	}
-	if (render.bitmap.dstRect.y<video->viewport.y) {
+	if (render.bitmap.dstRect.y<video.viewport.y) {
 		render.bitmap.dstRect.h += render.bitmap.dstRect.y;
 		render.bitmap.srcRect.y -= (render.bitmap.dstRect.y*render.bitmap.srcHeight)/render.bitmap.dstHeight;
 		render.bitmap.dstRect.y = 0;
-	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video->viewport.y+video->viewport.h) {
-		render.bitmap.dstRect.h = video->viewport.h - render.bitmap.dstRect.y;
+	} else if (render.bitmap.dstRect.y+render.bitmap.dstRect.h>video.viewport.y+video.viewport.h) {
+		render.bitmap.dstRect.h = video.viewport.h - render.bitmap.dstRect.y;
 		render.bitmap.srcRect.h = (render.bitmap.dstRect.h*render.bitmap.srcHeight)/render.bitmap.dstHeight;
 	}
 
@@ -104,16 +104,16 @@ static void drawImage(video_t *video)
 	}
 
 	/* Clipping for out of bounds in dest */
-	if ((render.bitmap.dstRect.x>=video->viewport.x+video->viewport.w)
-	   || (render.bitmap.dstRect.y>=video->viewport.y+video->viewport.h)
-	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<video->viewport.x)
-	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<video->viewport.y))
+	if ((render.bitmap.dstRect.x>=video.viewport.x+video.viewport.w)
+	   || (render.bitmap.dstRect.y>=video.viewport.y+video.viewport.h)
+	   || (render.bitmap.dstRect.x+render.bitmap.dstRect.w<video.viewport.x)
+	   || (render.bitmap.dstRect.y+render.bitmap.dstRect.h<video.viewport.y))
 	{
 		return;
 	}
 
-	render.bitmap.dstRect.x -= video->viewport.x;
-	render.bitmap.dstRect.y -= video->viewport.y;
+	render.bitmap.dstRect.x -= video.viewport.x;
+	render.bitmap.dstRect.y -= video.viewport.y;
 
 	gl.Enable(gl_tex->textureTarget);
 	if (render.bitmap.depth_test) {
@@ -134,7 +134,7 @@ f/(f-n) * 1-n/z
 
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
-	gl.Ortho(0.0f, video->viewport.w, video->viewport.h, 0.0f, 0.0f, 1.0f);
+	gl.Ortho(0.0f, video.viewport.w, video.viewport.h, 0.0f, 0.0f, 1.0f);
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();

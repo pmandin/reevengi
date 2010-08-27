@@ -163,7 +163,7 @@ static void drawMask(render_mask_t *this)
 			video.viewport.y+y1,
 			x2-x1,y2-y1);
 		render.bitmap.setDepth(1, zone->depth);
-		render.bitmap.drawImage(&video);
+		render.bitmap.drawImage();
 	}
 
 	render.bitmap.setDepth(0, 0.0f);

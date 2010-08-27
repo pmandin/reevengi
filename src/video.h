@@ -37,14 +37,14 @@ struct video_s {
 
 	SDL_Rect viewport;
 
-	void (*shutDown)(video_t *this);
-	void (*findNearestMode)(video_t *this, int *width, int *height, int bpp);
-	void (*setVideoMode)(video_t *this, int width, int height, int bpp);
-	void (*swapBuffers)(video_t *this);
-	void (*screenShot)(video_t *this);
-	void (*countFps)(video_t *this);
+	void (*shutDown)(void);
+	void (*findNearestMode)(int *width, int *height, int bpp);
+	void (*setVideoMode)(int width, int height, int bpp);
+	void (*swapBuffers)(void);
+	void (*screenShot)(void);
+	void (*countFps)(void);
 
-	void (*initViewport)(video_t *this);
+	void (*initViewport)(void);
 
 	/* Rect list of final update */
 	int num_list_rects;
