@@ -2,7 +2,7 @@
 	Room description
 	RE1 RDT script
 
-	Copyright (C) 2009	Patrice Mandin
+	Copyright (C) 2009-2010	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -29,29 +29,9 @@
 #include "room_rdt.h"
 #include "state.h"
 #include "log.h"
+#include "room_rdt_script_common.h"
 
 /*--- Defines ---*/
-
-/* Instructions */
-
-#define INST_NOP	0x00
-#define INST_IF		0x01
-#define INST_ELSE	0x02
-#define INST_END_IF	0x03
-#define INST_BIT_TEST	0x04
-#define INST_BIT_OP	0x05
-#define INST_CMP06	0x06
-#define INST_CMP07	0x07
-#define INST_SET06	0x08
-#define INST_DOOR_SET	0x0c
-#define INST_ITEM_SET	0x0d
-#define INST_NOP0E	0x0e
-
-#define INST_CMP10	0x10
-#define INST_CMP11	0x11
-#define INST_ITEM_MODEL_SET	0x18
-#define INST_EM_SET	0x1b
-#define INST_OM_SET	0x1f
 
 /* Item types */
 
@@ -64,70 +44,6 @@
 #define ITEM_TYPEWRITER	0x10
 
 /*--- Types ---*/
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 block_length;
-} script_if_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 block_length;
-} script_else_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 dummy;
-} script_endif_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 flag;
-	Uint8 object;
-	Uint8 value;
-} script_bit_test_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 id;
-	Sint16 x,y,w,h;
-	Uint8 unknown0[5];
-	Uint8 next_stage_and_room;	/* bits 7-5: stage, 4-0: room */
-	Sint16 next_x,next_y,next_z;
-	Sint16 next_dir;
-	Uint16 unknown2;
-} script_door_set_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 id;
-	Sint16 x,y,w,h;
-	Uint8 type;	/* 0x10: typewriter */
-	Uint8 unknown[7];
-} script_item_set_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 id;
-	Uint16 unknown[12];
-} script_item_model_set_t;
-
-typedef struct {
-	Uint8 opcode;
-	Uint8 id;
-	Uint16 unknown[13];
-} script_om_set_t;
-
-typedef union {
-	Uint8 opcode;
-	script_if_t	i_if;
-	script_else_t	i_else;
-	script_endif_t	i_endif;
-	script_door_set_t	door_set;
-	script_item_set_t	item_set;
-	script_item_model_set_t	item_model_set;
-	script_om_set_t	om_set;
-} script_inst_t;
 
 typedef struct {
 	Uint8 opcode;
