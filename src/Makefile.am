@@ -43,7 +43,8 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	render_texture_list.h \
 	render_mask.h render_mask_opengl.h \
 	room.h room_rdt.h room_rdt_script.h \
-	room_rdt2.h room_rdt2_script.h room_rdt3_script.h \
+	room_rdt2.h room_rdt2_script.h room_rdt2_script_common.h \
+	room_rdt3_script.h \
 	state.h video.h \
 	view_background.h view_movie.h
 
