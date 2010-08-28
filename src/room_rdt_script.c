@@ -19,11 +19,12 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <SDL.h>
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <SDL.h>
+#include <assert.h>
 
 #include "room.h"
 #include "room_rdt.h"
@@ -142,7 +143,7 @@ static const script_inst_len_t inst_length[]={
 /*--- Functions prototypes ---*/
 
 static Uint8 *scriptFirstInst(room_t *this, int num_script);
-static int scriptGetInstLen(room_t *this);
+static int scriptGetInstLen(Uint8 *curInstPtr);
 static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
 
@@ -188,27 +189,22 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 	return this->cur_inst;
 }
 
-static int scriptGetInstLen(room_t *this)
+static int scriptGetInstLen(Uint8 *curInstPtr)
 {
 	int i;
 
-	if (!this) {
-		return 0;
-	}
-	if (!this->cur_inst) {
-		return 0;
-	}
+	assert(curInstPtr);
 
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
-		if (inst_length[i].opcode == this->cur_inst[0]) {
+		if (inst_length[i].opcode == curInstPtr[0]) {
 			return inst_length[i].length;
 		}
 	}
 
 	/* Variable length instructions */
-	switch(this->cur_inst[0]) {
+	switch(curInstPtr[0]) {
 		case 0x28:
-			switch(this->cur_inst[2]) {
+			switch(curInstPtr[2]) {
 				case 0:
 				case 2:
 				case 3:
@@ -227,7 +223,7 @@ static int scriptGetInstLen(room_t *this)
 			}
 			break;
 		case 0x33:
-			switch(this->cur_inst[1]) {
+			switch(curInstPtr[1]) {
 				case 0:
 				case 4:
 				case 6:

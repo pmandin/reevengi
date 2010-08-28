@@ -102,7 +102,7 @@ struct room_s {
 	int script_length;
 
 	Uint8 *(*scriptPrivFirstInst)(room_t *this, int num_script);
-	int (*scriptPrivGetInstLen)(room_t *this);
+	int (*scriptPrivGetInstLen)(Uint8 *curInstPtr);	/* Get current instruction length */
 	void (*scriptPrivExecInst)(room_t *this);
 	void (*scriptPrivPrintInst)(room_t *this);
 

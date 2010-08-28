@@ -78,7 +78,7 @@ static void addObstacle(room_t *this, room_obstacle_t *obstacle);
 static void addItem(room_t *this, room_item_t *obstacle);
 
 static Uint8 *scriptPrivFirstInst(room_t *this, int num_script);
-static int scriptPrivGetInstLen(room_t *this);
+static int scriptPrivGetInstLen(Uint8 *curInstPtr);
 static void scriptPrivExecInst(room_t *this);
 static void scriptPrivPrintInst(room_t *this);
 
@@ -725,7 +725,7 @@ static Uint8 *scriptPrivFirstInst(room_t *this, int num_script)
 	return NULL;
 }
 
-static int scriptPrivGetInstLen(room_t *this)
+static int scriptPrivGetInstLen(Uint8 *curInstPtr)
 {
 	return 0;
 }
@@ -750,7 +750,7 @@ static Uint8 *scriptNextInst(room_t *this)
 		return NULL;
 	}
 
-	inst_len = this->scriptPrivGetInstLen(this);
+	inst_len = this->scriptPrivGetInstLen(this->cur_inst);
 	if (inst_len == 0) {
 		return NULL;
 	}
@@ -784,7 +784,7 @@ static void scriptDump(room_t *this, int num_script)
 			int i, inst_len;
 			char tmpBuf[16];
 
-			inst_len = this->scriptPrivGetInstLen(this);
+			inst_len = this->scriptPrivGetInstLen(this->cur_inst);
 			if (inst_len==0) {
 				inst_len = 16;
 			}
