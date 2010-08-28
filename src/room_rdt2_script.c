@@ -32,74 +32,12 @@
 #include "room_rdt2_script_common.h"
 #include "room_rdt2_script_dump.h"
 
-/* Effect sprites */
-
-#define ESPR_LIGHT	0x03
-#define ESPR_OBSTACLE	0x04
-#define ESPR_TYPEWRITER	0x09
-#define ESPR_BOX	0x0a
-#define ESPR_FIRE	0x0b
-
-/* possible room objects:
-	inst2c: espr , fire can do damage
-	inst3b: door
-	inst4e: item
-	inst67: wall
-	inst68: ?, ptr+2 stored in object list, like others
-	inst69: ?, ptr+2 stored in object list, like others
-	inst8d: ?, ptr+2 stored in object list, like others
-
-movies	
-	0x04	zmovie/r10b.bin
-	0x05	zmovie/r200.bin
-	0x06	zmovie/r505.bin
-	0x07	zmovie/r602.bin
-	0x08	plX/zmovie/r108X.bin
-	0x09	zmovie/r109.bin
-	0x0a	plX/zmovie/r204X.bin
-	0x0b	plX/zmovie/r408.bin / plX/zmovie/r409.bin
-	0x0c	plX/zmovie/r700X.bin
-	0x0d	plX/zmovie/r703X.bin
-*/
-
 typedef struct {
 	Uint8 opcode;
 	Uint8 length;
 } script_inst_len_t;
 
 /*--- Variables ---*/
-
-static const char *cmp_imm_name[7]={
-	"EQ", "GT", "GE", "LT", "LE", "NE", "??"
-};
-
-static const char *item_name[]={
-	"", "Knife", "HK VP70", "Browning",
-	"Custom handgun", "Magnum", "Custom magnum", "Shotgun",
-	"Custom shotgun", "Grenade launcher + grenade rounds", "Grenade launcher + fire rounds", "Grenade launcher + acid rounds",
-	"Bowgun", "Calico M950", "Sparkshot", "Ingram",
-	"Flamethrower", "Rocket launcher", "Gatling gun", "Machine gun",
-	"Handgun ammo", "Shotgun ammo", "Magnum ammo", "Flamer fuel",
-	"Grenade rounds", "Fire rounds", "Acid rounds", "SMG ammo",
-	"Sparkshot ammo", "Bowgun ammo", "Ink ribbon", "Small key",
-	"Handgun parts", "Magnum parts", "Shotgun parts", "First aid spray",
-	"Chemical F-09", "Chemical ACw-32", "Green herb", "Red herb",
-	"Blue herb", "Green + green herbs", "Green + red herbs", "Green + blue herbs",
-	"Green + green + green herbs", "Green + green + blue herbs", "Green + red + blue herbs", "Lighter",
-	"Lockpick", "Sherry's photo", "Valve handle", "Red jewel",
-	"Red card", "Blue card", "Serpent stone", "Jaguar stone",
-	"Jaguar stone (left part)", "Jaguar stone (right part)", "Eagle stone", "Rook plug",
-	"King plug", "Bishop plug", "Knight plug", "Weapon storage key",
-	"Detonator", "C4", "C4 + detonator", "Crank",
-	"Film A", "Film B", "Film C", "Unicord medal",
-	"Eagle medal", "Wolf medal", "Cog", "Manhole opener",
-	"Main fuse", "Fuse case", "Vaccine", "Vaccine container",
-	"Firestarter", "Base vaccine", "G-Virus", "Base vaccine (case only)",
-	"Joint S plug", "Joint N plug", "Wire", "Ada's photo",
-	"Cabin key", "Spade key", "Diamond key", "Heart key",
-	"Club key", "Control panel key (down)", "Control panel key (up)", "Power room key",
-	"MO disk", "Umbrella keycard", "Master key", "Weapons locker key"
-};
 
 static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
