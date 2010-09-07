@@ -98,6 +98,7 @@
 #define INST_WALL_SET	0x67
 #define INST_LIGHT_POS_SET	0x6a
 #define INST_LIGHT3_POS_SET	0x6b
+#define INST_BG_YPOS_SET	0x6d
 #define INST_MOVIE_PLAY	0x6f
 
 /* 0x70-0x7f */
@@ -515,6 +516,12 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 y;
+} script_bg_ypos_set_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 id;
 } script_movie_play_t;
 
@@ -631,6 +638,7 @@ typedef union {
 	script_wall_set_t	wall_set;
 	script_light_pos_set_t	light_pos_set;
 	script_light3_pos_set_t	light3_pos_set;
+	script_bg_ypos_set_t	bg_ypos_set;
 	script_movie_play_t	movie_play;
 
 	/* 0x70-0x7f */

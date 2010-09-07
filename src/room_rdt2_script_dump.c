@@ -70,6 +70,10 @@ movies
 	0x0b	plX/zmovie/r408.bin / plX/zmovie/r409.bin
 	0x0c	plX/zmovie/r700X.bin
 	0x0d	plX/zmovie/r703X.bin
+
+inst 53
+	02 02 07 00 fe: fade in
+                    \--> speed
 */
 
 /*--- Types ---*/
@@ -722,6 +726,10 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				sprintf(tmpBuf, "LIGHT3_POS_SET %c=%d\n",
 					'x'+inst->light3_pos_set.param,
 					SDL_SwapLE16(inst->light3_pos_set.value));
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_BG_YPOS_SET:
+				sprintf(tmpBuf, "BG_YPOS_SET #0x%04x\n", SDL_SwapLE16(inst->bg_ypos_set.y));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_MOVIE_PLAY:
