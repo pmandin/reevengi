@@ -97,7 +97,7 @@
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
 #define INST_LIGHT_POS_SET	0x6a
-#define INST_LIGHT3_POS_SET	0x6b
+#define INST_LIGHT_RANGE_SET	0x6b
 #define INST_BG_YPOS_SET	0x6d
 #define INST_MOVIE_PLAY	0x6f
 
@@ -105,7 +105,7 @@
 #define INST_ITEM_ADD	0x76
 #define INST_LIGHT_COLOR_SET	0x7c
 #define INST_LIGHT_POS_CAM_SET	0x7d
-#define INST_LIGHT3_POS_CAM_SET	0x7e
+#define INST_LIGHT_RANGE_CAM_SET	0x7e
 #define INST_LIGHT_COLOR_CAM_SET	0x7f
 
 /* 0x80-0x8e */
@@ -510,9 +510,9 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 param;
-	Sint16 value;
-} script_light3_pos_set_t;
+	Uint8 id;
+	Uint16 range;
+} script_light_range_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -552,9 +552,9 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 dummy;
 	Uint8 camera;
-	Uint8 param;
-	Sint16 value;
-} script_light3_pos_cam_set_t;
+	Uint8 id;
+	Uint16 range;
+} script_light_range_cam_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -637,7 +637,7 @@ typedef union {
 	script_item_below_t	item_below;
 	script_wall_set_t	wall_set;
 	script_light_pos_set_t	light_pos_set;
-	script_light3_pos_set_t	light3_pos_set;
+	script_light_range_set_t	light_range_set;
 	script_bg_ypos_set_t	bg_ypos_set;
 	script_movie_play_t	movie_play;
 
@@ -645,7 +645,7 @@ typedef union {
 	script_item_add_t	item_add;
 	script_light_color_set_t	light_color_set;
 	script_light_pos_cam_set_t	light_pos_cam_set;
-	script_light3_pos_cam_set_t	light3_pos_cam_set;
+	script_light_range_cam_set_t	light_range_cam_set;
 	script_light_color_cam_set_t	light_color_cam_set;
 
 	/* 0x80-0x8e */

@@ -160,7 +160,7 @@ static const script_inst_len_t inst_length[]={
 	{0x68,		40},
 	{0x69,		30},
 	{INST_LIGHT_POS_SET,	sizeof(script_light_pos_set_t)},
-	{INST_LIGHT3_POS_SET,	sizeof(script_light3_pos_set_t)},
+	{INST_LIGHT_RANGE_SET,	sizeof(script_light_range_set_t)},
 	{0x6c,		1},
 	{0x6d,		4},
 	{0x6e,		6},
@@ -181,7 +181,7 @@ static const script_inst_len_t inst_length[]={
 	{0x7b,		16},
 	{INST_LIGHT_COLOR_SET,	sizeof(script_light_color_set_t)},
 	{INST_LIGHT_POS_CAM_SET,	sizeof(script_light_pos_cam_set_t)},
-	{INST_LIGHT3_POS_CAM_SET,	sizeof(script_light3_pos_cam_set_t)},
+	{INST_LIGHT_RANGE_CAM_SET,	sizeof(script_light_range_cam_set_t)},
 	{INST_LIGHT_COLOR_CAM_SET,	sizeof(script_light_color_cam_set_t)},
 	
 	/* 0x80-0x8f */
