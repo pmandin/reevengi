@@ -124,18 +124,18 @@ static const char *item_name[]={
 	/* 0x60-0x6f */
 	"MO disk", "Umbrella keycard", "Master key", "Weapons locker key",
 	"", "", "", "",
-	"Chris' diary", "", "Memo to Leon", "Police memorandum",
-	"Operation report 1", "", "", "",
+	"Chris's diary", "", "Memo to Leon", "Police memorandum",
+	"Operation report 1", "", "Mail to the chief", "Secretary's diary A",
 
 	/* 0x70-0x7f */
-	"Secretary's diary A", "", "", "",
-	"", "", "", "",
-	"", "", "", "",
-	"", "", "", ""
+	"Secretary's diary B", "", "", "",
+	"", "", "", "Watchman's diary",
+	"Chief's diary", "Sewer manager diary", "Sewer manager fax", "",
+	"", "", "P-epsilon report", ""
 };
 
-/*113,115,116,117,123 = Operation report 2, room 2080 */
-/* police station map + shotgun shells/acid in safe of room 20b0 */
+/*113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 */
+/*114,125 = User registration,Lab security manual ? room 60a0 */
 
 /*--- Variables ---*/
 
