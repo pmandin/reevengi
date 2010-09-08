@@ -51,7 +51,7 @@ void room_rdt2_scriptDump(room_t *this, int num_script)
 #define ESPR_FIRE	0x0b
 
 /* possible room objects:
-	inst2c: espr , fire can do damage
+	inst2c: espr3d , fire can do damage
 	inst3b: door
 	inst4e: item
 	inst67: wall
@@ -540,20 +540,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
 				}
 				break;
-			case INST_ESPR_SET:
+			case INST_ESPR3D_SET:
 				{
 					char myTmpBuf[3][32];
 					int i;
 
 					for (i=0; i<3; i++) {
-						sprintf(myTmpBuf[i], "0x%04x", SDL_SwapLE16(inst->espr_set.inst[i]));
-						if ((SDL_SwapLE16(inst->espr_set.inst[i]) & 0xff) == 0x18) {
-							sprintf(myTmpBuf[i], "function 0x%02x", (SDL_SwapLE16(inst->espr_set.inst[i])>>8) & 0xff);
+						sprintf(myTmpBuf[i], "0x%04x", SDL_SwapLE16(inst->espr3d_set.inst[i]));
+						if ((SDL_SwapLE16(inst->espr3d_set.inst[i]) & 0xff) == 0x18) {
+							sprintf(myTmpBuf[i], "function 0x%02x", (SDL_SwapLE16(inst->espr3d_set.inst[i])>>8) & 0xff);
 						}	
 					}
 
-					sprintf(tmpBuf, "OBJECT 0x%02x = ESPR_SET xxx, examine %s, activate %s, ??? %s\n",
-						inst->espr_set.id, myTmpBuf[0], myTmpBuf[1], myTmpBuf[2]);
+					sprintf(tmpBuf, "OBJECT 0x%02x = ESPR3D_SET xxx, examine %s, activate %s, ??? %s\n",
+						inst->espr3d_set.id, myTmpBuf[0], myTmpBuf[1], myTmpBuf[2]);
 					strcat(strBuf, tmpBuf);
 				}
 				break;
@@ -674,7 +674,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						sprintf(myTmpBuf, "function 0x%02x", (SDL_SwapLE16(inst->inst46.unknown1[1])>>8) & 0xff);
 					}
 
-					sprintf(tmpBuf, "TRIGGER_SET_ACTION TRIGGER 0x%02x, %d,%d 0x%04x,%s,0x%04x\n",
+					sprintf(tmpBuf, "TRIGGER_SET_ACTION OBJECT 0x%02x, %d,%d 0x%04x,%s,0x%04x\n",
 						inst->inst46.id, inst->inst46.unknown0[0], inst->inst46.unknown0[1],
 						SDL_SwapLE16(inst->inst46.unknown1[0]), myTmpBuf,
 						SDL_SwapLE16(inst->inst46.unknown1[2]));

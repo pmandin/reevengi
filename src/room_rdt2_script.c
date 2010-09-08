@@ -89,7 +89,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_CAM_SET,	sizeof(script_cam_set_t)},
 	{0x2a,		1},
 	{INST_PRINT_TEXT,	sizeof(script_print_text_t)},
-	{INST_ESPR_SET,		sizeof(script_espr_set_t)},
+	{INST_ESPR3D_SET,	sizeof(script_espr3d_set_t)},
 	{INST_TRIGGER_SET,	sizeof(script_trigger_set_t)},
 	{INST_SET_REG_MEM,	sizeof(script_setregmem_t)},
 	{INST_SET_REG_IMM,	sizeof(script_setregimm_t)},

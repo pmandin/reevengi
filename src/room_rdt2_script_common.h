@@ -65,7 +65,7 @@
 #define INST_OP_VARW	0x27
 #define INST_CAM_SET	0x29
 #define INST_PRINT_TEXT	0x2b
-#define INST_ESPR_SET	0x2c
+#define INST_ESPR3D_SET	0x2c
 #define INST_TRIGGER_SET	0x2d
 #define INST_SET_REG_MEM	0x2e	/* 0x2e 01 00 : reenable control+animation in room1010 */
 #define INST_SET_REG_IMM	0x2f
@@ -281,7 +281,7 @@ typedef struct {
 	Uint8 unknown0[3];
 	Sint16 x,y,w,h;
 	Uint16 inst[3];	/* Instructions to execute. 0:examine 1:activate 2:? or 0xff */
-} script_espr_set_t;
+} script_espr3d_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -606,7 +606,7 @@ typedef union {
 	script_op_varw_t	op_varw;
 	script_cam_set_t	cam_set;
 	script_print_text_t	print_text;
-	script_espr_set_t	espr_set;
+	script_espr3d_set_t	espr3d_set;
 	script_trigger_set_t	trigger_set;
 	script_setregmem_t	set_reg_mem;
 	script_setregimm_t	set_reg_imm;
