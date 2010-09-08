@@ -115,7 +115,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x40-0x4f */
 	{0x40,		8},
 	{0x41,		10},
-	{0x42,		1},
+	{INST_STATUS_SHOW,	1},
 	{0x43,		4},
 	{INST_EM_SET,	sizeof(script_em_set_t)},
 	{0x45,		5},

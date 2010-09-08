@@ -655,6 +655,9 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x40-0x4f */
 
+			case INST_STATUS_SHOW:
+				strcat(strBuf, "STATUS_SHOW\n");
+				break;
 			case INST_EM_SET:
 				sprintf(tmpBuf, "ENTITY 0x%02x = EM_SET model=0x%02x, killed=0x%02x, x=%d, y=%d, z=%d\n",
 					inst->em_set.id, inst->em_set.model, inst->em_set.killed,

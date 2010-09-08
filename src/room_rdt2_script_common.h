@@ -82,6 +82,7 @@
 #define INST_CMP_IMM	0x3e
 
 /* 0x40-0x4f */
+#define INST_STATUS_SHOW	0x42
 #define INST_EM_SET	0x44
 #define INST_ACTIVATE_OBJECT	0x47
 #define INST_CAMSWITCH_SWAP	0x4b
