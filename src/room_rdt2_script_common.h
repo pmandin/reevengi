@@ -45,6 +45,7 @@
 #define INST_WHILE	0x12
 #define INST_BEGIN_SWITCH	0x13
 #define INST_CASE	0x14
+#define INST_DEFAULT	0x15
 #define INST_END_SWITCH	0x16
 #define INST_GOTO	0x17
 #define INST_FUNC	0x18

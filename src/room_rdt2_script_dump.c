@@ -347,6 +347,9 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				block_len = SDL_SwapLE16(inst->i_case.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_case_t)]);
 				break;
+			case INST_DEFAULT:
+				strcat(strBuf, "DEFAULT\n");
+				break;
 			case INST_END_SWITCH:
 				strcat(strBuf, "END_SWITCH\n");
 				break;
