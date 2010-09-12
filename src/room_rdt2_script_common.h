@@ -77,9 +77,11 @@
 #define INST_EM_SET_POS	0x32
 #define INST_SET_REG3	0x33
 #define INST_EM_SET_VAR	0x34
+/* 0x35: set EM_ variable for current object ?*/
 #define INST_CAM_CHG	0x37
 #define INST_DOOR_SET	0x3b
-#define INST_BCHG8	0x3c
+#define INST_STATUS_SET	0x3c
+/* 0x3d: read EM_ variable for current object ?*/
 #define INST_CMP_IMM	0x3e
 
 /* 0x40-0x4f */
@@ -111,6 +113,8 @@
 #define INST_LIGHT_COLOR_CAM_SET	0x7f
 
 /* 0x80-0x8e */
+#define INST_POISON_CHECK	0x86
+#define INST_POISON_CLEAR	0x87
 #define INST_ITEM_ABOVE	0x88
 #define INST_NOP8A	0x8a
 #define INST_NOP8B	0x8b
@@ -368,8 +372,8 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 operation;
-} script_bchg8_t;
+	Uint8 screen;
+} script_status_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -619,7 +623,7 @@ typedef union {
 	script_cam_chg_t	cam_chg;
 	script_inst3a_t		inst3a;
 	script_door_set_t	door_set;
-	script_bchg8_t		bchg8;
+	script_status_set_t	status_set;
 	script_inst3d_t		inst3d;
 	script_cmp_imm_t	cmp_imm;
 

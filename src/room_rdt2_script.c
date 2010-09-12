@@ -107,7 +107,7 @@ static const script_inst_len_t inst_length[]={
 	{0x39,		8},
 	{0x3a,		sizeof(script_inst3a_t)},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
-	{INST_BCHG8,	sizeof(script_bchg8_t)},
+	{INST_STATUS_SET,	sizeof(script_status_set_t)},
 	{0x3d,		3},
 	{INST_CMP_IMM,	sizeof(script_cmp_imm_t)},
 	{0x3f,		4},

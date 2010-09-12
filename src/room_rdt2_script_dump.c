@@ -632,9 +632,9 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					(Sint16) SDL_SwapLE16(inst->door_set.w), (Sint16) SDL_SwapLE16(inst->door_set.h));
 				strcat(strBuf, tmpBuf);
 				break;
-			case INST_BCHG8:
-				sprintf(tmpBuf, "B%s 8,xxx\n",
-					(inst->bchg8.operation == 1 ? "SET" : "CLR"));
+			case INST_STATUS_SET:
+				sprintf(tmpBuf, "STATUS_SET %s\n",
+					(inst->status_set.screen == 0 ? "item" : "map"));
 				strcat(strBuf, tmpBuf);
 				break;
 			case 0x3d:
@@ -818,6 +818,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x80-0x8f */
 
+			case INST_POISON_CHECK:
+				strcat(strBuf, "POISON_CHECK\n");
+				break;
+			case INST_POISON_CLEAR:
+				strcat(strBuf, "POISON_CLEAR\n");
+				break;
 			case INST_ITEM_ABOVE:
 				sprintf(tmpBuf, "ITEM_ABOVE %d\n", inst->item_above.id);
 				strcat(strBuf, tmpBuf);
