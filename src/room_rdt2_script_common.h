@@ -94,7 +94,7 @@
 #define INST_ITEM_HAVE	0x5e
 
 /* 0x60-0x6f */
-#define INST_ITEM_BELOW	0x62
+#define INST_ITEM_REMOVE	0x62
 #define INST_NOP63	0x63
 #define INST_WALL_SET	0x67
 #define INST_LIGHT_POS_SET	0x6a
@@ -493,7 +493,7 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
-} script_item_below_t;
+} script_item_remove_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -635,7 +635,7 @@ typedef union {
 	script_item_have_t	item_have;
 
 	/* 0x60-0x6f */
-	script_item_below_t	item_below;
+	script_item_remove_t	item_remove;
 	script_wall_set_t	wall_set;
 	script_light_pos_set_t	light_pos_set;
 	script_light_range_set_t	light_range_set;

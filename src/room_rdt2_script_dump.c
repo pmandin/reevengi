@@ -699,7 +699,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
-					if (inst->item_set.type < 0x64) {
+					if (inst->item_set.type < 0x80) {
 						sprintf(strBuf, "#\t%s\n", item_name[inst->item_set.type]);
 					} else {
 						sprintf(strBuf, "#\tUnknown item\n");
@@ -721,13 +721,27 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_ITEM_HAVE:
 				sprintf(tmpBuf, "ITEM_HAVE %d\n", inst->item_have.id);
 				strcat(strBuf, tmpBuf);
+				logMsg(1, "0x%08x: %s", offset, strBuf);
+
+				if (inst->item_have.id < 0x80) {
+					sprintf(strBuf, "#\t%s\n", item_name[inst->item_have.id]);
+				} else {
+					sprintf(strBuf, "#\tUnknown item\n");
+				}
 				break;
 
 			/* 0x60-0x6f */
 
-			case INST_ITEM_BELOW:
-				sprintf(tmpBuf, "ITEM_BELOW %d\n", inst->item_below.id);
+			case INST_ITEM_REMOVE:
+				sprintf(tmpBuf, "ITEM_REMOVE %d\n", inst->item_remove.id);
 				strcat(strBuf, tmpBuf);
+				logMsg(1, "0x%08x: %s", offset, strBuf);
+
+				if (inst->item_remove.id < 0x80) {
+					sprintf(strBuf, "#\t%s\n", item_name[inst->item_remove.id]);
+				} else {
+					sprintf(strBuf, "#\tUnknown item\n");
+				}
 				break;
 			case INST_WALL_SET:
 				sprintf(tmpBuf, "OBJECT 0x%02x = WALL_SET xxx\n", inst->wall_set.id);
@@ -763,7 +777,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
-					if (inst->item_add.id < 0x64) {
+					if (inst->item_add.id < 0x80) {
 						sprintf(strBuf, "#\t%s\n", item_name[inst->item_add.id]);
 					} else {
 						sprintf(strBuf, "#\tUnknown item\n");

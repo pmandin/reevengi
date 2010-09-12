@@ -151,7 +151,7 @@ static const script_inst_len_t inst_length[]={
 	/* 0x60-0x6f */
 	{0x60,		14},
 	{0x61,		4},
-	{INST_ITEM_BELOW,	sizeof(script_item_below_t)},
+	{INST_ITEM_REMOVE,	sizeof(script_item_remove_t)},
 	{INST_NOP63,	1},
 	{0x64,		16},
 	{0x65,		2},
