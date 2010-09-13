@@ -78,10 +78,22 @@ inst 53
 
 /*--- Types ---*/
 
+typedef struct {
+	Uint8 id;
+	const char *name;
+} em_var_name_t;
+
 /*--- Constants ---*/
 
 static const char *cmp_imm_name[7]={
 	"EQ", "GT", "GE", "LT", "LE", "NE", "??"
+};
+
+static const em_var_name_t em_var_name[4]={
+	{0x0b, "#EM_X"},
+	{0x0c, "#EM_Y"},
+	{0x0d, "#EM_Z"},
+	{0x0f, "#EM_ANGLE"}
 };
 
 static const char *item_name[]={
@@ -190,6 +202,7 @@ void room_rdt2_scriptDump(room_t *this, int num_script)
 	 */
 	functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
 
+	logMsg(1, "rdt: Dumping script %d\n", num_script);
 	num_funcs = SDL_SwapLE16(functionArrayPtr[0]) >> 1;
 	for (i=0; i<num_funcs; i++) {
 		Uint16 func_offset = SDL_SwapLE16(functionArrayPtr[i]);
@@ -607,15 +620,15 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_EM_SET_VAR:
 				{
+					int i;
 					char varname[32];
 
-					switch(inst->set_var.id) {
-						case 0x0f:
-							sprintf(varname, "#EM_ANGLE");
+					sprintf(varname, "0x%02x", inst->set_var.id);
+					for (i=0; i<4; i++) {
+						if (em_var_name[i].id == inst->set_var.id) {
+							sprintf(varname, em_var_name[i].name);
 							break;
-						default:
-							sprintf(varname, "0x%02x", inst->set_var.id);
-							break;
+						}
 					}
 
 					sprintf(tmpBuf, "EM_SET_VAR %s,%d\n", varname,
@@ -623,10 +636,23 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
-			case 0x35:
-				sprintf(tmpBuf, "INST35 unknown 0x%02x = var%02x.W\n",
-					inst->inst35.unknown, inst->inst35.srcw);
-				strcat(strBuf, tmpBuf);
+			case INST_EM_SET_VAR_VARW:
+				{
+					int i;
+					char varname[32];
+
+					sprintf(varname, "0x%02x", inst->em_set_var_varw.id);
+					for (i=0; i<4; i++) {
+						if (em_var_name[i].id == inst->em_set_var_varw.id) {
+							sprintf(varname, em_var_name[i].name);
+							break;
+						}
+					}
+
+					sprintf(tmpBuf, "EM_SET_VAR %s, var%02x.W\n", varname,
+						inst->em_set_var_varw.varw);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_CAM_CHG:
 				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
@@ -645,10 +671,23 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					(inst->status_set.screen == 0 ? "item" : "map"));
 				strcat(strBuf, tmpBuf);
 				break;
-			case 0x3d:
-				sprintf(tmpBuf, "INST3D var%02x.W = unknown 0x%02x\n",
-					inst->inst3d.dstw, inst->inst3d.unknown);
-				strcat(strBuf, tmpBuf);
+			case INST_EM_GET_VAR_VARW:
+				{
+					int i;
+					char varname[32];
+
+					sprintf(varname, "0x%02x", inst->em_get_var_varw.id);
+					for (i=0; i<4; i++) {
+						if (em_var_name[i].id == inst->em_get_var_varw.id) {
+							sprintf(varname, em_var_name[i].name);
+							break;
+						}
+					}
+
+					sprintf(tmpBuf, "var%02x.W = EM_GET_VAR %s\n", 
+						inst->em_get_var_varw.varw, varname);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_CMP_IMM:
 				{

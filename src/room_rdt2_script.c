@@ -100,7 +100,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_EM_SET_POS,	sizeof(script_setreg3w_t)},
 	{INST_SET_REG3,		sizeof(script_setreg3w_t)},
 	{INST_EM_SET_VAR,	sizeof(script_set_var_t)},
-	{0x35,		3},
+	{INST_EM_SET_VAR_VARW,	sizeof(script_em_set_var_varw_t)},
 	{0x36,		12},
 	{INST_CAM_CHG,	sizeof(script_cam_chg_t)},
 	{0x38,		3},
@@ -108,7 +108,7 @@ static const script_inst_len_t inst_length[]={
 	{0x3a,		sizeof(script_inst3a_t)},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{INST_STATUS_SET,	sizeof(script_status_set_t)},
-	{0x3d,		3},
+	{INST_EM_GET_VAR_VARW,	sizeof(script_em_get_var_varw_t)},
 	{INST_CMP_IMM,	sizeof(script_cmp_imm_t)},
 	{0x3f,		4},
 

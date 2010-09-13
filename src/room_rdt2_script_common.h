@@ -79,11 +79,11 @@
 #define INST_EM_SET_POS	0x32
 #define INST_SET_REG3	0x33
 #define INST_EM_SET_VAR	0x34
-/* 0x35: set EM_ variable for current object ?*/
+#define INST_EM_SET_VAR_VARW	0x35
 #define INST_CAM_CHG	0x37
 #define INST_DOOR_SET	0x3b
 #define INST_STATUS_SET	0x3c
-/* 0x3d: read EM_ variable for current object ?*/
+#define INST_EM_GET_VAR_VARW	0x3d
 #define INST_CMP_IMM	0x3e
 
 /* 0x40-0x4f */
@@ -330,9 +330,9 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown;
-	Uint8 srcw;
-} script_inst35_t;
+	Uint8 id;
+	Uint8 varw;
+} script_em_set_var_varw_t;
 
 /*
 [    0.484] 0x0000007e: 0x3d 0x10 0x07
@@ -385,9 +385,9 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 dstw;
-	Uint8 unknown;
-} script_inst3d_t;
+	Uint8 varw;
+	Uint8 id;
+} script_em_get_var_varw_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -628,12 +628,12 @@ typedef union {
 	/* 0x30-0x3f */
 	script_setreg3w_t	set_reg_3w;
 	script_set_var_t	set_var;
-	script_inst35_t		inst35;
+	script_em_get_var_varw_t	em_get_var_varw;
 	script_cam_chg_t	cam_chg;
 	script_inst3a_t		inst3a;
 	script_door_set_t	door_set;
 	script_status_set_t	status_set;
-	script_inst3d_t		inst3d;
+	script_em_set_var_varw_t	em_set_var_varw;
 	script_cmp_imm_t	cmp_imm;
 
 	/* 0x40-0x4f */
