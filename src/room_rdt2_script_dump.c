@@ -322,9 +322,17 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_END_LOOP:
 				strcat(strBuf, "END_LOOP\n");
 				break;
+			case INST_BEGIN_WHILE:
+				strcat(strBuf, "BEGIN_WHILE\n");
+				block_len = inst->begin_while.block_length;
+				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_begin_while_t)]);
+				break;
 
 			/* 0x10-0x1f */
 
+			case INST_END_WHILE:
+				strcat(strBuf, "END_WHILE\n");
+				break;
 			case INST_DO:
 				strcat(strBuf, "DO\n");
 				block_len = SDL_SwapLE16(inst->i_do.block_length);
@@ -840,6 +848,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		if (block_ptr) {
 			int next_len = block_len - inst_len;
 			if (inst->opcode == INST_CASE) next_len = block_len;
+			if (inst->opcode == INST_BEGIN_WHILE) next_len = block_len - 2;
 			if (inst->opcode == INST_BEGIN_LOOP) next_len = block_len - 2;
 			/*logMsg(1, " block 0x%04x inst 0x%04x next 0x%04x\n", block_len, inst_len, next_len);*/
 

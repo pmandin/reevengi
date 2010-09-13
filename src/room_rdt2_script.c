@@ -56,10 +56,10 @@ static const script_inst_len_t inst_length[]={
 	{0x0c,		1},
 	{INST_BEGIN_LOOP,	sizeof(script_loop_t)},
 	{INST_END_LOOP,	2},
-	{0x0f,		2},
+	{INST_BEGIN_WHILE,	sizeof(script_begin_while_t)},
 
 	/* 0x10-0x1f */
-	{0x10,		2},
+	{INST_END_WHILE,	2},
 	{INST_DO,	sizeof(script_do_t)},
 	{INST_WHILE,	sizeof(script_while_t)},
 	{INST_BEGIN_SWITCH,	sizeof(script_switch_t)},

@@ -39,8 +39,10 @@
 #define INST_SLEEP_LOOP	0x0a
 #define INST_BEGIN_LOOP	0x0d
 #define INST_END_LOOP	0x0e
+#define INST_BEGIN_WHILE	0x0f
 
 /* 0x10-0x1f */
+#define INST_END_WHILE	0x10
 #define INST_DO		0x11
 #define INST_WHILE	0x12
 #define INST_BEGIN_SWITCH	0x13
@@ -171,6 +173,12 @@ typedef struct {
 	Uint16 block_length;
 	Uint16 count;
 } script_loop_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 block_length;
+} script_begin_while_t;
 
 /* 0x10-0x1f */
 
@@ -591,6 +599,7 @@ typedef union {
 	script_sleep_init_t	sleep_init;
 	script_sleep_loop_t	sleep_loop;
 	script_loop_t		loop;
+	script_begin_while_t	begin_while;
 
 	/* 0x10-0x1f */
 	script_do_t		i_do;
