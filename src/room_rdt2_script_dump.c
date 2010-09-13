@@ -89,11 +89,13 @@ static const char *cmp_imm_name[7]={
 	"EQ", "GT", "GE", "LT", "LE", "NE", "??"
 };
 
-static const em_var_name_t em_var_name[4]={
-	{0x0b, "#EM_X"},
-	{0x0c, "#EM_Y"},
-	{0x0d, "#EM_Z"},
-	{0x0f, "#EM_ANGLE"}
+static const em_var_name_t em_var_name[6]={
+	{0x0b, "#EM_X_POS"},
+	{0x0c, "#EM_Y_POS"},
+	{0x0d, "#EM_Z_POS"},
+	{0x0e, "#EM_X_ANGLE"},
+	{0x0f, "#EM_Y_ANGLE"},
+	{0x10, "#EM_Z_ANGLE"}
 };
 
 static const char *item_name[]={
@@ -624,7 +626,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					char varname[32];
 
 					sprintf(varname, "0x%02x", inst->set_var.id);
-					for (i=0; i<4; i++) {
+					for (i=0; i<6; i++) {
 						if (em_var_name[i].id == inst->set_var.id) {
 							sprintf(varname, em_var_name[i].name);
 							break;
@@ -642,7 +644,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					char varname[32];
 
 					sprintf(varname, "0x%02x", inst->em_set_var_varw.id);
-					for (i=0; i<4; i++) {
+					for (i=0; i<6; i++) {
 						if (em_var_name[i].id == inst->em_set_var_varw.id) {
 							sprintf(varname, em_var_name[i].name);
 							break;
@@ -677,7 +679,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					char varname[32];
 
 					sprintf(varname, "0x%02x", inst->em_get_var_varw.id);
-					for (i=0; i<4; i++) {
+					for (i=0; i<6; i++) {
 						if (em_var_name[i].id == inst->em_get_var_varw.id) {
 							sprintf(varname, em_var_name[i].name);
 							break;
