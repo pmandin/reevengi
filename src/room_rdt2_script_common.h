@@ -511,7 +511,9 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
-	Uint16 unknown[13];	/* ptr to this stored in room object list */
+	Uint16 unknown0[2];	/* ptr to this stored in room object list */
+	Sint16 xycoords[4*2];
+	Uint16 unknown1[3];
 } script_wall_set_t;
 
 typedef struct {

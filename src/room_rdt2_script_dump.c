@@ -796,7 +796,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}
 				break;
 			case INST_WALL_SET:
-				sprintf(tmpBuf, "OBJECT 0x%02x = WALL_SET xxx\n", inst->wall_set.id);
+				{
+					int i;
+					char v[32];
+
+					sprintf(tmpBuf, "OBJECT 0x%02x = WALL_SET 0x%04x",
+						inst->wall_set.id, SDL_SwapLE16(inst->wall_set.unknown0[0]));
+					for (i=0; i<4; i++) {
+						sprintf(v," x%d=%d y%d=%d",
+							i, SDL_SwapLE16(inst->wall_set.xycoords[i<<1]),
+							i, SDL_SwapLE16(inst->wall_set.xycoords[(i<<1)+1]));
+						strcat(tmpBuf, v);
+					}
+					strcat(tmpBuf, "\n");
+				}
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_LIGHT_POS_SET:
