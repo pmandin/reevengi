@@ -80,6 +80,7 @@ inst 53
 
 typedef struct {
 	Uint8 id;
+	Uint8 hexa;	/* display as : 0: decimal, 1:hexa */
 	const char *name;
 } em_var_name_t;
 
@@ -89,13 +90,14 @@ static const char *cmp_imm_name[7]={
 	"EQ", "GT", "GE", "LT", "LE", "NE", "??"
 };
 
-static const em_var_name_t em_var_name[6]={
-	{0x0b, "#EM_X_POS"},
-	{0x0c, "#EM_Y_POS"},
-	{0x0d, "#EM_Z_POS"},
-	{0x0e, "#EM_X_ANGLE"},
-	{0x0f, "#EM_Y_ANGLE"},
-	{0x10, "#EM_Z_ANGLE"}
+static const em_var_name_t em_var_name[]={
+	{0x07, 1, "#EM_POSE"},
+	{0x0b, 0, "#EM_X_POS"},
+	{0x0c, 0, "#EM_Y_POS"},
+	{0x0d, 0, "#EM_Z_POS"},
+	{0x0e, 0, "#EM_X_ANGLE"},
+	{0x0f, 0, "#EM_Y_ANGLE"},
+	{0x10, 0, "#EM_Z_ANGLE"}
 };
 
 static const char *item_name[]={
@@ -622,18 +624,21 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_EM_SET_VAR:
 				{
-					int i;
+					int i, hexa = 0;
 					char varname[32];
 
 					sprintf(varname, "0x%02x", inst->set_var.id);
-					for (i=0; i<6; i++) {
+					for (i=0; i<sizeof(em_var_name)/sizeof(em_var_name_t); i++) {
 						if (em_var_name[i].id == inst->set_var.id) {
 							sprintf(varname, em_var_name[i].name);
+							hexa = em_var_name[i].hexa;
 							break;
 						}
 					}
 
-					sprintf(tmpBuf, "EM_SET_VAR %s,%d\n", varname,
+					sprintf(tmpBuf,
+						hexa ? "EM_SET_VAR %s,0x%04x\n" : "EM_SET_VAR %s,%d\n",
+						varname,
 						SDL_SwapLE16(inst->set_var.value));
 					strcat(strBuf, tmpBuf);
 				}
@@ -644,7 +649,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					char varname[32];
 
 					sprintf(varname, "0x%02x", inst->em_set_var_varw.id);
-					for (i=0; i<6; i++) {
+					for (i=0; i<sizeof(em_var_name)/sizeof(em_var_name_t); i++) {
 						if (em_var_name[i].id == inst->em_set_var_varw.id) {
 							sprintf(varname, em_var_name[i].name);
 							break;
@@ -679,7 +684,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					char varname[32];
 
 					sprintf(varname, "0x%02x", inst->em_get_var_varw.id);
-					for (i=0; i<6; i++) {
+					for (i=0; i<sizeof(em_var_name)/sizeof(em_var_name_t); i++) {
 						if (em_var_name[i].id == inst->em_get_var_varw.id) {
 							sprintf(varname, em_var_name[i].name);
 							break;
@@ -711,8 +716,10 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, "STATUS_SHOW\n");
 				break;
 			case INST_EM_SET:
-				sprintf(tmpBuf, "ENTITY 0x%02x = EM_SET model=0x%02x, killed=0x%02x, x=%d, y=%d, z=%d\n",
-					inst->em_set.id, inst->em_set.model, inst->em_set.killed,
+				sprintf(tmpBuf, "ENTITY 0x%02x = EM_SET model=0x%02x, pose=0x%04x, sound_bank=%d, killed=0x%02x, x=%d, y=%d, z=%d\n",
+					inst->em_set.id, inst->em_set.model,
+					SDL_SwapLE16(inst->em_set.pose), inst->em_set.sound_bank,
+					inst->em_set.killed,
 					(Sint16) SDL_SwapLE16(inst->em_set.x), (Sint16) SDL_SwapLE16(inst->em_set.y),
 					(Sint16) SDL_SwapLE16(inst->em_set.z));
 				strcat(strBuf, tmpBuf);

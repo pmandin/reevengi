@@ -426,8 +426,8 @@ typedef struct {
 	Uint8 id;
 	Uint8 model;
 
-	Uint8 state;
-	Uint8 unknown1[2];
+	Uint16 pose;
+	Uint8 unknown1;
 	Uint8 sound_bank;
 
 	Uint8 texture;
