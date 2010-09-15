@@ -117,7 +117,7 @@
 /* 0x80-0x8e */
 #define INST_POISON_CHECK	0x86
 #define INST_POISON_CLEAR	0x87
-#define INST_ITEM_ABOVE	0x88
+#define INST_ITEM_HAVE_AND_REMOVE	0x88
 #define INST_NOP8A	0x8a
 #define INST_NOP8B	0x8b
 #define INST_NOP8C	0x8c
@@ -585,7 +585,7 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 id;
 	Uint8 unknown;
-} script_item_above_t;
+} script_item_have_and_remove_t;
 
 /* All instructions */
 
@@ -666,7 +666,7 @@ typedef union {
 	script_light_color_cam_set_t	light_color_cam_set;
 
 	/* 0x80-0x8e */
-	script_item_above_t	item_above;
+	script_item_have_and_remove_t	item_have_and_remove;
 
 } script_inst_t;
 

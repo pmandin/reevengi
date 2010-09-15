@@ -193,7 +193,7 @@ static const script_inst_len_t inst_length[]={
 	{0x85,		6},
 	{0x86,		1},
 	{0x87,		1},
-	{INST_ITEM_ABOVE,	sizeof(script_item_above_t)},
+	{INST_ITEM_HAVE_AND_REMOVE,	sizeof(script_item_have_and_remove_t)},
 	{0x89,		1},
 	{INST_NOP8A,	6},
 	{INST_NOP8B,	6},

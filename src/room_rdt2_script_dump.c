@@ -893,8 +893,8 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_POISON_CLEAR:
 				strcat(strBuf, "POISON_CLEAR\n");
 				break;
-			case INST_ITEM_ABOVE:
-				sprintf(tmpBuf, "ITEM_ABOVE %d\n", inst->item_above.id);
+			case INST_ITEM_HAVE_AND_REMOVE:
+				sprintf(tmpBuf, "ITEM_HAVE_AND_REMOVE %d\n", inst->item_have_and_remove.id);
 				strcat(strBuf, tmpBuf);
 				break;
 
