@@ -704,6 +704,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
+			case 0x36:
+				sprintf(tmpBuf, "INST36 %d, 0x%04x,0x%04x x=%d,y=%d,z=%d\n",
+					inst->inst36.unknown0, SDL_SwapLE16(inst->inst36.unknown1[0]),
+					SDL_SwapLE16(inst->inst36.unknown1[1]), SDL_SwapLE16(inst->inst36.x),
+					SDL_SwapLE16(inst->inst36.y), SDL_SwapLE16(inst->inst36.z));
+				strcat(strBuf, tmpBuf);
+				break;
 			case INST_CAM_CHG:
 				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
 					inst->cam_chg.unknown0, inst->cam_chg.camera);

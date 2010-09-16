@@ -334,10 +334,12 @@ typedef struct {
 	Uint8 varw;
 } script_em_set_var_varw_t;
 
-/*
-[    0.484] 0x0000007e: 0x3d 0x10 0x07
-[    0.484] 0x00000088: 0x35 0x07 0x10
-*/
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown0;
+	Sint16 unknown1[2];
+	Sint16 x,y,z;
+} script_inst36_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -631,6 +633,7 @@ typedef union {
 	script_setreg3w_t	set_reg_3w;
 	script_set_var_t	set_var;
 	script_em_get_var_varw_t	em_get_var_varw;
+	script_inst36_t		inst36;
 	script_cam_chg_t	cam_chg;
 	script_inst3a_t		inst3a;
 	script_door_set_t	door_set;
