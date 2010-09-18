@@ -31,18 +31,7 @@
 #include "state.h"
 #include "log.h"
 #include "room_rdt_script_common.h"
-
-/*--- Defines ---*/
-
-/* Item types */
-
-#define ITEM_MESSAGE	0x02
-#define ITEM_OBSTACLE	0x02
-#define ITEM_TRIGGER1	0x07	/* riddle, event, movable object */
-#define ITEM_BOX	0x08	/* deposit box */
-#define ITEM_OBJECT	0x09	/* pickable object */
-#define ITEM_TRIGGER2	0x09
-#define ITEM_TYPEWRITER	0x10
+#include "room_rdt_script_dump.h"
 
 /*--- Types ---*/
 
@@ -144,10 +133,7 @@ static const script_inst_len_t inst_length[]={
 
 static Uint8 *scriptFirstInst(room_t *this, int num_script);
 static int scriptGetInstLen(Uint8 *curInstPtr);
-static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
-
-static void scriptDisasmInit(void);
 
 /*--- Functions ---*/
 
@@ -155,8 +141,9 @@ void room_rdt_scriptInit(room_t *this)
 {
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
-	this->scriptPrivPrintInst = scriptPrintInst;
 	this->scriptPrivExecInst = scriptExecInst;
+
+	this->scriptDump = room_rdt1_scriptDump;
 }
 
 static Uint8 *scriptFirstInst(room_t *this, int num_script)
@@ -183,8 +170,6 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 	this->cur_inst = &scriptPtr[2];
 
 	logMsg(1, "rdt1: Script %d at offset 0x%08x, length 0x%04x\n", num_script, offset, this->script_length);
-
-	scriptDisasmInit();
 
 	return this->cur_inst;
 }
@@ -308,169 +293,3 @@ static void scriptExecInst(room_t *this)
 	}
 #endif
 }
-
-/*
- * --- Script disassembly ---
- */
-
-#ifndef ENABLE_SCRIPT_DISASM
-
-static void scriptPrintInst(room_t *this)
-{
-}
-
-static void scriptDisasmInit(void)
-{
-}
-
-#else
-
-/*--- Variables ---*/
-
-/*static int numFunc;*/
-static int indentLevel;
-
-static char strBuf[256];
-static char tmpBuf[256];
-
-/*--- Functions ---*/
-
-static void reindent(int num_indent)
-{
-	int i;
-
-	memset(tmpBuf, 0, sizeof(tmpBuf));
-
-	for (i=0; (i<num_indent) && (i<sizeof(tmpBuf)-1); i++) {
-		tmpBuf[i<<1]=' ';
-		tmpBuf[(i<<1)+1]=' ';
-	}
-
-	strncat(strBuf, tmpBuf, sizeof(strBuf)-1);
-}
-
-static void scriptDisasmInit(void)
-{
-	indentLevel = 0;
-	/*numFunc = 0;*/
-}
-
-static void scriptPrintInst(room_t *this)
-{
-	script_inst_t *inst;
-
-	if (!this) {
-		return;
-	}
-	if (!this->cur_inst) {
-		return;
-	}
-
-	inst = (script_inst_t *) this->cur_inst;
-
-	memset(strBuf, 0, sizeof(strBuf));
-
-	/*if ((indentLevel==0) && (inst->opcode!=0xff)) {
-		sprintf(strBuf, "func%02x() {\n", numFunc++);
-		++indentLevel;
-	}*/
-
-	switch(inst->opcode) {
-
-		/* 0x00-0x0f */
-
-		case INST_NOP:
-			reindent(indentLevel);
-			strcat(strBuf, "nop\n");
-			break;
-		case INST_IF:
-			reindent(indentLevel++);
-			strcat(strBuf, "if (xxx) {\n");
-			break;
-		case INST_ELSE:
-			reindent(indentLevel-1);
-			strcat(strBuf, "} else {\n");
-			break;
-		case INST_END_IF:
-			reindent(--indentLevel);
-			strcat(strBuf, "}\n");
-			break;
-		case INST_BIT_TEST:
-			{
-				script_bit_test_t *evalCk = (script_bit_test_t *) inst;
-
-				reindent(indentLevel);
-				sprintf(tmpBuf, "BIT_TEST flag 0x%02x object 0x%02x %s\n",
-					evalCk->flag, evalCk->object,
-					evalCk->value ? "on" : "off");
-				strcat(strBuf, tmpBuf);
-			}
-			break;
-		case INST_BIT_OP:
-			reindent(indentLevel);
-			strcat(strBuf, "BIT_OP xxx\n");
-			break;
-		case INST_CMP06:
-			reindent(indentLevel);
-			strcat(strBuf, "OBJ06_TEST xxx\n");
-			break;
-		case INST_CMP07:
-			reindent(indentLevel);
-			strcat(strBuf, "OBJ07_TEST xxx\n");
-			break;
-		case INST_SET06:
-			reindent(indentLevel);
-			strcat(strBuf, "OBJ06_SET xxx\n");
-			break;
-		case INST_DOOR_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_ITEM_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET xxx\n", inst->item_set.id);
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_NOP0E:
-			reindent(indentLevel);
-			strcat(strBuf, "Nop\n");
-			break;
-
-		/* 0x10-0x1f */
-
-		case INST_CMP10:
-			reindent(indentLevel);
-			strcat(strBuf, "OBJ10_TEST xxx\n");
-			break;
-		case INST_CMP11:
-			reindent(indentLevel);
-			strcat(strBuf, "OBJ11_TEST xxx\n");
-			break;
-		case INST_ITEM_MODEL_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_MODEL_SET xxx\n", inst->item_model_set.id);
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_EM_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "EM_SET xxx\n");
-			break;
-		case INST_OM_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "OM_SET #0x%02x, xxx\n", inst->om_set.id);
-			strcat(strBuf, tmpBuf);
-			break;
-
-		default:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
-			strcat(strBuf, tmpBuf);
-			break;
-
-	}
-
-	logMsg(1, "%s", strBuf);
-}
-
-#endif /* ENABLE_SCRIPT_DISASM */

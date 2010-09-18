@@ -32,10 +32,6 @@
 #include "room_rdt3_script_common.h"
 #include "room_rdt3_script_dump.h"
 
-/*--- Defines ---*/
-
-#define INST_END_SCRIPT	0xff
-
 /*--- Types ---*/
 
 /*
