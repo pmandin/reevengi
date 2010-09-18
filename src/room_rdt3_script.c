@@ -30,6 +30,7 @@
 #include "room_rdt2.h"
 #include "log.h"
 #include "room_rdt3_script_common.h"
+#include "room_rdt3_script_dump.h"
 
 /*--- Defines ---*/
 
@@ -102,19 +103,19 @@ static const script_inst_len_t inst_length[]={
 	{INST_SLEEP_N,	sizeof(script_sleepn_t)},
 	{INST_SLEEP_W,	1},
 	{0x0c,		1},
-	{INST_FOR,	sizeof(script_for_t)},
+	{INST_BEGIN_FOR,	sizeof(script_for_t)},
 	{0x0e,		5},
-	{INST_FOR_END,	2},
+	{INST_END_FOR,	2},
 
 	/* 0x10-0x1f */
+	{INST_BEGIN_WHILE,	sizeof(script_begin_while_t)},
+	{INST_END_WHILE,	2},
+	{INST_DO,	sizeof(script_do_t)},
 	{INST_WHILE,	sizeof(script_while_t)},
-	{INST_WHILE_END,	2},
-	{INST_DO,	4},
-	{INST_DO_END,	sizeof(script_do_end_t)},
-	{INST_SWITCH,	sizeof(script_switch_t)},
+	{INST_BEGIN_SWITCH,	sizeof(script_begin_switch_t)},
 	{INST_CASE,	sizeof(script_case_t)},
-	{0x16,		2},
-	{INST_SWITCH_END,	2},
+	{INST_DEFAULT,	2},
+	{INST_END_SWITCH,	2},
 	{0x18,		6},
 	{INST_FUNC,	2},
 	{0x1a,		4},
@@ -253,10 +254,7 @@ static const script_inst_len_t inst_length[]={
 
 static Uint8 *scriptFirstInst(room_t *this, int num_script);
 static int scriptGetInstLen(Uint8 *curInstPtr);
-static void scriptPrintInst(room_t *this);
 static void scriptExecInst(room_t *this);
-
-static void scriptDisasmInit(void);
 
 /*--- Functions ---*/
 
@@ -264,8 +262,9 @@ void room_rdt3_scriptInit(room_t *this)
 {
 	this->scriptPrivFirstInst = scriptFirstInst;
 	this->scriptPrivGetInstLen = scriptGetInstLen;
-	this->scriptPrivPrintInst = scriptPrintInst;
 	this->scriptPrivExecInst = scriptExecInst;
+
+	this->scriptDump = room_rdt3_scriptDump;
 }
 
 static Uint8 *scriptFirstInst(room_t *this, int num_script)
@@ -279,7 +278,8 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 		return NULL;
 	}
 	if (num_script == ROOM_SCRIPT_RUN) {
-		room_script = RDT2_OFFSET_ROOM_SCRIPT;
+		return NULL;
+		/*room_script = RDT2_OFFSET_ROOM_SCRIPT;*/
 	}
 
 	rdt_header = (rdt2_header_t *) this->file;
@@ -311,8 +311,6 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 	}
 
 	logMsg(1, "rdt3: Script %d at offset 0x%08x, length 0x%04x\n", num_script, offset, this->script_length);
-
-	scriptDisasmInit();
 
 	return this->cur_inst;
 }
@@ -370,484 +368,3 @@ static void scriptExecInst(room_t *this)
 			break;
 	}
 }
-
-/*
- * --- Script disassembly ---
- */
-
-#ifndef ENABLE_SCRIPT_DISASM
-
-static void scriptPrintInst(room_t *this)
-{
-}
-
-static void scriptDisasmInit(void)
-{
-}
-
-#else
-
-/*--- Types ---*/
-
-typedef struct {
-	Uint8 value;
-	char *name;
-} script_dump_t;
-
-/*--- Constants ---*/
-
-static const script_dump_t work_set_0[]={
-	{1, "PL_WK"},
-	{3, "EM_WK"},
-	{4, "OM_WK"}
-};
-
-/*--- Variables ---*/
-
-static int numFunc;
-static int indentLevel;
-
-static char strBuf[256];
-static char tmpBuf[256];
-
-/*--- Functions ---*/
-
-static void reindent(int num_indent)
-{
-	int i;
-
-	memset(tmpBuf, 0, sizeof(tmpBuf));
-
-	for (i=0; (i<num_indent) && (i<sizeof(tmpBuf)-1); i++) {
-		tmpBuf[i<<1]=' ';
-		tmpBuf[(i<<1)+1]=' ';
-	}
-
-	strncat(strBuf, tmpBuf, sizeof(strBuf)-1);
-}
-
-static const char *getNameFromValue(int value, const script_dump_t *array, int num_array_items)
-{
-	int i;
-
-	for (i=0; i<num_array_items; i++) {
-		if (array[i].value == value) {
-			return array[i].name;
-		}
-	}
-
-	return NULL;
-}
-
-static void scriptDisasmInit(void)
-{
-	indentLevel = 0;
-	numFunc = 0;
-}
-
-static void scriptPrintInst(room_t *this)
-{
-	script_inst_t *inst;
-	const char *nameFromValue;
-
-	if (!this) {
-		return;
-	}
-	if (!this->cur_inst) {
-		return;
-	}
-
-	inst = (script_inst_t *) this->cur_inst;
-
-	memset(strBuf, 0, sizeof(strBuf));
-
-	if ((indentLevel==0) && (inst->opcode!=0xff)) {
-		logMsg(1, "func%02x() {\n", numFunc++);
-		++indentLevel;
-	}
-
-	switch(inst->opcode) {
-
-		/* 0x00-0x0f */
-
-		case INST_NOP:
-			reindent(indentLevel);
-			strcat(strBuf, "nop\n");
-			break;
-		case INST_RETURN:
-			if (indentLevel>1) {
-				reindent(indentLevel);
-				strcat(strBuf, "return\n");
-			} else {
-				reindent(--indentLevel);
-				strcat(strBuf, "}\n\n");
-			}
-			break;
-		case INST_SLEEP_1:
-			reindent(indentLevel);
-			strcat(strBuf, "sleep 1\n");
-			break;
-		case INST_EVT_EXEC:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "EVT_EXEC 0x%02x func%02x()\n",
-				inst->exec.mask, inst->exec.func[1]);
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_EVT_KILL:
-			reindent(indentLevel);
-			strcat(strBuf, "EVT_KILL xxx\n");
-			break;
-		case INST_IF:
-			reindent(indentLevel++);
-			strcat(strBuf, "if (xxx) {\n");
-			break;
-		case INST_ELSE:
-			reindent(--indentLevel);
-			strcat(strBuf, "} else {\n");
-			break;
-		case INST_END_IF:
-			reindent(--indentLevel);
-			strcat(strBuf, "}\n");
-			break;
-		case INST_SLEEP_N:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "sleep %d\n", SDL_SwapLE16(inst->sleepn.delay));
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_SLEEP_W:
-			reindent(indentLevel);
-			strcat(strBuf, "sleepw\n");
-			break;
-		case INST_FOR:
-			reindent(indentLevel++);
-			sprintf(tmpBuf, "for (%d) {\n", SDL_SwapLE16(inst->i_for.count));
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_FOR_END:
-			reindent(--indentLevel);
-			strcat(strBuf, "}\n");
-			break;
-
-		/* 0x10-0x1f */
-
-		case INST_WHILE:
-			reindent(indentLevel++);
-			strcat(strBuf, "while (xxx) {\n");
-			break;
-		case INST_WHILE_END:
-			reindent(--indentLevel);
-			strcat(strBuf, "}\n");
-			break;
-		case INST_DO:
-			reindent(indentLevel++);
-			strcat(strBuf, "do {\n");
-			break;
-		case INST_DO_END:
-			reindent(--indentLevel);
-			strcat(strBuf, "} while (xxx)\n");
-			break;
-		case INST_SWITCH:
-			reindent(indentLevel);
-			strcat(strBuf, "switch(xxx) {\n");
-			indentLevel += 2;
-			break;
-		case INST_CASE:
-			reindent(indentLevel-1);
-			strcat(strBuf, "case xxx:\n");
-			break;
-		case INST_SWITCH_END:
-			indentLevel -= 2;
-			reindent(indentLevel);
-			strcat(strBuf, "}\n");
-			break;
-		case INST_GOTO:
-			reindent(indentLevel);
-			strcat(strBuf, "goto xxx\n");
-			break;
-		case INST_FUNC:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_BREAK:
-			reindent(indentLevel);
-			strcat(strBuf, "break\n");
-			break;
-		case INST_EVAL_CC:
-			reindent(indentLevel);
-			strcat(strBuf, "EVAL_CC xxx\n");
-			break;
-		case 0x1e:
-		case 0x1f:
-			reindent(indentLevel);
-			strcat(strBuf, "set xxx\n");
-			break;
-
-		/* 0x20-0x2f */
-
-		case INST_CALC_OP:
-			reindent(indentLevel);
-			strcat(strBuf, "CALC_OP xxx\n");
-			break;
-		case INST_EVT_CUT:
-			reindent(indentLevel);
-			strcat(strBuf, "EVT_CUT xxx\n");
-			break;
-		case INST_LINE_BEGIN:
-			reindent(indentLevel);
-			strcat(strBuf, "LINE_BEGIN xxx\n");
-			break;
-		case INST_LINE_MAIN:
-			reindent(indentLevel);
-			strcat(strBuf, "LINE_MAIN xxx\n");
-			break;
-		case INST_LINE_END:
-			reindent(indentLevel);
-			strcat(strBuf, "LINE_END xxx\n");
-			break;
-
-		/* 0x30-0x3f */
-
-		case INST_LIGHT_COLOR_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "LIGHT_COLOR_SET xxx\n");
-			break;
-		case INST_AHEAD_ROOM_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "AHEAD_ROOM_SET 0x%04x\n", SDL_SwapLE16(inst->ahead_room_set.value));
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_EVAL_BGM_TBL_CK:
-			reindent(indentLevel);
-			strcat(strBuf, "EVAL_BGM_TBL_CK xxx\n");
-			break;
-		case INST_CHASER_ITEM_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "CHASER_ITEM_SET xxx\n");
-			break;
-		case INST_FLOOR_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "FLOOR_SET xxx\n");
-			break;
-
-		/* 0x40-0x4f */
-
-		case INST_VAR_SET:
-			{
-				script_var_set_t *varSet = (script_var_set_t *) inst;
-
-				reindent(indentLevel);
-				sprintf(tmpBuf, "SET var%02x = %d\n", varSet->num_var, SDL_SwapLE16(varSet->value));
-				strcat(strBuf, tmpBuf);
-			}
-			break;
-		case INST_CALC_STORE:
-			reindent(indentLevel);
-			strcat(strBuf, "CALC_STORE xxx\n");
-			break;
-		case INST_CALC_LOAD:
-			reindent(indentLevel);
-			strcat(strBuf, "CALC_LOAD xxx\n");
-			break;
-		case INST_FADE_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "FADE_SET xxx\n");
-			break;
-		case INST_WORK_SET:
-			{
-				reindent(indentLevel);
-
-				nameFromValue = getNameFromValue(inst->work_set.unknown, work_set_0,
-					sizeof(work_set_0)/sizeof(script_dump_t));
-				if (nameFromValue) {
-					sprintf(tmpBuf, "WORK_SET %s 0x%02x\n", nameFromValue, inst->work_set.object);
-				} else {
-					sprintf(tmpBuf, "WORK_SET 0x%02x 0x%02x\n", inst->work_set.unknown, inst->work_set.object);
-				}
-				strcat(strBuf, tmpBuf);
-			}
-			break;
-		case INST_EVAL_CK:
-			reindent(indentLevel);
-			strcat(strBuf, "EVAL_CK xxx\n");
-			break;
-		case INST_FLAG_SET:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "SET 0x%02x object 0x%02x %s\n",
-				inst->set_flag.flag,
-				inst->set_flag.object,
-				(inst->set_flag.value ? "on" : "off"));
-			strcat(strBuf, tmpBuf);
-			break;
-		case INST_EVAL_CMP:
-			reindent(indentLevel);
-			strcat(strBuf, "EVAL_CMP xxx\n");
-			break;
-
-		/* 0x50-0x5f */
-
-		case INST_CUT_CHG:
-			reindent(indentLevel);
-			strcat(strBuf, "CUT_CHG xxx\n");
-			break;
-		case INST_CUT_AUTO:
-			reindent(indentLevel);
-			strcat(strBuf, "CUT_AUTO xxx\n");
-			break;
-		case INST_CUT_REPLACE:
-			reindent(indentLevel);
-			strcat(strBuf, "CUT_REPLACE xxx\n");
-			break;
-		case INST_POS_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "POS_SET xxx\n");
-			break;
-		case INST_DIR_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "DIR_SET xxx\n");
-			break;
-		case INST_SET_VIB0:
-			reindent(indentLevel);
-			strcat(strBuf, "SET_VIB0 xxx\n");
-			break;
-		case INST_SET_VIB_FADE:
-			reindent(indentLevel);
-			strcat(strBuf, "SET_VIB_FADE xxx\n");
-			break;
-		case INST_RBJ_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "RBJ_SET xxx\n");
-			break;
-		case INST_MESSAGE_ON:
-			reindent(indentLevel);
-			strcat(strBuf, "MESSAGE_ON xxx\n");
-			break;
-
-		/* 0x60-0x6f */
-
-		case INST_DOOR_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "DOOR_SET xxx\n");
-			break;
-		case INST_AOT_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "AOT_SET xxx\n");
-			break;
-		case INST_AOT_SET_4P:
-			reindent(indentLevel);
-			strcat(strBuf, "AOT_SET_4P xxx\n");
-			break;
-		case INST_AOT_RESET:
-			reindent(indentLevel);
-			strcat(strBuf, "AOT_RESET xxx\n");
-			break;
-		case INST_ITEM_AOT_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "ITEM_AOT_SET xxx\n");
-			break;
-		case INST_KAGE_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "KAGE_SET xxx\n");
-			break;
-		case INST_SUPER_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "SUPER_SET xxx\n");
-			break;
-		case INST_SCA_ID_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "SCA_ID_SET xxx\n");
-			break;
-
-		/* 0x70-0x7f */
-
-		case INST_ESPR_ON:
-			reindent(indentLevel);
-			strcat(strBuf, "ESPR_ON xxx\n");
-			break;
-		case INST_ESPR3D_ON2:
-			reindent(indentLevel);
-			strcat(strBuf, "ESPR3D_ON2 xxx\n");
-			break;
-		case INST_ESPR_KILL:
-			reindent(indentLevel);
-			strcat(strBuf, "ESPR_KILL xxx\n");
-			break;
-		case INST_ESPR_KILL2:
-			reindent(indentLevel);
-			strcat(strBuf, "ESPR_KILL2 xxx\n");
-			break;
-		case INST_SE_ON:
-			reindent(indentLevel);
-			strcat(strBuf, "SE_ON xxx\n");
-			break;
-		case INST_BGM_CTL:
-			reindent(indentLevel);
-			strcat(strBuf, "BGM_CTL xxx\n");
-			break;
-		case INST_XA_ON:
-			reindent(indentLevel);
-			strcat(strBuf, "XA_ON xxx\n");
-			break;
-		case INST_BGM_TBL_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "BGM_TBL_SET xxx\n");
-			break;
-		case INST_EM_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "EM_SET xxx\n");
-			break;
-		case INST_OM_SET:
-			reindent(indentLevel);
-			strcat(strBuf, "OM_SET xxx\n");
-			break;
-
-		/* 0x80-0x8f */
-
-		case INST_PLC_MOTION:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_MOTION xxx\n");
-			break;
-		case INST_PLC_DEST:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_DEST xxx\n");
-			break;
-		case INST_PLC_NECK:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_NECK xxx\n");
-			break;
-		case INST_PLC_RET:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_RET xxx\n");
-			break;
-		case INST_PLC_FLG:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_FLG xxx\n");
-			break;
-		case INST_PLC_STOP:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_STOP xxx\n");
-			break;
-		case INST_PLC_ROT:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_ROT xxx\n");
-			break;
-		case INST_PLC_CNT:
-			reindent(indentLevel);
-			strcat(strBuf, "PLC_CNT xxx\n");
-			break;
-
-		case INST_END_SCRIPT:
-			break;
-
-		default:
-			reindent(indentLevel);
-			sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
-			strcat(strBuf, tmpBuf);
-			break;
-
-	}
-
-	logMsg(1, "%s", strBuf);
-}
-
-#endif /* ENABLE_SCRIPT_DISASM */

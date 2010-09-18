@@ -35,17 +35,18 @@
 #define INST_END_IF	0x08
 #define INST_SLEEP_N	0x0a
 #define INST_SLEEP_W	0x0b
-#define INST_FOR	0x0d
-#define INST_FOR_END	0x0f
+#define INST_BEGIN_FOR	0x0d
+#define INST_END_FOR	0x0f
 
 /* 0x10-0x1f */
-#define INST_WHILE	0x10
-#define INST_WHILE_END	0x11
+#define INST_BEGIN_WHILE	0x10
+#define INST_END_WHILE	0x11
 #define INST_DO		0x12
-#define INST_DO_END	0x13
-#define INST_SWITCH	0x14
+#define INST_WHILE	0x13
+#define INST_BEGIN_SWITCH	0x14
 #define INST_CASE	0x15
-#define INST_SWITCH_END	0x17
+#define INST_DEFAULT	0x16
+#define INST_END_SWITCH	0x17
 #define INST_GOTO	0x18
 #define INST_FUNC	0x19
 #define INST_BREAK	0x1b
@@ -161,18 +162,24 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 unknown0;
 	Uint16 block_length;
-} script_while_t;	/* always followed by script_condition_t */
+} script_begin_while_t;
 
 typedef struct {
 	Uint8 opcode;
-	Uint8 unknown;
-} script_do_end_t;	/* always followed by script_condition_t */
+	Uint8 dummy;
+	Uint16 block_length;
+} script_do_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+} script_while_t;
 
 typedef struct {
 	Uint8 opcode;
 	Uint8 object;
 	Uint16 block_length;
-} script_switch_t;
+} script_begin_switch_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -285,9 +292,10 @@ typedef union {
 	script_for_t		i_for;
 
 	/* 0x10-0x1f */
+	script_begin_while_t	begin_while;
+	script_do_t		i_do;
 	script_while_t		i_while;
-	script_do_end_t		i_end_do;
-	script_switch_t		i_switch;
+	script_begin_switch_t	i_switch;
 	script_case_t		i_case;
 	script_func_t func;
 

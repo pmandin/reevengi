@@ -24,7 +24,7 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	render_mask.c render_mask_opengl.c \
 	room.c room_rdt.c room_rdt_script.c \
 	room_rdt2.c room_rdt2_script.c room_rdt2_script_dump.c \
-	room_rdt3_script.c \
+	room_rdt3_script.c room_rdt3_script_dump.c \
 	state.c video.c video_opengl.c \
 	view_background.c view_movie.c
 
@@ -45,7 +45,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	render_mask.h render_mask_opengl.h \
 	room.h room_rdt.h room_rdt_script.h room_rdt_script_common.h \
 	room_rdt2.h room_rdt2_script.h room_rdt2_script_common.h room_rdt2_script_dump.h \
-	room_rdt3_script.h room_rdt3_script_common.h \
+	room_rdt3_script.h room_rdt3_script_common.h room_rdt3_script_dump.h \
 	state.h video.h \
 	view_background.h view_movie.h
 
