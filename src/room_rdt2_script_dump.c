@@ -359,7 +359,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}				
 				break;
 			case INST_ELSE:
-				strcat(strBuf, "ELSE_IF\n");
+				strcat(strBuf, "ELSE\n");
 				block_len = SDL_SwapLE16(inst->i_else.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_else_t)]);
 				break;
@@ -374,13 +374,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, "SLEEP_LOOP\n");
 				break;
 			case INST_BEGIN_LOOP:
-				sprintf(tmpBuf, "BEGIN_LOOP %d\n", SDL_SwapLE16(inst->loop.count));
+				sprintf(tmpBuf, "BEGIN_FOR %d\n", SDL_SwapLE16(inst->loop.count));
 				strcat(strBuf, tmpBuf);
 				block_len = SDL_SwapLE16(inst->loop.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_loop_t)]);
 				break;
 			case INST_END_LOOP:
-				strcat(strBuf, "END_LOOP\n");
+				strcat(strBuf, "END_FOR\n");
 				break;
 			case INST_BEGIN_WHILE:
 				strcat(strBuf, "BEGIN_WHILE\n");
