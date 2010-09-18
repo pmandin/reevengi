@@ -81,6 +81,8 @@
 #define INST_EM_SET_VAR	0x34
 #define INST_EM_SET_VAR_VARW	0x35
 #define INST_CAM_CHG	0x37
+#define INST_FLOOR_SET	0x38
+#define INST_ESPR_SET	0x3a
 #define INST_DOOR_SET	0x3b
 #define INST_STATUS_SET	0x3c
 #define INST_EM_GET_VAR_VARW	0x3d
@@ -350,12 +352,21 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 id;
+	Uint8 unknown;
+} script_floor_set_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 dummy0;
+	Uint16 unknown[7];
+#if 0
 	Uint8 anim[4];	/* Anim ID, same as inst 4c */
 	Uint8 dummy1;
 	Uint8 w,h;	/* Width,height of animation */
 	Uint8 unknown[7];
-} script_inst3a_t;
+#endif
+} script_espr_set_t;
 
 /* inst 3a,4c
 0x0d 0x00 0x00 0x00: other flame, crash
@@ -635,7 +646,8 @@ typedef union {
 	script_em_get_var_varw_t	em_get_var_varw;
 	script_inst36_t		inst36;
 	script_cam_chg_t	cam_chg;
-	script_inst3a_t		inst3a;
+	script_floor_set_t	floor_set;
+	script_espr_set_t	espr_set;
 	script_door_set_t	door_set;
 	script_status_set_t	status_set;
 	script_em_set_var_varw_t	em_set_var_varw;

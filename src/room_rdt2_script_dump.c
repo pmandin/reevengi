@@ -705,7 +705,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}
 				break;
 			case 0x36:
-				sprintf(tmpBuf, "INST36 %d, 0x%04x,0x%04x x=%d,y=%d,z=%d\n",
+				sprintf(tmpBuf, "UNKNOWN_INST36 %d, 0x%04x,0x%04x x=%d,y=%d,z=%d\n",
 					inst->inst36.unknown0, SDL_SwapLE16(inst->inst36.unknown1[0]),
 					SDL_SwapLE16(inst->inst36.unknown1[1]), SDL_SwapLE16(inst->inst36.x),
 					SDL_SwapLE16(inst->inst36.y), SDL_SwapLE16(inst->inst36.z));
@@ -714,6 +714,19 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_CAM_CHG:
 				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
 					inst->cam_chg.unknown0, inst->cam_chg.camera);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_FLOOR_SET:
+				sprintf(tmpBuf, "FLOOR_SET %d,%d\n",
+					inst->floor_set.id, inst->floor_set.unknown);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_ESPR_SET:
+				sprintf(tmpBuf, "ESPR_SET 0x%04x,0x%04x,0x%04x,0x%04x,0x%04x,0x%04x,0x%04x\n",
+					SDL_SwapLE16(inst->espr_set.unknown[0]), SDL_SwapLE16(inst->espr_set.unknown[1]),
+					SDL_SwapLE16(inst->espr_set.unknown[2]), SDL_SwapLE16(inst->espr_set.unknown[3]),
+					SDL_SwapLE16(inst->espr_set.unknown[4]), SDL_SwapLE16(inst->espr_set.unknown[5]),
+					SDL_SwapLE16(inst->espr_set.unknown[6]));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_DOOR_SET:
