@@ -260,9 +260,9 @@ void room_rdt2_scriptDump(room_t *this, int num_script)
 			func_len = SDL_SwapLE16(functionArrayPtr[i+1]) - func_offset;
 		}
 
-		logMsg(1, "0x%08x: BEGIN_FUNC func%02x\n", func_offset, i);
+		logMsg(1, "0x%08x: BEGIN_EVENT event%02x\n", func_offset, i);
 		scriptDumpBlock(this, startInst, func_offset, func_len, 1);
-		logMsg(1, "          : END_FUNC\n\n");
+		logMsg(1, "          : END_EVENT\n\n");
 	}
 }
 
@@ -313,42 +313,43 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* Nops */
 
 			case INST_NOP:
-			case INST_NOP1C:
 			case INST_NOP1E:
 			case INST_NOP1F:
 			case INST_NOP20:
-			case INST_NOP63:
 			case INST_NOP8A:
 			case INST_NOP8B:
 			case INST_NOP8C:
-				strcat(strBuf, "nop\n");
+				strcat(strBuf, "Nop\n");
 				break;
 
 			/* 0x00-0x0f */
 
 			case INST_RETURN:
-				strcat(strBuf, "RETURN\n");
+				strcat(strBuf, "Evt_end\n");
 				break;
 			case INST_DO_EVENTS:
-				strcat(strBuf, "PROCESS_EVENTS\n");
+				strcat(strBuf, "Evt_next\n");
 				break;
 			case INST_RESET:
-				sprintf(tmpBuf, "RESET func%02x()\n",
+				sprintf(tmpBuf, "Evt_chain event%02x()\n",
 					inst->reset.num_func);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_EVT_EXEC:
 				if (inst->evtexec.ex_opcode == INST_FUNC) {
-					sprintf(tmpBuf, "EVT_EXEC 0x%02x, func%02x()\n",
+					sprintf(tmpBuf, "Evt_exec 0x%02x, Gosub event%02x()\n",
 						inst->evtexec.cond, inst->evtexec.num_func);
 				} else {
-					sprintf(tmpBuf, "EVT_EXEC 0x%02x, xxx\n",
+					sprintf(tmpBuf, "Evt_exec 0x%02x, xxx\n",
 						inst->evtexec.cond);
 				}
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x05:
+				strcat(strBuf, "Evt_kill\n");
+				break;
 			case INST_IF:
-				strcat(strBuf, "BEGIN_IF\n");
+				strcat(strBuf, "Ifel_ck\n");
 				block_len = SDL_SwapLE16(inst->i_if.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_if_t)]);
 				{
@@ -359,31 +360,37 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}				
 				break;
 			case INST_ELSE:
-				strcat(strBuf, "ELSE\n");
+				strcat(strBuf, "Else_ck\n");
 				block_len = SDL_SwapLE16(inst->i_else.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_else_t)]);
 				break;
 			case INST_END_IF:
-				strcat(strBuf, "END_IF\n");
+				strcat(strBuf, "Endif\n");
 				break;
 			case INST_SLEEP_INIT:
-				sprintf(tmpBuf, "SLEEP_INIT %d\n", SDL_SwapLE16(inst->sleep_init.count));
+				sprintf(tmpBuf, "Sleep %d\n", SDL_SwapLE16(inst->sleep_init.count));
 				strcat(strBuf, tmpBuf);
 				break;
-			case INST_SLEEP_LOOP:
-				strcat(strBuf, "SLEEP_LOOP\n");
+			case 0x0a:
+				strcat(strBuf, "Sleeping\n");
+				break;
+			case 0x0b:
+				strcat(strBuf, "Wsleep\n");
+				break;
+			case 0x0c:
+				strcat(strBuf, "Wsleeping\n");
 				break;
 			case INST_BEGIN_LOOP:
-				sprintf(tmpBuf, "BEGIN_FOR %d\n", SDL_SwapLE16(inst->loop.count));
+				sprintf(tmpBuf, "For %d\n", SDL_SwapLE16(inst->loop.count));
 				strcat(strBuf, tmpBuf);
 				block_len = SDL_SwapLE16(inst->loop.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_loop_t)]);
 				break;
 			case INST_END_LOOP:
-				strcat(strBuf, "END_FOR\n");
+				strcat(strBuf, "Next\n");
 				break;
 			case INST_BEGIN_WHILE:
-				strcat(strBuf, "BEGIN_WHILE\n");
+				strcat(strBuf, "While\n");
 				block_len = inst->begin_while.block_length;
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_begin_while_t)]);
 				break;
@@ -391,53 +398,62 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* 0x10-0x1f */
 
 			case INST_END_WHILE:
-				strcat(strBuf, "END_WHILE\n");
+				strcat(strBuf, "Ewhile\n");
 				break;
 			case INST_DO:
-				strcat(strBuf, "DO\n");
+				strcat(strBuf, "Do\n");
 				block_len = SDL_SwapLE16(inst->i_do.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_do_t)]);
 				break;
 			case INST_WHILE:
-				strcat(strBuf, "WHILE\n");
+				strcat(strBuf, "Edwhile\n");
 				block_len = inst->i_while.block_length;
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_while_t)]);
 				break;
 			case INST_BEGIN_SWITCH:
-				sprintf(tmpBuf, "BEGIN_SWITCH var%02x\n", inst->i_switch.varw);
+				sprintf(tmpBuf, "Switch var%02x\n", inst->i_switch.varw);
 				strcat(strBuf, tmpBuf);
 				block_len = SDL_SwapLE16(inst->i_switch.block_length)+2;
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_switch_t)]);
 				break;
 			case INST_CASE:
-				sprintf(tmpBuf, "CASE 0x%04x\n", SDL_SwapLE16(inst->i_case.value));
+				sprintf(tmpBuf, "Case 0x%04x\n", SDL_SwapLE16(inst->i_case.value));
 				strcat(strBuf, tmpBuf);
 				block_len = SDL_SwapLE16(inst->i_case.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_case_t)]);
 				break;
 			case INST_DEFAULT:
-				strcat(strBuf, "DEFAULT\n");
+				strcat(strBuf, "Default\n");
 				break;
 			case INST_END_SWITCH:
-				strcat(strBuf, "END_SWITCH\n");
+				strcat(strBuf, "Eswitch\n");
 				break;
 			case INST_GOTO:
-				sprintf(tmpBuf, "GOTO [0x%08x]\n", offset + /*sizeof(script_goto_t) +*/
+				sprintf(tmpBuf, "Goto [0x%08x]\n", offset + /*sizeof(script_goto_t) +*/
 					(Sint16) SDL_SwapLE16(inst->i_goto.rel_offset));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_FUNC:
-				sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
+				sprintf(tmpBuf, "Gosub event%02x\n", inst->func.num_func);
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x19:
+				strcat(strBuf, "Return\n");
+				break;
 			case INST_BREAK:
-				strcat(strBuf, "BREAK\n");
+				strcat(strBuf, "Break\n");
+				break;
+			case 0x1b:
+				strcat(strBuf, "For2\n");
+				break;
+			case 0x1c:
+				strcat(strBuf, "Break_point\n");
 				break;
 			case INST_CHG_SCRIPT:
 				{
 					char myTmpBuf[512];
 
-					sprintf(myTmpBuf, "script[0x%08x] = var%02x.W & 0xff\n",
+					sprintf(myTmpBuf, "Work_copy script[0x%08x] = var%02x.W & 0xff\n",
 						offset + sizeof(script_chg_script_t) + inst->chg_script.offset,
 						inst->chg_script.varw);
 					strcat(strBuf, myTmpBuf);
@@ -447,7 +463,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 						memset(strBuf, 0, sizeof(strBuf));
 						reindent(indent);
-						sprintf(tmpBuf, "script[0x%08x] = (var%02x.W >> 8) & 0xff\n",
+						sprintf(tmpBuf, "Work_copy script[0x%08x] = (var%02x.W >> 8) & 0xff\n",
 							offset + sizeof(script_chg_script_t) + inst->chg_script.offset + 1,
 							inst->chg_script.varw);
 						strcat(strBuf, tmpBuf);
@@ -458,14 +474,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* 0x20-0x2f */
 
 			case INST_BIT_TEST:
-				sprintf(tmpBuf, "BIT_TEST array 0x%02x, bit 0x%02x = %d\n",
+				sprintf(tmpBuf, "Ck array 0x%02x, bit 0x%02x = %d\n",
 					inst->bittest.num_array,
 					inst->bittest.bit_number,
 					inst->bittest.value);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_BIT_CHG:
-				sprintf(tmpBuf, "BIT_CHG %s array 0x%02x, bit 0x%02x\n",
+				sprintf(tmpBuf, "Set %s array 0x%02x, bit 0x%02x\n",
 					(inst->bitchg.op_chg == 0 ? "CLEAR" :
 						(inst->bitchg.op_chg == 1 ? "SET" :
 							(inst->bitchg.op_chg == 7 ? "CHG" :
@@ -476,52 +492,66 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					inst->bitchg.bit_number);
 				strcat(strBuf, tmpBuf);
 				break;
+			case INST_CMP_VARW:
+				{
+					int compare = inst->cmp_varw.compare;
+					if (compare>6) {
+						compare = 6;
+					}
+
+					sprintf(tmpBuf, "Cmp var%02x.W %s %d\n",
+						inst->cmp_varw.varw,
+						cmp_imm_name[compare],
+						(Sint16) SDL_SwapLE16(inst->cmp_varw.value));
+					strcat(strBuf, tmpBuf);
+				}
+				break;
 			case INST_SET_VARW:
-				sprintf(tmpBuf, "var%02x.W = %d\n", inst->set_varw.varw, (Sint16) SDL_SwapLE16(inst->set_varw.value));
+				sprintf(tmpBuf, "Save var%02x.W = %d\n", inst->set_varw.varw, (Sint16) SDL_SwapLE16(inst->set_varw.value));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_COPY_VARW:
-				sprintf(tmpBuf, "var%02x.W = var%02x.w\n", inst->copy_varw.dst, inst->copy_varw.src);
+				sprintf(tmpBuf, "Copy var%02x.W = var%02x.w\n", inst->copy_varw.dst, inst->copy_varw.src);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_OP_VARW_IMM:
 				{
 					switch(inst->op_varw_imm.operation) {
 						case 0:
-							sprintf(tmpBuf, "var%02x.W += %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W += %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 1:
-							sprintf(tmpBuf, "var%02x.W -= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W -= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 2:
-							sprintf(tmpBuf, "var%02x.W *= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W *= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 3:
-							sprintf(tmpBuf, "var%02x.W /= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W /= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 4:
-							sprintf(tmpBuf, "var%02x.W %%= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W %%= %d\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 5:
-							sprintf(tmpBuf, "var%02x.W |= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W |= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 6:
-							sprintf(tmpBuf, "var%02x.W &= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W &= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 7:
-							sprintf(tmpBuf, "var%02x.W ^= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W ^= 0x%04x\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 8:
-							sprintf(tmpBuf, "var%02x.W = !var%02x.W\n", inst->op_varw_imm.varw, inst->op_varw_imm.varw);
+							sprintf(tmpBuf, "Calc var%02x.W = !var%02x.W\n", inst->op_varw_imm.varw, inst->op_varw_imm.varw);
 							break;
 						case 9:
-							sprintf(tmpBuf, "var%02x.W >>= %d /*logical */ \n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W >>= %d /*logical */ \n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 10:
-							sprintf(tmpBuf, "var%02x.W <<= %d /*logical */\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W <<= %d /*logical */\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						case 11:
-							sprintf(tmpBuf, "var%02x.W >>= %d /* arithmetical */\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
+							sprintf(tmpBuf, "Calc var%02x.W >>= %d /* arithmetical */\n", inst->op_varw_imm.varw, (Sint16) (SDL_SwapLE16(inst->op_varw_imm.value)));
 							break;
 						default:
 							sprintf(tmpBuf, "# Invalid operation 0x%02x\n", inst->op_varw_imm.operation);
@@ -535,40 +565,40 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				{
 					switch(inst->op_varw.operation) {
 						case 0:
-							sprintf(tmpBuf, "var%02x.W += var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W += var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 1:
-							sprintf(tmpBuf, "var%02x.W -= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W -= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 2:
-							sprintf(tmpBuf, "var%02x.W *= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W *= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 3:
-							sprintf(tmpBuf, "var%02x.W /= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W /= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 4:
-							sprintf(tmpBuf, "var%02x.W %%= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W %%= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 5:
-							sprintf(tmpBuf, "var%02x.W |= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W |= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 6:
-							sprintf(tmpBuf, "var%02x.W &= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W &= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 7:
-							sprintf(tmpBuf, "var%02x.W ^= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W ^= var%02x.W\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 8:
-							sprintf(tmpBuf, "var%02x.W = !var%02x.W\n", inst->op_varw.varw, inst->op_varw.varw);
+							sprintf(tmpBuf, "Calc2 var%02x.W = !var%02x.W\n", inst->op_varw.varw, inst->op_varw.varw);
 							break;
 						case 9:
-							sprintf(tmpBuf, "var%02x.W >>= var%02x.W /*logical */ \n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W >>= var%02x.W /*logical */ \n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 10:
-							sprintf(tmpBuf, "var%02x.W <<= var%02x.W /*logical */\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W <<= var%02x.W /*logical */\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						case 11:
-							sprintf(tmpBuf, "var%02x.W >>= var%02x.W /* arithmetical */\n", inst->op_varw.varw, inst->op_varw.srcw);
+							sprintf(tmpBuf, "Calc2 var%02x.W >>= var%02x.W /* arithmetical */\n", inst->op_varw.varw, inst->op_varw.srcw);
 							break;
 						default:
 							sprintf(tmpBuf, "# Invalid operation 0x%02x\n", inst->op_varw.operation);
@@ -578,29 +608,21 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
-			case INST_CMP_VARW:
-				{
-					int compare = inst->cmp_varw.compare;
-					if (compare>6) {
-						compare = 6;
-					}
-
-					sprintf(tmpBuf, "CMP_VARW var%02x.W %s %d\n",
-						inst->cmp_varw.varw,
-						cmp_imm_name[compare],
-						(Sint16) SDL_SwapLE16(inst->cmp_varw.value));
-					strcat(strBuf, tmpBuf);
-				}
+			case 0x28:
+				strcat(strBuf, "Sce_rnd\n");
 				break;
 			case INST_CAM_SET:
-				sprintf(tmpBuf, "CAM_SET %d\n", inst->cam_set.id);
+				sprintf(tmpBuf, "Cut_chg %d\n", inst->cam_set.id);
 				strcat(strBuf, tmpBuf);
+				break;
+			case 0x2a:
+				strcat(strBuf, "Cut_old\n");
 				break;
 			case INST_PRINT_TEXT:
 				{
 					char tmpBuf[512];
 
-					sprintf(tmpBuf, "PRINT_TEXT 0x%02x\n", inst->print_text.id);
+					sprintf(tmpBuf, "Message_on 0x%02x\n", inst->print_text.id);
 					strcat(strBuf, tmpBuf);
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
@@ -623,22 +645,22 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						}	
 					}
 
-					sprintf(tmpBuf, "OBJECT 0x%02x = ESPR3D_SET xxx, examine %s, activate %s, ??? %s\n",
+					sprintf(tmpBuf, "Aot_set id=0x%02x, xxx, examine %s, activate %s, ??? %s\n",
 						inst->espr3d_set.id, myTmpBuf[0], myTmpBuf[1], myTmpBuf[2]);
 					strcat(strBuf, tmpBuf);
 				}
 				break;
 			case INST_TRIGGER_SET:
-				sprintf(tmpBuf, "TRIGGER 0x%02x = TRIGGER_SET xxx\n", inst->trigger_set.id);
+				sprintf(tmpBuf, "Obj_model_set 0x%02x, xxx\n", inst->trigger_set.id);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_SET_REG_MEM:
-				sprintf(tmpBuf, "SET_ACTIVE_OBJECT %d,%d\n",
+				sprintf(tmpBuf, "Work_set %d,%d\n",
 					inst->set_reg_mem.component, inst->set_reg_mem.index);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_SET_REG_IMM:
-				sprintf(tmpBuf, "SET_REG_IMM %d,%d\n",
+				sprintf(tmpBuf, "Speed_set %d,%d\n",
 					inst->set_reg_imm.component, SDL_SwapLE16(inst->set_reg_imm.value));
 				strcat(strBuf, tmpBuf);
 				break;
@@ -646,20 +668,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* 0x30-0x3f */
 
 			case INST_SET_REG_TMP:
-				strcat(strBuf, "SET_REG_TMP\n");
+				strcat(strBuf, "Add_speed\n");
 				break;
 			case INST_ADD_REG:
-				strcat(strBuf, "ADD_REG\n");
+				strcat(strBuf, "Add_aspeed\n");
 				break;
 			case INST_EM_SET_POS:
-				sprintf(tmpBuf, "EM_SET_POS x=%d, y=%d, z=%d\n",
+				sprintf(tmpBuf, "Pos_set x=%d, y=%d, z=%d\n",
 					SDL_SwapLE16(inst->set_reg_3w.value[0]),
 					SDL_SwapLE16(inst->set_reg_3w.value[1]),
 					SDL_SwapLE16(inst->set_reg_3w.value[2]));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_SET_REG3:
-				sprintf(tmpBuf, "SET_REG3 %d,%d,%d\n",
+				sprintf(tmpBuf, "Dir_set %d,%d,%d\n",
 					SDL_SwapLE16(inst->set_reg_3w.value[0]),
 					SDL_SwapLE16(inst->set_reg_3w.value[1]),
 					SDL_SwapLE16(inst->set_reg_3w.value[2]));
@@ -680,7 +702,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					}
 
 					sprintf(tmpBuf,
-						hexa ? "EM_SET_VAR %s,0x%04x\n" : "EM_SET_VAR %s,%d\n",
+						hexa ? "Member_set %s,0x%04x\n" : "Member_set %s,%d\n",
 						varname,
 						SDL_SwapLE16(inst->set_var.value));
 					strcat(strBuf, tmpBuf);
@@ -699,30 +721,33 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						}
 					}
 
-					sprintf(tmpBuf, "EM_SET_VAR %s, var%02x.W\n", varname,
+					sprintf(tmpBuf, "Member_set2 %s, var%02x.W\n", varname,
 						inst->em_set_var_varw.varw);
 					strcat(strBuf, tmpBuf);
 				}
 				break;
 			case 0x36:
-				sprintf(tmpBuf, "UNKNOWN_INST36 %d, 0x%04x,0x%04x x=%d,y=%d,z=%d\n",
+				sprintf(tmpBuf, "Se_on %d, 0x%04x,0x%04x x=%d,y=%d,z=%d\n",
 					inst->inst36.unknown0, SDL_SwapLE16(inst->inst36.unknown1[0]),
 					SDL_SwapLE16(inst->inst36.unknown1[1]), SDL_SwapLE16(inst->inst36.x),
 					SDL_SwapLE16(inst->inst36.y), SDL_SwapLE16(inst->inst36.z));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_CAM_CHG:
-				sprintf(tmpBuf, "CAM_CHG %d,%d\n",
+				sprintf(tmpBuf, "Sca_id_set %d,%d\n",
 					inst->cam_chg.unknown0, inst->cam_chg.camera);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_FLOOR_SET:
-				sprintf(tmpBuf, "FLOOR_SET %d,%d\n",
+				sprintf(tmpBuf, "Flr_set %d,%d\n",
 					inst->floor_set.id, inst->floor_set.unknown);
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x39:
+				strcat(strBuf, "Dir_ck\n");
+				break;
 			case INST_ESPR_SET:
-				sprintf(tmpBuf, "ESPR_SET 0x%04x,0x%04x,0x%04x,0x%04x,0x%04x,0x%04x,0x%04x\n",
+				sprintf(tmpBuf, "Sce_espr_on 0x%04x,0x%04x,0x%04x,0x%04x,0x%04x,0x%04x,0x%04x\n",
 					SDL_SwapLE16(inst->espr_set.unknown[0]), SDL_SwapLE16(inst->espr_set.unknown[1]),
 					SDL_SwapLE16(inst->espr_set.unknown[2]), SDL_SwapLE16(inst->espr_set.unknown[3]),
 					SDL_SwapLE16(inst->espr_set.unknown[4]), SDL_SwapLE16(inst->espr_set.unknown[5]),
@@ -730,14 +755,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_DOOR_SET:
-				sprintf(tmpBuf, "OBJECT 0x%02x = DOOR_SET x=%d, y=%d, w=%d, h=%d\n",
+				sprintf(tmpBuf, "Door_aot_set id=0x%02x, x=%d, y=%d, w=%d, h=%d\n",
 					inst->door_set.id,
 					(Sint16) SDL_SwapLE16(inst->door_set.x), (Sint16) SDL_SwapLE16(inst->door_set.y),
 					(Sint16) SDL_SwapLE16(inst->door_set.w), (Sint16) SDL_SwapLE16(inst->door_set.h));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_STATUS_SET:
-				sprintf(tmpBuf, "STATUS_SET %s\n",
+				sprintf(tmpBuf, "Cut_auto %s\n",
 					(inst->status_set.screen == 0 ? "item" : "map"));
 				strcat(strBuf, tmpBuf);
 				break;
@@ -754,7 +779,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						}
 					}
 
-					sprintf(tmpBuf, "var%02x.W = EM_GET_VAR %s\n", 
+					sprintf(tmpBuf, "Member_copy var%02x.W = %s\n", 
 						inst->em_get_var_varw.varw, varname);
 					strcat(strBuf, tmpBuf);
 				}
@@ -766,26 +791,41 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						compare = 6;
 					}
 
-					sprintf(tmpBuf, "CMP_IMM %s xxx,0x%04x\n",
+					sprintf(tmpBuf, "Member_cmp %s xxx,0x%04x\n",
 						cmp_imm_name[compare],
 						SDL_SwapLE16(inst->cmp_imm.value));
 					strcat(strBuf, tmpBuf);
 				}
 				break;
+			case 0x3f:
+				strcat(strBuf, "Plc_motion\n");
+				break;
 
 			/* 0x40-0x4f */
 
+			case 0x40:
+				strcat(strBuf, "Plc_dest\n");
+				break;
+			case 0x41:
+				strcat(strBuf, "Plc_neck\n");
+				break;
 			case INST_STATUS_SHOW:
-				strcat(strBuf, "STATUS_SHOW\n");
+				strcat(strBuf, "Plc_ret\n");
+				break;
+			case 0x43:
+				strcat(strBuf, "Plc_flg\n");
 				break;
 			case INST_EM_SET:
-				sprintf(tmpBuf, "ENTITY 0x%02x = EM_SET model=0x%02x, pose=0x%04x, sound_bank=%d, killed=0x%02x, x=%d, y=%d, z=%d\n",
+				sprintf(tmpBuf, "Sce_em_set id=0x%02x, model=0x%02x, pose=0x%04x, sound_bank=%d, killed=0x%02x, x=%d, y=%d, z=%d\n",
 					inst->em_set.id, inst->em_set.model,
 					SDL_SwapLE16(inst->em_set.pose), inst->em_set.sound_bank,
 					inst->em_set.killed,
 					(Sint16) SDL_SwapLE16(inst->em_set.x), (Sint16) SDL_SwapLE16(inst->em_set.y),
 					(Sint16) SDL_SwapLE16(inst->em_set.z));
 				strcat(strBuf, tmpBuf);
+				break;
+			case 0x45:
+				strcat(strBuf, "Col_chg_set\n");
 				break;
 			case 0x46:
 				{
@@ -796,7 +836,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 						sprintf(myTmpBuf, "function 0x%02x", (SDL_SwapLE16(inst->inst46.unknown1[1])>>8) & 0xff);
 					}
 
-					sprintf(tmpBuf, "TRIGGER_SET_ACTION OBJECT 0x%02x, %d,%d 0x%04x,%s,0x%04x\n",
+					sprintf(tmpBuf, "Aot_reset id=0x%02x, %d,%d 0x%04x,%s,0x%04x\n",
 						inst->inst46.id, inst->inst46.unknown0[0], inst->inst46.unknown0[1],
 						SDL_SwapLE16(inst->inst46.unknown1[0]), myTmpBuf,
 						SDL_SwapLE16(inst->inst46.unknown1[2]));
@@ -804,17 +844,32 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}
 				break;
 			case INST_ACTIVATE_OBJECT:
-				sprintf(tmpBuf, "ACTIVATE_OBJECT 0x%02x\n", inst->set_cur_obj.id);
+				sprintf(tmpBuf, "Aot_on id=0x%02x\n", inst->set_cur_obj.id);
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x48:
+				strcat(strBuf, "Super_set\n");
+				break;
+			case 0x49:
+				strcat(strBuf, "Super_reset\n");
+				break;
+			case 0x4a:
+				strcat(strBuf, "Plc_gun\n");
+				break;
 			case INST_CAMSWITCH_SWAP:
-				sprintf(tmpBuf, "CAMSWITCH_SWAP %d,%d\n",
+				sprintf(tmpBuf, "Cut_replace %d,%d\n",
 					inst->camswitch_swap.cam[0], inst->camswitch_swap.cam[1]);
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x4c:
+				strcat(strBuf, "Sce_espr_kill\n");
+				break;
+			/*case 0x4d:
+				strcat(strBuf, "???\n");
+				break;*/
 			case INST_ITEM_SET:
 				{
-					sprintf(tmpBuf, "OBJECT 0x%02x = ITEM_SET %d, amount %d\n",
+					sprintf(tmpBuf, "Item_aot_set id=0x%02x, %d, amount %d\n",
 						inst->item_set.id,
 						SDL_SwapLE16(inst->item_set.type),
 						SDL_SwapLE16(inst->item_set.amount));
@@ -828,20 +883,59 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					}
 				}
 				break;
+			case 0x4f:
+				strcat(strBuf, "Sce_key_ck\n");
+				break;
 
 			/* 0x50-0x5f */
 
+			case 0x50:
+				strcat(strBuf, "Sce_trg_ck\n");
+				break;
 			case INST_SND_SET:
-				sprintf(tmpBuf, "SND_SET %d,%d,%d,%d,%d\n", inst->snd_set.unknown[0], inst->snd_set.unknown[1],
+				sprintf(tmpBuf, "Sce_bgm_control %d,%d,%d,%d,%d\n", inst->snd_set.unknown[0], inst->snd_set.unknown[1],
 					inst->snd_set.unknown[2], inst->snd_set.unknown[3], inst->snd_set.unknown[4]);
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x52:
+				strcat(strBuf, "Sce_espr_control\n");
+				break;
+			case 0x53:
+				strcat(strBuf, "Sce_fade_set\n");
+				break;
+			case 0x54:
+				strcat(strBuf, "Sce_espr3d_on\n");
+				break;
+			case 0x55:
+				strcat(strBuf, "Member_calc\n");
+				break;
+			case 0x56:
+				strcat(strBuf, "Member_calc2\n");
+				break;
+			case 0x57:
+				strcat(strBuf, "Sce_bgmtbl_set\n");
+				break;
+			case 0x58:
+				strcat(strBuf, "Plc_rot\n");
+				break;
 			case INST_SND_PLAY:
-				sprintf(tmpBuf, "SND_PLAY %d,%d\n", inst->snd_play.id, SDL_SwapLE16(inst->snd_play.value));
+				sprintf(tmpBuf, "Xa_on %d,%d\n", inst->snd_play.id, SDL_SwapLE16(inst->snd_play.value));
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x5a:
+				strcat(strBuf, "Weapon_chg\n");
+				break;
+			case 0x5b:
+				strcat(strBuf, "Plc_cnt\n");
+				break;
+			case 0x5c:
+				strcat(strBuf, "Sce_shake_on\n");
+				break;
+			case 0x5d:
+				strcat(strBuf, "Mizu_div_set\n");
+				break;
 			case INST_ITEM_HAVE:
-				sprintf(tmpBuf, "ITEM_HAVE %d\n", inst->item_have.id);
+				sprintf(tmpBuf, "Keep_Item_ck %d\n", inst->item_have.id);
 				strcat(strBuf, tmpBuf);
 				logMsg(1, "0x%08x: %s", offset, strBuf);
 
@@ -851,11 +945,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					sprintf(strBuf, "#\tUnknown item\n");
 				}
 				break;
+			case 0x5f:
+				strcat(strBuf, "Xa_vol\n");
+				break;
 
 			/* 0x60-0x6f */
 
+			case 0x60:
+				strcat(strBuf, "Kage_set\n");
+				break;
+			case 0x61:
+				strcat(strBuf, "Cut_be_set\n");
+				break;
 			case INST_ITEM_REMOVE:
-				sprintf(tmpBuf, "ITEM_REMOVE %d\n", inst->item_remove.id);
+				sprintf(tmpBuf, "Sce_Item_lost %d\n", inst->item_remove.id);
 				strcat(strBuf, tmpBuf);
 				logMsg(1, "0x%08x: %s", offset, strBuf);
 
@@ -865,12 +968,24 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					sprintf(strBuf, "#\tUnknown item\n");
 				}
 				break;
+			case 0x63:
+				strcat(strBuf, "Plc_gun_eff\n");
+				break;
+			case 0x64:
+				strcat(strBuf, "Sce_espr_on2\n");
+				break;
+			case 0x65:
+				strcat(strBuf, "Sce_espr_kill2\n");
+				break;
+			case 0x66:
+				strcat(strBuf, "Plc_stop\n");
+				break;
 			case INST_WALL_SET:
 				{
 					int i;
 					char v[32];
 
-					sprintf(tmpBuf, "OBJECT 0x%02x = WALL_SET 0x%04x",
+					sprintf(tmpBuf, "Aot_set_4p id=0x%02x, 0x%04x",
 						inst->wall_set.id, SDL_SwapLE16(inst->wall_set.unknown0[0]));
 					for (i=0; i<4; i++) {
 						sprintf(v," x%d=%d y%d=%d",
@@ -882,33 +997,63 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				}
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x68:
+				strcat(strBuf, "Door_aot_set_4p\n");
+				break;
+			case 0x69:
+				strcat(strBuf, "Item_aot_set_4p\n");
+				break;
 			case INST_LIGHT_POS_SET:
-				sprintf(tmpBuf, "LIGHT_POS_SET light=%d, %c=%d\n",
+				sprintf(tmpBuf, "Light_pos_set light=%d, %c=%d\n",
 					inst->light_pos_set.id,
 					'x'+inst->light_pos_set.param-11,
 					SDL_SwapLE16(inst->light_pos_set.value));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_LIGHT_RANGE_SET:
-				sprintf(tmpBuf, "LIGHT_RANGE_SET light=%d, range=%d\n",
+				sprintf(tmpBuf, "Light_kido_set light=%d, range=%d\n",
 					inst->light_range_set.id,
 					SDL_SwapLE16(inst->light_range_set.range));
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x6c:
+				strcat(strBuf, "Rbj_reset\n");
+				break;
 			case INST_BG_YPOS_SET:
-				sprintf(tmpBuf, "BG_YPOS_SET #0x%04x\n", SDL_SwapLE16(inst->bg_ypos_set.y));
+				sprintf(tmpBuf, "Sce_scr_move #0x%04x\n", SDL_SwapLE16(inst->bg_ypos_set.y));
 				strcat(strBuf, tmpBuf);
 				break;
+			case 0x6e:
+				strcat(strBuf, "Parts_set\n");
+				break;
 			case INST_MOVIE_PLAY:
-				sprintf(tmpBuf, "MOVIE_PLAY #0x%02x\n", inst->movie_play.id);
+				sprintf(tmpBuf, "Movie_on #0x%02x\n", inst->movie_play.id);
 				strcat(strBuf, tmpBuf);
 				break;
 
 			/* 0x70-0x7f */
 
+			case 0x70:
+				strcat(strBuf, "Splc_ret\n");
+				break;
+			case 0x71:
+				strcat(strBuf, "Splc_sce\n");
+				break;
+			case 0x72:
+				strcat(strBuf, "Super_on\n");
+				break;
+			case 0x73:
+				strcat(strBuf, "Mirror_set\n");
+				break;
+			case 0x74:
+				strcat(strBuf, "Sce_fade_adjust\n");
+				break;
+			case 0x75:
+				strcat(strBuf, "Sce_espr3d_on2\n");
+				break;
 			case INST_ITEM_ADD:
 				{
-					sprintf(tmpBuf, "ITEM_ADD %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
+					sprintf(tmpBuf, "Sce_Item_get %d, amount %d\n", inst->item_add.id, inst->item_add.amount);
 					strcat(strBuf, tmpBuf);
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
@@ -919,14 +1064,29 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					}
 				}
 				break;
+			case 0x77:
+				strcat(strBuf, "Sce_line_start\n");
+				break;
+			case 0x78:
+				strcat(strBuf, "Sce_line_main\n");
+				break;
+			case 0x79:
+				strcat(strBuf, "Sce_line_end\n");
+				break;
+			case 0x7a:
+				strcat(strBuf, "Sce_parts_bomb\n");
+				break;
+			case 0x7b:
+				strcat(strBuf, "Sce_parts_down\n");
+				break;
 			case INST_LIGHT_COLOR_SET:
-				sprintf(tmpBuf, "LIGHT_COLOR_SET light=%d, r=0x%02x, g=0x%02x, b=0x%02x\n",
+				sprintf(tmpBuf, "Light_color_set light=%d, r=0x%02x, g=0x%02x, b=0x%02x\n",
 					inst->light_color_set.id, inst->light_color_set.r,
 					inst->light_color_set.g, inst->light_color_set.b);
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_LIGHT_POS_CAM_SET:
-				sprintf(tmpBuf, "LIGHT_POS_CAM_SET camera=%d, light=%d, %c=%d\n",
+				sprintf(tmpBuf, "Light_pos_set2 camera=%d, light=%d, %c=%d\n",
 					inst->light_pos_cam_set.camera,
 					inst->light_pos_cam_set.id,
 					'x'+inst->light_pos_cam_set.param-11,
@@ -934,14 +1094,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_LIGHT_RANGE_CAM_SET:
-				sprintf(tmpBuf, "LIGHT_RANGE_CAM_SET camera=%d, light=%d, range=%d\n",
+				sprintf(tmpBuf, "Light_kido_set2 camera=%d, light=%d, range=%d\n",
 					inst->light_range_cam_set.camera,
 					inst->light_range_cam_set.id,
 					SDL_SwapLE16(inst->light_range_cam_set.range));
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_LIGHT_COLOR_CAM_SET:
-				sprintf(tmpBuf, "LIGHT_COLOR_CAM_SET camera=%d, light=%d, r=0x%02x, g=0x%02x, b=0x%02x\n",
+				sprintf(tmpBuf, "Light_color_set2 camera=%d, light=%d, r=0x%02x, g=0x%02x, b=0x%02x\n",
 					inst->light_color_cam_set.camera,
 					inst->light_color_cam_set.id, inst->light_color_cam_set.r,
 					inst->light_color_cam_set.g, inst->light_color_cam_set.b);
@@ -950,14 +1110,17 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x80-0x8f */
 
+			case 0x80:
+				strcat(strBuf, "Se_vol\n");
+				break;
 			case INST_POISON_CHECK:
-				strcat(strBuf, "POISON_CHECK\n");
+				strcat(strBuf, "Poison_ck\n");
 				break;
 			case INST_POISON_CLEAR:
-				strcat(strBuf, "POISON_CLEAR\n");
+				strcat(strBuf, "Poison_clr\n");
 				break;
 			case INST_ITEM_HAVE_AND_REMOVE:
-				sprintf(tmpBuf, "ITEM_HAVE_AND_REMOVE %d\n", inst->item_have_and_remove.id);
+				sprintf(tmpBuf, "Sce_Item_ck_Lost %d\n", inst->item_have_and_remove.id);
 				strcat(strBuf, tmpBuf);
 				break;
 
