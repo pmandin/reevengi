@@ -627,7 +627,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
 					room_rdt2_getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
-					logMsg(1, "#\tL0\t%s\n", tmpBuf);
+					logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
 
 					room_rdt2_getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
 					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
