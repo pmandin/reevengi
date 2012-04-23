@@ -119,7 +119,7 @@ static sbuffer_draw_f draw_render_textured;
 
 static void draw_shutdown(draw_t *this);
 
-#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+#if defined(__GNUC__) && defined(__m68k__)
 static unsigned logbase2(unsigned n);
 #endif
 
@@ -189,7 +189,7 @@ static void draw_shutdown(draw_t *this)
 	size_poly_minmaxx = 0;
 }
 
-#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+#if defined(__GNUC__) && defined(__m68k__)
 static unsigned logbase2(unsigned n)
 {
 	unsigned log2 = 0;
@@ -621,7 +621,7 @@ static void draw_render_textured8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_se
 
 	dx = x2 - x1 + 1;
 
-#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+#if defined(__GNUC__) && defined(__m68k__)
 /*
 	XXxxYYyy	uv/uvd
 	XXxx--YY	lsr.w
@@ -747,7 +747,7 @@ static void draw_render_textured16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_s
 
 	dx = x2 - x1 + 1;
 
-#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+#if defined(__GNUC__) && defined(__m68k__)
 /*
 	XXxxYYyy	uv/uvd
 	XXxx--YY	lsr.w
