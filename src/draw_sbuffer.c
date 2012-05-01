@@ -19,7 +19,12 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <SDL.h>
+#include <assert.h>
 
 #include "video.h"
 #include "parameters.h"
@@ -1113,11 +1118,13 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 	int num_segs = row->num_segs;
 	int clip_seg, clip_pos;
 
+	assert((y>=0) && (y<video.viewport.h));
+
 	x1 = segment->start.x;
 	x2 = segment->end.x;
 
 	/* Clip if outside */
-	if ((x2<0) || (x1>=video.viewport.w) || (y<0) || (y>=video.viewport.h)) {
+	if ((x2<0) || (x1>=video.viewport.w)) {
 		return;
 	}
 
