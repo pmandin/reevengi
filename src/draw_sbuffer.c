@@ -1060,8 +1060,8 @@ static void add_base_segment(int num_seg, int y, const sbuffer_segment_t *segmen
 	new_seg->masking = segment->masking;
 	new_seg->texture = segment->texture;
 
-	memcpy(&(new_seg->start), &(segment->start), sizeof(sbuffer_point_t));
-	memcpy(&(new_seg->end), &(segment->end), sizeof(sbuffer_point_t));
+	new_seg->start = segment->start;
+	new_seg->end = segment->end;
 }
 
 static void push_data_segment(int num_seg, int num_segdata, int y, int x1, int x2)
@@ -1597,9 +1597,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	/* Copy to other array for a single segment */
 	if (num_vtx==2) {
 		for (y=miny; y<maxy; y++) {
-			memcpy(	&poly_hlines[y].sbp[num_array ^ 1],
-				&poly_hlines[y].sbp[num_array],
-				sizeof(sbuffer_point_t));
+			poly_hlines[y].sbp[num_array ^ 1] = poly_hlines[y].sbp[num_array];
 		}
 	}
 
@@ -1618,8 +1616,8 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 			maxx = pmaxx;
 		}
 
-		memcpy(&segment.start, &poly_hlines[y].sbp[0], sizeof(sbuffer_point_t));
-		memcpy(&segment.end, &poly_hlines[y].sbp[1], sizeof(sbuffer_point_t));
+		segment.start = poly_hlines[y].sbp[0];
+		segment.end = poly_hlines[y].sbp[1];
 
 		draw_add_segment(y, &segment);
 	}
