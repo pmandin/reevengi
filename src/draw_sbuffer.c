@@ -1056,9 +1056,10 @@ static void dump_sbuffer(void)
 }
 #endif
 
-static void add_base_segment(int num_seg, int y, const sbuffer_segment_t *segment)
+static void add_base_segment(int y, const sbuffer_segment_t *segment)
 {
-	sbuffer_segment_t *new_seg = &(sbuffer_rows[y].segment[num_seg]);
+	sbuffer_row_t *row = &sbuffer_rows[y];
+	sbuffer_segment_t *new_seg = &(row->segment[row->num_segs]);
 
 	new_seg->render_mode = segment->render_mode;
 	new_seg->tex_num_pal = segment->tex_num_pal;
@@ -1067,6 +1068,8 @@ static void add_base_segment(int num_seg, int y, const sbuffer_segment_t *segmen
 
 	new_seg->start = segment->start;
 	new_seg->end = segment->end;
+
+	++row->num_segs;
 }
 
 static void push_data_segment(int num_seg, int num_segdata, int y, int x1, int x2)
@@ -1487,8 +1490,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 label_insert_base:
 	/* Insert common segment data if needed */
 	if (segbase_inserted) {
-		add_base_segment(row->num_segs,y, segment);
-		++row->num_segs;
+		add_base_segment(y, segment);
 	}
 }
 
