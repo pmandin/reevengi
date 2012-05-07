@@ -1570,17 +1570,20 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 				dv = vtx[v2].tx[1]*w2 - tv1;
 			}
 			for (y=0; y<dy; y++) {
+				float coef_dy;
+
 				if ((y1<0) || (y1>=video.viewport.h)) {
 					continue;
 				}
 
-				poly_hlines[y1].sbp[num_array].r = r1 + ((dr*y)/dy);
-				poly_hlines[y1].sbp[num_array].g = g1 + ((dg*y)/dy);
-				poly_hlines[y1].sbp[num_array].b = b1 + ((db*y)/dy);
-				poly_hlines[y1].sbp[num_array].u = tu1 + ((du*y)/dy);
-				poly_hlines[y1].sbp[num_array].v = tv1 + ((dv*y)/dy);
-				poly_hlines[y1].sbp[num_array].w = w1 + ((dw*y)/dy);
-				poly_hlines[y1++].sbp[num_array].x = x1 + ((dx*y)/dy);
+				coef_dy = (float) y / dy;
+				poly_hlines[y1].sbp[num_array].r = r1 + (dr * coef_dy);
+				poly_hlines[y1].sbp[num_array].g = g1 + (dg * coef_dy);
+				poly_hlines[y1].sbp[num_array].b = b1 + (db * coef_dy);
+				poly_hlines[y1].sbp[num_array].u = tu1 + (du * coef_dy);
+				poly_hlines[y1].sbp[num_array].v = tv1 + (dv * coef_dy);
+				poly_hlines[y1].sbp[num_array].w = w1 + (dw * coef_dy);
+				poly_hlines[y1++].sbp[num_array].x = x1 + (dx * coef_dy);
 
 				/*DEBUG_PRINT(("line %d, side %d, %.3f,%.3f tu1=%.3f,tv1=%.3f,du=%.3f,dv=%.3f,dy=%d %.3f,%.3f\n",
 					y1-1,num_array,
