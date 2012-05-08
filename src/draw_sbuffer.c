@@ -1074,6 +1074,7 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 
 static void push_data_segment(int num_seg, int num_segdata, int y, int x1, int x2)
 {
+	sbuffer_row_t *row = &sbuffer_rows[y];
 	sbuffer_segdata_t *new_segdata;
 
 	if (num_segdata>=NUM_SEGMENTS_DATA) {
@@ -1081,7 +1082,7 @@ static void push_data_segment(int num_seg, int num_segdata, int y, int x1, int x
 	}
 
 	/* Write new segment data */
-	new_segdata = &(sbuffer_rows[y].segdata[num_segdata]);
+	new_segdata = &(row->segdata[num_segdata]);
 
 	new_segdata->id = num_seg;
 	new_segdata->x1 = x1;
@@ -1090,14 +1091,15 @@ static void push_data_segment(int num_seg, int num_segdata, int y, int x1, int x
 
 static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int x2)
 {
-	int num_segs_data = sbuffer_rows[y].num_segs_data;
+	sbuffer_row_t *row = &sbuffer_rows[y];
+	int num_segs_data = row->num_segs_data;
 
 	/* Move stuff that starts after this segment */
 	if (num_segs_data>0) {
 		int i;
 		int num_seg_copy = MIN(NUM_SEGMENTS_DATA-2, num_segs_data-1);
-		sbuffer_segdata_t *src = &(sbuffer_rows[y].segdata[num_seg_copy]);
-		sbuffer_segdata_t *dst = &(sbuffer_rows[y].segdata[num_seg_copy+1]);
+		sbuffer_segdata_t *src = &(row->segdata[num_seg_copy]);
+		sbuffer_segdata_t *dst = &(row->segdata[num_seg_copy+1]);
 		for (i=num_seg_copy; i>=new_segdata; i--) {
 			dst->id = src->id;
 			dst->x1 = src->x1;
@@ -1109,7 +1111,7 @@ static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int
 
 	push_data_segment(num_seg, new_segdata, y, x1,x2);
 	if (num_segs_data<NUM_SEGMENTS_DATA) {
-		++sbuffer_rows[y].num_segs_data;
+		++row->num_segs_data;
 	}
 }
 
