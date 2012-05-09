@@ -1101,11 +1101,7 @@ static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int
 		sbuffer_segdata_t *src = &(row->segdata[num_seg_copy]);
 		sbuffer_segdata_t *dst = &(row->segdata[num_seg_copy+1]);
 		for (i=num_seg_copy; i>=new_segdata; i--) {
-			dst->id = src->id;
-			dst->x1 = src->x1;
-			dst->x2 = src->x2;
-			dst--;
-			src--;
+			*dst-- = *src--;
 		}
 	}
 
