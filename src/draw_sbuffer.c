@@ -1095,14 +1095,10 @@ static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int
 	int num_segs_data = row->num_segs_data;
 
 	/* Move stuff that starts after this segment */
-	if (num_segs_data>0) {
-		int i;
-		int num_seg_copy = MIN(NUM_SEGMENTS_DATA-2, num_segs_data-1);
-		sbuffer_segdata_t *src = &(row->segdata[num_seg_copy]);
-		sbuffer_segdata_t *dst = &(row->segdata[num_seg_copy+1]);
-		for (i=num_seg_copy; i>=new_segdata; i--) {
-			*dst-- = *src--;
-		}
+	if ((num_segs_data>0) && (num_segs_data<NUM_SEGMENTS_DATA-1)) {
+		sbuffer_segdata_t *src = &(row->segdata[new_segdata]);
+		sbuffer_segdata_t *dst = &(row->segdata[new_segdata+1]);
+		memmove(dst, src, (num_segs_data-new_segdata)*sizeof(sbuffer_segdata_t));
 	}
 
 	push_data_segment(num_seg, new_segdata, y, x1,x2);
