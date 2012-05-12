@@ -54,7 +54,7 @@
 #define CLIP_ACCEPT(a,b) (!(a|b))
 
 #define NUM_SEGMENTS 128
-#define NUM_SEGMENTS_DATA 128
+#define NUM_SEGMENTS_DATA 256
 
 #define SEG1_FRONT 0
 #define SEG1_BEHIND 1
@@ -1171,17 +1171,11 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 	}
 
 	/*--- Need to check against current list ---*/
-	for (i=0; i<row->num_segs_data; i++) {
+	for (i=0; (i<row->num_segs_data) && (x1<=x2); i++) {
 		int clip_x1, clip_x2, current_end, ic = i;
 		sbuffer_segdata_t *current = &(row->segdata[ic]);
 
 		DEBUG_PRINT(("--new %d,%d against %d:%d,%d\n",x1,x2, ic,current->x1, current->x2));
-
-		/* Out of screen ? */
-		if ((x2<0) || (x1>=video.viewport.w) || (x1>x2)) {
-			DEBUG_PRINT(("  stop\n"));
-			goto label_insert_base;
-		}	
 
 		/* Start after current? Will process against next one
 		ccccccc
