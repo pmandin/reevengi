@@ -284,6 +284,8 @@ static void swapBuffers(void)
 
 	i = 0;
 	for (y=0; y<video.upload_rects[video.numfb]->height; y++) {
+		int block_w = 0;
+		int block_x = 0;
 		int num_rows = 16;
 
 		if (((y+1)<<4) > video.height) {
@@ -291,22 +293,38 @@ static void swapBuffers(void)
 		}
 
 		for (x=0; x<video.upload_rects[video.numfb]->width; x++) {
+			/* Force update on last column */
+			int block_update = (x==video.upload_rects[video.numfb]->width-1);
 			int num_cols = 16;
-
-			if (video.upload_rects[video.numfb]->markers[y*video.upload_rects[video.numfb]->width + x] == 0) {
-				continue;
-			}
 
 			if (((x+1)<<4) > video.width) {
 				num_cols = video.width - (x<<4);
 			}
 
-			/* Add rectangle */
-			video.list_rects[i].x = x<<4;
-			video.list_rects[i].y = y<<4;
-			video.list_rects[i].w = num_cols;
-			video.list_rects[i].h = num_rows;
-			i++;
+			if (video.upload_rects[video.numfb]->markers[y*video.upload_rects[video.numfb]->width + x]) {
+				/* Dirty */
+				if (block_w==0) {
+					/* First dirty block, mark x pos */
+					block_x = x;
+				}
+				block_w += num_cols;
+			} else {
+				/* Non dirty, force update of previously merged blocks */
+				block_update = 1;
+			}
+
+			/* Update only if we have a dirty block */
+			if (block_update && (block_w>0)) {
+				/* Add rectangle */
+				video.list_rects[i].x = block_x<<4;
+				video.list_rects[i].y = y<<4;
+				video.list_rects[i].w = block_w;
+				video.list_rects[i].h = num_rows;
+
+				i++;
+
+				block_w = 0;
+			}
 		}
 	}
 
