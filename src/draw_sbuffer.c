@@ -45,14 +45,6 @@
 #define DEBUG_PRINT(what)
 #endif
 
-#define CLIP_LEFT_EDGE   0x1
-#define CLIP_RIGHT_EDGE  0x2
-#define CLIP_BOTTOM_EDGE 0x4
-#define CLIP_TOP_EDGE    0x8
-#define CLIP_INSIDE(a)   (!a)
-#define CLIP_REJECT(a,b) (a&b)
-#define CLIP_ACCEPT(a,b) (!(a|b))
-
 #define NUM_SEGMENTS 128
 #define NUM_SEGMENTS_DATA 256
 
