@@ -310,7 +310,9 @@ static void draw_flushFrame(draw_t *this)
 			{
 			}
 
-			if (!current->masking && (segdata[j].x1 <= segdata[last].x2)) {
+			assert(segdata[j].x1 <= segdata[last].x2);
+
+			if (!current->masking) {
 				Uint8 *dst_line = dst + segdata[j].x1 * surf->format->BytesPerPixel;
 				switch(current->render_mode) {
 					case RENDER_FILLED:
@@ -415,7 +417,7 @@ static void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 static void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	int dx, dxtotal, i;
+	int dxtotal, i;
 	Uint8 *dst_col = dst_line;
 
 	r1 = segment->start.r;
@@ -444,9 +446,7 @@ static void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_seg
 	g = g1 + dg * (x1-segment->start.x);
 	b = b1 + db * (x1-segment->start.x);
 
-	dx = x2 - x1 + 1;
- 
-	for (i=0; i<dx; i++) {
+	for (i=x1; i<=x2; i++) {
 		*dst_col++ = dither_nearest_index(r,g,b);
 		r += dr;
 		g += dg;
@@ -457,7 +457,7 @@ static void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_seg
 static void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	int dx, dxtotal, i;
+	int dxtotal, i;
 	Uint16 *dst_col = (Uint16 *) dst_line;
 
 	r1 = segment->start.r;
@@ -486,9 +486,7 @@ static void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_se
 	g = g1 + dg * (x1-segment->start.x);
 	b = b1 + db * (x1-segment->start.x);
 
-	dx = x2 - x1 + 1;
- 
-	for (i=0; i<dx; i++) {
+	for (i=x1; i<=x2; i++) {
 		*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
 		r += dr;
 		g += dg;
@@ -499,7 +497,7 @@ static void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_se
 static void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	int dx, dxtotal, i;
+	int dxtotal, i;
 	Uint8 *dst_col = dst_line;
 
 	r1 = segment->start.r;
@@ -528,9 +526,7 @@ static void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_se
 	g = g1 + dg * (x1-segment->start.x);
 	b = b1 + db * (x1-segment->start.x);
 
-	dx = x2 - x1 + 1;
- 
-	for (i=0; i<dx; i++) {
+	for (i=x1; i<=x2; i++) {
 		Uint32 color = SDL_MapRGB(surf->format, r,g,b);
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 		*dst_col++ = color>>16;
@@ -550,7 +546,7 @@ static void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_se
 static void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	int dx, dxtotal, i;
+	int dxtotal, i;
 	Uint32 *dst_col =  (Uint32 *) dst_line;
 
 	r1 = segment->start.r;
@@ -579,9 +575,7 @@ static void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_se
 	g = g1 + dg * (x1-segment->start.x);
 	b = b1 + db * (x1-segment->start.x);
 
-	dx = x2 - x1 + 1;
- 
-	for (i=0; i<dx; i++) {
+	for (i=x1; i<=x2; i++) {
 		*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
 		r += dr;
 		g += dg;
