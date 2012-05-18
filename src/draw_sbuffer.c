@@ -262,29 +262,11 @@ static void draw_startFrame(draw_t *this)
 	clear_sbuffer();
 }
 
-#if 0
-static void check_sbuffer(void)
-{
-	int i;
-
-	for (i=0; i<sbuffer_numrows; i++) {
-		if (sbuffer_rows[i].num_segs>NUM_SEGMENTS) {
-			printf("row %d: segs %d\n", i,sbuffer_rows[i].num_segs);
-		}
-		if (sbuffer_rows[i].num_segs_data>NUM_SEGMENTS_DATA) {
-			printf("row %d: segs data %d\n", i,sbuffer_rows[i].num_segs_data);
-		}
-	}
-}
-#endif
-
 static void draw_flushFrame(draw_t *this)
 {
 	SDL_Surface *surf = video.screen;
 	int i,j;
 	Uint8 *dst = (Uint8 *) surf->pixels;
-
-	/*check_sbuffer();*/
 
 	if (SDL_MUSTLOCK(surf)) {
 		SDL_LockSurface(surf);
@@ -294,9 +276,13 @@ static void draw_flushFrame(draw_t *this)
 	dst += video.viewport.x * surf->format->BytesPerPixel;
 
 	/* For each row */
-	for (i=0; i<sbuffer_numrows; i++) {
+	for (i=0; i<sbuffer_numrows; i++, dst += surf->pitch) {
 		sbuffer_segdata_t *segdata = sbuffer_rows[i].segdata;
 		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+
+		if ((sbuffer_rows[i].num_segs==0) || (sbuffer_rows[i].num_segs_data==0)) {
+			continue;
+		}
 
 		/* Render list of segment */
 		for (j=0; j<sbuffer_rows[i].num_segs_data; j++) {
@@ -329,8 +315,6 @@ static void draw_flushFrame(draw_t *this)
 
 			j = last;
 		}
-
-		dst += surf->pitch;
 	}
 
 	if (SDL_MUSTLOCK(surf)) {
