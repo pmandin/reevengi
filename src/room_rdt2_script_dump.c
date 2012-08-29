@@ -84,6 +84,12 @@ typedef struct {
 	const char *name;
 } em_var_name_t;
 
+typedef struct {
+	Uint8 array;
+	Uint8 bit;
+	const char *name;
+} bitarray_name_t;
+
 /*--- Constants ---*/
 
 static const char *cmp_imm_name[7]={
@@ -196,6 +202,48 @@ static const char *item_name[]={
 /*113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 */
 /*114,125 = User registration,Lab security manual ? room 60a0 */
 
+static const bitarray_name_t bitarray_names[]={
+	{0, 0x19, "game.difficulty"},
+
+	{1, 0x00, "game.character"},
+	{1, 0x01, "game.scenario"},
+	{1, 0x06, "game.type"},
+	{1, 0x1b, "game.letterbox"},
+	
+	{2, 0x07, "room.mutex"},
+	
+	{4, 0x05, "room2010.seen_licker"},
+	{4, 0x06, "room2000.first_visit"},
+	{4, 0x12, "room10b0.put_jewel1"},
+	{4, 0x13, "room10b0.put_jewel2"},
+	{4, 0x1a, "room1010.already_visited"},
+	{4, 0x1b, "room1010.kendo_attacked"},
+	{4, 0x3a, "room3090.ladder_down"},
+	{4, 0x48, "room2000.put_medal"},
+	{4, 0x55, "room2040.first_visit"},
+	{4, 0x56, "room2040.met_licker"},
+	{4, 0x5b, "room60c0.registered_fingerprint"},
+	{4, 0x88, "room7000.electricity_enabled"},
+	{4, 0x8c, "room7000.gates_opened"},
+	{4, 0x8e, "room60c0.fingerprint_ok_scenario_a"},
+	{4, 0x8f, "room60c0.fingerprint_ok_scenario_b"},
+	{4, 0x90, "room7010.opened_sockets_stock"},
+	{4, 0x94, "room1100.ladder_down"},
+	{4, 0x99, "room2040.cord_broken"},
+	{4, 0xaf, "room2070.used_specialkey"},
+	
+	{5, 0x02, "room2040.corpse_examined"},
+	{5, 0x03, "room1010.kendo_examined"},
+	{5, 0x12, "room1030.enable_brad"},
+	
+	{0x0b, 0x1f, "player_answer"},
+	
+	{0x1d, 0x02, "room60c0.door_unlocked_scenario_a"},
+	{0x1d, 0x09, "room2040.cord_on_shutter"},
+	{0x1d, 0x0a, "room20f0.cord_on_shutter"},
+	{0x1d, 0x11, "room1030.met_brad"}
+};
+
 /*--- Variables ---*/
 
 static char strBuf[256];
@@ -205,6 +253,7 @@ static char tmpBuf[256];
 
 static void reindent(int num_indent);
 static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
+static void getBitArrayName(char *dest, int num_array, int num_bit);
 
 /*--- Functions ---*/
 
@@ -474,23 +523,31 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/* 0x20-0x2f */
 
 			case INST_BIT_TEST:
-				sprintf(tmpBuf, "Ck array 0x%02x, bit 0x%02x = %d\n",
-					inst->bittest.num_array,
-					inst->bittest.bit_number,
-					inst->bittest.value);
-				strcat(strBuf, tmpBuf);
+				{
+					char myTmpBuf[40];
+
+					getBitArrayName(myTmpBuf, inst->bittest.num_array, inst->bittest.bit_number);
+
+					sprintf(tmpBuf, "Ck %s = %d\n", myTmpBuf, inst->bittest.value);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_BIT_CHG:
-				sprintf(tmpBuf, "Set %s array 0x%02x, bit 0x%02x\n",
-					(inst->bitchg.op_chg == 0 ? "CLEAR" :
-						(inst->bitchg.op_chg == 1 ? "SET" :
-							(inst->bitchg.op_chg == 7 ? "CHG" :
-							"INVALID")
-						)
-					),
-					inst->bitchg.num_array,
-					inst->bitchg.bit_number);
-				strcat(strBuf, tmpBuf);
+				{
+					char myTmpBuf[40];
+
+					getBitArrayName(myTmpBuf, inst->bitchg.num_array, inst->bitchg.bit_number);
+
+					sprintf(tmpBuf, "Set %s %s\n",
+						(inst->bitchg.op_chg == 0 ? "CLEAR" :
+							(inst->bitchg.op_chg == 1 ? "SET" :
+								(inst->bitchg.op_chg == 7 ? "CHG" :
+								"INVALID")
+							)
+						), myTmpBuf
+					);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_CMP_VARW:
 				{
@@ -1154,6 +1211,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		inst = (script_inst_t *) (&((Uint8 *) inst)[inst_len]);
 		/*printf("instlen %d, len %d\n", inst_len, length);*/
 	}
+}
+
+static void getBitArrayName(char dest[40], int num_array, int num_bit)
+{
+	int i;
+
+	for (i=0; i<sizeof(bitarray_names)/sizeof(bitarray_name_t); i++) {
+		if (bitarray_names[i].array != num_array) continue;
+		if (bitarray_names[i].bit != num_bit) continue;
+		strcpy(dest, bitarray_names[i].name);
+		return;
+	}
+
+	sprintf(dest, "array 0x%02x, bit 0x%02x", num_array, num_bit);
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */
