@@ -25,7 +25,6 @@
 #include "state.h"
 #include "room_rdt2.h"
 #include "room_rdt2_script.h"
-#include "room_rdt3_script.h"
 #include "log.h"
 #include "video.h"
 #include "render.h"
