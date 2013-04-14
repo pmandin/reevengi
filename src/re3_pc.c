@@ -37,7 +37,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "render.h"
-#include "model_emd3.h"
+#include "g_re3/emd.h"
 #include "log.h"
 #include "room_rdt2.h"
 #include "depack_sld.h"

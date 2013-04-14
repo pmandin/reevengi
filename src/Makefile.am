@@ -1,3 +1,5 @@
+SUBDIRS = g_re3
+
 bin_PROGRAMS = reevengi
 
 AM_CFLAGS = $(SDL_CFLAGS) $(AVCODEC_CFLAGS) $(AVFORMAT_CFLAGS) $(PHYSFS_CFLAGS)
@@ -10,7 +12,7 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	depack_adt.c depack_mdec.c depack_pak.c depack_vlc.c depack_sld.c \
 	dirty_rects.c dither.c draw_sbuffer.c draw_simple.c dyngl.c \
 	filesystem.c idctfst.c log.c main.c matrix.c \
-	model_emd.c model_emd2.c model_emd3.c \
+	model_emd.c model_emd2.c \
 	parameters.c physfsrwops.c menu.c \
 	re1_pc_game.c re1_ps1.c \
 	re2_pc_demo.c re2_pc_game.c re2_ps1.c \
@@ -32,7 +34,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	depack_adt.h depack_mdec.h depack_pak.h depack_vlc.h depack_sld.h \
 	dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h dyngl.h \
 	filesystem.h idctfst.h log.h matrix.h \
-	model_emd.h model_emd2.h model_emd3.h \
+	model_emd.h model_emd2.h \
 	parameters.h physfsrwops.h menu.h \
 	re1_pc_game.h re1_ps1.h \
 	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
@@ -48,6 +50,8 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	room_rdt3_script.h room_rdt3_script_common.h room_rdt3_script_dump.h \
 	state.h video.h \
 	view_background.h view_movie.h
+
+reevengi_LDADD = g_re3/libg_re3.a
 
 reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h
 

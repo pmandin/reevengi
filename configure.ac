@@ -14,6 +14,7 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_AS
+AC_PROG_RANLIB
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -167,6 +168,7 @@ AC_CONFIG_FILES([
 Makefile
 diff/Makefile
 src/Makefile
+src/g_re3/Makefile
 vs2005/Makefile
 ])
 AC_OUTPUT
