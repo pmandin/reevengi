@@ -13,7 +13,6 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	dirty_rects.c dither.c draw_sbuffer.c draw_simple.c dyngl.c \
 	filesystem.c idctfst.c log.c main.c matrix.c \
 	parameters.c physfsrwops.c menu.c \
-	re2_pc_demo.c re2_pc_game.c re2_ps1.c \
 	re3_pc.c re3_ps1_game.c \
 	render_bitmap.c render_bitmap_opengl.c \
 	render.c render_opengl.c render_text.c \
@@ -33,7 +32,6 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h dyngl.h \
 	filesystem.h idctfst.h log.h matrix.h \
 	parameters.h physfsrwops.h menu.h \
-	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
 	re3_pc.h re3_ps1_game.h \
 	render.h render_bitmap.h render_text.h \
 	render_mesh.h render_mesh_opengl.h \
