@@ -11,6 +11,6 @@ AM_CXXFLAGS = $(SDL_CFLAGS)
 INCLUDES = -I$(top_srcdir)/src
 
 EXTRA_DIST = emd.h \
-	re2_pc_demo.h re2_pc_game.h re2_ps1.h
+	re2_pc_demo.h re2_pc_game.h re2_ps1.h \
 	room_rdt2.h \
 	room_rdt2_script.h room_rdt2_script_common.h room_rdt2_script_dump.h
