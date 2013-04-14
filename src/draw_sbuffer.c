@@ -47,7 +47,6 @@
 
 #define NUM_SEGMENTS 128
 #define NUM_SEGMENTS_DATA 256
-#define SEG_DATA_INVALID 0xffff
 
 #define SEG1_FRONT 0
 #define SEG1_BEHIND 1
@@ -83,15 +82,13 @@ typedef struct {
 
 typedef struct {
 	Uint16 id;	/* Index in sbuffer_segment_t array for this row */
-	Uint16 next;	/* Next seg_data */
+	Uint16 dummy;
 	Uint16 x1,x2;	/* Start,end on the row */
 } sbuffer_segdata_t;
 
 typedef struct {
 	Uint16 num_segs;
 	Uint16 num_segs_data;
-	Uint16 first_seg_data;
-	Uint16 last_seg_data;
 	sbuffer_segment_t segment[NUM_SEGMENTS];
 	sbuffer_segdata_t segdata[NUM_SEGMENTS_DATA];
 } sbuffer_row_t;
@@ -147,8 +144,6 @@ static void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_s
 
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx);
 static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w);
-
-static void dump_sbuffer(void);
 
 /*--- Functions ---*/
 
@@ -283,18 +278,16 @@ static void draw_flushFrame(draw_t *this)
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++, dst += surf->pitch) {
 		sbuffer_segdata_t *segdata = sbuffer_rows[i].segdata;
-		sbuffer_segment_t *segment = sbuffer_rows[i].segment;
+		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
 
 		if ((sbuffer_rows[i].num_segs==0) || (sbuffer_rows[i].num_segs_data==0)) {
 			continue;
 		}
-		DEBUG_PRINT(("render row %d (%d,%d)\n",i,sbuffer_rows[i].num_segs,sbuffer_rows[i].num_segs_data));
 
 		/* Render list of segment */
-#if 0
 		for (j=0; j<sbuffer_rows[i].num_segs_data; j++) {
 			int last;
-			sbuffer_segment_t *current = &segment[segdata[j].id];
+			sbuffer_segment_t *current = &segments[segdata[j].id];
 
 			/* Find last segment to merge */
 			for (last=j;
@@ -302,31 +295,7 @@ static void draw_flushFrame(draw_t *this)
 				last++)
 			{
 			}
-#else
-		for (j=sbuffer_rows[i].first_seg_data; j!=SEG_DATA_INVALID; j=segdata[j].next) {
-			int last;
-			sbuffer_segment_t *current = &segment[segdata[j].id];
 
-			/* Find last segment to merge */
-			last = j;
-			while (segdata[j].id==segdata[last].id) {
-				int next_id = segdata[last].next;
-				if (next_id == SEG_DATA_INVALID) {
-					break;
-				}
-				if (segdata[j].id!=segdata[next_id].id) {
-					break;
-				}
-				last = next_id;
-				DEBUG_PRINT(("merge %d to %d\n",j,last));
-			}
-
-			DEBUG_PRINT(("final merge %d to %d\n",j,last));
-#endif
-
-			if (segdata[j].x1 > segdata[last].x2) {
-				DEBUG_PRINT(("assert row %d j %d last %d\n",i,j,last));
-			}
 			assert(segdata[j].x1 <= segdata[last].x2);
 
 			if (!current->masking) {
@@ -1035,7 +1004,7 @@ static int check_behind(const sbuffer_segment_t *seg1, const sbuffer_segment_t *
 	return (s1w1>s2w1 ? SEG1_CLIP_LEFT : SEG1_CLIP_RIGHT);
 }
 
-#if 1
+#if 0
 static void dump_sbuffer(void)
 {
 	int i,j;
@@ -1043,19 +1012,13 @@ static void dump_sbuffer(void)
 	DEBUG_PRINT(("----------dump sbuffer start\n"));
 
 	for (i=0; i<sbuffer_numrows; i++) {
-		sbuffer_row_t *row = &sbuffer_rows[i];
-		if ((row->num_segs==0) && (row->num_segs_data==0))
-			continue;
-		DEBUG_PRINT(("------- row %d\n", i));
-		for (j=0; j<row->num_segs; j++) {
-			DEBUG_PRINT(("----- seg %d: %d,%d\n", j,
-				row->segment[j].start.x, row->segment[j].end.x));
+		for (j=0; j<sbuffer_rows[i].num_segs; j++) {
+			DEBUG_PRINT(("----- seg %d: %d,%d\n", i,
+				sbuffer_rows[i].segment[j].start.x, sbuffer_rows[i].segment[j].end.x));
 		}
-		DEBUG_PRINT(("------ segdata first %d last %d\n", row->first_seg_data, row->last_seg_data));
-		for (j=0; j<row->num_segs_data; j++) {
-			DEBUG_PRINT(("----- data %d (seg %d next %d): %d,%d\n", j,
-				row->segdata[j].id, row->segdata[j].next,
-				row->segdata[j].x1,row->segdata[j].x2));
+		for (j=0; j<sbuffer_rows[i].num_segs_data; j++) {
+			DEBUG_PRINT(("----- data %d (seg %d): %d,%d\n", i, sbuffer_rows[i].segdata[j].id,
+				sbuffer_rows[i].segdata[j].x1, sbuffer_rows[i].segdata[j].x2));
 		}
 	}
 
@@ -1063,8 +1026,9 @@ static void dump_sbuffer(void)
 }
 #endif
 
-static void add_base_segment(sbuffer_row_t *row, const sbuffer_segment_t *segment)
+static void add_base_segment(int y, const sbuffer_segment_t *segment)
 {
+	sbuffer_row_t *row = &sbuffer_rows[y];
 	sbuffer_segment_t *new_seg = &(row->segment[row->num_segs]);
 
 	new_seg->render_mode = segment->render_mode;
@@ -1078,8 +1042,9 @@ static void add_base_segment(sbuffer_row_t *row, const sbuffer_segment_t *segmen
 	++row->num_segs;
 }
 
-static void push_data_segment(sbuffer_row_t *row, int num_seg, int num_segdata, int x1, int x2)
+static void push_data_segment(int num_seg, int num_segdata, int y, int x1, int x2)
 {
+	sbuffer_row_t *row = &sbuffer_rows[y];
 	sbuffer_segdata_t *new_segdata;
 
 	if (num_segdata>=NUM_SEGMENTS_DATA) {
@@ -1094,48 +1059,22 @@ static void push_data_segment(sbuffer_row_t *row, int num_seg, int num_segdata, 
 	new_segdata->x2 = x2;
 }
 
-static int insert_data_segment(sbuffer_row_t *row, int num_seg, int prev_segdata, int next_segdata, int x1, int x2)
+static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int x2)
 {
-	sbuffer_segdata_t *new_segdata;
+	sbuffer_row_t *row = &sbuffer_rows[y];
+	int num_segs_data = row->num_segs_data;
 
-	assert((x1<=x2) && (x1>=0) && (x2<video.viewport.w));
-
-	new_segdata = &(row->segdata[row->num_segs_data]);
-	new_segdata->id = num_seg;
-	new_segdata->next = SEG_DATA_INVALID;
-	new_segdata->x1 = x1;
-	new_segdata->x2 = x2;
-
-	/* Empty seg data ? */
-	if (row->num_segs_data == 0) {
-		row->first_seg_data = row->last_seg_data = 0;
-	} else {
-		/* Link from previous segdata  to new */
-		if (prev_segdata != SEG_DATA_INVALID) {
-			/* Merge with previous ? */
-			if ((num_seg==row->segdata[prev_segdata].id) && (row->segdata[prev_segdata].x2+1==x1)) {
-				row->segdata[prev_segdata].x2 = x2;
-				return 0;
-			} else {
-				row->segdata[prev_segdata].next = row->num_segs_data;
-			}
-		} else {
-			row->first_seg_data = row->num_segs_data;
-		}
-
-		/* Link new to next segdata */
-		if (next_segdata != SEG_DATA_INVALID) {
-			new_segdata->next = next_segdata;
-			if (row->segdata[next_segdata].next == SEG_DATA_INVALID) {
-				row->last_seg_data = next_segdata;
-			}
-		} else {
-			row->last_seg_data = row->num_segs_data;
-		}
+	/* Move stuff that starts after this segment */
+	if ((num_segs_data>0) && (num_segs_data<NUM_SEGMENTS_DATA-1)) {
+		sbuffer_segdata_t *src = &(row->segdata[new_segdata]);
+		sbuffer_segdata_t *dst = &(row->segdata[new_segdata+1]);
+		memmove(dst, src, (num_segs_data-new_segdata)*sizeof(sbuffer_segdata_t));
 	}
 
-	++row->num_segs_data;
-	return 1;
+	push_data_segment(num_seg, new_segdata, y, x1,x2);
+	if (num_segs_data<NUM_SEGMENTS_DATA) {
+		++row->num_segs_data;
+	}
 }
 
 static void draw_add_segment(int y, const sbuffer_segment_t *segment)
@@ -1144,7 +1083,6 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 	int x1,x2, i;
 	int segbase_inserted = 0;
 	int clip_seg, clip_pos;
-	int prev_segdata = SEG_DATA_INVALID;
 
 	assert((y>=0) && (y<video.viewport.h));
 
@@ -1181,33 +1119,33 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 	/* Empty row ? */
 	if (row->num_segs == 0) {
 		DEBUG_PRINT(("----empty list\n"));
-		insert_data_segment(row,row->num_segs,prev_segdata,row->first_seg_data, x1,x2);
+		insert_data_segment(row->num_segs,0,y, x1,x2);
 		segbase_inserted=1;
 		goto label_insert_base;
 	}
 
 	/* Finish before first ? */
-	if (x2 < row->segdata[row->first_seg_data].x1) {
-		DEBUG_PRINT(("----finish before first (%d<%d)\n",x2,row->segdata[row->first_seg_data].x1));
-		insert_data_segment(row,row->num_segs,prev_segdata,row->first_seg_data, x1,x2);
+	if (x2 < row->segdata[0].x1) {
+		DEBUG_PRINT(("----finish before first (%d<%d)\n",x2,row->segdata[0].x1));
+		insert_data_segment(row->num_segs,0,y, x1,x2);
 		segbase_inserted=1;
 		goto label_insert_base;
 	}
 
 	/* Start after last ? */
-	if (row->segdata[row->last_seg_data].x2 < x1) {
-		DEBUG_PRINT(("----start after last (%d<%d)\n", row->segdata[row->last_seg_data].x2, x1));
-		insert_data_segment(row,row->num_segs,row->last_seg_data,SEG_DATA_INVALID, x1,x2);
+	if (row->segdata[row->num_segs_data-1].x2 < x1) {
+		DEBUG_PRINT(("----start after last (%d<%d)\n", row->segdata[row->num_segs_data-1].x2, x1));
+		insert_data_segment(row->num_segs,row->num_segs_data,y, x1,x2);
 		segbase_inserted=1;
 		goto label_insert_base;
 	}
 
 	/*--- Need to check against current list ---*/
-	for (i=row->first_seg_data; (i!=SEG_DATA_INVALID) && (x1<=x2); prev_segdata=i,i=row->segdata[i].next) {
+	for (i=0; (i<row->num_segs_data) && (x1<=x2); i++) {
 		int clip_x1, clip_x2, current_end, ic = i;
 		sbuffer_segdata_t *current = &(row->segdata[ic]);
 
-		DEBUG_PRINT(("--new %d,%d against %d:%d,%d prev %d\n",x1,x2, ic,current->x1, current->x2, prev_segdata));
+		DEBUG_PRINT(("--new %d,%d against %d:%d,%d\n",x1,x2, ic,current->x1, current->x2));
 
 		/* Start after current? Will process against next one
 		ccccccc
@@ -1221,12 +1159,17 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 		/* Finish before current ? Insert before it
 			ccccc
 		nnnnnn
-		  nnnnnn
+		  nnnnnnn
 		*/
-		if (x2 < current->x1) {
-			DEBUG_PRINT(("  finish before %d\n",ic));
-			insert_data_segment(row,row->num_segs,prev_segdata,ic, x1,x2);
-			segbase_inserted = 1;
+		if (x2 <= current->x1) {
+			DEBUG_PRINT(("  finish before or equal start %d\n",ic));
+			if (current->x1 > 0) {
+				if (x2 == current->x1) {
+					--x2;
+				}
+				insert_data_segment(row->num_segs,ic,y, x1,x2);
+				segbase_inserted = 1;
+			}
 			goto label_insert_base;
 		}
 
@@ -1244,24 +1187,24 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 		4       nnnnnnnnnnn
 		*/
 		if (x1 < current->x1) {
-			int inserted;
-			DEBUG_PRINT(("  new start before %d, insert %d,%d, will continue from pos %d\n", ic, x1,current->x1-1, current->x1));
+			int next_x1 = current->x1;
+			DEBUG_PRINT(("  new start before %d, insert %d,%d, will continue from pos %d\n", ic, x1,next_x1-1, next_x1));
+			/*printf("   current before: %d,%d\n", current->start.x, current->end.x);**/
 
-			inserted = insert_data_segment(row,row->num_segs,prev_segdata,ic, x1,current->x1-1);
+			insert_data_segment(row->num_segs,ic,y, x1,next_x1-1);
 			segbase_inserted = 1;
 
-			x1 = current->x1;
+			++ic;
 
-			if (inserted) {
-				DEBUG_PRINT(("   prev %d\n", prev_segdata));
-				if (prev_segdata == SEG_DATA_INVALID) {
-					/* Inserted new at first pos */
-					prev_segdata = row->first_seg_data;
-				} else {
-					prev_segdata = row->segdata[prev_segdata].next;
-				}
-				DEBUG_PRINT(("    new prev %d\n", prev_segdata));
+			x1 = next_x1;
+
+			/* End of list ? */
+			if (ic>=NUM_SEGMENTS_DATA) {
+				break;
 			}
+
+			current = &(row->segdata[ic]);
+			/*printf("   current after: %d,%d\n", current->start.x, current->end.x);*/
 		}
 
 		/* Now Zcheck both current and new segment */
@@ -1283,7 +1226,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 			if (calc_w(segment, x1) > calc_w(&(row->segment[current->id]), cur_x)) {
 				DEBUG_PRINT(("   replace current by new\n"));
 
-				push_data_segment(row,row->num_segs,ic, cur_x,cur_x);
+				push_data_segment(row->num_segs,ic,y, cur_x,cur_x);
 				segbase_inserted=1;
 			}
 			x1 = next_x1;
@@ -1320,7 +1263,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 				++current->x1;
 
 				DEBUG_PRINT(("  insert new %d,%d at %d\n", x1,x2, ic));
-				insert_data_segment(row,row->num_segs,prev_segdata,ic, x1,x2);
+				insert_data_segment(row->num_segs,ic,y, x1,x2);
 				segbase_inserted = 1;
 				goto label_insert_base;
 			}
@@ -1334,7 +1277,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 				--current->x2;
 
 				DEBUG_PRINT(("  insert new %d,%d at %d\n", x1,x2, ic+1));
-				insert_data_segment(row,row->num_segs,ic,row->segdata[ic].next, x1,x2);
+				insert_data_segment(row->num_segs,ic+1,y, x1,x2);
 				segbase_inserted = 1;
 				goto label_insert_base;
 			}
@@ -1348,11 +1291,11 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 				    cccc
 			*/
 			DEBUG_PRINT(("  split current, insert new\n"));
-			insert_data_segment(row,current->id,ic,row->segdata[ic].next, x1+1,current->x2);
+			insert_data_segment(current->id,ic+1,y, x1+1,current->x2);
 
 			current->x2 = x1-1;
 
-			insert_data_segment(row,row->num_segs,ic,row->segdata[ic].next, x1,x2);
+			insert_data_segment(row->num_segs,ic+1,y, x1,x2);
 			segbase_inserted = 1;
 			goto label_insert_base;
 		}
@@ -1366,8 +1309,6 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 		*/
 		clip_x1 = MAX(x1, current->x1);
 		clip_x2 = MIN(x2, current->x2);
-		DEBUG_PRINT(("  clip: new %d,%d current %d,%d clipped %d,%d\n",
-			x1,x2, current->x1,current->x2, clip_x1,clip_x2));
 
 		if (clip_x1==clip_x2) {
 			DEBUG_PRINT((" Zcheck multiple pixels, single pixel common zone\n"));
@@ -1389,38 +1330,36 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 
 		switch(clip_seg) {
 			case SEG1_BEHIND:
-				DEBUG_PRINT(("- %d behind new (common from %d->%d, prev %d)\n", ic,clip_x1,clip_x2, prev_segdata));
+				DEBUG_PRINT(("- %d behind new (common from %d->%d)\n", ic,clip_x1,clip_x2));
 				current_end = current->x2;
 
 				if (clip_x1 == current->x1) {
 					if (current_end <= clip_x2) {
 						DEBUG_PRINT((" new replace current from %d->%d\n", current->x1,current_end));
 						/* Replace current by new */
-						push_data_segment(row,row->num_segs,ic, current->x1,current_end);
+						push_data_segment(row->num_segs,ic,y, current->x1,current_end);
 						segbase_inserted=1;
 					} else {
 						DEBUG_PRINT((" clip current start from %d to %d\n", current->x1,clip_x2+1));
 						/* Clip current on the right */
 						current->x1 = clip_x2+1;
 
-						DEBUG_PRINT((" insert new between %d and %d from %d->%d\n",
-							 prev_segdata,ic, clip_x1,clip_x2));
+						DEBUG_PRINT((" insert new from %d->%d\n", clip_x1,clip_x2));
 						/* Insert new before current */
-						insert_data_segment(row,row->num_segs,prev_segdata,ic, clip_x1,clip_x2);
+						insert_data_segment(row->num_segs,ic,y, clip_x1,clip_x2);
 						segbase_inserted=1;
 					}
 				} else {
 					/* Insert current after clip_x2 ? */
 					if (clip_x2 < current_end) {
 						DEBUG_PRINT((" split current from %d->%d\n", clip_x2+1, current->x2));
-						insert_data_segment(row,current->id,ic,row->segdata[ic].next, clip_x2+1,current->x2);
+						insert_data_segment(current->id,ic+1,y, clip_x2+1,current->x2);
 						segbase_inserted=1;
 					}
 
-					DEBUG_PRINT((" insert new between %d and %d from %d->%d\n",
-						ic,row->segdata[ic].next, clip_x1,clip_x2));
+					DEBUG_PRINT((" insert new from %d->%d\n", clip_x1,clip_x2));
 					/* Insert new */
-					insert_data_segment(row,row->num_segs,ic,row->segdata[ic].next, clip_x1,clip_x2);
+					insert_data_segment(row->num_segs,ic+1,y, clip_x1,clip_x2);
 					segbase_inserted=1;
 
 					DEBUG_PRINT((" clip current end from %d to %d\n", current_end, clip_x1-1));
@@ -1450,7 +1389,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 				/* Insert right part of current, after common zone */
 				if (x2 < current->x2) {
 					DEBUG_PRINT(("  insert right part of current %d (%d,%d)\n", ic, x2+1,current->x2));
-					insert_data_segment(row,current->id,ic,row->segdata[ic].next, x2+1,current->x2);
+					insert_data_segment(current->id,ic+1,y, x2+1,current->x2);
 					segbase_inserted=1;
 				}
 
@@ -1475,10 +1414,10 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 				/* Insert left part of current, before common zone */
 				if (current->x1 < x1) {
 					DEBUG_PRINT(("  insert left part of current %d (%d,%d)\n", ic, current->x1,x1-1));
-					insert_data_segment(row,current->id,prev_segdata,ic, current->x1,x1-1);
+					insert_data_segment(current->id,ic,y, current->x1,x1-1);
 					segbase_inserted=1;
 
-					if (ic==SEG_DATA_INVALID) {
+					if (ic>=NUM_SEGMENTS_DATA) {
 						break;
 					}
 
@@ -1490,7 +1429,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 
 				/* Insert new */
 				DEBUG_PRINT(("  insert %d,%d at %d\n", x1,clip_pos, ic+1));
-				insert_data_segment(row,row->num_segs,prev_segdata,ic, x1,clip_pos);
+				insert_data_segment(row->num_segs,ic,y, x1,clip_pos);
 				segbase_inserted=1;
 
 				/* Continue with remaining part */
@@ -1502,14 +1441,14 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 	DEBUG_PRINT(("--remain %d,%d\n",x1,x2));
 	if (x1<=x2) {
 		/* Insert last */
-		insert_data_segment(row,row->num_segs,row->last_seg_data,SEG_DATA_INVALID, x1,x2);
+		insert_data_segment(row->num_segs,row->num_segs_data,y, x1,x2);
 		segbase_inserted=1;
 	}
 
 label_insert_base:
 	/* Insert common segment data if needed */
 	if (segbase_inserted) {
-		add_base_segment(row, segment);
+		add_base_segment(y, segment);
 	}
 }
 
@@ -1553,8 +1492,12 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 			v1 = p2;
 			v2 = p1;
 		}
-		miny = MIN(y1, miny);
-		maxy = MAX(y2, maxy);
+		if (y1 < miny) {
+			miny = y1;
+		}
+		if (y2 > maxy) {
+			maxy = y2;
+		}
 
 		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
 			v1, vtx[v1].tx[0], vtx[v1].tx[1],
@@ -1636,14 +1579,22 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	segment.masking = render.bitmap.masking;
 
 	for (y=miny; y<maxy; y++) {
+		int pminx = poly_hlines[y].sbp[0].x;
+		int pmaxx = poly_hlines[y].sbp[1].x;
+		if (pminx<minx) {
+			minx = pminx;
+		}
+		if (pmaxx>maxx) {
+			maxx = pmaxx;
+		}
+
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[1];
 
-		minx = MIN(segment.start.x, minx);
-		maxx = MAX(segment.end.x, maxx);
-
 		draw_add_segment(y, &segment);
 	}
+
+	/*dump_sbuffer();*/
 
 	if (minx<0) {
 		minx = 0;
