@@ -171,6 +171,7 @@ src/Makefile
 src/g_re1/Makefile
 src/g_re2/Makefile
 src/g_re3/Makefile
+src/r_opengl/Makefile
 vs2005/Makefile
 ])
 AC_OUTPUT
