@@ -1,4 +1,4 @@
-SUBDIRS = g_re1 g_re2 g_re3 r_opengl
+SUBDIRS = g_re1 g_re2 g_re3 r_opengl r_soft
 
 bin_PROGRAMS = reevengi
 
@@ -10,8 +10,8 @@ LIBS = $(SDL_LIBS) $(SDLIMAGE_LIBS) $(PHYSFS_LIBS) $(ZLIB_LIBS) $(AVCODEC_LIBS) 
 
 reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	depack_adt.c depack_mdec.c depack_pak.c depack_vlc.c depack_sld.c \
-	dirty_rects.c dither.c draw_sbuffer.c draw_simple.c \
-	filesystem.c idctfst.c log.c main.c matrix.c \
+	dirty_rects.c \
+	filesystem.c idctfst.c log.c main.c \
 	parameters.c physfsrwops.c menu.c \
 	render_bitmap.c render_bitmap_opengl.c \
 	render.c render_opengl.c render_text.c \
@@ -26,8 +26,8 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 
 reevengi_headers = background_bss.h background_tim.h clock.h \
 	depack_adt.h depack_mdec.h depack_pak.h depack_vlc.h depack_sld.h \
-	dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h \
-	filesystem.h idctfst.h log.h matrix.h \
+	dirty_rects.h \
+	filesystem.h idctfst.h log.h \
 	parameters.h physfsrwops.h menu.h \
 	render.h render_bitmap.h render_text.h \
 	render_mesh.h render_mesh_opengl.h \
@@ -40,6 +40,6 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	view_background.h view_movie.h
 
 reevengi_LDADD = g_re1/libg_re1.a g_re2/libg_re2.a g_re3/libg_re3.a \
-	r_opengl/libr_opengl.a
+	r_opengl/libr_opengl.a r_soft/libr_soft.a
 
 EXTRA_DIST = $(reevengi_headers)
