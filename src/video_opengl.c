@@ -29,7 +29,7 @@
 
 #include <SDL_opengl.h>
 
-#include "dyngl.h"
+#include "r_opengl/dyngl.h"
 
 #include "parameters.h"
 #include "video.h"

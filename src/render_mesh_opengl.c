@@ -30,7 +30,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include "dyngl.h"
+#include "r_opengl/dyngl.h"
 
 #include "render_texture.h"
 #include "render_mesh_opengl.h"

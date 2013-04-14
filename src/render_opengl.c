@@ -31,7 +31,7 @@
 
 #include <SDL_opengl.h>
 
-#include "dyngl.h"
+#include "r_opengl/dyngl.h"
 
 #include "video.h"
 #include "render.h"
