@@ -27,8 +27,8 @@
 
 #include "state.h"
 #include "parameters.h"
-#include "re1_ps1.h"
-#include "re1_pc_game.h"
+#include "g_re1/re1_ps1.h"
+#include "g_re1/re1_pc_game.h"
 #include "re2_pc_game.h"
 #include "re2_ps1.h"
 #include "re2_pc_demo.h"
