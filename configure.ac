@@ -168,6 +168,7 @@ AC_CONFIG_FILES([
 Makefile
 diff/Makefile
 src/Makefile
+src/g_re2/Makefile
 src/g_re3/Makefile
 vs2005/Makefile
 ])

@@ -33,7 +33,7 @@
 #include "video.h"
 #include "render.h"
 #include "log.h"
-#include "model_emd2.h"
+#include "g_re2/emd.h"
 #include "room_rdt2.h"
 
 /*--- Defines ---*/

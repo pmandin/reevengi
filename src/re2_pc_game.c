@@ -30,7 +30,7 @@
 #include "re2_pc_game.h"
 #include "depack_adt.h"
 #include "parameters.h"
-#include "model_emd2.h"
+#include "g_re2/emd.h"
 #include "log.h"
 #include "room_rdt2.h"
 #include "video.h"
