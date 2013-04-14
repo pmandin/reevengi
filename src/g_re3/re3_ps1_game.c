@@ -31,7 +31,7 @@
 #include "background_bss.h"
 #include "parameters.h"
 #include "log.h"
-#include "room_rdt2.h"
+#include "room_rdt3.h"
 #include "render.h"
 
 /*--- Defines ---*/
@@ -1974,7 +1974,7 @@ static int re3ps1game_loadroom_ard(const char *filename)
 		return 0;
 	}
 
-	room_rdt2_init(game_state.room);
+	room_rdt3_init(game_state.room);
 
 	free(ard_file);
 	return 1;

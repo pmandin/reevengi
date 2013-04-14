@@ -39,7 +39,7 @@
 #include "render.h"
 #include "g_re3/emd.h"
 #include "log.h"
-#include "room_rdt2.h"
+#include "room_rdt3.h"
 #include "depack_sld.h"
 
 /*--- Defines ---*/
