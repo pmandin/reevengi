@@ -30,7 +30,7 @@
 #include "re1_ps1.h"
 #include "background_bss.h"
 #include "parameters.h"
-#include "model_emd.h"
+#include "g_re1/emd.h"
 #include "log.h"
 #include "room_rdt.h"
 #include "render.h"

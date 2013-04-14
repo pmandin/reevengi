@@ -32,7 +32,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "render.h"
-#include "model_emd.h"
+#include "g_re1/emd.h"
 #include "log.h"
 #include "background_tim.h"
 #include "room_rdt.h"
