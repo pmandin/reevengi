@@ -27,7 +27,7 @@
 #include <assert.h>
 
 #include "room.h"
-#include "room_rdt2.h"
+#include "room_rdt3.h"
 #include "log.h"
 #include "room_rdt3_script_common.h"
 #include "room_rdt3_script_dump.h"
@@ -265,20 +265,20 @@ void room_rdt3_scriptInit(room_t *this)
 
 static Uint8 *scriptFirstInst(room_t *this, int num_script)
 {
-	rdt2_header_t *rdt_header;
+	rdt3_header_t *rdt_header;
 	Uint32 offset, smaller_offset;
 	Uint16 *functionArrayPtr;
-	int i, room_script = RDT2_OFFSET_INIT_SCRIPT;
+	int i, room_script = RDT3_OFFSET_INIT_SCRIPT;
 
 	if (!this) {
 		return NULL;
 	}
 	if (num_script == ROOM_SCRIPT_RUN) {
 		return NULL;
-		/*room_script = RDT2_OFFSET_ROOM_SCRIPT;*/
+		/*room_script = RDT3_OFFSET_ROOM_SCRIPT;*/
 	}
 
-	rdt_header = (rdt2_header_t *) this->file;
+	rdt_header = (rdt3_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
 
 	this->script_length = this->cur_inst_offset = 0;
