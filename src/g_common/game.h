@@ -41,7 +41,8 @@ typedef enum {
 typedef struct game_s game_t;
 
 struct game_s {
-	void (*shutdown)(game_t *this);
+	void (*shutdown)(void);
+	void (*priv_shutdown)(void);
 
 	/*--- Game version ---*/
 	game_major_e major;	/* re1/re2/re3 */

@@ -41,7 +41,8 @@ static const char *game_version="Unknown version";
 
 /*--- Functions prototypes ---*/
 
-static void game_shutdown(game_t *this);
+static void game_shutdown(void);
+static void game_priv_shutdown(void);
 
 static void game_load_font(void);
 static void game_get_char(int ascii, int *x, int *y, int *w, int *h);
@@ -55,6 +56,7 @@ void game_init(game_t *this)
 	memset(this, 0, sizeof(game_t));
 
 	this->shutdown = game_shutdown;
+	this->priv_shutdown = game_priv_shutdown;
 
 	this->load_font = game_load_font;
 	this->get_char = game_get_char;
@@ -70,12 +72,20 @@ void game_init(game_t *this)
 	room_init(&this->room);
 }
 
-void game_shutdown(game_t *this)
+void game_shutdown(void)
 {
+	game_t *this = &game;
+
 	logMsg(2, "game: shutdown\n");
 
 	this->player.shutdown(&this->player);
 	this->room.shutdown(&this->room);
+
+	this->priv_shutdown();
+}
+
+static void game_priv_shutdown(void)
+{
 }
 
 int game_file_exists(const char *filename)
