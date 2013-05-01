@@ -1,4 +1,4 @@
-SUBDIRS = g_re1 g_re2 g_re3 r_opengl r_soft
+SUBDIRS = g_common g_re1 g_re2 g_re3 r_opengl r_soft
 
 bin_PROGRAMS = reevengi
 
@@ -37,7 +37,7 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	state.h video.h \
 	view_background.h view_movie.h
 
-reevengi_LDADD = g_re1/libg_re1.a g_re2/libg_re2.a g_re3/libg_re3.a \
-	r_opengl/libr_opengl.a r_soft/libr_soft.a
+reevengi_LDADD = g_common/libg_common.a g_re1/libg_re1.a g_re2/libg_re2.a \
+	g_re3/libg_re3.a r_opengl/libr_opengl.a r_soft/libr_soft.a
 
 EXTRA_DIST = $(reevengi_headers)

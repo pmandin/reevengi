@@ -1,6 +1,8 @@
 v 0.18
 
 - Add command line parameters for stage/room/camera.
+- Moved each game in separate directories.
+- Moved each renderer in separate directories.
 
 v 0.17
 
