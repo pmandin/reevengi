@@ -1,5 +1,5 @@
 /*
-	Player data
+	Room map
 
 	Copyright (C) 2007-2013	Patrice Mandin
 
@@ -18,47 +18,28 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef PLAYER_H
-#define PLAYER_H 1
+#include <string.h>
 
-#include "../render_skel.h"
+#include "../log.h"
 
-/*--- Defines ---*/
+#include "room_map.h"
 
-/*#define ENABLE_DEBUG_POS	1*/
+/*--- Functions prototypes ---*/
 
-/*--- Types ---*/
-
-typedef struct {
-	int num_model;
-	render_skel_t	*model;
-} model_item_t;
-
-typedef struct player_s player_t;
-
-struct player_s {
-	void (*shutdown)(player_t *this);
-
-	/* Game specific functions */
-	render_skel_t *(*priv_load_model)(int num_model);
-	void (*priv_get_model_name)(char name[32]);
-
-	float x,y,z,a;
-
-	/* 3D model */
-	int num_model;
-
-	int model_list_count;
-	model_item_t *model_list;
-
-	int num_anim;
-	int num_frame;
-};
-
-/*--- Variables ---*/
+static void room_map_shutdown(room_map_t *this);
 
 /*--- Functions ---*/
 
-void player_init(player_t *this);
+void room_map_init(room_map_t *this)
+{
+	logMsg(2, "room_map: init\n");
 
-#endif /* PLAYER_H */
+	memset(this, 0, sizeof(room_map_t));
+
+	this->shutdown = room_map_shutdown;
+}
+
+static void room_map_shutdown(room_map_t *this)
+{
+	logMsg(2, "room_map: shutdown\n");
+}

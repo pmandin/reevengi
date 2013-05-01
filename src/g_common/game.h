@@ -21,7 +21,10 @@
 #ifndef GAME_H
 #define GAME_H 1
 
+#include "../render_texture.h"
+
 #include "player.h"
+#include "room_map.h"
 #include "room.h"
 
 /*--- Enums ---*/
@@ -33,17 +36,17 @@ typedef enum {
 	GAME_RE3
 } game_major_e;
 
-/*--- External types ---*/
-
 /*--- Types ---*/
 
-typedef struct {
-	void (*init)(void);
-	void (*shutdown)(void);
+typedef struct game_s game_t;
+
+struct game_s {
+	void (*shutdown)(game_t *this);
 
 	/*--- Game version ---*/
 	game_major_e major;	/* re1/re2/re3 */
 	int minor;	/* demo/game, pc/ps1, etc */
+	const char *name;
 
 	int num_stage;	/* Stage of game */
 	int num_room;	/* Room of stage */
@@ -52,7 +55,25 @@ typedef struct {
 	player_t player;	/* player data */
 
 	room_t	room;	/* current room */
-} game_t;
+
+	/*--- Movies ---*/
+
+	char **movies_list;	/* List of movies */
+	int num_movie;	/* Currently playing movie */
+	char *cur_movie;	/* Current filename */
+
+	/*--- Font for ASCII text ---*/
+	render_texture_t *font;
+
+	void (*load_font)(void);
+	void (*get_char)(int ascii, int *x, int *y, int *w, int *h);
+};
+
+typedef struct {
+	int version;	/* Num of version */
+	const char *filename;	/* Filename to detect it */
+	const char *name;	/* Name of version */
+} game_detect_t;
 
 /*--- Variables ---*/
 
@@ -60,6 +81,7 @@ extern game_t game;
 
 /*--- Functions ---*/
 
-void game_init(void);
+void game_init(game_t *this);
+int game_file_exists(const char *filename);
 
 #endif /* GAME_H */

@@ -19,12 +19,13 @@
 */
 
 #include <string.h>
+#include <physfs.h>
+#include <SDL.h>
 
-#include "player.h"
-#include "room.h"
+#include "../parameters.h"
+#include "../log.h"
+
 #include "game.h"
-
-#include "parameters.h"
 
 /*--- Types ---*/
 
@@ -36,39 +37,102 @@ game_t game;
 
 /*--- Variables ---*/
 
+static const char *game_version="Unknown version";
+
 /*--- Functions prototypes ---*/
 
-static void game_shutdown(void);
+static void game_shutdown(game_t *this);
 
-static void game_detect(void);
+static void game_load_font(void);
+static void game_get_char(int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
-void game_init(void)
+void game_init(game_t *this)
 {
-	memset(&game, 0, sizeof(game_t));
+	logMsg(2, "game: init\n");
 
-	game.init = game_init;
-	game.shutdown = game_shutdown;
+	memset(this, 0, sizeof(game_t));
 
-	game.major = GAME_UNKNOWN;
+	this->shutdown = game_shutdown;
 
-	game.num_stage = params.stage;
-	game.num_room = params.room;
-	game.num_camera = params.camera;
+	this->load_font = game_load_font;
+	this->get_char = game_get_char;
 
-	player_init(&game.player);
-	room_init(&game.room);
+	this->major = GAME_UNKNOWN;
+	this->name = game_version;
 
-	game_detect();
+	this->num_stage = params.stage;
+	this->num_room = params.room;
+	this->num_camera = params.camera;
+
+	player_init(&this->player);
+	room_init(&this->room);
 }
 
-void game_shutdown(void)
+void game_shutdown(game_t *this)
 {
-	game.player.shutdown(&game.player);
-	game.room.shutdown(&game.room);
+	logMsg(2, "game: shutdown\n");
+
+	this->player.shutdown(&this->player);
+	this->room.shutdown(&this->room);
 }
 
-static void game_detect(void)
+int game_file_exists(const char *filename)
+{
+	char *filenamedir;
+	int detected = 0;
+
+	filenamedir = malloc(strlen(params.basedir)+strlen(filename)+4);
+	if (filenamedir) {
+		PHYSFS_file	*curfile;
+
+		sprintf(filenamedir, "%s/%s", params.basedir, filename);
+
+		logMsg(2, "fs: Checking %s file\n", filename);
+
+		curfile = PHYSFS_openRead(filename);
+		if (curfile) {
+			char dummy;
+
+			if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
+				detected = 1;
+			}
+
+			PHYSFS_close(curfile);
+		}
+
+		/* Try in upper case */
+		if (!detected) {
+			int i;
+
+			for (i=0; i<strlen(filenamedir); i++) {
+				filenamedir[i] = toupper(filenamedir[i]);
+			}
+
+			curfile = PHYSFS_openRead(filename);
+			if (curfile) {
+				char dummy;
+
+				if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
+					detected = 1;
+				}
+
+				PHYSFS_close(curfile);
+			}
+		}
+
+		free(filenamedir);
+	}
+
+	return detected;
+}
+
+static void game_load_font(void)
 {
 }
+
+static void game_get_char(int ascii, int *x, int *y, int *w, int *h)
+{
+}
+

@@ -18,7 +18,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <stdlib.h>
 #include <string.h>
+#include <SDL.h>
+
+#include "../log.h"
+
+#include "../render_texture.h"
+#include "../render_skel.h"
 
 #include "player.h"
 
@@ -35,14 +42,23 @@
 
 static void player_shutdown(player_t *this);
 
+static void player_unloadmodels(player_t *this);
+
+static render_skel_t *player_priv_load_model(int num_model);
+static void player_priv_get_model_name(char name[32]);
+
 /*--- Functions ---*/
 
 void player_init(player_t *this)
 {
+	logMsg(2, "player: init\n");
+
 	memset(this, 0, sizeof(player_t));
 
-	this->init = player_init;
 	this->shutdown = player_shutdown;
+
+	this->priv_load_model = player_priv_load_model;
+	this->priv_get_model_name = player_priv_get_model_name;
 
 #ifdef ENABLE_DEBUG_POS
 	this->x = 13148.0f;
@@ -53,5 +69,37 @@ void player_init(player_t *this)
 }
 
 static void player_shutdown(player_t *this)
+{
+	logMsg(2, "player: shutdown\n");
+
+	player_unloadmodels(this);
+}
+
+static void player_unloadmodels(player_t *this)
+{
+	int i;
+
+	for (i=0; i<this->model_list_count; i++) {
+		render_skel_t *model = this->model_list[i].model;
+		if (model) {
+			model->shutdown(model);
+			this->model_list[i].num_model = -1;
+			this->model_list[i].model = NULL;
+		}
+	}
+
+	if (this->model_list) {
+		free(this->model_list);
+		this->model_list = NULL;
+		this->model_list_count = 0;
+	}
+}
+
+static render_skel_t *player_priv_load_model(int num_model)
+{
+	return NULL;
+}
+
+static void player_priv_get_model_name(char name[32])
 {
 }
