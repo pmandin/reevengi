@@ -21,8 +21,8 @@
 #ifndef GAME_H
 #define GAME_H 1
 
-#include "room.h"
 #include "player.h"
+#include "room.h"
 
 /*--- Enums ---*/
 
@@ -32,6 +32,8 @@ typedef enum {
 	GAME_RE2,
 	GAME_RE3
 } game_major_e;
+
+/*--- External types ---*/
 
 /*--- Types ---*/
 

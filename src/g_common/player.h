@@ -25,19 +25,34 @@
 
 /*#define ENABLE_DEBUG_POS	1*/
 
+/*--- External types ---*/
+
+typedef struct model_item_s model_item_t;
+
 /*--- Types ---*/
 
-typedef struct {
-	void (*init)(void);
-	void (*shutdown)(void);
+typedef struct player_s player_t;
+
+struct player_s {
+	void (*init)(player_t *this);
+	void (*shutdown)(player_t *this);
 
 	float x,y,z,a;
-} player_t;
+
+	/* 3D model */
+	int num_model;
+
+	int model_list_count;
+	model_item_t *model_list;
+
+	int num_anim;
+	int num_frame;
+};
 
 /*--- Variables ---*/
 
 /*--- Functions ---*/
 
-void player_init(void);
+void player_init(player_t *this);
 
 #endif /* PLAYER_H */

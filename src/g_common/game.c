@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "player.h"
+#include "room.h"
 #include "game.h"
 
 #include "parameters.h"
@@ -55,15 +57,15 @@ void game_init(void)
 	game.num_room = params.room;
 	game.num_camera = params.camera;
 
-	player_init();
-	room_init();
+	player_init(&game.player);
+	room_init(&game.room);
 
 	game_detect();
 }
 
 void game_shutdown(void)
 {
-	game.player.shutdown();
+	game.player.shutdown(&game.player);
 	game.room.shutdown(&game.room);
 }
 

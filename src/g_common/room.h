@@ -59,6 +59,6 @@ struct room_s {
 
 /*--- Functions ---*/
 
-void room_init(void);
+void room_init(room_t *this);
 
 #endif /* ROOM_H */

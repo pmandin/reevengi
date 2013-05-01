@@ -20,7 +20,6 @@
 
 #include <string.h>
 
-#include "game.h"
 #include "player.h"
 
 /*--- Types ---*/
@@ -34,25 +33,25 @@
 
 /*--- Functions prototypes ---*/
 
-static void player_shutdown(void);
+static void player_shutdown(player_t *this);
 
 /*--- Functions ---*/
 
-void player_init(void)
+void player_init(player_t *this)
 {
-	memset(&game.player, 0, sizeof(player_t));
+	memset(this, 0, sizeof(player_t));
 
-	game.player.init = player_init;
-	game.player.shutdown = player_shutdown;
+	this->init = player_init;
+	this->shutdown = player_shutdown;
 
 #ifdef ENABLE_DEBUG_POS
-	game.player.x = 13148.0f;
-	game.player.y = -2466.0f;
-	game.player.z = 3367.0f;
-	game.player.a = (157.0f * 4096.0f) / 360.0f;
+	this->x = 13148.0f;
+	this->y = -2466.0f;
+	this->z = 3367.0f;
+	this->a = (157.0f * 4096.0f) / 360.0f;
 #endif
 }
 
-static void player_shutdown(void)
+static void player_shutdown(player_t *this)
 {
 }

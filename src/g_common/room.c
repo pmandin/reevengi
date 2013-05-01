@@ -20,7 +20,6 @@
 
 #include <string.h>
 
-#include "game.h"
 #include "room.h"
 
 /*--- Types ---*/
@@ -44,16 +43,16 @@ static void room_unloadbgmask(room_t *this);
 
 /*--- Functions ---*/
 
-void room_init(void)
+void room_init(room_t *this)
 {
-	memset(&game.room, 0, sizeof(room_t));
+	memset(&this, 0, sizeof(room_t));
 
-	game.room.init = room_init;
-	game.room.shutdown = room_shutdown;
+	this->init = room_init;
+	this->shutdown = room_shutdown;
 
-	game.room.load = room_load;
-	game.room.load_background = room_loadbackground;
-	game.room.load_bgmask = room_loadbgmask;
+	this->load = room_load;
+	this->load_background = room_loadbackground;
+	this->load_bgmask = room_loadbgmask;
 }
 
 static void room_shutdown(room_t *this)
