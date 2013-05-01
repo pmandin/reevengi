@@ -21,15 +21,39 @@
 #ifndef ROOM_H
 #define ROOM_H 1
 
+#include <SDL.h>
+
 /*--- Defines ---*/
+
+/*--- External types ---*/
+
+typedef render_texture_t;
+typedef render_mask_t;
 
 /*--- Types ---*/
 
-typedef struct {
-	void (*init)(void);
-	void (*shutdown)(void);
+typedef struct room_s room_t;
 
-} room_t;
+struct room_s {
+	void (*init)(room_t *this);
+	void (*shutdown)(room_t *this);
+
+	void (*load)(room_t *this);
+	void (*load_background)(room_t *this);
+	void (*load_bgmask)(room_t *this);
+
+	/* RDT file */
+	void *file;
+	Uint32 file_length;
+
+	/* Background image */
+	render_texture_t *background;
+
+	/* and its masks */
+	render_texture_t *bg_mask;
+	render_mask_t *rdr_mask;
+	
+};
 
 /*--- Variables ---*/
 

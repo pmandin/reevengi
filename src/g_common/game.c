@@ -64,7 +64,7 @@ void game_init(void)
 void game_shutdown(void)
 {
 	game.player.shutdown();
-	game.room.shutdown();
+	game.room.shutdown(&game.room);
 }
 
 static void game_detect(void)

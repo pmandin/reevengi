@@ -33,7 +33,14 @@
 
 /*--- Functions prototypes ---*/
 
-static void room_shutdown(void);
+static void room_shutdown(room_t *this);
+static void room_load(room_t *this);
+static void room_loadbackground(room_t *this);
+static void room_loadbgmask(room_t *this);
+
+static void room_unload(room_t *this);
+static void room_unloadbackground(room_t *this);
+static void room_unloadbgmask(room_t *this);
 
 /*--- Functions ---*/
 
@@ -43,8 +50,59 @@ void room_init(void)
 
 	game.room.init = room_init;
 	game.room.shutdown = room_shutdown;
+
+	game.room.load = room_load;
+	game.room.load_background = room_loadbackground;
+	game.room.load_bgmask = room_loadbgmask;
 }
 
-static void room_shutdown(void)
+static void room_shutdown(room_t *this)
 {
+	room_unloadbackground(this);
+	room_unloadbgmask(this);
+
+	room_unload(this);
+}
+
+static void room_load(room_t *this)
+{
+	room_unload(this);
+}
+
+static void room_loadbackground(room_t *this)
+{
+	room_unloadbackground(this);
+}
+
+static void room_loadbgmask(room_t *this)
+{
+	room_unloadbgmask(this);
+}
+
+static void room_unload(room_t *this)
+{
+	if (this->file) {
+		free(this->file);
+		this->file=NULL;
+	}
+}
+
+static void room_unloadbackground(room_t *this)
+{
+	if (this->background) {
+		free(this->background);
+		this->background=NULL;
+	}
+}
+
+static void room_unloadbgmask(room_t *this)
+{
+	if (this->bg_mask) {
+		free(this->bg_mask);
+		this->bg_mask=NULL;
+	}
+	if (this->rdr_mask) {
+		free(this->rdr_mask);
+		this->rdr_mask=NULL;
+	}
 }
