@@ -1,7 +1,7 @@
 /*
 	RE1
-	PS1
-	Demo, Game
+	PC
+	Game
 
 	Copyright (C) 2007	Patrice Mandin
 
@@ -20,11 +20,11 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RE1PS1_H
-#define RE1PS1_H
+#ifndef GAME_RE1PC_H
+#define GAME_RE1PC_H 1
 
 /*--- Functions ---*/
 
-void re1ps1_init(state_t *game_state);
+void game_re1pc_init(game_t *this);
 
-#endif /* RE1PS1_H */
+#endif /* GAME_RE1PC_H */

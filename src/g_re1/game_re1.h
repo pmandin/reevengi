@@ -1,9 +1,7 @@
 /*
 	RE1
-	PC
-	Game
 
-	Copyright (C) 2007	Patrice Mandin
+	Copyright (C) 2007-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -20,11 +18,22 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RE1PCGAME_H
-#define RE1PCGAME_H
+#ifndef GAME_RE1_H
+#define GAME_RE1_H 1
+
+/*--- Enums ---*/
+
+enum {
+	GAME_RE1_PS1_DEMO,
+	GAME_RE1_PS1_GAME,
+	GAME_RE1_PS1_SHOCK,
+	GAME_RE1_PC_DEMO,
+	GAME_RE1_PC_GAME,
+};
 
 /*--- Functions ---*/
 
-void re1pcgame_init(state_t *game_state);
+void game_re1_detect(game_t *this);
+void game_re1_init(game_t *this);
 
-#endif /* RE1PCGAME_H */
+#endif /* GAME_RE1_H */

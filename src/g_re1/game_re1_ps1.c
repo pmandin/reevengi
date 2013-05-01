@@ -26,14 +26,17 @@
 #include <SDL.h>
 
 #include "filesystem.h"
-#include "state.h"
-#include "re1_ps1.h"
-#include "background_bss.h"
-#include "parameters.h"
-#include "g_re1/emd.h"
 #include "log.h"
-#include "room_rdt.h"
 #include "render.h"
+#include "parameters.h"
+
+#include "../g_common/game.h"
+
+#include "game_re1.h"
+#include "game_re1_ps1.h"
+#include "background_bss.h"
+#include "g_re1/emd.h"
+#include "room_rdt.h"
 
 /*--- Defines ---*/
 
@@ -93,8 +96,6 @@ static const char *re1ps1game_movies[] = {
 
 /*--- Functions prototypes ---*/
 
-static void re1ps1_shutdown(void);
-
 static void re1ps1_loadbackground(void);
 
 static void re1ps1_loadroom(void);
@@ -103,68 +104,57 @@ static int re1ps1_loadroom_rdt(const char *filename);
 render_skel_t *re1ps1_load_model(int num_model);
 
 static void load_font(void);
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
-
-static void get_model_name(char name[32]);
 
 /*--- Functions ---*/
 
-void re1ps1_init(state_t *game_state)
+void game_re1ps1_init(game_t *this)
 {
-	game_state->priv_load_background = re1ps1_loadbackground;
-	game_state->priv_load_room = re1ps1_loadroom;
-	game_state->priv_shutdown = re1ps1_shutdown;
+	this->room.priv_load = re1ps1_loadroom;
+	this->room.priv_load_background = re1ps1_loadbackground;
 
-	if (game_state->version == GAME_RE1_PS1_DEMO) {
-		game_state->movies_list = (char **) re1ps1demo_movies;
+	if (this->minor == GAME_RE1_PS1_DEMO) {
+		this->movies_list = (char **) re1ps1demo_movies;
 	} else {
-		game_state->movies_list = (char **) re1ps1game_movies;
+		this->movies_list = (char **) re1ps1game_movies;
 	}
 
-	game_state->priv_load_model = re1ps1_load_model;
+	this->player.priv_load_model = re1ps1_load_model;
 
-	game_state->load_font = load_font;
-	game_state->get_char = get_char;
-
-	game_state->get_model_name = get_model_name;
-}
-
-static void re1ps1_shutdown(void)
-{
+	this->load_font = load_font;
 }
 
 static void re1ps1_loadbackground(void)
 {
 	char *filepath;
-	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
-	int re1_stage = (game_state.num_stage>5 ? game_state.num_stage-5 : game_state.num_stage);
+	const char *is_shock = ((game.minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	int re1_stage = (game.num_stage>5 ? game.num_stage-5 : game.num_stage);
 	int row_offset = 0;
 
 	if (re1_stage == 2) {
-		if (game_state.num_room==0) {
-			if (game_state.num_camera==0) {
+		if (game.num_room==0) {
+			if (game.num_camera==0) {
 				row_offset = -4;
 			}
 		}
 	} else if (re1_stage == 3) {
-		if (game_state.num_room==6) {
+		if (game.num_room==6) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game_state.num_room==7) {
+		} else if (game.num_room==7) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game_state.num_room==0x0b) {
+		} else if (game.num_room==0x0b) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game_state.num_room==0x0f) {
+		} else if (game.num_room==0x0f) {
 			/* All cameras angles for this room */
 			row_offset = -4;
 		}
 	} else if (re1_stage == 5) {
-		if (game_state.num_room==0x0d) {
+		if (game.num_room==0x0d) {
 			row_offset = -4;
 		}
-		if (game_state.num_room==0x15) {
+		if (game.num_room==0x15) {
 			row_offset = -4;
 		}
 	}
@@ -174,7 +164,7 @@ static void re1ps1_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1ps1_bg, is_shock, re1_stage, re1_stage, game_state.num_room);
+	sprintf(filepath, re1ps1_bg, is_shock, re1_stage, re1_stage, game.num_room);
 
 	logMsg(1, "bss: Start loading %s ...\n", filepath);
 
@@ -188,14 +178,14 @@ static void re1ps1_loadbackground(void)
 static void re1ps1_loadroom(void)
 {
 	char *filepath;
-	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	const char *is_shock = ((game.minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 
 	filepath = malloc(strlen(re1ps1_room)+16);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re1ps1_room, is_shock, game_state.num_stage, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re1ps1_room, is_shock, game.num_stage, game.num_stage, game.num_room);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
@@ -216,13 +206,10 @@ static int re1ps1_loadroom_rdt(const char *filename)
 		return 0;
 	}
 
-	game_state.room = room_create(file, length);
-	if (!game_state.room) {
-		free(file);
-		return 0;
-	}
+	game.room.file = file;
+	game.room.file_length = length;
 
-	room_rdt_init(game_state.room);
+	room_rdt_init(&game.room);
 
 	return 1;
 }
@@ -230,7 +217,7 @@ static int re1ps1_loadroom_rdt(const char *filename)
 render_skel_t *re1ps1_load_model(int num_model)
 {
 	char *filepath;
-	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	const char *is_shock = ((game.minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	const char *filename = re1ps1_model1;
 	render_skel_t *model = NULL;
 	void *emd;
@@ -284,7 +271,7 @@ static void load_font(void)
 	PHYSFS_sint64 length;
 	int retval = 0;
 	char *filepath;
-	const char *is_shock = ((game_state.version == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	const char *is_shock = ((game.minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	const char *filename = re1ps1_font;
 
 	filepath = malloc(strlen(filename)+16);
@@ -298,9 +285,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game_state.font = render.createTexture(0);
-		if (game_state.font) {
-			game_state.font->load_from_tim(game_state.font, font_file);
+		game.font = render.createTexture(0);
+		if (game.font) {
+			game.font->load_from_tim(game.font, font_file);
 			retval = 1;
 		}
 
@@ -310,45 +297,4 @@ static void load_font(void)
 	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
 
 	free(filepath);
-}
-
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
-{
-	*x = *y = 0;
-	*w = *h = 8;
-
-	if ((ascii<=32) || (ascii>=96+27)) {
-		return;
-	}
-
-	ascii -= 32;
-	*x = (ascii & 31)<<3;
-	*y = (ascii>>5)<<3;
-}
-
-static void get_model_name(char name[32])
-{
-	const char *filename = "char1%d.emd";
-	int num_model = game_state.num_model;
-
-	if (num_model>64) {
-		num_model = 64;
-	}
-
-	if (num_model>0x03) {
-		filename = "em10%02x.emd";
-		num_model -= 4;
-		if (num_model>0x15) {
-			num_model += 0x20-0x16;
-		}
-		if (num_model>0x2e) {
-			num_model += 1;
-		}
-	}
-	if (num_model>0x31) {
-		filename = "em11%02x.emd";
-		num_model -= 0x32;
-	}
-
-	sprintf(name, filename, num_model);
 }

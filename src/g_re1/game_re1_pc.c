@@ -26,14 +26,17 @@
 #include <SDL.h>
 
 #include "filesystem.h"
-#include "state.h"
-#include "depack_pak.h"
-#include "re1_pc_game.h"
-#include "parameters.h"
-#include "video.h"
-#include "render.h"
-#include "g_re1/emd.h"
 #include "log.h"
+#include "render.h"
+#include "parameters.h"
+
+#include "../g_common/game.h"
+
+#include "game_re1.h"
+#include "game_re1_pc.h"
+#include "depack_pak.h"
+#include "video.h"
+#include "g_re1/emd.h"
 #include "background_tim.h"
 #include "room_rdt.h"
 
@@ -99,8 +102,6 @@ static int game_country = 0;
 
 /*--- Functions prototypes ---*/
 
-static void re1pcgame_shutdown(void);
-
 static void re1pcgame_loadbackground(void);
 /*static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage);*/
 static int re1pcgame_load_pak_bg(const char *filename, int row_offset);
@@ -112,75 +113,64 @@ static int re1pcgame_loadroom_rdt(const char *filename);
 static render_skel_t *re1pcgame_load_model(int num_model);
 
 static void load_font(void);
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
-
-static void get_model_name(char name[32]);
 
 /*--- Functions ---*/
 
-void re1pcgame_init(state_t *game_state)
+void game_re1pc_init(game_t *this)
 {
 	int i;
 	char filename[32];
 
 	for (i=0; i<NUM_COUNTRIES; i++) {
 		sprintf(filename, "%s/data/capcom.ptc", re1_country[i]);
-		if (state_game_file_exists(filename)) {
+		if (game_file_exists(filename)) {
 			game_country = i;
 			break;
 		}
 	}
 
-	game_state->priv_load_background = re1pcgame_loadbackground;
-	game_state->priv_load_room = re1pcgame_loadroom;
-	game_state->priv_shutdown = re1pcgame_shutdown;
+	game.room.priv_load_background = re1pcgame_loadbackground;
+	game.room.priv_load = re1pcgame_loadroom;
 
-	game_state->movies_list = (char **) re1pcgame_movies;
+	game.movies_list = (char **) re1pcgame_movies;
 
-	game_state->priv_load_model = re1pcgame_load_model;
+	game.player.priv_load_model = re1pcgame_load_model;
 
-	game_state->load_font = load_font;
-	game_state->get_char = get_char;
-
-	game_state->get_model_name = get_model_name;
-}
-
-void re1pcgame_shutdown(void)
-{
+	game.load_font = load_font;
 }
 
 void re1pcgame_loadbackground(void)
 {
 	char *filepath;
-	int re1_stage = (game_state.num_stage>5 ? game_state.num_stage-5 : game_state.num_stage);
+	int re1_stage = (game.num_stage>5 ? game.num_stage-5 : game.num_stage);
 	int row_offset = 0;
 
 	if (re1_stage == 2) {
-		if (game_state.num_room==0) {
-			if (game_state.num_camera==0) {
+		if (game.num_room==0) {
+			if (game.num_camera==0) {
 				row_offset = -4;
 			}
 		}
 	} else if (re1_stage == 3) {
-		if (game_state.num_room==6) {
-			if (game_state.num_camera!=2) {
+		if (game.num_room==6) {
+			if (game.num_camera!=2) {
 				row_offset = -4;
 			}
-		} else if (game_state.num_room==7) {
+		} else if (game.num_room==7) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game_state.num_room==0x0b) {
+		} else if (game.num_room==0x0b) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game_state.num_room==0x0f) {
+		} else if (game.num_room==0x0f) {
 			/* All cameras angles for this room */
 			row_offset = -4;
 		}
 	} else if (re1_stage == 5) {
-		if (game_state.num_room==0x0d) {
+		if (game.num_room==0x0d) {
 			row_offset = -4;
 		}
-		if (game_state.num_room==0x15) {
+		if (game.num_room==0x15) {
 			row_offset = -4;
 		}
 	}
@@ -191,7 +181,7 @@ void re1pcgame_loadbackground(void)
 		return;
 	}
 	sprintf(filepath, re1pcgame_bg, re1_country[game_country], re1_stage, re1_stage,
-		game_state.num_room, game_state.num_camera);
+		game.num_room, game.num_camera);
 
 	logMsg(1, "pak: Start loading %s ...\n", filepath);
 
@@ -244,9 +234,9 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 			if (tim_src) {
 				SDL_Surface *image = background_tim_load(tim_src, row_offset);
 				if (image) {
-					game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-					if (game_state.background) {
-						game_state.background->load_from_surf(game_state.background, image);
+					game.room.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+					if (game.room.background) {
+						game.room.background->load_from_surf(game.room.background, image);
 						retval = 1;
 					}
 					SDL_FreeSurface(image);
@@ -310,7 +300,7 @@ static void re1pcgame_loadroom(void)
 		return;
 	}
 	sprintf(filepath, re1pcgame_room, re1_country[game_country],
-		game_state.num_stage, game_state.num_stage, game_state.num_room);
+		game.num_stage, game.num_stage, game.num_room);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
@@ -331,13 +321,10 @@ static int re1pcgame_loadroom_rdt(const char *filename)
 		return 0;
 	}
 
-	game_state.room = room_create(file, length);
-	if (!game_state.room) {
-		free(file);
-		return 0;
-	}
+	game.room.file = file;
+	game.room.file_length = length;
 
-	room_rdt_init(game_state.room);
+	room_rdt_init(&game.room);
 
 	return 1;
 }
@@ -410,9 +397,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game_state.font = render.createTexture(0);
-		if (game_state.font) {
-			game_state.font->load_from_tim(game_state.font, font_file);
+		game.font = render.createTexture(0);
+		if (game.font) {
+			game.font->load_from_tim(game.font, font_file);
 			retval = 1;
 		}
 
@@ -422,45 +409,4 @@ static void load_font(void)
 	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
 
 	free(filepath);
-}
-
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
-{
-	*x = *y = 0;
-	*w = *h = 8;
-
-	if ((ascii<=32) || (ascii>=96+27)) {
-		return;
-	}
-
-	ascii -= 32;
-	*x = (ascii & 31)<<3;
-	*y = (ascii>>5)<<3;
-}
-
-static void get_model_name(char name[32])
-{
-	const char *filename = "char1%d.emd";
-	int num_model = game_state.num_model;
-
-	if (num_model>66) {
-		num_model = 66;
-	}
-
-	if (num_model>0x03) {
-		filename = "em10%02x.emd";
-		num_model -= 4;
-		if (num_model>0x15) {
-			num_model += 0x20-0x16;
-		}
-		if (num_model>0x2e) {
-			num_model += 1;
-		}
-	}
-	if (num_model>0x33) {
-		filename = "em11%02x.emd";
-		num_model -= 0x34;
-	}
-
-	sprintf(name, filename, num_model);
 }
