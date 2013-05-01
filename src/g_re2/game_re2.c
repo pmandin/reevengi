@@ -102,4 +102,12 @@ void game_re2_init(game_t *this)
 			game_re2pcgame_init(this);
 			break;
 	}
+
+#if 0
+	/* Init default room and player pos */
+	this->player.x = -1530.0f;
+	this->player.y = 2020.0f;
+	this->player.z = 2700.0f;
+	this->player.a = 3072.0f;
+#endif
 }

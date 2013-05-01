@@ -83,6 +83,11 @@ void game_re3_init(game_t *this)
 	}
 
 	this->get_char = get_char;
+
+#if 0
+	/* Init default room and player pos */
+	this->num_room = 13;
+#endif
 }
 
 static void get_char(int ascii, int *x, int *y, int *w, int *h)
