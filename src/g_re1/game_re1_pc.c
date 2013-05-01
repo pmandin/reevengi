@@ -33,7 +33,6 @@
 #include "../g_common/game.h"
 
 #include "game_re1.h"
-#include "game_re1_pc.h"
 #include "depack_pak.h"
 #include "video.h"
 #include "g_re1/emd.h"

@@ -36,4 +36,7 @@ enum {
 void game_re1_detect(game_t *this);
 void game_re1_init(game_t *this);
 
+void gate_re1pc_init(game_t *this);
+void game_re1ps1_init(game_t *this);
+
 #endif /* GAME_RE1_H */

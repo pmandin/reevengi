@@ -26,8 +26,6 @@
 #include "../g_common/game.h"
 
 #include "game_re1.h"
-#include "game_re1_pc.h"
-#include "game_re1_ps1.h"
 
 /*--- Constants ---*/
 
