@@ -26,11 +26,13 @@
 #include <SDL.h>
 
 #include "filesystem.h"
-#include "state.h"
-#include "re3_ps1_game.h"
-#include "background_bss.h"
 #include "parameters.h"
 #include "log.h"
+
+#include "../g_common/game.h"
+
+#include "game_re3.h"
+#include "background_bss.h"
 #include "room_rdt3.h"
 #include "render.h"
 
@@ -1841,8 +1843,6 @@ static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
-static void re3ps1game_shutdown(void);
-
 static void re3ps1game_loadbackground(void);
 
 static void re3ps1game_loadroom(void);
@@ -1853,24 +1853,19 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
-void re3ps1game_init(state_t *game_state)
+void game_re3ps1game_init(game_t *this)
 {
-	game_state->priv_load_background = re3ps1game_loadbackground;
-	game_state->priv_load_room = re3ps1game_loadroom;
-	game_state->priv_shutdown = re3ps1game_shutdown;
+	this->room.priv_load_background = re3ps1game_loadbackground;
+	this->room.priv_load = re3ps1game_loadroom;
 
-	game_state->movies_list = (char **) re3ps1game_movies;
+	this->movies_list = (char **) re3ps1game_movies;
 
-	if (state_game_file_exists("cd_data/etc/sele_obf.tim")) {
+	if (game_file_exists("cd_data/etc/sele_obf.tim")) {
 		game_lang = 'f';
 	}
 
-	game_state->load_font = load_font;
-	game_state->get_char = get_char;
-}
-
-static void re3ps1game_shutdown(void)
-{
+	this->load_font = load_font;
+	this->get_char = get_char;
 }
 
 static void re3ps1game_loadbackground(void)
@@ -1882,7 +1877,7 @@ static void re3ps1game_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3ps1game_bg, game_state.num_stage, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re3ps1game_bg, game.num_stage, game.num_stage, game.num_room);
 
 	logMsg(1, "bss: Start loading %s ...\n", filepath);
 
@@ -1902,7 +1897,7 @@ static void re3ps1game_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3ps1game_room, game_state.num_stage, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re3ps1game_room, game.num_stage, game.num_stage, game.num_room);
 
 	logMsg(1, "ard: Start loading %s ...\n", filepath);
 
@@ -1967,14 +1962,10 @@ static int re3ps1game_loadroom_ard(const char *filename)
 	logMsg(3, "ard: Loading embedded RDT file from offset 0x%08x\n", offset);
 	memcpy(file, &ard_file[offset], len);
 
-	game_state.room = room_create(file, len);
-	if (!game_state.room) {
-		free(file);
-		free(ard_file);
-		return 0;
-	}
+	game.room.file = file;
+	game.room.file_length = len;
 
-	room_rdt3_init(game_state.room);
+	room_rdt3_init(&game.room);
 
 	free(ard_file);
 	return 1;
@@ -1999,9 +1990,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game_state.font = render.createTexture(0);
-		if (game_state.font) {
-			game_state.font->load_from_tim(game_state.font, font_file);
+		game.font = render.createTexture(0);
+		if (game.font) {
+			game.font->load_from_tim(game.font, font_file);
 			retval = 1;
 		}
 
