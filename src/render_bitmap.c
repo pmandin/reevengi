@@ -25,7 +25,7 @@
 #include "render.h"
 #include "parameters.h"
 #include "log.h"
-#include "dither.h"
+#include "r_soft/dither.h"
 #include "render_bitmap.h"
 
 /*--- Defines ---*/

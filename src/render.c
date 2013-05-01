@@ -22,13 +22,13 @@
 
 #include "video.h"
 #include "render.h"
-#include "matrix.h"
+#include "r_soft/matrix.h"
 #include "draw.h"
-#include "draw_simple.h"
-#include "draw_sbuffer.h"
+#include "r_soft/draw_simple.h"
+#include "r_soft/draw_sbuffer.h"
 #include "render_texture_list.h"
 #include "render_skel_list.h"
-#include "dither.h"
+#include "r_soft/dither.h"
 
 /*--- Defines ---*/
 

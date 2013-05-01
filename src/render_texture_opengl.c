@@ -34,7 +34,7 @@
 #include "render_texture.h"
 #include "render_texture_opengl.h"
 #include "video.h"
-#include "dither.h"
+#include "r_soft/dither.h"
 #include "parameters.h"
 #include "log.h"
 #include "render_texture_list.h"

@@ -10,7 +10,6 @@ LIBS = $(SDL_LIBS) $(SDLIMAGE_LIBS) $(PHYSFS_LIBS) $(ZLIB_LIBS) $(AVCODEC_LIBS) 
 
 reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	depack_adt.c depack_mdec.c depack_pak.c depack_vlc.c depack_sld.c \
-	dirty_rects.c \
 	filesystem.c idctfst.c log.c main.c \
 	parameters.c physfsrwops.c menu.c \
 	render_bitmap.c render_bitmap_opengl.c \
@@ -26,7 +25,6 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 
 reevengi_headers = background_bss.h background_tim.h clock.h \
 	depack_adt.h depack_mdec.h depack_pak.h depack_vlc.h depack_sld.h \
-	dirty_rects.h \
 	filesystem.h idctfst.h log.h \
 	parameters.h physfsrwops.h menu.h \
 	render.h render_bitmap.h render_text.h \

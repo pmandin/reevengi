@@ -27,7 +27,7 @@
 #include "parameters.h"
 #include "video.h"
 #include "render.h"
-#include "dither.h"
+#include "r_soft/dither.h"
 #include "log.h"
 #include "draw.h"
 #include "render_text.h"

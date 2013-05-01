@@ -21,7 +21,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H 1
 
-#include "dirty_rects.h"
+#include "r_soft/dirty_rects.h"
 
 /*--- Types ---*/
 
