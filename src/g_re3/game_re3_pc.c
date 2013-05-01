@@ -127,7 +127,6 @@ static int re3pc_loadroom_rdt(const char *filename);
 static render_skel_t *re3pc_load_model(int num_model);
 
 static void load_font(void);
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
 static void get_model_name(char name[32]);
 
@@ -173,7 +172,6 @@ void game_re3pc_init(game_t *this)
 	this->player.priv_get_model_name = get_model_name;
 
 	this->load_font = load_font;
-	this->get_char = get_char;
 }
 
 void re3pc_loadbackground(void)
@@ -439,21 +437,6 @@ static void load_font(void)
 	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
 
 	free(filepath);
-}
-
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
-{
-	*x = *y = 0;
-	*w = 8;
-	*h = 10;
-
-	if ((ascii<=32) || (ascii>=96+27)) {
-		return;
-	}
-
-	ascii -= 32;
-	*x = 128+ ((ascii & 15)<<3);
-	*y = 176+ ((ascii>>4)*10);
 }
 
 static void get_model_name(char name[32])

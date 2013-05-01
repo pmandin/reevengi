@@ -1849,7 +1849,6 @@ static void re3ps1game_loadroom(void);
 static int re3ps1game_loadroom_ard(const char *filename);
 
 static void load_font(void);
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
@@ -1865,7 +1864,6 @@ void game_re3ps1game_init(game_t *this)
 	}
 
 	this->load_font = load_font;
-	this->get_char = get_char;
 }
 
 static void re3ps1game_loadbackground(void)
@@ -2002,19 +2000,4 @@ static void load_font(void)
 	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
 
 	free(filepath);
-}
-
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
-{
-	*x = *y = 0;
-	*w = 8;
-	*h = 10;
-
-	if ((ascii<=32) || (ascii>=96+27)) {
-		return;
-	}
-
-	ascii -= 32;
-	*x = 128+ ((ascii & 15)<<3);
-	*y = 176+ ((ascii>>4)*10);
 }

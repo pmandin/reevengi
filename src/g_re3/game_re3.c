@@ -47,6 +47,10 @@ static const game_detect_t game_detect[]={
 	{-1, "", ""}
 };
 
+/*--- Functions prototypes ---*/
+
+static void get_char(int ascii, int *x, int *y, int *w, int *h);
+
 /*--- Functions ---*/
 
 void game_re3_detect(game_t *this)
@@ -64,4 +68,34 @@ void game_re3_detect(game_t *this)
 		}
 		i++;
 	}
+}
+
+void game_re3_init(game_t *this)
+{
+	switch(this->minor) {
+		case GAME_RE3_PS1_GAME:
+			game_re3ps1game_init(this);
+			break;
+		case GAME_RE3_PC_DEMO:
+		case GAME_RE3_PC_GAME:
+			game_re3pc_init(this);
+			break;
+	}
+
+	this->get_char = get_char;
+}
+
+static void get_char(int ascii, int *x, int *y, int *w, int *h)
+{
+	*x = *y = 0;
+	*w = 8;
+	*h = 10;
+
+	if ((ascii<=32) || (ascii>=96+27)) {
+		return;
+	}
+
+	ascii -= 32;
+	*x = 128+ ((ascii & 15)<<3);
+	*y = 176+ ((ascii>>4)*10);
 }
