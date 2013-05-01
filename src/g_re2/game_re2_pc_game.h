@@ -20,11 +20,11 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RE2PCGAME_H
-#define RE2PCGAME_H
+#ifndef GAME_RE2PCGAME_H
+#define GAME_RE2PCGAME_H 1
 
 /*--- Functions ---*/
 
-void re2pcgame_init(state_t *game_state);
+void game_re2pcgame_init(game_t *this);
 
-#endif /* RE2PCGAME_H */
+#endif /* GAME_RE2PCGAME_H */

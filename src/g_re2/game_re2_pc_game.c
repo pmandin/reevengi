@@ -26,12 +26,14 @@
 #include <SDL.h>
 
 #include "filesystem.h"
-#include "state.h"
-#include "re2_pc_game.h"
-#include "depack_adt.h"
-#include "parameters.h"
-#include "g_re2/emd.h"
 #include "log.h"
+#include "parameters.h"
+
+#include "../g_common/game.h"
+
+#include "game_re2.h"
+#include "depack_adt.h"
+#include "g_re2/emd.h"
 #include "room_rdt2.h"
 #include "video.h"
 #include "render.h"
@@ -123,56 +125,56 @@ static void get_model_name(char name[32]);
 
 /*--- Functions ---*/
 
-void re2pcgame_init(state_t *game_state)
+void game_re2pcgame_init(game_t *this)
 {
 	if (!re2pcgame_init_images(re2pcgame_bg_archive)) {
 		fprintf(stderr, "Error reading background archive infos\n");
 	}
 
-	game_state->priv_load_background = re2pcgame_loadbackground;
-	game_state->priv_load_room = re2pcgame_loadroom;
-	game_state->priv_shutdown = re2pcgame_shutdown;
+	this->priv_shutdown = re2pcgame_shutdown;
 
-	switch(game_state->version) {
+	this->room.priv_load_background = re2pcgame_loadbackground;
+	this->room.priv_load = re2pcgame_loadroom;
+
+	switch(this->minor) {
 		case GAME_RE2_PC_GAME_LEON:
-			game_state->movies_list = (char **) re2pcgame_leon_movies;
-			if (state_game_file_exists("PL0/RDP/ROOM1000.RDT")) {
+			this->movies_list = (char **) re2pcgame_leon_movies;
+			if (game_file_exists("PL0/RDP/ROOM1000.RDT")) {
 				game_lang = 'P';
 			}
-			if (state_game_file_exists("PL0/RDS/ROOM1000.RDT")) {
+			if (game_file_exists("PL0/RDS/ROOM1000.RDT")) {
 				game_lang = 'S';
 			}
-			if (state_game_file_exists("PL0/RDF/ROOM1000.RDT")) {
+			if (game_file_exists("PL0/RDF/ROOM1000.RDT")) {
 				game_lang = 'F';
 			}
-			if (state_game_file_exists("PL0/RDT/ROOM1000.RDT")) {
+			if (game_file_exists("PL0/RDT/ROOM1000.RDT")) {
 				game_lang = 'T';
 			}
 			break;
 		case GAME_RE2_PC_GAME_CLAIRE:
-			game_state->movies_list = (char **) re2pcgame_claire_movies;
+			this->movies_list = (char **) re2pcgame_claire_movies;
 			game_player = 1;
-			if (state_game_file_exists("PL1/RDP/ROOM1001.RDT")) {
+			if (game_file_exists("PL1/RDP/ROOM1001.RDT")) {
 				game_lang = 'P';
 			}
-			if (state_game_file_exists("PL1/RDS/ROOM1001.RDT")) {
+			if (game_file_exists("PL1/RDS/ROOM1001.RDT")) {
 				game_lang = 'S';
 			}
-			if (state_game_file_exists("PL1/RDF/ROOM1001.RDT")) {
+			if (game_file_exists("PL1/RDF/ROOM1001.RDT")) {
 				game_lang = 'F';
 			}
-			if (state_game_file_exists("PL1/RDT/ROOM1001.RDT")) {
+			if (game_file_exists("PL1/RDT/ROOM1001.RDT")) {
 				game_lang = 'T';
 			}
 			break;
 	}
 
-	game_state->priv_load_model = re2pcgame_load_model;
+	this->player.priv_load_model = re2pcgame_load_model;
+	this->player.priv_get_model_name = get_model_name;
 
-	game_state->load_font = load_font;
-	game_state->get_char = get_char;
-
-	game_state->get_model_name = get_model_name;
+	this->load_font = load_font;
+	this->get_char = get_char;
 }
 
 static void re2pcgame_shutdown(void)
@@ -185,19 +187,21 @@ static void re2pcgame_shutdown(void)
 
 static void re2pcgame_loadbackground(void)
 {
-	int num_image = (game_state.num_stage-1)*512;
-	num_image += game_state.num_room*16;
-	num_image += game_state.num_camera;
+	int num_image;
+	
+	num_image = (game.num_stage-1)*512;
+	num_image += game.num_room*16;
+	num_image += game.num_camera;
 	if (num_image>=num_re2_images) {
 		num_image = num_re2_images-1;
 	}
 
 	logMsg(1, "adt: Start loading stage %d, room %d, camera %d ...\n",
-		game_state.num_stage, game_state.num_room, game_state.num_camera);
+		game.num_stage, game.num_room, game.num_camera);
 
 	logMsg(1, "adt: %s loading stage %d, room %d, camera %d ...\n",
 		re2pcgame_load_image(num_image) ? "Done" : "Failed",
-		game_state.num_stage, game_state.num_room, game_state.num_camera);
+		game.num_stage, game.num_room, game.num_camera);
 }
 
 static int re2pcgame_init_images(const char *filename)
@@ -265,9 +269,9 @@ static int re2pcgame_load_image(int num_image)
 		if (dstBuffer && dstBufLen) {
 			SDL_Surface *image = adt_surface((Uint16 *) dstBuffer, 1);
 			if (image) {
-				game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-				if (game_state.background) {
-					game_state.background->load_from_surf(game_state.background, image);
+				game.room.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+				if (game.room.background) {
+					game.room.background->load_from_surf(game.room.background, image);
 					retval = 1;
 				}
 				SDL_FreeSurface(image);
@@ -289,8 +293,8 @@ static void re2pcgame_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcgame_room, game_player, game_lang, game_state.num_stage,
-		game_state.num_room, game_player);
+	sprintf(filepath, re2pcgame_room, game_player, game_lang, game.num_stage,
+		game.num_room, game_player);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
@@ -310,14 +314,11 @@ static int re2pcgame_loadroom_rdt(const char *filename)
 	if (!file) {
 		return 0;
 	}
-	
-	game_state.room = room_create(file, length);
-	if (!game_state.room) {
-		free(file);
-		return 0;
-	}
 
-	room_rdt2_init(game_state.room);
+	game.room.file = file;
+	game.room.file_length = length;
+
+	room_rdt2_init(&game.room);
 
 	return 1;
 }
@@ -392,9 +393,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game_state.font = render.createTexture(0);
-		if (game_state.font) {
-			game_state.font->load_from_tim(game_state.font, font_file);
+		game.font = render.createTexture(0);
+		if (game.font) {
+			game.font->load_from_tim(game.font, font_file);
 			retval = 1;
 		}
 
@@ -423,7 +424,7 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 
 static void get_model_name(char name[32])
 {
-	int num_model = game_state.num_model;
+	int num_model = game.player.num_model;
 
 	if (num_model>MAX_MODELS-1) {
 		num_model = MAX_MODELS-1;

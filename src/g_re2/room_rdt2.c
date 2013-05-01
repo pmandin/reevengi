@@ -158,16 +158,16 @@ void room_rdt2_init(room_t *this)
 
 		this->drawMasks = rdt2_drawMasks;
 
-		switch(game_state.version) {
+/*		switch(game_state.version) {
 			case GAME_RE3_PS1_GAME:
 			case GAME_RE3_PC_GAME:
 			case GAME_RE3_PC_DEMO:
 				room_rdt3_scriptInit(this);
 				break;
-			default:
+			default:*/
 				room_rdt2_scriptInit(this);
-				break;
-		}
+/*				break;
+		}*/
 	}
 
 	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",

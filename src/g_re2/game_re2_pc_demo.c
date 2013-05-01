@@ -26,14 +26,16 @@
 #include <SDL.h>
 
 #include "filesystem.h"
-#include "state.h"
-#include "re2_pc_demo.h"
-#include "depack_adt.h"
 #include "parameters.h"
+#include "log.h"
+
+#include "../g_common/game.h"
+
+#include "game_re2.h"
+#include "depack_adt.h"
 #include "video.h"
 #include "render.h"
-#include "log.h"
-#include "g_re2/emd.h"
+#include "emd.h"
 #include "room_rdt2.h"
 
 /*--- Defines ---*/
@@ -62,8 +64,6 @@ static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
-static void re2pcdemo_shutdown(void);
-
 static void re2pcdemo_loadbackground(void);
 static void re2pcdemo_loadbackground_mask(void);
 static int re2pcdemo_load_adt_bg(const char *filename);
@@ -81,27 +81,21 @@ static void get_model_name(char name[32]);
 
 /*--- Functions ---*/
 
-void re2pcdemo_init(state_t *game_state)
+void game_re2pcdemo_init(game_t *this)
 {
-	game_state->priv_load_background = re2pcdemo_loadbackground;
-	game_state->priv_load_bgmask = re2pcdemo_loadbackground_mask;
-	game_state->priv_load_room = re2pcdemo_loadroom;
-	game_state->priv_shutdown = re2pcdemo_shutdown;
+	this->room.priv_load_background = re2pcdemo_loadbackground;
+	this->room.priv_load_bgmask = re2pcdemo_loadbackground_mask;
+	this->room.priv_load = re2pcdemo_loadroom;
 
-	if (game_state->version == GAME_RE2_PC_DEMO_P) {
+	if (this->minor == GAME_RE2_PC_DEMO_P) {
 		game_lang = 'p';
 	}
 
-	game_state->priv_load_model = re2pcdemo_load_model;
+	this->player.priv_load_model = re2pcdemo_load_model;
+	this->player.priv_get_model_name = get_model_name;
 
-	game_state->load_font = load_font;
-	game_state->get_char = get_char;
-
-	game_state->get_model_name = get_model_name;
-}
-
-static void re2pcdemo_shutdown(void)
-{
+	this->load_font = load_font;
+	this->get_char = get_char;
 }
 
 static void re2pcdemo_loadbackground(void)
@@ -113,8 +107,8 @@ static void re2pcdemo_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcdemo_bg, game_state.num_stage, game_state.num_stage,
-		game_state.num_room, game_state.num_camera);
+	sprintf(filepath, re2pcdemo_bg, game.num_stage, game.num_stage,
+		game.num_room, game.num_camera);
 
 	logMsg(1, "adt: Start loading %s ...\n", filepath);
 
@@ -129,7 +123,7 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 {
 	SDL_RWops *src;
 	int retval = 0;
-	
+
 	src = FS_makeRWops(filename);
 	if (src) {
 		Uint8 *dstBuffer;
@@ -141,9 +135,9 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 			if (dstBufLen == 320*256*2) {
 				SDL_Surface *image = adt_surface((Uint16 *) dstBuffer, 1);
 				if (image) {
-					game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-					if (game_state.background) {
-						game_state.background->load_from_surf(game_state.background, image);
+					game.room.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+					if (game.room.background) {
+						game.room.background->load_from_surf(game.room.background, image);
 						retval = 1;
 					}
 					SDL_FreeSurface(image);
@@ -166,8 +160,8 @@ static void re2pcdemo_loadbackground_mask(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcdemo_bgmask, game_state.num_stage, game_state.num_stage,
-		game_state.num_room, game_state.num_camera);
+	sprintf(filepath, re2pcdemo_bgmask, game.num_stage, game.num_stage,
+		game.num_room, game.num_camera);
 
 	logMsg(1, "adt: Start loading %s ...\n", filepath);
 
@@ -191,9 +185,9 @@ static int re2pcdemo_load_adt_bgmask(const char *filename)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			game_state.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
-			if (game_state.bg_mask) {
-				game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
+			game.room.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
+			if (game.room.bg_mask) {
+				game.room.bg_mask->load_from_tim(game.room.bg_mask, dstBuffer);
 
 				retval = 1;
 			}
@@ -214,7 +208,7 @@ static void re2pcdemo_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcdemo_room, game_lang, game_state.num_stage, game_state.num_room);
+	sprintf(filepath, re2pcdemo_room, game_lang, game.num_stage, game.num_room);
 
 	logMsg(1, "adt: Start loading %s ...\n", filepath);
 
@@ -234,14 +228,11 @@ static int re2pcdemo_loadroom_rdt(const char *filename)
 	if (!file) {
 		return 0;
 	}
-	
-	game_state.room = room_create(file, length);
-	if (!game_state.room) {
-		free(file);
-		return 0;
-	}
 
-	room_rdt2_init(game_state.room);
+	game.room.file = file;
+	game.room.file_length = length;
+
+	room_rdt2_init(&game.room);
 
 	return 1;
 }
@@ -305,9 +296,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game_state.font = render.createTexture(0);
-		if (game_state.font) {
-			game_state.font->load_from_tim(game_state.font, font_file);
+		game.font = render.createTexture(0);
+		if (game.font) {
+			game.font->load_from_tim(game.font, font_file);
 			retval = 1;
 		}
 
@@ -336,7 +327,7 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 
 static void get_model_name(char name[32])
 {
-	int num_model = game_state.num_model;
+	int num_model = game.player.num_model;
 
 	if (num_model>MAX_MODELS-1) {
 		num_model = MAX_MODELS-1;
