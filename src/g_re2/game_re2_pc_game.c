@@ -170,8 +170,8 @@ void game_re2pcgame_init(game_t *this)
 			break;
 	}
 
-	this->player.priv_load_model = re2pcgame_load_model;
-	this->player.priv_get_model_name = get_model_name;
+	this->player.load_model = re2pcgame_load_model;
+	this->player.get_model_name = get_model_name;
 
 	this->load_font = load_font;
 	this->get_char = get_char;

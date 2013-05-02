@@ -133,7 +133,7 @@ void game_re1pc_init(game_t *this)
 
 	game.movies_list = (char **) re1pcgame_movies;
 
-	game.player.priv_load_model = re1pcgame_load_model;
+	game.player.load_model = re1pcgame_load_model;
 
 	game.load_font = load_font;
 }

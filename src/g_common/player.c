@@ -28,6 +28,7 @@
 #include "../render_skel.h"
 
 #include "player.h"
+#include "game.h"
 
 /*--- Types ---*/
 
@@ -44,8 +45,16 @@ static void player_shutdown(player_t *this);
 
 static void player_unloadmodels(player_t *this);
 
-static render_skel_t *player_priv_load_model(int num_model);
-static void player_priv_get_model_name(char name[32]);
+static render_skel_t *player_load_model(int num_model);
+static void player_get_model_name(char name[32]);
+
+static void prev_model(void);
+static void next_model(void);
+static void reset_model(void);
+
+static void prev_anim(void);
+static void next_anim(void);
+static void reset_anim(void);
 
 /*--- Functions ---*/
 
@@ -57,8 +66,16 @@ void player_init(player_t *this)
 
 	this->shutdown = player_shutdown;
 
-	this->priv_load_model = player_priv_load_model;
-	this->priv_get_model_name = player_priv_get_model_name;
+	this->load_model = player_load_model;
+	this->get_model_name = player_get_model_name;
+
+	this->prev_model = prev_model;
+	this->next_model = next_model;
+	this->reset_model = reset_model;
+
+	this->prev_anim = prev_anim;
+	this->next_anim = next_anim;
+	this->reset_anim = reset_anim;
 
 #ifdef ENABLE_DEBUG_POS
 	this->x = 13148.0f;
@@ -95,11 +112,53 @@ static void player_unloadmodels(player_t *this)
 	}
 }
 
-static render_skel_t *player_priv_load_model(int num_model)
+static render_skel_t *player_load_model(int num_model)
 {
 	return NULL;
 }
 
-static void player_priv_get_model_name(char name[32])
+static void player_get_model_name(char name[32])
 {
+}
+
+static void prev_model(void)
+{
+	--game.player.num_model;
+	if (game.player.num_model<0) {
+		game.player.num_model=0;
+	}
+}
+
+static void next_model(void)
+{
+	++game.player.num_model;
+	if (game.player.num_model>100) {
+		game.player.num_model=100;
+	}
+}
+
+static void reset_model(void)
+{
+	game.player.num_model = 0;
+}
+
+static void prev_anim(void)
+{
+	if (game.player.num_anim>0) {
+		--game.player.num_anim;
+	}
+}
+
+static void next_anim(void)
+{
+	int num_anims = game.player.model->getNumAnims(game.player.model);
+
+	if (game.player.num_anim<num_anims-1) {
+		++game.player.num_anim;
+	}
+}
+
+static void reset_anim(void)
+{
+	game.player.num_anim=0;
 }

@@ -94,7 +94,7 @@ void game_re1_init(game_t *this)
 	}
 
 	this->get_char = get_char;
-	this->player.priv_get_model_name = get_model_name;
+	this->player.get_model_name = get_model_name;
 
 #if 0
 	/* Init default room and player pos */

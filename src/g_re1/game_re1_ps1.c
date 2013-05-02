@@ -117,7 +117,7 @@ void game_re1ps1_init(game_t *this)
 		this->movies_list = (char **) re1ps1game_movies;
 	}
 
-	this->player.priv_load_model = re1ps1_load_model;
+	this->player.load_model = re1ps1_load_model;
 
 	this->load_font = load_font;
 }

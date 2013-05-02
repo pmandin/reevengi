@@ -47,7 +47,6 @@ struct room_s {
 	void (*priv_load_background)(void);
 	void (*priv_load_bgmask)(void);
 
-
 	/* RDT file */
 	void *file;
 	Uint32 file_length;

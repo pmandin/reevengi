@@ -53,6 +53,16 @@ struct game_s {
 	int num_room;	/* Room of stage */
 	int num_camera;	/* Camera in room */
 
+	void (*prev_stage)(void);
+	void (*next_stage)(void);
+	void (*reset_stage)(void);
+	void (*prev_room)(void);
+	void (*next_room)(void);
+	void (*reset_room)(void);
+	void (*prev_camera)(void);
+	void (*next_camera)(void);
+	void (*reset_camera)(void);
+
 	player_t player;	/* player data */
 
 	room_t	room;	/* current room */

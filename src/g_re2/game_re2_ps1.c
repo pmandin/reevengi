@@ -947,7 +947,7 @@ void game_re2ps1_init(game_t *this)
 			break;
 	}
 
-	this->player.priv_load_model = re2ps1_load_model;
+	this->player.load_model = re2ps1_load_model;
 }
 
 static void re2ps1_loadbackground(void)

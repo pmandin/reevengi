@@ -44,8 +44,20 @@ static const char *game_version="Unknown version";
 static void game_shutdown(void);
 static void game_priv_shutdown(void);
 
-static void game_load_font(void);
-static void game_get_char(int ascii, int *x, int *y, int *w, int *h);
+static void load_font(void);
+static void get_char(int ascii, int *x, int *y, int *w, int *h);
+
+static void prev_stage(void);
+static void next_stage(void);
+static void reset_stage(void);
+
+static void prev_room(void);
+static void next_room(void);
+static void reset_room(void);
+
+static void prev_camera(void);
+static void next_camera(void);
+static void reset_camera(void);
 
 /*--- Functions ---*/
 
@@ -58,8 +70,8 @@ void game_init(game_t *this)
 	this->shutdown = game_shutdown;
 	this->priv_shutdown = game_priv_shutdown;
 
-	this->load_font = game_load_font;
-	this->get_char = game_get_char;
+	this->load_font = load_font;
+	this->get_char = get_char;
 
 	this->major = GAME_UNKNOWN;
 	this->name = game_version;
@@ -67,6 +79,16 @@ void game_init(game_t *this)
 	this->num_stage = params.stage;
 	this->num_room = params.room;
 	this->num_camera = params.camera;
+
+	this->prev_stage = prev_stage;
+	this->next_stage = next_stage;
+	this->reset_stage = reset_stage;
+	this->prev_room = prev_room;
+	this->next_room = next_room;
+	this->reset_room = reset_room;
+	this->prev_camera = prev_camera;
+	this->next_camera = next_camera;
+	this->reset_camera = reset_camera;
 
 	player_init(&this->player);
 	room_init(&this->room);
@@ -138,11 +160,77 @@ int game_file_exists(const char *filename)
 	return detected;
 }
 
-static void game_load_font(void)
+static void load_font(void)
 {
 }
 
-static void game_get_char(int ascii, int *x, int *y, int *w, int *h)
+static void get_char(int ascii, int *x, int *y, int *w, int *h)
 {
 }
 
+static void prev_stage(void)
+{
+	--game.num_stage;
+	if (game.num_stage < 1) {
+		game.num_stage = 7;
+	}
+}
+
+static void next_stage(void)
+{
+	++game.num_stage;
+	if (game.num_stage > 7) {
+		game.num_stage = 1;
+	}
+}
+
+static void reset_stage(void)
+{
+	game.num_stage = 1;
+}
+
+static void prev_room(void)
+{
+	--game.num_room;
+	if (game.num_room < 0) {
+		game.num_room = 0x1c;
+	}
+}
+
+static void next_room(void)
+{
+	++game.num_room;
+	if (game.num_room > 0x1c) {
+		game.num_room = 0;
+	}
+}
+
+static void reset_room(void)
+{
+	game.num_room = 0;
+}
+
+static void prev_camera(void)
+{
+	--game.num_camera;
+	if (game.num_camera<0) {
+/*		if (game.room.num_cameras>0) {
+			game.num_camera = game_state.room.num_cameras-1;
+		} else {
+			game.num_camera = 0;
+		}*/
+	}
+}
+
+static void next_camera(void)
+{
+	++game.num_camera;
+/*	if (game.num_camera>=game_state.room.num_cameras) {
+		game.num_camera = 0;
+	}*/
+}
+
+static void reset_camera(void)
+{
+	game.num_camera = 0;
+}
