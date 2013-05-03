@@ -10,6 +10,9 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
+PKG_PROG_PKG_CONFIG
+m4_ifndef([PKG_CHECK_MODULES], [AC_DEFUN([PKG_CHECK_MODULES], [true])])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
@@ -68,23 +71,27 @@ CHECK_ZLIB()
 
 # SDL_image
 
-TMP_CFLAGS=$CFLAGS
-TMP_CPPFLAGS=$CPPFLAGS
-CFLAGS="$CFLAGS $SDL_CFLAGS"
-CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
-AC_CHECK_HEADER(SDL_image.h,
-	have_sdlimage_h=yes, havesdlimage_h=no)
-AC_CHECK_LIB(SDL_image, IMG_isJPG,
-	have_sdlimage_lib=yes, have_sdlimage_lib=no,
-	$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
-if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
-	SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
-	AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
+if test "x$PKG_CONFIG" != "x"; then
+	PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image])
 else
-	AC_MSG_WARN([*** SDL_image not found!])
+	TMP_CFLAGS=$CFLAGS
+	TMP_CPPFLAGS=$CPPFLAGS
+	CFLAGS="$CFLAGS $SDL_CFLAGS"
+	CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
+	AC_CHECK_HEADER(SDL_image.h,
+		have_sdlimage_h=yes, havesdlimage_h=no)
+	AC_CHECK_LIB(SDL_image, IMG_isJPG,
+		have_sdlimage_lib=yes, have_sdlimage_lib=no,
+		$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
+	if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
+		SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
+		AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
+	else
+		AC_MSG_WARN([*** SDL_image not found!])
+	fi
+	CFLAGS=$TMP_CFLAGS
+	CPPFLAGS=$TMP_CPPFLAGS
 fi
-CFLAGS=$TMP_CFLAGS
-CPPFLAGS=$TMP_CPPFLAGS
 
 # physfs
 
@@ -118,6 +125,18 @@ AC_ARG_ENABLE(opengl,
 GLU_LIBS=
 if test "x$WANT_OPENGL" = "xyes"; then
 	AC_DEFINE(ENABLE_OPENGL, 1, [Define if you want OpenGL renderer])
+fi
+
+# Talloc
+
+if test "x$PKG_CONFIG" != "x"; then
+	PKG_CHECK_MODULES([LIBTALLOC], [talloc])
+fi
+
+# Cdio
+
+if test "x$PKG_CONFIG" != "x"; then
+	PKG_CHECK_MODULES([LIBCDIO], [libcdio])
 fi
 
 # Gamma setting
