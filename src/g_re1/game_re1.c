@@ -24,6 +24,7 @@
 #include "../parameters.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re1.h"
 
@@ -94,7 +95,7 @@ void game_re1_init(game_t *this)
 	}
 
 	this->get_char = get_char;
-	this->player.get_model_name = get_model_name;
+	player.get_model_name = get_model_name;
 
 #if 0
 	/* Init default room and player pos */
@@ -119,7 +120,7 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 static void get_model_name(char name[32])
 {
 	const char *filename = "char1%d.emd";
-	int num_model = game.player.num_model;
+	int num_model = player.num_model;
 
 	if (num_model>64) { /* 66 on pc ? */
 		num_model = 64;

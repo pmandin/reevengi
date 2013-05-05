@@ -30,6 +30,7 @@
 #include "log.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re3.h"
 #include "background_bss.h"

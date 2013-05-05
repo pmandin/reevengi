@@ -30,6 +30,7 @@
 #include "log.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re2.h"
 #include "background_bss.h"
@@ -947,7 +948,7 @@ void game_re2ps1_init(game_t *this)
 			break;
 	}
 
-	this->player.load_model = re2ps1_load_model;
+	player.load_model = re2ps1_load_model;
 }
 
 static void re2ps1_loadbackground(void)

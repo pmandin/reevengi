@@ -63,6 +63,8 @@ struct room_s {
 
 /*--- Variables ---*/
 
+extern room_t room;
+
 /*--- Functions ---*/
 
 void room_init(room_t *this);

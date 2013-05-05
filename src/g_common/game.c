@@ -25,6 +25,8 @@
 #include "../parameters.h"
 #include "../log.h"
 
+#include "room.h"
+#include "player.h"
 #include "game.h"
 
 /*--- Types ---*/
@@ -90,8 +92,8 @@ void game_init(game_t *this)
 	this->next_camera = next_camera;
 	this->reset_camera = reset_camera;
 
-	player_init(&this->player);
-	room_init(&this->room);
+	player_init(&player);
+	room_init(&room);
 }
 
 void game_shutdown(void)
@@ -100,8 +102,8 @@ void game_shutdown(void)
 
 	logMsg(2, "game: shutdown\n");
 
-	this->player.shutdown(&this->player);
-	this->room.shutdown(&this->room);
+	player.shutdown(&player);
+	room.shutdown(&room);
 
 	this->priv_shutdown();
 }

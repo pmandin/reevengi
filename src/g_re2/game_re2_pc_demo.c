@@ -30,6 +30,7 @@
 #include "log.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re2.h"
 #include "depack_adt.h"
@@ -91,11 +92,10 @@ void game_re2pcdemo_init(game_t *this)
 		game_lang = 'p';
 	}
 
-	this->player.load_model = re2pcdemo_load_model;
-	this->player.get_model_name = get_model_name;
+	player.load_model = re2pcdemo_load_model;
+	player.get_model_name = get_model_name;
 
 	this->load_font = load_font;
-	this->get_char = get_char;
 }
 
 static void re2pcdemo_loadbackground(void)
@@ -310,24 +310,9 @@ static void load_font(void)
 	free(filepath);
 }
 
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
-{
-	*x = *y = 0;
-	*w = 8;
-	*h = 10;
-
-	if ((ascii<=32) || (ascii>=96+27)) {
-		return;
-	}
-
-	ascii -= 32;
-	*x = (ascii & 31)<<3;
-	*y = (ascii>>5)*10;
-}
-
 static void get_model_name(char name[32])
 {
-	int num_model = game.player.num_model;
+	int num_model = player.num_model;
 
 	if (num_model>MAX_MODELS-1) {
 		num_model = MAX_MODELS-1;

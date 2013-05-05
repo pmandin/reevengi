@@ -63,9 +63,7 @@ struct game_s {
 	void (*next_camera)(void);
 	void (*reset_camera)(void);
 
-	player_t player;	/* player data */
-
-	room_t	room;	/* current room */
+	room_t room;	/* current room */
 
 	/*--- Movies ---*/
 

@@ -61,6 +61,10 @@ static const game_detect_t game_detect[]={
 	{-1, "", ""}
 };
 
+/*--- Functions prototypes ---*/
+
+static void get_char(int ascii, int *x, int *y, int *w, int *h);
+
 /*--- Functions ---*/
 
 void game_re2_detect(game_t *this)
@@ -103,6 +107,8 @@ void game_re2_init(game_t *this)
 			break;
 	}
 
+	this->get_char = get_char;
+
 #if 0
 	/* Init default room and player pos */
 	this->player.x = -1530.0f;
@@ -110,4 +116,19 @@ void game_re2_init(game_t *this)
 	this->player.z = 2700.0f;
 	this->player.a = 3072.0f;
 #endif
+}
+
+static void get_char(int ascii, int *x, int *y, int *w, int *h)
+{
+	*x = *y = 0;
+	*w = 8;
+	*h = 10;
+
+	if ((ascii<=32) || (ascii>=96+27)) {
+		return;
+	}
+
+	ascii -= 32;
+	*x = (ascii & 31)<<3;
+	*y = (ascii>>5)*10;
 }

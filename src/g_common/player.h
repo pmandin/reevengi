@@ -55,16 +55,18 @@ struct player_s {
 	int num_anim;
 	int num_frame;
 
-	void (*prev_model)(void);
-	void (*next_model)(void);
-	void (*reset_model)(void);
+	void (*prev_model)(player_t *this);
+	void (*next_model)(player_t *this);
+	void (*reset_model)(player_t *this);
 
-	void (*prev_anim)(void);
-	void (*next_anim)(void);
-	void (*reset_anim)(void);
+	void (*prev_anim)(player_t *this);
+	void (*next_anim)(player_t *this);
+	void (*reset_anim)(player_t *this);
 };
 
 /*--- Variables ---*/
+
+extern player_t player;
 
 /*--- Functions ---*/
 

@@ -31,6 +31,7 @@
 #include "parameters.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re1.h"
 #include "background_bss.h"
@@ -117,7 +118,7 @@ void game_re1ps1_init(game_t *this)
 		this->movies_list = (char **) re1ps1game_movies;
 	}
 
-	this->player.load_model = re1ps1_load_model;
+	player.load_model = re1ps1_load_model;
 
 	this->load_font = load_font;
 }

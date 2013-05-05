@@ -31,6 +31,7 @@
 #include "parameters.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re1.h"
 #include "depack_pak.h"
@@ -133,7 +134,7 @@ void game_re1pc_init(game_t *this)
 
 	game.movies_list = (char **) re1pcgame_movies;
 
-	game.player.load_model = re1pcgame_load_model;
+	player.load_model = re1pcgame_load_model;
 
 	game.load_font = load_font;
 }

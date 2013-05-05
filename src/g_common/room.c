@@ -31,6 +31,8 @@
 
 /*--- Global variables ---*/
 
+room_t room;
+
 /*--- Variables ---*/
 
 /*--- Functions prototypes ---*/

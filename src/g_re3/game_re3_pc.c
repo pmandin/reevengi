@@ -36,6 +36,7 @@
 #include "log.h"
 
 #include "../g_common/game.h"
+#include "../g_common/player.h"
 
 #include "game_re3.h"
 #include "video.h"
@@ -168,8 +169,8 @@ void game_re3pc_init(game_t *this)
 			break;
 	}
 
-	this->player.load_model = re3pc_load_model;
-	this->player.get_model_name = get_model_name;
+	player.load_model = re3pc_load_model;
+	player.get_model_name = get_model_name;
 
 	this->load_font = load_font;
 }
@@ -441,7 +442,7 @@ static void load_font(void)
 
 static void get_model_name(char name[32])
 {
-	int num_model = game.player.num_model;
+	int num_model = player.num_model;
 
 	switch (game.minor) {
 		case GAME_RE3_PC_DEMO:

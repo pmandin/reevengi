@@ -36,6 +36,8 @@
 
 /*--- Global variables ---*/
 
+player_t player;
+
 /*--- Variables ---*/
 
 
@@ -48,13 +50,13 @@ static void player_unloadmodels(player_t *this);
 static render_skel_t *player_load_model(int num_model);
 static void player_get_model_name(char name[32]);
 
-static void prev_model(void);
-static void next_model(void);
-static void reset_model(void);
+static void prev_model(player_t *this);
+static void next_model(player_t *this);
+static void reset_model(player_t *this);
 
-static void prev_anim(void);
-static void next_anim(void);
-static void reset_anim(void);
+static void prev_anim(player_t *this);
+static void next_anim(player_t *this);
+static void reset_anim(player_t *this);
 
 /*--- Functions ---*/
 
@@ -121,44 +123,42 @@ static void player_get_model_name(char name[32])
 {
 }
 
-static void prev_model(void)
+static void prev_model(player_t *this)
 {
-	--game.player.num_model;
-	if (game.player.num_model<0) {
-		game.player.num_model=0;
+	if (this->num_model>0) {
+		--this->num_model;
 	}
 }
 
-static void next_model(void)
+static void next_model(player_t *this)
 {
-	++game.player.num_model;
-	if (game.player.num_model>100) {
-		game.player.num_model=100;
+	if (this->num_model<100) {
+		++this->num_model;
 	}
 }
 
-static void reset_model(void)
+static void reset_model(player_t *this)
 {
-	game.player.num_model = 0;
+	this->num_model = 0;
 }
 
-static void prev_anim(void)
+static void prev_anim(player_t *this)
 {
-	if (game.player.num_anim>0) {
-		--game.player.num_anim;
+	if (this->num_anim>0) {
+		--this->num_anim;
 	}
 }
 
-static void next_anim(void)
+static void next_anim(player_t *this)
 {
-	int num_anims = game.player.model->getNumAnims(game.player.model);
+	int num_anims = this->model->getNumAnims(this->model);
 
-	if (game.player.num_anim<num_anims-1) {
-		++game.player.num_anim;
+	if (this->num_anim<num_anims-1) {
+		++this->num_anim;
 	}
 }
 
-static void reset_anim(void)
+static void reset_anim(player_t *this)
 {
-	game.player.num_anim=0;
+	this->num_anim=0;
 }
