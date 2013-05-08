@@ -48,11 +48,24 @@ enum {
 	STR_TYPE_FLOAT_AS_INT
 };
 
+enum {
+	PTR_NULL=0,
+	PTR_GAM_STAGE,
+	PTR_GAM_ROOM,
+	PTR_GAM_CAMERA,
+	PTR_PLR_ANIM,
+	PTR_PLR_X,
+	PTR_PLR_Y,
+	PTR_PLR_Z,
+	PTR_PLR_A
+};
+
 /*--- Types ---*/
 
 typedef struct {
 	int x,y;	/* Top left position (in chars) */
 	int strtype;
+	int vname;	/* Value to initialize pointer */
 	void *str;	/* Pointer to string or int value */
 } menu_item_t;
 
@@ -63,32 +76,36 @@ static char model_name[32];
 /*--- Constants ---*/
 
 menu_item_t main_menu[1+10+8]={
-	{0,0, STR_TYPE_TEXT, PACKAGE_STRING},
+	{0,0, STR_TYPE_TEXT, PTR_NULL, PACKAGE_STRING},
 
-	{0,2, STR_TYPE_TEXT, "Stage :"},
-	{8,2, STR_TYPE_INT, &game->num_stage},
-	{0,3, STR_TYPE_TEXT, "Room  :"},
-	{8,3, STR_TYPE_HEXA2, &game->num_room},
-	{0,4, STR_TYPE_TEXT, "Camera:"},
-	{8,4, STR_TYPE_HEXA2, &game->num_camera},
-	{0,5, STR_TYPE_TEXT, "Model :"},
-	{8,5, STR_TYPE_TEXT, model_name},
-	{0,6, STR_TYPE_TEXT, "Anim  :"},
-	{8,6, STR_TYPE_INT, &game->player->num_anim},
+	{0,2, STR_TYPE_TEXT, PTR_NULL, "Stage :"},
+	{8,2, STR_TYPE_INT, PTR_GAM_STAGE, NULL},
+	{0,3, STR_TYPE_TEXT, PTR_NULL, "Room  :"},
+	{8,3, STR_TYPE_HEXA2, PTR_GAM_ROOM, NULL},
+	{0,4, STR_TYPE_TEXT, PTR_NULL, "Camera:"},
+	{8,4, STR_TYPE_HEXA2, PTR_GAM_STAGE, NULL},
+	{0,5, STR_TYPE_TEXT, PTR_NULL, "Model :"},
+	{8,5, STR_TYPE_TEXT, PTR_NULL, model_name},
+	{0,6, STR_TYPE_TEXT, PTR_NULL, "Anim  :"},
+	{8,6, STR_TYPE_INT, PTR_PLR_ANIM, NULL},
 
-	{0,8, STR_TYPE_TEXT, "Player X:"},
-	{10,8, STR_TYPE_FLOAT_AS_INT, &game->player->x},
-	{0,9, STR_TYPE_TEXT, "Player Y:"},
-	{10,9, STR_TYPE_FLOAT_AS_INT, &game->player->y},
-	{0,10, STR_TYPE_TEXT, "Player Z:"},
-	{10,10, STR_TYPE_FLOAT_AS_INT, &game->player->z},
-	{0,11, STR_TYPE_TEXT, "Player A:"},
-	{10,11, STR_TYPE_FLOAT_AS_INT, &game->player->a}
+	{0,8, STR_TYPE_TEXT, PTR_NULL, "Player X:"},
+	{10,8, STR_TYPE_FLOAT_AS_INT, PTR_PLR_X, NULL},
+	{0,9, STR_TYPE_TEXT, PTR_NULL, "Player Y:"},
+	{10,9, STR_TYPE_FLOAT_AS_INT, PTR_PLR_Y, NULL},
+	{0,10, STR_TYPE_TEXT, PTR_NULL, "Player Z:"},
+	{10,10, STR_TYPE_FLOAT_AS_INT, PTR_PLR_Z, NULL},
+	{0,11, STR_TYPE_TEXT, PTR_NULL, "Player A:"},
+	{10,11, STR_TYPE_FLOAT_AS_INT, PTR_PLR_A, NULL}
 };
 
 /*--- Functions prototypes ---*/
 
 static void dtor(menu_t *this);
+
+static void init(menu_t *this, game_t *game, player_t *player);
+
+static void draw(menu_t *this);
 
 /*--- Functions ---*/
 
@@ -98,6 +115,8 @@ menu_t *menu_ctor(void)
 
 	this = (menu_t *) calloc(1, sizeof(menu_t));
 	this->dtor = dtor;
+	this->init = init;
+	this->draw = draw;
 }
 
 static void dtor(menu_t *this)
@@ -105,7 +124,45 @@ static void dtor(menu_t *this)
 	free(this);
 }
 
-void menu_render(void)
+static void init(menu_t *this, game_t *game, player_t *player)
+{
+	int i;
+
+	for (i=0; i<sizeof(main_menu)/sizeof(menu_item_t); i++) {
+		if (!main_menu[i].vname) {
+			continue;
+		}
+
+		switch(main_menu[i].vname) {
+			case PTR_GAM_STAGE:
+				main_menu[i].str = &game->num_stage;
+				break;
+			case PTR_GAM_ROOM:
+				main_menu[i].str = &game->num_room;
+				break;
+			case PTR_GAM_CAMERA:
+				main_menu[i].str = &game->num_camera;
+				break;
+			case PTR_PLR_ANIM:
+				main_menu[i].str = &player->num_anim;
+				break;
+			case PTR_PLR_X:
+				main_menu[i].str = &player->x;
+				break;
+			case PTR_PLR_Y:
+				main_menu[i].str = &player->y;
+				break;
+			case PTR_PLR_Z:
+				main_menu[i].str = &player->z;
+				break;
+			case PTR_PLR_A:
+				main_menu[i].str = &player->a;
+				break;
+		}
+	}
+}
+
+static void draw(menu_t *this)
 {
 	player_t *player = game->player;
 

@@ -81,7 +81,7 @@ void game_re1_detect(game_t *this)
 	}
 }
 
-game_t *game_re1_init(game_t *this)
+game_t *game_re1_ctor(game_t *this)
 {
 	switch(this->minor) {
 		case GAME_RE1_PS1_DEMO:

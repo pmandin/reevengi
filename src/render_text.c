@@ -22,7 +22,8 @@
 
 #include "render_texture.h"
 #include "render_skel.h"
-#include "state.h"
+
+#include "g_common/game.h"
 
 #include "video.h"
 #include "render.h"
@@ -33,12 +34,12 @@ void render_text(const char *str, int x, int y)
 	int sx=0,sy=0,sw=8,sh=8;
 	int dx=video.viewport.x+x,dy=video.viewport.y+y,dw=8,dh=8; /* dirtied zone */
 
-	if (!game_state.font) {
+	if (!game->font) {
 		return;
 	}
 
 	render.set_dithering(0);
-	render.set_texture(0, game_state.font);
+	render.set_texture(0, game->font);
 	render.set_blending(1);
 	render.set_useDirtyRects(0);
 	render.bitmap.setMasking(0);
@@ -50,7 +51,7 @@ void render_text(const char *str, int x, int y)
 
 	while (c=*str++) {
 		if (c>32) {
-			game_state.get_char(c, &sx, &sy, &sw, &sh);
+			game->get_char(game, c, &sx, &sy, &sw, &sh);
 
 			render.bitmap.clipSource(sx,sy, sw,sh);
 			render.bitmap.clipDest(video.viewport.x+x,video.viewport.y+y, sw,sh);

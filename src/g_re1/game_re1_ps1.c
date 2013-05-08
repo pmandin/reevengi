@@ -95,7 +95,7 @@ static const char *re1ps1game_movies[] = {
 
 /*--- Variables ---*/
 
-static const char *is_shock;
+static const char *is_shock = "";
 
 /*--- Functions prototypes ---*/
 
@@ -127,7 +127,9 @@ game_t *game_re1ps1_ctor(game_t *this)
 
 	this->load_font = load_font;
 
-	is_shock = ((game->minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+	if (game->minor == GAME_RE1_PS1_SHOCK) {
+		is_shock = "usa";
+	}
 
 	return this;
 }

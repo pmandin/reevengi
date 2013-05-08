@@ -23,10 +23,12 @@
 
 #include <SDL.h>
 
-#include "../render_texture.h"
-#include "../render_mask.h"
-
 /*--- Defines ---*/
+
+/*--- External types ---*/
+
+typedef struct render_texture_s render_texture_t;
+typedef struct render_mask_s render_mask_t;
 
 /*--- Types ---*/
 

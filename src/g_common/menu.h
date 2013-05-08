@@ -21,6 +21,11 @@
 #ifndef MENU_H
 #define MENU_H 1
 
+/*--- External types ---*/
+
+typedef struct player_s player_t;
+typedef struct game_s game_t;
+
 /*--- Types ---*/
 
 typedef struct menu_s menu_t;
@@ -28,13 +33,13 @@ typedef struct menu_s menu_t;
 struct menu_s {
 	void (*dtor)(menu_t *this);
 
-	void (*draw_menu)(menu_t *this);
+	void (*init)(menu_t *this, game_t *game, player_t *player);
+
+	void (*draw)(menu_t *this);
 };
 
 /*--- Functions protocotypes ---*/
 
 menu_t *menu_ctor(void);
-
-void menu_render(void);
 
 #endif /* MENU_H */

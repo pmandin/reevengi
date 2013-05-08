@@ -21,8 +21,6 @@
 #ifndef GAME_H
 #define GAME_H 1
 
-#include "../render_texture.h"
-
 /*--- Enums ---*/
 
 typedef enum {
@@ -36,6 +34,8 @@ typedef enum {
 
 typedef struct room_s room_t;
 typedef struct player_s player_t;
+typedef struct menu_s menu_t;
+typedef struct render_texture_s render_texture_t;
 
 /*--- Types ---*/
 
@@ -55,13 +55,16 @@ struct game_s {
 
 	room_t *room;	/* room */
 	player_t *player;	/* player */
+	menu_t *menu;	/* menu */
 
 	void (*prev_stage)(game_t *this);
 	void (*next_stage)(game_t *this);
 	void (*reset_stage)(game_t *this);
+
 	void (*prev_room)(game_t *this);
 	void (*next_room)(game_t *this);
 	void (*reset_room)(game_t *this);
+
 	void (*prev_camera)(game_t *this);
 	void (*next_camera)(game_t *this);
 	void (*reset_camera)(game_t *this);
@@ -71,6 +74,10 @@ struct game_s {
 	char **movies_list;	/* List of movies */
 	int num_movie;	/* Currently playing movie */
 	char *cur_movie;	/* Current filename */
+
+	void (*prev_movie)(game_t *this);
+	void (*next_movie)(game_t *this);
+	void (*reset_movie)(game_t *this);
 
 	/*--- Font for ASCII text ---*/
 	render_texture_t *font;

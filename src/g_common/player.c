@@ -33,6 +33,8 @@
 
 /*--- Constants ---*/
 
+#define ANIM_HZ 15
+
 /*--- Global variables ---*/
 
 /*--- Variables ---*/

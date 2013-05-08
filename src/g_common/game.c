@@ -27,6 +27,7 @@
 
 #include "room.h"
 #include "player.h"
+#include "menu.h"
 #include "game.h"
 
 /*--- Types ---*/
@@ -58,6 +59,10 @@ static void prev_camera(game_t *this);
 static void next_camera(game_t *this);
 static void reset_camera(game_t *this);
 
+static void prev_movie(game_t *this);
+static void next_movie(game_t *this);
+static void reset_movie(game_t *this);
+
 /*--- Functions ---*/
 
 game_t *game_ctor(void)
@@ -86,15 +91,22 @@ game_t *game_ctor(void)
 	this->prev_stage = prev_stage;
 	this->next_stage = next_stage;
 	this->reset_stage = reset_stage;
+
 	this->prev_room = prev_room;
 	this->next_room = next_room;
 	this->reset_room = reset_room;
+
 	this->prev_camera = prev_camera;
 	this->next_camera = next_camera;
 	this->reset_camera = reset_camera;
 
+	this->prev_movie = prev_movie;
+	this->next_movie = next_movie;
+	this->reset_movie = reset_movie;
+
 	this->player = player_ctor();
 	this->room = room_ctor();
+	this->menu = menu_ctor();
 }
 
 static void dtor(game_t *this)
@@ -110,6 +122,61 @@ static void dtor(game_t *this)
 		this->room->dtor(this->room);
 		this->room=NULL;
 	}
+
+	if (this->menu) {
+		this->menu->dtor(this->menu);
+		this->menu=NULL;
+	}
+}
+
+int game_file_exists(const char *filename)
+{
+	char *filenamedir;
+	int detected = 0;
+
+	filenamedir = malloc(strlen(params.basedir)+strlen(filename)+4);
+	if (filenamedir) {
+		PHYSFS_file	*curfile;
+
+		sprintf(filenamedir, "%s/%s", params.basedir, filename);
+
+		logMsg(2, "fs: Checking %s file\n", filename);
+
+		curfile = PHYSFS_openRead(filename);
+		if (curfile) {
+			char dummy;
+
+			if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
+				detected = 1;
+			}
+
+			PHYSFS_close(curfile);
+		}
+
+		/* Try in upper case */
+		if (!detected) {
+			int i;
+
+			for (i=0; i<strlen(filenamedir); i++) {
+				filenamedir[i] = toupper(filenamedir[i]);
+			}
+
+			curfile = PHYSFS_openRead(filename);
+			if (curfile) {
+				char dummy;
+
+				if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
+					detected = 1;
+				}
+
+				PHYSFS_close(curfile);
+			}
+		}
+
+		free(filenamedir);
+	}
+
+	return detected;
 }
 
 static void load_font(game_t *this)
@@ -191,52 +258,31 @@ static void reset_camera(game_t *this)
 	this->num_camera = 0;
 }
 
-int game_file_exists(const char *filename)
+static void prev_movie(game_t *this)
 {
-	char *filenamedir;
-	int detected = 0;
-
-	filenamedir = malloc(strlen(params.basedir)+strlen(filename)+4);
-	if (filenamedir) {
-		PHYSFS_file	*curfile;
-
-		sprintf(filenamedir, "%s/%s", params.basedir, filename);
-
-		logMsg(2, "fs: Checking %s file\n", filename);
-
-		curfile = PHYSFS_openRead(filename);
-		if (curfile) {
-			char dummy;
-
-			if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
-				detected = 1;
-			}
-
-			PHYSFS_close(curfile);
-		}
-
-		/* Try in upper case */
-		if (!detected) {
-			int i;
-
-			for (i=0; i<strlen(filenamedir); i++) {
-				filenamedir[i] = toupper(filenamedir[i]);
-			}
-
-			curfile = PHYSFS_openRead(filename);
-			if (curfile) {
-				char dummy;
-
-				if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
-					detected = 1;
-				}
-
-				PHYSFS_close(curfile);
-			}
-		}
-
-		free(filenamedir);
+	--this->num_movie;
+	if (this->num_movie<0) {
+		this->num_movie=0;
 	}
 
-	return detected;
+	/* TODO update movie to replay */
+}
+
+static void next_movie(game_t *this)
+{
+	int max_num_movies = state_getnummovies();
+
+	++this->num_movie;
+	if (this->num_movie>=max_num_movies) {
+		this->num_movie = max_num_movies-1;
+	}
+
+	/* TODO update movie to replay */
+}
+
+static void reset_movie(game_t *this)
+{
+	this->num_movie = 0;
+
+	/* TODO update movie to replay */
 }
