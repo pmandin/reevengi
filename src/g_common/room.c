@@ -19,6 +19,7 @@
 */
 
 #include <string.h>
+#include <SDL.h>
 
 #include "../log.h"
 
@@ -45,6 +46,18 @@ static void unload(room_t *this);
 static void unload_background(room_t *this);
 static void unload_bgmask(room_t *this);
 
+static int getNumCameras(room_t *this);
+static void getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
+
+static int getNumCamSwitches(room_t *this);
+static void getCamSwitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+
+static int getNumBoundaries(room_t *this);
+static void getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_boundary);
+
+static void initMasks(room_t *this, int num_camera);
+static void drawMasks(room_t *this, int num_camera);
+
 /*--- Functions ---*/
 
 room_t *room_ctor(void)
@@ -63,6 +76,18 @@ room_t *room_ctor(void)
 	this->load = load;
 	this->load_background = load_background;
 	this->load_bgmask = load_bgmask;
+
+	this->getNumCameras = getNumCameras;
+	this->getCamera = getCamera;
+
+	this->getNumCamSwitches = getNumCamSwitches;
+	this->getCamSwitch = getCamSwitch;
+
+	this->getNumBoundaries = getNumBoundaries;
+	this->getBoundary = getBoundary;
+
+	this->initMasks = initMasks;
+	this->drawMasks = drawMasks;
 }
 
 static void dtor(room_t *this)
@@ -123,4 +148,39 @@ static void unload_bgmask(room_t *this)
 		free(this->rdr_mask);
 		this->rdr_mask=NULL;
 	}
+}
+
+static int getNumCameras(room_t *this)
+{
+	return 0;
+}
+
+static void getCamera(room_t *this, int num_camera, room_camera_t *room_camera)
+{
+}
+
+static int getNumCamSwitches(room_t *this)
+{
+	return 0;
+}
+
+static void getCamSwitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch)
+{
+}
+
+static int getNumBoundaries(room_t *this)
+{
+	return 0;
+}
+
+static void getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_boundary)
+{
+}
+
+static void initMasks(room_t *this, int num_camera)
+{
+}
+
+static void drawMasks(room_t *this, int num_camera)
+{
 }

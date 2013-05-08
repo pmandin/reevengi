@@ -21,6 +21,7 @@
 #include <string.h>
 #include <physfs.h>
 #include <SDL.h>
+#include <assert.h>
 
 #include "../parameters.h"
 #include "../log.h"

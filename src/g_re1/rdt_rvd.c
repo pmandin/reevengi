@@ -57,10 +57,10 @@ static int rdt1_rvd_getNumRvd(room_t *this, SDL_bool boundary_flag)
 {
 	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
 	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
-	rdt_rvd_t *rvd_array;
+	rdt1_rvd_t *rvd_array;
 	int i=0, j=0;
 
-	rvd_array = (rdt_rvd_t *) &((Uint8 *) this->file)[offset];
+	rvd_array = (rdt1_rvd_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(rvd_array[i].to) != 0xffff) {
 		int is_boundary = (SDL_SwapLE16(rvd_array[i].to) == RDT_RVD_BOUNDARY);
@@ -79,10 +79,10 @@ static void rdt1_rvd_getRvd(room_t *this, SDL_bool boundary_flag, int num_rvd, r
 {
 	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
 	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
-	rdt_rvd_t *rvd_array;
+	rdt1_rvd_t *rvd_array;
 	int i=0, j=0;
 
-	rvd_array = (rdt_rvd_t *) &((Uint8 *) this->file)[offset];
+	rvd_array = (rdt1_rvd_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(rvd_array[i].to) != 0xffff) {
 		int is_boundary = (SDL_SwapLE16(rvd_array[i].to) == RDT_RVD_BOUNDARY);

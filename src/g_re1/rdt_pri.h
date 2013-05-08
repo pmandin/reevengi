@@ -1,8 +1,8 @@
 /*
-	Room description
-	RE1 RDT manager
+	RE1 RID
+	Camera positions
 
-	Copyright (C) 2009	Patrice Mandin
+	Copyright (C) 2009-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,35 +19,44 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT_H
-#define ROOM_RDT_H 1
-
-#include "room.h"
+#ifndef RDT_PRI_H
+#define RDT_PRI_H 1
 
 /*--- Defines ---*/
 
-#define RDT1_OFFSET_CAM_SWITCHES	0
-#define RDT1_OFFSET_INIT_SCRIPT		6
-#define RDT1_OFFSET_ROOM_SCRIPT		7
+/*--- External types ---*/
 
 /*--- Types ---*/
 
 typedef struct {
-	Sint32	x,y,z;
-	Uint32	unknown[2];
-} rdt1_header_part_t;
+	Uint16 num_offset;
+	Uint16 num_masks;
+} rdt1_pri_header_t;
 
 typedef struct {
-	Uint8	unknown0;
-	Uint8	num_cameras;
-	Uint8	unknown1[4];
-	Uint16	unknown2[3];
-	rdt1_header_part_t	unknown3[3];
-	Uint32	offsets[19];
-} rdt1_header_t;
+	Uint16 count;
+	Uint16 unknown;
+	Sint16 dst_x, dst_y;
+} rdt1_pri_offset_t;
+
+typedef struct {
+	Uint8 src_x, src_y;
+	Uint8 dst_x, dst_y;
+	Uint16 depth;
+	Uint8 unknown;
+	Uint8 size;
+} rdt1_pri_square_t;
+
+typedef struct {
+	Uint8 src_x, src_y;
+	Uint8 dst_x, dst_y;
+	Uint16 depth, zero;
+	Uint16 width, height;
+} rdt1_pri_rect_t;
 
 /*--- Functions ---*/
 
-void room_rdt_init(room_t *this);
+void rdt1_pri_initMasks(room_t *this, int num_camera);
+void rdt1_pri_drawMasks(room_t *this, int num_camera);
 
-#endif /* ROOM_RDT_H */
+#endif /* RDT_PRI_H */

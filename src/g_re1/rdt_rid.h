@@ -1,6 +1,6 @@
 /*
-	RE1 RVD
-	Camera switches
+	RE1 RID
+	Camera positions
 
 	Copyright (C) 2009-2013	Patrice Mandin
 
@@ -19,34 +19,32 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_RVD_H
-#define RDT_RVD_H 1
+#ifndef RDT_RID_H
+#define RDT_RID_H 1
 
 /*--- Defines ---*/
 
-#define RDT_RVD_BOUNDARY 9
-
 /*--- External types ---*/
 
-typedef struct room_s room_t;
-typedef struct room_camswitch_s room_camswitch_t;
+typedef struct room_camera_s room_camera_t;
 
 /*--- Types ---*/
 
 typedef struct {
-	Uint16 to, from;	/* to = RDT_RVD_BOUNDARY if boundary, not camera switch */
-	Sint16 x1,y1; /* Coordinates to use to calc when player crosses switch zone */
-	Sint16 x2,y2;
-	Sint16 x3,y3;
-	Sint16 x4,y4;
-} rdt1_rvd_t;
+	Uint32 pri_offset; /* see rdt_pri.h */
+	Uint32 tim_offset;	/* see rdt_pri.h */
+	Sint32 camera_from_x;
+	Sint32 camera_from_y;
+	Sint32 camera_from_z;
+	Sint32 camera_to_x;
+	Sint32 camera_to_y;
+	Sint32 camera_to_z;
+	Uint32 unknown[3];
+} rdt1_rid_t;
 
 /*--- Functions ---*/
 
-int rdt1_rvd_getNumCamSwitches(room_t *this);
-void rdt1_rvd_getCamSwitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+int rdt1_rid_getNumCameras(room_t *this);
+void rdt1_rid_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
 
-int rdt1_rvd_getNumBoundaries(room_t *this);
-void rdt1_rvd_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_boundary);
-
-#endif /* RDT_RVD_H */
+#endif /* RDT_RID_H */

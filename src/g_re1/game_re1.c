@@ -23,10 +23,14 @@
 #include "../log.h"
 #include "../parameters.h"
 
-#include "../g_common/game.h"
 #include "../g_common/player.h"
+#include "../g_common/room.h"
+#include "../g_common/game.h"
 
 #include "game_re1.h"
+#include "rdt_rid.h"
+#include "rdt_rvd.h"
+#include "rdt_pri.h"
 
 /*--- Constants ---*/
 
@@ -83,6 +87,8 @@ void game_re1_detect(game_t *this)
 
 game_t *game_re1_ctor(game_t *this)
 {
+	room_t *room;
+
 	switch(this->minor) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
@@ -96,6 +102,20 @@ game_t *game_re1_ctor(game_t *this)
 
 	this->get_char = get_char;
 	this->player->get_model_name = get_model_name;
+
+	room = this->room;
+
+	room->getNumCameras = rdt1_rid_getNumCameras;
+	room->getCamera = rdt1_rid_getCamera;
+
+	room->getNumCamSwitches = rdt1_rvd_getNumCamSwitches;
+	room->getCamSwitch = rdt1_rvd_getCamSwitch;
+
+	room->getNumBoundaries = rdt1_rvd_getNumBoundaries;
+	room->getBoundary = rdt1_rvd_getBoundary;
+
+	room->initMasks = rdt1_pri_initMasks;
+	room->drawMasks = rdt1_pri_drawMasks;
 
 #if 0
 	/* Init default room and player pos */
