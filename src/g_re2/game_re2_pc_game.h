@@ -1,7 +1,9 @@
 /*
 	RE2
+	PC
+	Game
 
-	Copyright (C) 2007-2013	Patrice Mandin
+	Copyright (C) 2007	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,29 +20,21 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef GAME_RE2_H
-#define GAME_RE2_H 1
+#ifndef GAME_RE2PCGAME_H
+#define GAME_RE2PCGAME_H 1
 
-/*--- Enums ---*/
+/*--- External types ---*/
 
-enum {
-	GAME_RE2_PS1_DEMO,
-	GAME_RE2_PS1_DEMO2,
-	GAME_RE2_PS1_GAME_LEON,
-	GAME_RE2_PS1_GAME_CLAIRE,
-	GAME_RE2_PC_DEMO_P,
-	GAME_RE2_PC_DEMO_U,
-	GAME_RE2_PC_GAME_LEON,
-	GAME_RE2_PC_GAME_CLAIRE
+typedef struct game_s game_t;
+
+/*--- Types ---*/
+
+typedef struct game_re2pcgame_s game_re2pcgame_t;
+
+struct game_re2pcgame_s {
+	game_t game;
+
+	void (*base_dtor)(game_t *this);
 };
 
-/*--- Functions ---*/
-
-void game_re2_detect(game_t *this);
-
-game_t *game_re2_ctor(game_t *this);
-game_t *game_re2pcdemo_ctor(game_t *this);
-game_t *game_re2pcgame_ctor(game_t *this);
-game_t *game_re2ps1_ctor(game_t *this);
-
-#endif /* GAME_RE2_H */
+#endif /* GAME_RE2PCGAME_H */

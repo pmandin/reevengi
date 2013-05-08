@@ -63,7 +63,7 @@ static const game_detect_t game_detect[]={
 
 /*--- Functions prototypes ---*/
 
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
+static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h);
 
 /*--- Functions ---*/
 
@@ -84,18 +84,18 @@ void game_re2_detect(game_t *this)
 	}
 }
 
-void game_re2_init(game_t *this)
+game_t *game_re2_ctor(game_t *this)
 {
 	switch(this->minor) {
 		case GAME_RE2_PS1_DEMO:
 		case GAME_RE2_PS1_DEMO2:
 		case GAME_RE2_PS1_GAME_LEON:
 		case GAME_RE2_PS1_GAME_CLAIRE:
-			game_re2ps1_init(this);
+			this = game_re2ps1_ctor(this);
 			break;
 		case GAME_RE2_PC_DEMO_P:
 		case GAME_RE2_PC_DEMO_U:
-			game_re2pcdemo_init(this);
+			this = game_re2pcdemo_ctor(this);
 			if (params.viewmode == VIEWMODE_MOVIE) {
 				logMsg(1, "No movies to play\n");
 				params.viewmode = VIEWMODE_BACKGROUND;
@@ -103,7 +103,7 @@ void game_re2_init(game_t *this)
 			break;
 		case GAME_RE2_PC_GAME_LEON:
 		case GAME_RE2_PC_GAME_CLAIRE:
-			game_re2pcgame_init(this);
+			this = game_re2pcgame_ctor(this);
 			break;
 	}
 
@@ -116,9 +116,11 @@ void game_re2_init(game_t *this)
 	this->player.z = 2700.0f;
 	this->player.a = 3072.0f;
 #endif
+
+	return this;
 }
 
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
+static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h)
 {
 	*x = *y = 0;
 	*w = 8;

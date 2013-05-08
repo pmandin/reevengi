@@ -29,8 +29,11 @@
 #include "parameters.h"
 #include "log.h"
 
-#include "../g_common/game.h"
+#include "../render_texture.h"
+
 #include "../g_common/player.h"
+#include "../g_common/room.h"
+#include "../g_common/game.h"
 
 #include "game_re2.h"
 #include "depack_adt.h"
@@ -65,40 +68,79 @@ static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
-static void re2pcdemo_loadbackground(void);
-static void re2pcdemo_loadbackground_mask(void);
-static int re2pcdemo_load_adt_bg(const char *filename);
-static int re2pcdemo_load_adt_bgmask(const char *filename);
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
+static int loadroom_rdt(room_t *this, const char *filename);
 
-static void re2pcdemo_loadroom(void);
-static int re2pcdemo_loadroom_rdt(const char *filename);
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
+static int load_adt_bg(room_t *this, const char *filename);
 
-static render_skel_t *re2pcdemo_load_model(int num_model);
+static void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera);
+static int load_adt_bgmask(room_t *this, const char *filename);
 
-static void load_font(void);
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
+static render_skel_t *load_model(player_t *this, int num_model);
+static void get_model_name(player_t *this, char name[32]);
 
-static void get_model_name(char name[32]);
+static void load_font(game_t *this);
 
 /*--- Functions ---*/
 
-void game_re2pcdemo_init(game_t *this)
+game_t *game_re2pcdemo_ctor(game_t *this)
 {
-	this->room.priv_load_background = re2pcdemo_loadbackground;
-	this->room.priv_load_bgmask = re2pcdemo_loadbackground_mask;
-	this->room.priv_load = re2pcdemo_loadroom;
+	this->room->load = load_room;
+	this->room->load_background = load_background;
+	this->room->load_bgmask = load_bgmask;
 
 	if (this->minor == GAME_RE2_PC_DEMO_P) {
 		game_lang = 'p';
 	}
 
-	player.load_model = re2pcdemo_load_model;
-	player.get_model_name = get_model_name;
+	this->player->load_model = load_model;
+	this->player->get_model_name = get_model_name;
 
 	this->load_font = load_font;
+
+	return this;
 }
 
-static void re2pcdemo_loadbackground(void)
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re2pcdemo_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re2pcdemo_room, game_lang, num_stage, num_room);
+
+	logMsg(1, "adt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "adt: %s loading %s ...\n",
+		loadroom_rdt(this, filepath) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
+}
+
+static int loadroom_rdt(room_t *this, const char *filename)
+{
+	PHYSFS_sint64 length;
+	void *file;
+
+	file = FS_Load(filename, &length);
+	if (!file) {
+		return 0;
+	}
+
+	this->file = file;
+	this->file_length = length;
+
+	room_rdt2_init(this);
+
+	return 1;
+}
+
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -107,19 +149,18 @@ static void re2pcdemo_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcdemo_bg, game.num_stage, game.num_stage,
-		game.num_room, game.num_camera);
+	sprintf(filepath, re2pcdemo_bg, num_stage, num_stage, num_room, num_camera);
 
 	logMsg(1, "adt: Start loading %s ...\n", filepath);
 
 	logMsg(1, "adt: %s loading %s ...\n",
-		re2pcdemo_load_adt_bg(filepath) ? "Done" : "Failed",
+		load_adt_bg(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 }
 
-static int re2pcdemo_load_adt_bg(const char *filename)
+static int load_adt_bg(room_t *this, const char *filename)
 {
 	SDL_RWops *src;
 	int retval = 0;
@@ -135,9 +176,9 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 			if (dstBufLen == 320*256*2) {
 				SDL_Surface *image = adt_surface((Uint16 *) dstBuffer, 1);
 				if (image) {
-					game.room.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-					if (game.room.background) {
-						game.room.background->load_from_surf(game.room.background, image);
+					this->background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+					if (this->background) {
+						this->background->load_from_surf(this->background, image);
 						retval = 1;
 					}
 					SDL_FreeSurface(image);
@@ -151,7 +192,7 @@ static int re2pcdemo_load_adt_bg(const char *filename)
 	return retval;
 }
 
-static void re2pcdemo_loadbackground_mask(void)
+static void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -160,19 +201,19 @@ static void re2pcdemo_loadbackground_mask(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re2pcdemo_bgmask, game.num_stage, game.num_stage,
-		game.num_room, game.num_camera);
+	sprintf(filepath, re2pcdemo_bgmask, num_stage, num_stage,
+		num_room, num_camera);
 
 	logMsg(1, "adt: Start loading %s ...\n", filepath);
 
 	logMsg(1, "adt: %s loading %s ...\n",
-		re2pcdemo_load_adt_bgmask(filepath) ? "Done" : "Failed",
+		load_adt_bgmask(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 }
 
-static int re2pcdemo_load_adt_bgmask(const char *filename)
+static int load_adt_bgmask(room_t *this, const char *filename)
 {
 	SDL_RWops *src;
 	int retval = 0;
@@ -185,9 +226,9 @@ static int re2pcdemo_load_adt_bgmask(const char *filename)
 		adt_depack(src, &dstBuffer, &dstBufLen);
 
 		if (dstBuffer && dstBufLen) {
-			game.room.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
-			if (game.room.bg_mask) {
-				game.room.bg_mask->load_from_tim(game.room.bg_mask, dstBuffer);
+			this->bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
+			if (this->bg_mask) {
+				this->bg_mask->load_from_tim(this->bg_mask, dstBuffer);
 
 				retval = 1;
 			}
@@ -199,45 +240,7 @@ static int re2pcdemo_load_adt_bgmask(const char *filename)
 	return retval;
 }
 
-static void re2pcdemo_loadroom(void)
-{
-	char *filepath;
-
-	filepath = malloc(strlen(re2pcdemo_room)+8);
-	if (!filepath) {
-		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
-	}
-	sprintf(filepath, re2pcdemo_room, game_lang, game.num_stage, game.num_room);
-
-	logMsg(1, "adt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "adt: %s loading %s ...\n",
-		re2pcdemo_loadroom_rdt(filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int re2pcdemo_loadroom_rdt(const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	game.room.file = file;
-	game.room.file_length = length;
-
-	room_rdt2_init(&game.room);
-
-	return 1;
-}
-
-render_skel_t *re2pcdemo_load_model(int num_model)
+static render_skel_t *load_model(player_t *this, int num_model)
 {
 	char *filepath;
 	render_skel_t *model = NULL;
@@ -277,7 +280,18 @@ render_skel_t *re2pcdemo_load_model(int num_model)
 	return model;
 }
 
-static void load_font(void)
+static void get_model_name(player_t *this, char name[32])
+{
+	int num_model = this->num_model;
+
+	if (num_model>MAX_MODELS-1) {
+		num_model = MAX_MODELS-1;
+	}
+
+	sprintf(name, "em0%02x.emd", map_models[num_model]);
+}
+
+static void load_font(game_t *this)
 {
 	Uint8 *font_file;
 	PHYSFS_sint64 length;
@@ -296,9 +310,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game.font = render.createTexture(0);
-		if (game.font) {
-			game.font->load_from_tim(game.font, font_file);
+		this->font = render.createTexture(0);
+		if (this->font) {
+			this->font->load_from_tim(this->font, font_file);
 			retval = 1;
 		}
 
@@ -308,15 +322,4 @@ static void load_font(void)
 	logMsg(1, "Loading font from %s... %s\n", filepath, retval ? "Done" : "Failed");
 
 	free(filepath);
-}
-
-static void get_model_name(char name[32])
-{
-	int num_model = player.num_model;
-
-	if (num_model>MAX_MODELS-1) {
-		num_model = MAX_MODELS-1;
-	}
-
-	sprintf(name, "em0%02x.emd", map_models[num_model]);
 }
