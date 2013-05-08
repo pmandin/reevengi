@@ -37,11 +37,13 @@
 
 #include "../g_common/game.h"
 #include "../g_common/player.h"
+#include "../g_common/room.h"
 
 #include "game_re3.h"
+
 #include "video.h"
 #include "render.h"
-#include "g_re3/emd.h"
+#include "emd.h"
 #include "room_rdt3.h"
 #include "depack_sld.h"
 
@@ -114,26 +116,27 @@ static const char *re3pcgame_movies[] = {
 
 static int game_lang = 'u';
 
+static int max_num_models = MAX_MODELS_DEMO;
+
 /*--- Functions prototypes ---*/
 
-static void re3pc_loadbackground(void);
-static int re3pc_load_jpg_bg(const char *filename);
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
+static int load_jpg_bg(room_t *this, const char *filename);
 
-static void re3pc_loadbackground_mask(void);
-static int re3pc_load_tim_bgmask(const char *filename);
+static void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera);
+static int load_tim_bgmask(room_t *this, const char *filename);
 
-static void re3pc_loadroom(void);
-static int re3pc_loadroom_rdt(const char *filename);
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
+static int loadroom_rdt(room_t *this, const char *filename);
 
-static render_skel_t *re3pc_load_model(int num_model);
+static render_skel_t *load_model(player_t *this, int num_model);
+static void get_model_name(player_t *this, char name[32]);
 
-static void load_font(void);
-
-static void get_model_name(char name[32]);
+static void load_font(game_t *this);
 
 /*--- Functions ---*/
 
-void game_re3pc_init(game_t *this)
+game_t *game_re3pc_ctor(game_t *this)
 {
 	int i;
 	char rofsfile[1024];
@@ -150,9 +153,9 @@ void game_re3pc_init(game_t *this)
 		}
 	}
 
-	this->room.priv_load_background = re3pc_loadbackground;
-	this->room.priv_load_bgmask = re3pc_loadbackground_mask;
-	this->room.priv_load = re3pc_loadroom;
+	this->room->load_background = load_background;
+	this->room->load_bgmask = load_bgmask;
+	this->room->load = load_room;
 
 	switch(this->minor) {
 		case GAME_RE3_PC_DEMO:
@@ -166,16 +169,19 @@ void game_re3pc_init(game_t *this)
 			if (game_file_exists("data_f/etc2/died00f.tim")) {
 				game_lang = 'f';
 			}
+			max_num_models = MAX_MODELS_GAME;
 			break;
 	}
 
-	player.load_model = re3pc_load_model;
-	player.get_model_name = get_model_name;
+	this->player->load_model = load_model;
+	this->player->get_model_name = get_model_name;
 
 	this->load_font = load_font;
+
+	return this;
 }
 
-void re3pc_loadbackground(void)
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -184,18 +190,18 @@ void re3pc_loadbackground(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pc_bg, game.num_stage, game.num_room, game.num_camera);
+	sprintf(filepath, re3pc_bg, num_stage, num_room, num_camera);
 
 	logMsg(1, "jpg: Start loading %s ...\n", filepath);
 
 	logMsg(1, "jpg: %s loading %s ...\n",
-		re3pc_load_jpg_bg(filepath) ? "Done" : "Failed",
+		re3pc_load_jpg_bg(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 }
 
-int re3pc_load_jpg_bg(const char *filename)
+int load_jpg_bg(room_t *this, const char *filename)
 {
 #ifdef ENABLE_SDLIMAGE
 	SDL_RWops *src;
@@ -205,9 +211,9 @@ int re3pc_load_jpg_bg(const char *filename)
 	if (src) {
 		SDL_Surface *image = IMG_Load_RW(src, 0);
 		if (image) {
-			game.room.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-			if (game.room.background) {
-				game.room.background->load_from_surf(game.room.background, image);
+			this->background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+			if (this->background) {
+				this->background->load_from_surf(this->background, image);
 				retval = 1;
 			}
 
@@ -223,7 +229,7 @@ int re3pc_load_jpg_bg(const char *filename)
 #endif
 }
 
-void re3pc_loadbackground_mask(void)
+void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -232,18 +238,18 @@ void re3pc_loadbackground_mask(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pc_bgmask, game.num_stage, game.num_room);
+	sprintf(filepath, re3pc_bgmask, num_stage, num_room);
 
 	logMsg(1, "sld: Start loading %s ...\n", filepath);
 
 	logMsg(1, "sld: %s loading %s ...\n",
-		re3pc_load_tim_bgmask(filepath) ? "Done" : "Failed",
+		re3pc_load_tim_bgmask(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 }
 
-int re3pc_load_tim_bgmask(const char *filename)
+int load_tim_bgmask(room_t *this, const char *filename)
 {
 	SDL_RWops *src;
 	int retval = 0;
@@ -269,16 +275,16 @@ int re3pc_load_tim_bgmask(const char *filename)
 
 			if (fileLen) {
 				/* Read file we need */
-				if (num_file == game.num_camera) {
+				if (num_file == game->num_camera) {
 					Uint8 *dstBuffer;
 					int dstBufLen;
 
 					sld_depack(src, &dstBuffer, &dstBufLen);
 					if (dstBuffer && dstBufLen) {
 
-						game.room.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
-						if (game.room.bg_mask) {
-							game.room.bg_mask->load_from_tim(game.room.bg_mask, dstBuffer);
+						this->bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
+						if (this->bg_mask) {
+							this->bg_mask->load_from_tim(this->bg_mask, dstBuffer);
 
 							retval = 1;
 						}
@@ -293,7 +299,7 @@ int re3pc_load_tim_bgmask(const char *filename)
 				fileLen = 8;
 
 				/* No mask for this camera */
-				if (num_file == game.num_camera) {
+				if (num_file == game->num_camera) {
 					retval = 1;
 					break;
 				}
@@ -316,7 +322,7 @@ int re3pc_load_tim_bgmask(const char *filename)
 	return retval;
 }
 
-static void re3pc_loadroom(void)
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -325,18 +331,18 @@ static void re3pc_loadroom(void)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3pc_room, game_lang, game.num_stage, game.num_room);
+	sprintf(filepath, re3pc_room, game_lang, num_stage, num_room);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
 	logMsg(1, "rdt: %s loading %s ...\n",
-		re3pc_loadroom_rdt(filepath) ? "Done" : "Failed",
+		re3pc_loadroom_rdt(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 }
 
-static int re3pc_loadroom_rdt(const char *filename)
+static int loadroom_rdt(room_t *this, const char *filename)
 {
 	PHYSFS_sint64 length;
 	void *file;
@@ -346,32 +352,29 @@ static int re3pc_loadroom_rdt(const char *filename)
 		return 0;
 	}
 
-	game.room.file = file;
-	game.room.file_length = length;
+	this->file = file;
+	this->file_length = length;
 
-	room_rdt3_init(&game.room);
+	room_rdt3_init(this);
 
 	return 1;
 }
 
-render_skel_t *re3pc_load_model(int num_model)
+static render_skel_t *load_model(player_t *this, int num_model)
 {
 	char *filepath;
 	render_skel_t *model = NULL;
 	void *emd, *tim;
 	PHYSFS_sint64 emd_length, tim_length;
 
-	switch(game.minor) {
+	if (num_model>=max_num_models) {
+		num_model = max_num_models-1;
+	}
+	switch(game->minor) {
 		case GAME_RE3_PC_DEMO:
-			if (num_model>=MAX_MODELS_DEMO) {
-				num_model = MAX_MODELS_DEMO-1;
-			}
 			num_model = map_models_demo[num_model];
 			break;
 		case GAME_RE3_PC_GAME:
-			if (num_model>=MAX_MODELS_GAME) {
-				num_model = MAX_MODELS_GAME-1;
-			}
 			num_model = map_models_game[num_model];
 			break;
 		default:
@@ -407,7 +410,7 @@ render_skel_t *re3pc_load_model(int num_model)
 	return model;
 }
 
-static void load_font(void)
+static void load_font(game_t *this)
 {
 	Uint8 *font_file;
 	PHYSFS_sint64 length;
@@ -426,9 +429,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game.font = render.createTexture(0);
-		if (game.font) {
-			game.font->load_from_tim(game.font, font_file);
+		this->font = render.createTexture(0);
+		if (this->font) {
+			this->font->load_from_tim(this->font, font_file);
 			retval = 1;
 		}
 
@@ -440,22 +443,12 @@ static void load_font(void)
 	free(filepath);
 }
 
-static void get_model_name(char name[32])
+static void get_model_name(player_t *this, char name[32])
 {
-	int num_model = player.num_model;
+	int num_model = this->num_model;
 
-	switch (game.minor) {
-		case GAME_RE3_PC_DEMO:
-			if (num_model>MAX_MODELS_DEMO-1) {
-				num_model = MAX_MODELS_DEMO-1;
-			}
-			sprintf(name, "em0%02x.emd", map_models_demo[num_model]);
-			break;
-		case GAME_RE3_PC_GAME:
-			if (num_model>MAX_MODELS_GAME-1) {
-				num_model = MAX_MODELS_GAME-1;
-			}
-			sprintf(name, "em0%02x.emd", map_models_game[num_model]);
-			break;
+	if (num_model>max_num_models-1) {
+		num_model = max_num_models-1;
 	}
+	sprintf(name, "em0%02x.emd", map_models_demo[num_model]);
 }
