@@ -30,8 +30,9 @@
 #include "render.h"
 #include "parameters.h"
 
-#include "../g_common/game.h"
 #include "../g_common/player.h"
+#include "../g_common/room.h"
+#include "../g_common/game.h"
 
 #include "game_re1.h"
 #include "depack_pak.h"
@@ -102,21 +103,26 @@ static int game_country = 0;
 
 /*--- Functions prototypes ---*/
 
-static void re1pcgame_loadbackground(void);
-/*static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage);*/
-static int re1pcgame_load_pak_bg(const char *filename, int row_offset);
-/*static int re1pcgame_load_pak_bgmask(const char *filename, int row_offset);*/
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
+static int loadroom_rdt(room_t *this, const char *filename);
 
-static void re1pcgame_loadroom(void);
-static int re1pcgame_loadroom_rdt(const char *filename);
+static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera);
 
-static render_skel_t *re1pcgame_load_model(int num_model);
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
+static int load_pak_bg(room_t *this, const char *filename, int row_offset);
 
-static void load_font(void);
+#if 0
+static void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera);
+static int load_pak_bgmask(room_t *this, const char *filename, int row_offset);
+#endif
+
+static render_skel_t *load_model(player_t *this, int num_model);
+
+static void load_font(game_t *this);
 
 /*--- Functions ---*/
 
-void game_re1pc_init(game_t *this)
+game_t *game_re1pc_ctor(game_t *this)
 {
 	int i;
 	char filename[32];
@@ -129,51 +135,100 @@ void game_re1pc_init(game_t *this)
 		}
 	}
 
-	game.room.priv_load_background = re1pcgame_loadbackground;
-	game.room.priv_load = re1pcgame_loadroom;
+	this->room->load = load_room;
+	this->room->load_background = load_background;
+/*	this->room->load_bgmask = load_bgmask;*/
 
-	game.movies_list = (char **) re1pcgame_movies;
+	this->movies_list = (char **) re1pcgame_movies;
 
-	player.load_model = re1pcgame_load_model;
+	this->load_font = load_font;
 
-	game.load_font = load_font;
+	this->player->load_model = load_model;
+
+	return this;
 }
 
-void re1pcgame_loadbackground(void)
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
-	int re1_stage = (game.num_stage>5 ? game.num_stage-5 : game.num_stage);
+
+	filepath = malloc(strlen(re1pcgame_room)+32);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re1pcgame_room, re1_country[game_country],
+		num_stage, num_stage, num_room);
+
+	logMsg(1, "rdt: Start loading %s ...\n", filepath);
+
+	logMsg(1, "rdt: %s loading %s ...\n",
+		loadroom_rdt(this, filepath) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
+}
+
+static int loadroom_rdt(room_t *this, const char *filename)
+{
+	PHYSFS_sint64 length;
+	void *file;
+
+	file = FS_Load(filename, &length);
+	if (!file) {
+		return 0;
+	}
+
+	this->file = file;
+	this->file_length = length;
+
+	room_rdt_init(this);
+
+	return 1;
+}
+
+static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera)
+{
 	int row_offset = 0;
 
 	if (re1_stage == 2) {
-		if (game.num_room==0) {
-			if (game.num_camera==0) {
+		if (num_room==0) {
+			if (num_camera==0) {
 				row_offset = -4;
 			}
 		}
 	} else if (re1_stage == 3) {
-		if (game.num_room==6) {
-			if (game.num_camera!=2) {
+		if (num_room==6) {
+			if (num_camera!=2) {
 				row_offset = -4;
 			}
-		} else if (game.num_room==7) {
+		} else if (num_room==7) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game.num_room==0x0b) {
+		} else if (num_room==0x0b) {
 			/* All cameras angles for this room */
 			row_offset = -4;
-		} else if (game.num_room==0x0f) {
+		} else if (num_room==0x0f) {
 			/* All cameras angles for this room */
 			row_offset = -4;
 		}
 	} else if (re1_stage == 5) {
-		if (game.num_room==0x0d) {
+		if (num_room==0x0d) {
 			row_offset = -4;
 		}
-		if (game.num_room==0x15) {
+		if (num_room==0x15) {
 			row_offset = -4;
 		}
 	}
+
+	return row_offset;
+}
+
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
+{
+	char *filepath;
+	int re1_stage = (num_stage>5 ? num_stage-5 : num_stage);
+	int row_offset = get_row_offset(re1_stage, num_stage, num_room, num_camera);
 
 	filepath = malloc(strlen(re1pcgame_bg)+32);
 	if (!filepath) {
@@ -181,43 +236,20 @@ void re1pcgame_loadbackground(void)
 		return;
 	}
 	sprintf(filepath, re1pcgame_bg, re1_country[game_country], re1_stage, re1_stage,
-		game.num_room, game.num_camera);
+		num_room, num_camera);
 
 	logMsg(1, "pak: Start loading %s ...\n", filepath);
 
 	logMsg(1, "pak: %s loading %s ...\n",
-		re1pcgame_load_pak_bg(filepath, row_offset) ? "Done" : "Failed",
+		load_pak_bg(this, filepath, row_offset) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 
-	/*re1pcgame_loadbackground_mask(row_offset, re1_stage);*/
+	loadbackground_mask(row_offset, re1_stage);
 }
 
-#if 0
-static void re1pcgame_loadbackground_mask(int row_offset, int re1_stage)
-{
-	char *filepath;
-
-	filepath = malloc(strlen(re1pcgame_bgmask)+32);
-	if (!filepath) {
-		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
-	}
-	sprintf(filepath, re1pcgame_bgmask, re1_country[game_country], re1_stage-1,
-		game_state.num_room, game_state.num_camera);
-
-	logMsg(1, "pak: Start loading %s ...\n", filepath);
-
-	logMsg(1, "pak: %s loading %s ...\n",
-		re1pcgame_load_pak_bgmask(filepath, row_offset) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-#endif
-
-int re1pcgame_load_pak_bg(const char *filename, int row_offset)
+static int load_pak_bg(room_t *this, const char *filename, int row_offset)
 {
 	SDL_RWops *src;
 	int retval = 0;
@@ -234,9 +266,9 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 			if (tim_src) {
 				SDL_Surface *image = background_tim_load(tim_src, row_offset);
 				if (image) {
-					game.room.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-					if (game.room.background) {
-						game.room.background->load_from_surf(game.room.background, image);
+					this->background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+					if (this->background) {
+						this->background->load_from_surf(this->background, image);
 						retval = 1;
 					}
 					SDL_FreeSurface(image);
@@ -252,7 +284,30 @@ int re1pcgame_load_pak_bg(const char *filename, int row_offset)
 }
 
 #if 0
-int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
+static void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera)
+{
+	char *filepath;
+	int re1_stage = (num_stage>5 ? num_stage-5 : num_stage);
+	int row_offset = get_row_offset(re1_stage, num_stage, num_room, num_camera);
+
+	filepath = malloc(strlen(re1pcgame_bgmask)+32);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re1pcgame_bgmask, re1_country[game_country], re1_stage-1,
+		num_room, num_camera);
+
+	logMsg(1, "pak: Start loading %s ...\n", filepath);
+
+	logMsg(1, "pak: %s loading %s ...\n",
+		load_pak_bgmask(this, filepath, row_offset) ? "Done" : "Failed",
+		filepath);
+
+	free(filepath);
+}
+
+static int load_pak_bgmask(room_t *this, const char *filename, int row_offset)
 {
 	SDL_RWops *src;
 	int retval = 0;
@@ -271,10 +326,10 @@ int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
 			if (tim_src) {
 				SDL_Surface *image = background_tim_load(tim_src, row_offset);
 				if (image) {*/
-					game_state.bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
-					if (game_state.bg_mask) {
-						/*game_state.bg_mask->load_from_surf(game_state.bg_mask, image);*/
-						game_state.bg_mask->load_from_tim(game_state.bg_mask, dstBuffer);
+					this->bg_mask = render.createTexture(RENDER_TEXTURE_MUST_POT);
+					if (this->bg_mask) {
+						/*this->bg_mask->load_from_surf(this->bg_mask, image);*/
+						this->bg_mask->load_from_tim(this->bg_mask, dstBuffer);
 						retval = 1;
 					}
 				/*	SDL_FreeSurface(image);
@@ -290,46 +345,7 @@ int re1pcgame_load_pak_bgmask(const char *filename, int row_offset)
 }
 #endif
 
-static void re1pcgame_loadroom(void)
-{
-	char *filepath;
-
-	filepath = malloc(strlen(re1pcgame_room)+32);
-	if (!filepath) {
-		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
-	}
-	sprintf(filepath, re1pcgame_room, re1_country[game_country],
-		game.num_stage, game.num_stage, game.num_room);
-
-	logMsg(1, "rdt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "rdt: %s loading %s ...\n",
-		re1pcgame_loadroom_rdt(filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int re1pcgame_loadroom_rdt(const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	game.room.file = file;
-	game.room.file_length = length;
-
-	room_rdt_init(&game.room);
-
-	return 1;
-}
-
-render_skel_t *re1pcgame_load_model(int num_model)
+static render_skel_t *load_model(player_t *this, int num_model)
 {
 	char *filepath;
 	const char *filename = re1pcgame_model1;
@@ -379,7 +395,7 @@ render_skel_t *re1pcgame_load_model(int num_model)
 	return model;
 }
 
-static void load_font(void)
+static void load_font(game_t *this)
 {
 	Uint8 *font_file;
 	PHYSFS_sint64 length;
@@ -397,9 +413,9 @@ static void load_font(void)
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
-		game.font = render.createTexture(0);
-		if (game.font) {
-			game.font->load_from_tim(game.font, font_file);
+		this->font = render.createTexture(0);
+		if (this->font) {
+			this->font->load_from_tim(this->font, font_file);
 			retval = 1;
 		}
 

@@ -26,8 +26,6 @@
 #include "../render_texture.h"
 #include "../render_mask.h"
 
-#include "room_map.h"
-
 /*--- Defines ---*/
 
 /*--- Types ---*/
@@ -35,17 +33,11 @@
 typedef struct room_s room_t;
 
 struct room_s {
-	void (*shutdown)(room_t *this);
+	void (*dtor)(room_t *this);
 
-	void (*load)(void);
-	void (*load_background)(void);
-	void (*load_bgmask)(void);
-
-	/* Game specific functions */
-	void (*priv_shutdown)(void);
-	void (*priv_load)(void);
-	void (*priv_load_background)(void);
-	void (*priv_load_bgmask)(void);
+	void (*load)(room_t *this, int stage, int room, int camera);
+	void (*load_background)(room_t *this, int stage, int room, int camera);
+	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
 
 	/* RDT file */
 	void *file;
@@ -58,15 +50,13 @@ struct room_s {
 	render_texture_t *bg_mask;
 	render_mask_t *rdr_mask;
 
-	room_map_t room_map;
+	int num_cameras;
 };
 
 /*--- Variables ---*/
 
-extern room_t room;
-
 /*--- Functions ---*/
 
-void room_init(room_t *this);
+room_t *room_ctor(void);
 
 #endif /* ROOM_H */

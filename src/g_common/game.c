@@ -35,42 +35,43 @@
 
 /*--- Global variables ---*/
 
-game_t game;
-
 /*--- Variables ---*/
 
 static const char *game_version="Unknown version";
 
 /*--- Functions prototypes ---*/
 
-static void game_shutdown(void);
-static void game_priv_shutdown(void);
+static void dtor(game_t *this);
 
-static void load_font(void);
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
+static void load_font(game_t *this);
+static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h);
 
-static void prev_stage(void);
-static void next_stage(void);
-static void reset_stage(void);
+static void prev_stage(game_t *this);
+static void next_stage(game_t *this);
+static void reset_stage(game_t *this);
 
-static void prev_room(void);
-static void next_room(void);
-static void reset_room(void);
+static void prev_room(game_t *this);
+static void next_room(game_t *this);
+static void reset_room(game_t *this);
 
-static void prev_camera(void);
-static void next_camera(void);
-static void reset_camera(void);
+static void prev_camera(game_t *this);
+static void next_camera(game_t *this);
+static void reset_camera(game_t *this);
 
 /*--- Functions ---*/
 
-void game_init(game_t *this)
+game_t *game_ctor(void)
 {
-	logMsg(2, "game: init\n");
+	game_t *this;
 
-	memset(this, 0, sizeof(game_t));
+	logMsg(2, "game: ctor\n");
 
-	this->shutdown = game_shutdown;
-	this->priv_shutdown = game_priv_shutdown;
+	this = (game_t *) calloc(1, sizeof(game_t));
+	if (!this) {
+		return NULL;
+	}
+
+	this->dtor = dtor;
 
 	this->load_font = load_font;
 	this->get_char = get_char;
@@ -92,24 +93,102 @@ void game_init(game_t *this)
 	this->next_camera = next_camera;
 	this->reset_camera = reset_camera;
 
-	player_init(&player);
-	room_init(&room);
+	this->player = player_ctor();
+	this->room = room_ctor();
 }
 
-void game_shutdown(void)
+static void dtor(game_t *this)
 {
-	game_t *this = &game;
+	logMsg(2, "game: dtor\n");
 
-	logMsg(2, "game: shutdown\n");
+	if (this->player) {
+		this->player->dtor(this->player);
+		this->player=NULL;
+	}
 
-	player.shutdown(&player);
-	room.shutdown(&room);
-
-	this->priv_shutdown();
+	if (this->room) {
+		this->room->dtor(this->room);
+		this->room=NULL;
+	}
 }
 
-static void game_priv_shutdown(void)
+static void load_font(game_t *this)
 {
+}
+
+static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h)
+{
+}
+
+static void prev_stage(game_t *this)
+{
+	--this->num_stage;
+	if (this->num_stage < 1) {
+		this->num_stage = 7;
+	}
+}
+
+static void next_stage(game_t *this)
+{
+	++this->num_stage;
+	if (this->num_stage > 7) {
+		this->num_stage = 1;
+	}
+}
+
+static void reset_stage(game_t *this)
+{
+	this->num_stage = 1;
+}
+
+static void prev_room(game_t *this)
+{
+	--this->num_room;
+	if (this->num_room < 0) {
+		this->num_room = 0x1c;
+	}
+}
+
+static void next_room(game_t *this)
+{
+	++this->num_room;
+	if (this->num_room > 0x1c) {
+		this->num_room = 0;
+	}
+}
+
+static void reset_room(game_t *this)
+{
+	this->num_room = 0;
+}
+
+static void prev_camera(game_t *this)
+{
+	assert(this->room);
+
+	--this->num_camera;
+	if (this->num_camera<0) {
+		if (this->room->num_cameras>0) {
+			this->num_camera = this->room->num_cameras-1;
+		} else {
+			this->num_camera = 0;
+		}
+	}
+}
+
+static void next_camera(game_t *this)
+{
+	assert(this->room);
+
+	++this->num_camera;
+	if (this->num_camera>=this->room->num_cameras) {
+		this->num_camera = 0;
+	}
+}
+
+static void reset_camera(game_t *this)
+{
+	this->num_camera = 0;
 }
 
 int game_file_exists(const char *filename)
@@ -160,79 +239,4 @@ int game_file_exists(const char *filename)
 	}
 
 	return detected;
-}
-
-static void load_font(void)
-{
-}
-
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
-{
-}
-
-static void prev_stage(void)
-{
-	--game.num_stage;
-	if (game.num_stage < 1) {
-		game.num_stage = 7;
-	}
-}
-
-static void next_stage(void)
-{
-	++game.num_stage;
-	if (game.num_stage > 7) {
-		game.num_stage = 1;
-	}
-}
-
-static void reset_stage(void)
-{
-	game.num_stage = 1;
-}
-
-static void prev_room(void)
-{
-	--game.num_room;
-	if (game.num_room < 0) {
-		game.num_room = 0x1c;
-	}
-}
-
-static void next_room(void)
-{
-	++game.num_room;
-	if (game.num_room > 0x1c) {
-		game.num_room = 0;
-	}
-}
-
-static void reset_room(void)
-{
-	game.num_room = 0;
-}
-
-static void prev_camera(void)
-{
-	--game.num_camera;
-	if (game.num_camera<0) {
-/*		if (game.room.num_cameras>0) {
-			game.num_camera = game_state.room.num_cameras-1;
-		} else {
-			game.num_camera = 0;
-		}*/
-	}
-}
-
-static void next_camera(void)
-{
-	++game.num_camera;
-/*	if (game.num_camera>=game_state.room.num_cameras) {
-		game.num_camera = 0;
-	}*/
-}
-
-static void reset_camera(void)
-{
-	game.num_camera = 0;
 }

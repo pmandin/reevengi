@@ -59,8 +59,8 @@ static const game_detect_t game_detect[]={
 
 /*--- Functions prototypes ---*/
 
-static void get_char(int ascii, int *x, int *y, int *w, int *h);
-static void get_model_name(char name[32]);
+static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h);
+static void get_model_name(player_t *this, char name[32]);
 
 /*--- Functions ---*/
 
@@ -81,29 +81,31 @@ void game_re1_detect(game_t *this)
 	}
 }
 
-void game_re1_init(game_t *this)
+game_t *game_re1_init(game_t *this)
 {
 	switch(this->minor) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
-			game_re1ps1_init(this);
+			this = game_re1ps1_ctor(this);
 			break;
 		case GAME_RE1_PC_DEMO:
 		case GAME_RE1_PC_GAME:
-			game_re1pc_init(this);
+			this = game_re1pc_ctor(this);
 			break;
 	}
 
 	this->get_char = get_char;
-	player.get_model_name = get_model_name;
+	this->player->get_model_name = get_model_name;
 
 #if 0
 	/* Init default room and player pos */
 	this->num_room = 6;
 #endif
+
+	return this;
 }
 
-static void get_char(int ascii, int *x, int *y, int *w, int *h)
+static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h)
 {
 	*x = *y = 0;
 	*w = *h = 8;
@@ -117,10 +119,10 @@ static void get_char(int ascii, int *x, int *y, int *w, int *h)
 	*y = (ascii>>5)<<3;
 }
 
-static void get_model_name(char name[32])
+static void get_model_name(player_t *this, char name[32])
 {
 	const char *filename = "char1%d.emd";
-	int num_model = player.num_model;
+	int num_model = this->num_model;
 
 	if (num_model>64) { /* 66 on pc ? */
 		num_model = 64;

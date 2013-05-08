@@ -37,11 +37,11 @@ typedef struct {
 typedef struct player_s player_t;
 
 struct player_s {
-	void (*shutdown)(player_t *this);
+	void (*dtor)(player_t *this);
 
 	/* Game specific functions */
-	render_skel_t *(*load_model)(int num_model);
-	void (*get_model_name)(char name[32]);
+	render_skel_t *(*load_model)(player_t *this, int num_model);
+	void (*get_model_name)(player_t *this, char name[32]);
 
 	float x,y,z,a;
 	render_skel_t *model;
@@ -66,10 +66,8 @@ struct player_s {
 
 /*--- Variables ---*/
 
-extern player_t player;
-
 /*--- Functions ---*/
 
-void player_init(player_t *this);
+player_t *player_ctor(void);
 
 #endif /* PLAYER_H */

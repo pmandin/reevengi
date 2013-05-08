@@ -23,10 +23,6 @@
 
 #include "../render_texture.h"
 
-#include "player.h"
-#include "room_map.h"
-#include "room.h"
-
 /*--- Enums ---*/
 
 typedef enum {
@@ -36,13 +32,17 @@ typedef enum {
 	GAME_RE3
 } game_major_e;
 
+/*--- External types ---*/
+
+typedef struct room_s room_t;
+typedef struct player_s player_t;
+
 /*--- Types ---*/
 
 typedef struct game_s game_t;
 
 struct game_s {
-	void (*shutdown)(void);
-	void (*priv_shutdown)(void);
+	void (*dtor)(game_t *this);
 
 	/*--- Game version ---*/
 	game_major_e major;	/* re1/re2/re3 */
@@ -53,17 +53,18 @@ struct game_s {
 	int num_room;	/* Room of stage */
 	int num_camera;	/* Camera in room */
 
-	void (*prev_stage)(void);
-	void (*next_stage)(void);
-	void (*reset_stage)(void);
-	void (*prev_room)(void);
-	void (*next_room)(void);
-	void (*reset_room)(void);
-	void (*prev_camera)(void);
-	void (*next_camera)(void);
-	void (*reset_camera)(void);
+	room_t *room;	/* room */
+	player_t *player;	/* player */
 
-	room_t room;	/* current room */
+	void (*prev_stage)(game_t *this);
+	void (*next_stage)(game_t *this);
+	void (*reset_stage)(game_t *this);
+	void (*prev_room)(game_t *this);
+	void (*next_room)(game_t *this);
+	void (*reset_room)(game_t *this);
+	void (*prev_camera)(game_t *this);
+	void (*next_camera)(game_t *this);
+	void (*reset_camera)(game_t *this);
 
 	/*--- Movies ---*/
 
@@ -74,8 +75,8 @@ struct game_s {
 	/*--- Font for ASCII text ---*/
 	render_texture_t *font;
 
-	void (*load_font)(void);
-	void (*get_char)(int ascii, int *x, int *y, int *w, int *h);
+	void (*load_font)(game_t *this);
+	void (*get_char)(game_t *this, int ascii, int *x, int *y, int *w, int *h);
 };
 
 typedef struct {
@@ -86,11 +87,11 @@ typedef struct {
 
 /*--- Variables ---*/
 
-extern game_t game;
+extern game_t *game;
 
 /*--- Functions ---*/
 
-void game_init(game_t *this);
+game_t *game_ctor(void);
 int game_file_exists(const char *filename);
 
 #endif /* GAME_H */

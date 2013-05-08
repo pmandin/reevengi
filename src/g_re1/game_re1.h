@@ -34,9 +34,9 @@ enum {
 /*--- Functions ---*/
 
 void game_re1_detect(game_t *this);
-void game_re1_init(game_t *this);
 
-void game_re1pc_init(game_t *this);
-void game_re1ps1_init(game_t *this);
+game_t *game_re1_ctor(game_t *this);
+game_t *game_re1pc_ctor(game_t *this);
+game_t *game_re1ps1_ctor(game_t *this);
 
 #endif /* GAME_RE1_H */

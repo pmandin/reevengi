@@ -28,7 +28,6 @@
 #include "../render_skel.h"
 
 #include "player.h"
-#include "game.h"
 
 /*--- Types ---*/
 
@@ -36,19 +35,16 @@
 
 /*--- Global variables ---*/
 
-player_t player;
-
 /*--- Variables ---*/
-
 
 /*--- Functions prototypes ---*/
 
-static void player_shutdown(player_t *this);
+static void dtor(player_t *this);
 
-static void player_unloadmodels(player_t *this);
+static void unload_models(player_t *this);
 
-static render_skel_t *player_load_model(int num_model);
-static void player_get_model_name(char name[32]);
+static render_skel_t *load_model(player_t *this, int num_model);
+static void get_model_name(player_t *this, char name[32]);
 
 static void prev_model(player_t *this);
 static void next_model(player_t *this);
@@ -60,16 +56,21 @@ static void reset_anim(player_t *this);
 
 /*--- Functions ---*/
 
-void player_init(player_t *this)
+player_t *player_ctor(void)
 {
-	logMsg(2, "player: init\n");
+	player_t *this;
 
-	memset(this, 0, sizeof(player_t));
+	logMsg(2, "player: ctor\n");
 
-	this->shutdown = player_shutdown;
+	this = (player_t *) calloc(1, sizeof(player_t));
+	if (!this) {
+		return NULL;
+	}
 
-	this->load_model = player_load_model;
-	this->get_model_name = player_get_model_name;
+	this->dtor = dtor;
+
+	this->load_model = load_model;
+	this->get_model_name = get_model_name;
 
 	this->prev_model = prev_model;
 	this->next_model = next_model;
@@ -87,14 +88,16 @@ void player_init(player_t *this)
 #endif
 }
 
-static void player_shutdown(player_t *this)
+static void dtor(player_t *this)
 {
-	logMsg(2, "player: shutdown\n");
+	logMsg(2, "player: dtor\n");
 
-	player_unloadmodels(this);
+	unload_models(this);
+
+	free(this);
 }
 
-static void player_unloadmodels(player_t *this)
+static void unload_models(player_t *this)
 {
 	int i;
 
@@ -114,12 +117,12 @@ static void player_unloadmodels(player_t *this)
 	}
 }
 
-static render_skel_t *player_load_model(int num_model)
+static render_skel_t *load_model(player_t *this, int num_model)
 {
 	return NULL;
 }
 
-static void player_get_model_name(char name[32])
+static void get_model_name(player_t *this, char name[32])
 {
 }
 

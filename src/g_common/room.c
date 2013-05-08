@@ -31,88 +31,68 @@
 
 /*--- Global variables ---*/
 
-room_t room;
-
 /*--- Variables ---*/
 
 /*--- Functions prototypes ---*/
 
-static void room_shutdown(room_t *this);
+static void dtor(room_t *this);
 
-static void room_load(void);
-static void room_loadbackground(void);
-static void room_loadbgmask(void);
+static void load(room_t *this, int stage, int room, int camera);
+static void load_background(room_t *this, int stage, int room, int camera);
+static void load_bgmask(room_t *this, int stage, int room, int camera);
 
-static void room_unload(void);
-static void room_unloadbackground(void);
-static void room_unloadbgmask(void);
-
-static void room_priv_shutdown(void);
-static void room_priv_load(void);
-static void room_priv_load_background(void);
-static void room_priv_load_bgmask(void);
+static void unload(room_t *this);
+static void unload_background(room_t *this);
+static void unload_bgmask(room_t *this);
 
 /*--- Functions ---*/
 
-void room_init(room_t *this)
+room_t *room_ctor(void)
 {
-	logMsg(2, "room: init\n");
+	room_t *this;
 
-	memset(this, 0, sizeof(room_t));
+	logMsg(2, "room: ctor\n");
 
-	this->shutdown = room_shutdown;
+	this = (room_t *) calloc(1, sizeof(room_t));
+	if (!this) {
+		return NULL;
+	}
 
-	this->load = room_load;
-	this->load_background = room_loadbackground;
-	this->load_bgmask = room_loadbgmask;
+	this->dtor = dtor;
 
-	this->priv_shutdown = room_priv_shutdown;
-	this->priv_load = room_priv_load;
-	this->priv_load_background = room_priv_load_background;
-	this->priv_load_bgmask = room_priv_load_bgmask;
-
-	room_map_init(&this->room_map);
+	this->load = load;
+	this->load_background = load_background;
+	this->load_bgmask = load_bgmask;
 }
 
-static void room_shutdown(room_t *this)
+static void dtor(room_t *this)
 {
-	logMsg(2, "room: shutdown\n");
+	logMsg(2, "room: dtor\n");
 
-	room_unloadbackground();
-	room_unloadbgmask();
+	unload_background(this);
+	unload_bgmask(this);
+	unload(this);
 
-	room_unload();
-
-	this->priv_shutdown();
-
-	this->room_map.shutdown(&this->room_map);
+	free(this);
 }
 
-static void room_load(void)
+static void load(room_t *this, int stage, int room, int camera)
 {
-	room_unload();
-
-	game.room.priv_load();
+	unload(this);
 }
 
-static void room_loadbackground(void)
+static void load_background(room_t *this, int stage, int room, int camera)
 {
-	room_unloadbackground();
-
-	game.room.priv_load_background();
+	unloadbackground(this);
 }
 
-static void room_loadbgmask(void)
+static void load_bgmask(room_t *this, int stage, int room, int camera)
 {
-	room_unloadbgmask();
-
-	game.room.priv_load_bgmask();
+	unload_bgmask(this);
 }
 
-static void room_unload(void)
+static void unload(room_t *this)
 {
-	room_t *this = &game.room;
-
 	logMsg(2, "room: unload\n");
 
 	if (this->file) {
@@ -121,10 +101,8 @@ static void room_unload(void)
 	}
 }
 
-static void room_unloadbackground(void)
+static void unload_background(room_t *this)
 {
-	room_t *this = &game.room;
-
 	logMsg(2, "room: unloadbackground\n");
 
 	if (this->background) {
@@ -133,10 +111,8 @@ static void room_unloadbackground(void)
 	}
 }
 
-static void room_unloadbgmask(void)
+static void unload_bgmask(room_t *this)
 {
-	room_t *this = &game.room;
-
 	logMsg(2, "room: unloadbgmask\n");
 
 	if (this->bg_mask) {
@@ -147,20 +123,4 @@ static void room_unloadbgmask(void)
 		free(this->rdr_mask);
 		this->rdr_mask=NULL;
 	}
-}
-
-static void room_priv_shutdown(void)
-{
-}
-
-static void room_priv_load(void)
-{
-}
-
-static void room_priv_load_background(void)
-{
-}
-
-static void room_priv_load_bgmask(void)
-{
 }
