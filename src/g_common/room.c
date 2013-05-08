@@ -58,6 +58,14 @@ static void getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_b
 static void initMasks(room_t *this, int num_camera);
 static void drawMasks(room_t *this, int num_camera);
 
+static Uint8 *scriptInit(room_t *this, int num_script);
+static int scriptGetInstLen(room_t *this, Uint8 *curInstPtr);
+static void scriptExecInst(room_t *this);
+static void scriptPrintInst(room_t *this);
+
+static void scriptDump(room_t *this, int num_script);
+static void scriptExec(room_t *this, int num_script);
+
 /*--- Functions ---*/
 
 room_t *room_ctor(void)
@@ -88,6 +96,14 @@ room_t *room_ctor(void)
 
 	this->initMasks = initMasks;
 	this->drawMasks = drawMasks;
+
+	this->scriptInit = scriptInit;
+	this->scriptGetInstLen = scriptGetInstLen;
+	this->scriptExecInst = scriptExecInst;
+	this->scriptPrintInst = scriptPrintInst;
+
+	this->scriptDump = scriptDump;
+	this->scriptExec = scriptExec;
 }
 
 static void dtor(room_t *this)
@@ -182,5 +198,31 @@ static void initMasks(room_t *this, int num_camera)
 }
 
 static void drawMasks(room_t *this, int num_camera)
+{
+}
+
+static Uint8 *scriptInit(room_t *this, int num_script)
+{
+	return NULL;
+}
+
+static int scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
+{
+	return 0;
+}
+
+static void scriptExecInst(room_t *this)
+{
+}
+
+static void scriptPrintInst(room_t *this)
+{
+}
+
+static void scriptDump(room_t *this, int num_script)
+{
+}
+
+static void scriptExec(room_t *this, int num_script)
 {
 }

@@ -23,6 +23,9 @@
 
 /*--- Defines ---*/
 
+#define ROOM_SCRIPT_INIT 0	/* Initialization script, run once */
+#define ROOM_SCRIPT_RUN	1	/* Running script, while the player is in the room */
+
 /*--- External types ---*/
 
 typedef struct render_texture_s render_texture_t;
@@ -85,6 +88,19 @@ struct room_s {
 
 	void (*initMasks)(room_t *this, int num_camera);
 	void (*drawMasks)(room_t *this, int num_camera);
+
+	/*--- Script execution ---*/
+	Uint8 *cur_inst;
+	int cur_inst_offset;
+	int script_length;
+
+	Uint8 *(*scriptInit)(room_t *this, int num_script);	/* Init a script, return ptr of first inst */
+	int (*scriptGetInstLen)(room_t *this, Uint8 *curInstPtr);	/* Get current instruction length */
+	void (*scriptExecInst)(room_t *this);	/* Execute an instruction */
+	void (*scriptPrintInst)(room_t *this);	/* Print an instruction */
+
+	void (*scriptDump)(room_t *this, int num_script);	/* Dump a script */
+	void (*scriptExec)(room_t *this, int num_script);	/* Execute script */
 };
 
 /*--- Variables ---*/
