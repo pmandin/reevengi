@@ -19,35 +19,30 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_H
-#define RDT_H 1
+#include <SDL.h>
 
-/*--- Defines ---*/
+#include "../log.h"
 
-#define RDT1_OFFSET_CAM_SWITCHES	0
-#define RDT1_OFFSET_INIT_SCRIPT		6
-#define RDT1_OFFSET_ROOM_SCRIPT		7
+#include "../g_common/room.h"
 
-/*--- External types ---*/
+#include "rdt.h"
 
-/*--- Types ---*/
+void rdt1_init(room_t *this)
+{
+	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
 
-typedef struct {
-	Sint32	x,y,z;
-	Uint32	unknown[2];
-} rdt1_header_part_t;
+	if (this->file_length>4) {
+		this->num_cameras = this->getNumCameras(this);
+/*		this->num_camswitches = rdt_getNumCamswitches(this);
+		this->num_boundaries = rdt_getNumBoundaries(this);
 
-typedef struct {
-	Uint8	unknown0;
-	Uint8	num_cameras;
-	Uint8	unknown1[4];
-	Uint16	unknown2[3];
-	rdt1_header_part_t	unknown3[3];
-	Uint32	offsets[19];
-} rdt1_header_t;
+		this->getCamera = rdt_getCamera;
+		this->getCamswitch = rdt_getCamswitch;
+		this->getBoundary = rdt_getBoundary;
 
-/*--- Functions ---*/
+		this->drawMasks = rdt_drawMasks;*/
+	}
 
-void rdt1_init(room_t *this);
-
-#endif /* RDT_H */
+	/*logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
+		this->num_cameras, this->num_camswitches, this->num_boundaries);*/
+}

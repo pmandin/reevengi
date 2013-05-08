@@ -66,7 +66,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 /*--- Functions ---*/
 
-void room_rdt1_scriptDump(room_t *this, int num_script)
+void rdt1_scd_scriptDump(room_t *this, int num_script)
 {
 	rdt1_header_t *rdt_header;
 	Uint32 offset, script_length;

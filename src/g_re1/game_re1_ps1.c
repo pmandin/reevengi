@@ -165,8 +165,7 @@ static int loadroom_rdt(room_t *this, const char *filename)
 
 	this->file = file;
 	this->file_length = length;
-
-	room_rdt_init(this);
+	this->init(this);
 
 	return 1;
 }

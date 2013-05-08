@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 #include "../log.h"
+#include "../parameters.h"
 
 #include "room.h"
 #include "game.h"
@@ -39,6 +40,8 @@
 static void dtor(room_t *this);
 
 static void load(room_t *this, int stage, int room, int camera);
+static void init(room_t *this);
+
 static void load_background(room_t *this, int stage, int room, int camera);
 static void load_bgmask(room_t *this, int stage, int room, int camera);
 
@@ -65,6 +68,7 @@ static void scriptPrintInst(room_t *this);
 
 static void scriptDump(room_t *this, int num_script);
 static void scriptExec(room_t *this, int num_script);
+static Uint8 *scriptNextInst(room_t *this);
 
 /*--- Functions ---*/
 
@@ -82,6 +86,8 @@ room_t *room_ctor(void)
 	this->dtor = dtor;
 
 	this->load = load;
+	this->init = init;
+
 	this->load_background = load_background;
 	this->load_bgmask = load_bgmask;
 
@@ -120,6 +126,10 @@ static void dtor(room_t *this)
 static void load(room_t *this, int stage, int room, int camera)
 {
 	unload(this);
+}
+
+static void init(room_t *this)
+{
 }
 
 static void load_background(room_t *this, int stage, int room, int camera)
@@ -221,8 +231,74 @@ static void scriptPrintInst(room_t *this)
 
 static void scriptDump(room_t *this, int num_script)
 {
+	Uint8 *inst;
+	char strBuf[1024];
+
+	inst = this->scriptInit(this, num_script);
+	while (inst) {
+		if (params.verbose>=2) {
+			int i, inst_len;
+			char tmpBuf[16];
+
+			inst_len = this->scriptGetInstLen(this, inst);
+			if (inst_len==0) {
+				inst_len = 16;
+			}
+
+			memset(strBuf, 0, sizeof(strBuf));
+			sprintf(tmpBuf, "0x%08x:", this->cur_inst_offset);
+			strcat(strBuf, tmpBuf);
+			for (i=0; i<inst_len; i++) {
+				sprintf(tmpBuf, " 0x%02x", this->cur_inst[i]);
+				strcat(strBuf, tmpBuf);
+			}
+			strcat(strBuf, "\n");
+			logMsg(2, strBuf);
+		}
+
+		this->scriptPrintInst(this);
+		inst = scriptNextInst(this);
+	}
 }
 
 static void scriptExec(room_t *this, int num_script)
 {
+	Uint8 *inst;
+
+	inst = this->scriptInit(this, num_script);
+	while (inst) {
+		this->scriptExecInst(this);
+		inst = scriptNextInst(this);
+	}
+}
+
+static Uint8 *scriptNextInst(room_t *this)
+{
+	int inst_len;
+	Uint8 *cur_inst;
+
+	if (!this) {
+		return NULL;
+	}
+	if (!this->cur_inst) {
+		return NULL;
+	}
+
+	inst_len = this->scriptGetInstLen(this, cur_inst);
+	if (inst_len == 0) {
+		return NULL;
+	}
+
+	this->cur_inst_offset += inst_len;	
+	if (this->script_length>0) {
+		if (this->cur_inst_offset>= this->script_length) {
+			logMsg(1, "End of script reached\n");
+			return NULL;
+		}
+	}
+
+	cur_inst = this->cur_inst;
+
+	this->cur_inst = &cur_inst[inst_len];
+	return this->cur_inst;
 }

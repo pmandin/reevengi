@@ -28,6 +28,7 @@
 #include "../g_common/game.h"
 
 #include "game_re1.h"
+#include "rdt.h"
 #include "rdt_rid.h"
 #include "rdt_rvd.h"
 #include "rdt_pri.h"
@@ -107,6 +108,8 @@ game_t *game_re1_ctor(game_t *this)
 
 	room = this->room;
 
+	room->init = rdt1_init;
+
 	room->getNumCameras = rdt1_rid_getNumCameras;
 	room->getCamera = rdt1_rid_getCamera;
 
@@ -123,9 +126,6 @@ game_t *game_re1_ctor(game_t *this)
 	room->scriptGetInstLen = rdt1_scd_scriptGetInstLen;
 	room->scriptExecInst = rdt1_scd_scriptExecInst;
 	/*room->scriptPrintInst = rdt1_scd_scriptPrintInst;*/
-
-	room->scriptDump = rdt1_scd_scriptDump;
-	room->scriptExec = rdt1_scd_scriptExec;
 
 #if 0
 	/* Init default room and player pos */

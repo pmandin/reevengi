@@ -58,6 +58,8 @@ struct room_s {
 	void (*dtor)(room_t *this);
 
 	void (*load)(room_t *this, int stage, int room, int camera);
+	void (*init)(room_t *this);
+
 	void (*load_background)(room_t *this, int stage, int room, int camera);
 	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
 
