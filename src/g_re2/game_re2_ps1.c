@@ -29,8 +29,11 @@
 #include "parameters.h"
 #include "log.h"
 
-#include "../g_common/game.h"
+#include "../render_texture.h"
+
 #include "../g_common/player.h"
+#include "../g_common/room.h"
+#include "../g_common/game.h"
 
 #include "game_re2.h"
 #include "background_bss.h"
@@ -50,15 +53,14 @@ typedef struct {
 
 /*--- Constant ---*/
 
-static const char *re2ps1_bg = "common/bss/room%d%02x.bss";
-static const char *re2ps1_room = "pl%d/rdt/room%d%02x%d.rdt";
-static const char *re2ps1_model = "pl%d/pld/cdemd%d.ems";
+static const char *re2ps1_bg_path1 = "common/bss/";
+static const char *re2ps1_bg_path2 = "res2/zcommon/bss%s/";
 
+static const char *re2ps1_room_path1 = "pl%d/rdt/";
+static const char *re2ps1_room_path2 = "res2/zpl%d/rdt%s/";
+
+static const char *re2ps1_model = "pl%d/pld/cdemd%d.ems";
 static const char *re2ps1_model2 = "res2/zpl%d/pld/cdemd%d.ems";
-static const char *re2ps1_bg1 = "res2/zcommon/bss/room%d%02x.bss";
-static const char *re2ps1_bg2 = "res2/zcommon/bss2/room%d%02x.bss";
-static const char *re2ps1_room1 = "res2/zpl%d/rdt/room%d%02x%d.rdt";
-static const char *re2ps1_room2 = "res2/zpl%d/rdt2/room%d%02x%d.rdt";
 
 static const re2ps1_ems_t re2ps1demo_ems[]={
 	{0x00000000, 0},
@@ -910,27 +912,36 @@ static const char *re2ps1game_claire_movies[] = {
 
 /*--- Variables ---*/
 
-static int game_player = 0;
+static const char *re2ps1_bg_path;
+static const char *re2ps1_room_path;
+static const char *re2ps1_model_file;
+
+static int game_player;
 
 /*--- Functions prototypes ---*/
 
-static void re2ps1_loadbackground(void);
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
+static int loadroom_rdt(room_t *this, const char *filename);
 
-static void re2ps1_loadroom(void);
-static int re2ps1_loadroom_rdt(const char *filename);
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 
-static int re2ps1_parse_ems(int num_model,
+static int parse_ems(int num_model,
 	const re2ps1_ems_t *ems, int ems_size,
 	int *num_tim, int *num_emd);
 
-static render_skel_t *re2ps1_load_model(int num_model);
+static render_skel_t *load_model(player_t *this, int num_model);
 
 /*--- Functions ---*/
 
-void game_re2ps1_init(game_t *this)
+game_t *game_re2ps1_ctor(game_t *this)
 {
-	this->room.priv_load_background = re2ps1_loadbackground;
-	this->room.priv_load = re2ps1_loadroom;
+	this->room->load_background = load_background;
+	this->room->load = load_room;
+
+	re2ps1_bg_path = re2ps1_bg_path1;
+	re2ps1_room_path = re2ps1_room_path1;
+	re2ps1_model_file = re2ps1_model;
+	game_player = 0;
 
 	switch(this->minor) {
 		case GAME_RE2_PS1_DEMO:
@@ -938,6 +949,9 @@ void game_re2ps1_init(game_t *this)
 			break;
 		case GAME_RE2_PS1_DEMO2:
 			this->movies_list = (char **) re2ps1demo2_movies;
+			re2ps1_bg_path = re2ps1_bg_path2;
+			re2ps1_room_path = re2ps1_room_path2;
+			re2ps1_model_file = re2ps1_model2;
 			break;
 		case GAME_RE2_PS1_GAME_LEON:
 			this->movies_list = (char **) re2ps1game_leon_movies;
@@ -948,24 +962,23 @@ void game_re2ps1_init(game_t *this)
 			break;
 	}
 
-	player.load_model = re2ps1_load_model;
+	this->player->load_model = load_model;
 }
 
-static void re2ps1_loadbackground(void)
+static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
-	const char *file_bg = re2ps1_bg;
+	char filename[16];
 
-	if (game.minor==GAME_RE2_PS1_DEMO2) {
-		file_bg = ((game.num_stage == 1) ? re2ps1_bg1 : re2ps1_bg2);
-	}
-
-	filepath = malloc(strlen(file_bg)+8);
+	filepath = malloc(strlen(re2ps1_bg_path)+1+sizeof(filename));
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, file_bg, game.num_stage, game.num_room);
+	sprintf(filepath, re2ps1_bg_path, (num_stage==1) ? "" : "2");
+
+	sprintf(filename, "room%d%02x.bss", num_stage, num_room);
+	strcat(filepath, filename);
 
 	logMsg(1, "bss: Start loading %s ...\n", filepath);
 
@@ -976,32 +989,31 @@ static void re2ps1_loadbackground(void)
 	free(filepath);
 }
 
-static void re2ps1_loadroom(void)
+static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
-	const char *file_room = re2ps1_room;
+	char filename[16];
 
-	if (game.minor==GAME_RE2_PS1_DEMO2) {
-		file_room = ((game.num_stage == 1) ? re2ps1_room1 : re2ps1_room2);
-	}
-
-	filepath = malloc(strlen(file_room)+8);
+	filepath = malloc(strlen(re2ps1_room_path)+1+sizeof(filename));
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, file_room, game_player, game.num_stage, game.num_room, game_player);
+	sprintf(filepath, re2ps1_room_path, (num_stage==1) ? "" : "2");
+
+	sprintf(filename, "room%d%02x%d.rdt", num_stage, num_room, game_player);
+	strcat(filepath, filename);
 
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
 	logMsg(1, "rdt: %s loading %s ...\n",
-		re2ps1_loadroom_rdt(filepath) ? "Done" : "Failed",
+		loadroom_rdt(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
 }
 
-static int re2ps1_loadroom_rdt(const char *filename)
+static int loadroom_rdt(room_t *this, const char *filename)
 {
 	PHYSFS_sint64 length;
 	void *file;
@@ -1011,15 +1023,15 @@ static int re2ps1_loadroom_rdt(const char *filename)
 		return 0;
 	}
 
-	game.room.file = file;
-	game.room.file_length = length;
+	this->file = file;
+	this->file_length = length;
 
-	room_rdt2_init(&game.room);
+	room_rdt2_init(this);
 
 	return 1;
 }
 
-static int re2ps1_parse_ems(int num_model,
+static int parse_ems(int num_model,
 	const re2ps1_ems_t *ems, int ems_size,
 	int *num_tim, int *num_emd)
 {
@@ -1048,7 +1060,7 @@ static int re2ps1_parse_ems(int num_model,
 	return num_parsed;
 }
 
-render_skel_t *re2ps1_load_model(int num_model)
+render_skel_t *load_model(player_t *this, int num_model)
 {
 	char *filepath;
 	render_skel_t *model = NULL;
@@ -1060,9 +1072,8 @@ render_skel_t *re2ps1_load_model(int num_model)
 	Uint32 emd_offset, tim_offset;
 	Uint32 emd_length, tim_length;
 	void *emdBuf, *timBuf;
-	const char *model_file = re2ps1_model;
 
-	switch(game.minor) {
+	switch(game->minor) {
 		case GAME_RE2_PS1_DEMO:
 			ems_array = re2ps1demo_ems;
 			parsed = re2ps1_parse_ems(num_model,
@@ -1070,7 +1081,6 @@ render_skel_t *re2ps1_load_model(int num_model)
 				&num_tim, &num_emd);
 			break;
 		case GAME_RE2_PS1_DEMO2:
-			model_file = re2ps1_model2;
 			ems_array = re2ps1demo21_ems;
 			parsed = re2ps1_parse_ems(num_model,
 				re2ps1demo21_ems, sizeof(re2ps1demo21_ems)/sizeof(re2ps1_ems_t),
@@ -1124,12 +1134,12 @@ render_skel_t *re2ps1_load_model(int num_model)
 	tim_offset = ems_array[num_tim].offset;
 	tim_length = ems_array[num_tim+1].offset - tim_offset;
 
-	filepath = malloc(strlen(model_file)+8);
+	filepath = malloc(strlen(re2ps1_model_file)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, model_file,
+	sprintf(filepath, re2ps1_model_file,
 		game_player, num_file);
 
 	logMsg(1, "emd: Start loading model 0x%02x from %s ...\n",
