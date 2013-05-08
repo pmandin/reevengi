@@ -63,6 +63,9 @@ static void prev_movie(game_t *this);
 static void next_movie(game_t *this);
 static void reset_movie(game_t *this);
 
+static int getnummovies(game_t *this);
+static void switch_movie(game_t *this);
+
 /*--- Functions ---*/
 
 game_t *game_ctor(void)
@@ -265,24 +268,48 @@ static void prev_movie(game_t *this)
 		this->num_movie=0;
 	}
 
-	/* TODO update movie to replay */
+	switch_movie(this);
 }
 
 static void next_movie(game_t *this)
 {
-	int max_num_movies = state_getnummovies();
+	int max_num_movies = getnummovies(this);
 
 	++this->num_movie;
 	if (this->num_movie>=max_num_movies) {
 		this->num_movie = max_num_movies-1;
 	}
 
-	/* TODO update movie to replay */
+	switch_movie(this);
 }
 
 static void reset_movie(game_t *this)
 {
 	this->num_movie = 0;
 
-	/* TODO update movie to replay */
+	switch_movie(this);
+}
+
+static int getnummovies(game_t *this)
+{
+	char **movie = this->movies_list;
+	int i;
+
+	for (i=0; movie[i]; i++) {
+	}
+	return i;
+}
+
+static void switch_movie(game_t *this)
+{
+	char **movie = this->movies_list;
+	int i;
+
+	for (i=0; movie[i]; i++) {
+		if (i==this->num_movie) {
+			/*sprintf(game_t *this->cur_movie, "%s/%s", params.basedir, movie[i]);*/
+			this->cur_movie = movie[i];
+			break;
+		}
+	}
 }
