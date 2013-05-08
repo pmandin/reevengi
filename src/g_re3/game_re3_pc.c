@@ -120,14 +120,13 @@ static int max_num_models = MAX_MODELS_DEMO;
 
 /*--- Functions prototypes ---*/
 
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
+
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_jpg_bg(room_t *this, const char *filename);
 
 static void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_tim_bgmask(room_t *this, const char *filename);
-
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
-static int loadroom_rdt(room_t *this, const char *filename);
 
 static render_skel_t *load_model(player_t *this, int num_model);
 static void get_model_name(player_t *this, char name[32]);
@@ -153,9 +152,9 @@ game_t *game_re3pc_ctor(game_t *this)
 		}
 	}
 
+	this->room->getFilename = getFilename;
 	this->room->load_background = load_background;
 	this->room->load_bgmask = load_bgmask;
-	this->room->load = load_room;
 
 	switch(this->minor) {
 		case GAME_RE3_PC_DEMO:
@@ -179,6 +178,20 @@ game_t *game_re3pc_ctor(game_t *this)
 	this->load_font = load_font;
 
 	return this;
+}
+
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
+{
+	char *filepath;
+
+	filepath = malloc(strlen(re3pc_room)+8);
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re3pc_room, game_lang, num_stage, num_room);
+
+	return filepath;
 }
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
@@ -320,43 +333,6 @@ int load_tim_bgmask(room_t *this, const char *filename)
 	}
 
 	return retval;
-}
-
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
-{
-	char *filepath;
-
-	filepath = malloc(strlen(re3pc_room)+8);
-	if (!filepath) {
-		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
-	}
-	sprintf(filepath, re3pc_room, game_lang, num_stage, num_room);
-
-	logMsg(1, "rdt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "rdt: %s loading %s ...\n",
-		loadroom_rdt(this, filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int loadroom_rdt(room_t *this, const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	this->file = file;
-	this->file_length = length;
-	this->init(this);
-
-	return 1;
 }
 
 static render_skel_t *load_model(player_t *this, int num_model)

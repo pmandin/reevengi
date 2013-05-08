@@ -143,6 +143,8 @@ static char *getFilename(room_t *this, int num_stage, int num_room, int num_came
 		return;
 	}
 	sprintf(filepath, re1ps1_room, is_shock, num_stage, num_stage, num_room);
+
+	return filepath;
 }
 
 static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera)

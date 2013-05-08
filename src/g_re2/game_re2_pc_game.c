@@ -116,8 +116,7 @@ static void dtor(game_t *this);
 
 static int init_images(const char *filename);
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
-static int loadroom_rdt(room_t *this, const char *filename);
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_image(room_t *this, int num_image);
@@ -137,7 +136,7 @@ game_t *game_re2pcgame_ctor(game_t *this)
 		fprintf(stderr, "Error reading background archive infos\n");
 	}
 
-	this->room->load = load_room;
+	this->room->getFilename = getFilename;
 	this->room->load_background = load_background;
 
 	switch(this->minor) {
@@ -243,7 +242,7 @@ static int init_images(const char *filename)
 	return retval;
 }
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -255,30 +254,7 @@ static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 	sprintf(filepath, re2pcgame_room, game_player, game_lang, num_stage,
 		num_room, game_player);
 
-	logMsg(1, "rdt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "rdt: %s loading %s ...\n",
-		loadroom_rdt(this, filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int loadroom_rdt(room_t *this, const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	this->file = file;
-	this->file_length = length;
-	this->init(this);
-
-	return 1;
+	return filepath;
 }
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)

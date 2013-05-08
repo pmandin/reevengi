@@ -68,8 +68,7 @@ static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
-static int loadroom_rdt(room_t *this, const char *filename);
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_adt_bg(room_t *this, const char *filename);
@@ -86,13 +85,13 @@ static void load_font(game_t *this);
 
 game_t *game_re2pcdemo_ctor(game_t *this)
 {
-	this->room->load = load_room;
-	this->room->load_background = load_background;
-	this->room->load_bgmask = load_bgmask;
-
 	if (this->minor == GAME_RE2_PC_DEMO_P) {
 		game_lang = 'p';
 	}
+
+	this->room->getFilename = getFilename;
+	this->room->load_background = load_background;
+	this->room->load_bgmask = load_bgmask;
 
 	this->player->load_model = load_model;
 	this->player->get_model_name = get_model_name;
@@ -102,7 +101,7 @@ game_t *game_re2pcdemo_ctor(game_t *this)
 	return this;
 }
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -113,30 +112,7 @@ static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 	}
 	sprintf(filepath, re2pcdemo_room, game_lang, num_stage, num_room);
 
-	logMsg(1, "adt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "adt: %s loading %s ...\n",
-		loadroom_rdt(this, filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int loadroom_rdt(room_t *this, const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	this->file = file;
-	this->file_length = length;
-	this->init(this);
-
-	return 1;
+	return filepath;
 }
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)

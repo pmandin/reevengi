@@ -920,8 +920,7 @@ static int game_player;
 
 /*--- Functions prototypes ---*/
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
-static int loadroom_rdt(room_t *this, const char *filename);
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 
@@ -935,9 +934,6 @@ static render_skel_t *load_model(player_t *this, int num_model);
 
 game_t *game_re2ps1_ctor(game_t *this)
 {
-	this->room->load_background = load_background;
-	this->room->load = load_room;
-
 	re2ps1_bg_path = re2ps1_bg_path1;
 	re2ps1_room_path = re2ps1_room_path1;
 	re2ps1_model_file = re2ps1_model;
@@ -962,7 +958,28 @@ game_t *game_re2ps1_ctor(game_t *this)
 			break;
 	}
 
+	this->room->getFilename = getFilename;
+	this->room->load_background = load_background;
+
 	this->player->load_model = load_model;
+}
+
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
+{
+	char *filepath;
+	char filename[16];
+
+	filepath = malloc(strlen(re2ps1_room_path)+1+sizeof(filename));
+	if (!filepath) {
+		fprintf(stderr, "Can not allocate mem for filepath\n");
+		return;
+	}
+	sprintf(filepath, re2ps1_room_path, (num_stage==1) ? "" : "2");
+
+	sprintf(filename, "room%d%02x%d.rdt", num_stage, num_room, game_player);
+	strcat(filepath, filename);
+
+	return filepath;
 }
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
@@ -987,47 +1004,6 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 		filepath);
 
 	free(filepath);
-}
-
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
-{
-	char *filepath;
-	char filename[16];
-
-	filepath = malloc(strlen(re2ps1_room_path)+1+sizeof(filename));
-	if (!filepath) {
-		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
-	}
-	sprintf(filepath, re2ps1_room_path, (num_stage==1) ? "" : "2");
-
-	sprintf(filename, "room%d%02x%d.rdt", num_stage, num_room, game_player);
-	strcat(filepath, filename);
-
-	logMsg(1, "rdt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "rdt: %s loading %s ...\n",
-		loadroom_rdt(this, filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int loadroom_rdt(room_t *this, const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	this->file = file;
-	this->file_length = length;
-	this->init(this);
-
-	return 1;
 }
 
 static int parse_ems(int num_model,
