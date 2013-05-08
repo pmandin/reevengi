@@ -117,6 +117,8 @@ room_t *room_ctor(void)
 
 	this->scriptDump = scriptDump;
 	this->scriptExec = scriptExec;
+
+	return this;
 }
 
 static void dtor(room_t *this)
@@ -178,7 +180,7 @@ static void init(room_t *this)
 
 static void load_background(room_t *this, int stage, int room, int camera)
 {
-	unloadbackground(this);
+	unload_background(this);
 }
 
 static void load_bgmask(room_t *this, int stage, int room, int camera)
@@ -328,7 +330,7 @@ static Uint8 *scriptNextInst(room_t *this)
 		return NULL;
 	}
 
-	inst_len = this->scriptGetInstLen(this, cur_inst);
+	inst_len = this->scriptGetInstLen(this, this->cur_inst);
 	if (inst_len == 0) {
 		return NULL;
 	}

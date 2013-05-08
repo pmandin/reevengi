@@ -88,6 +88,8 @@ player_t *player_ctor(void)
 	this->z = 3367.0f;
 	this->a = (157.0f * 4096.0f) / 360.0f;
 #endif
+
+	return this;
 }
 
 static void dtor(player_t *this)

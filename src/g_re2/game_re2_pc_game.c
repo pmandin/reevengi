@@ -249,7 +249,7 @@ static char *getFilename(room_t *this, int num_stage, int num_room, int num_came
 	filepath = malloc(strlen(re2pcgame_room)+8);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
+		return NULL;
 	}
 	sprintf(filepath, re2pcgame_room, game_player, game_lang, num_stage,
 		num_room, game_player);

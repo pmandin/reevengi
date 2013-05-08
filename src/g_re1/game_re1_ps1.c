@@ -140,7 +140,7 @@ static char *getFilename(room_t *this, int num_stage, int num_room, int num_came
 	filepath = malloc(strlen(re1ps1_room)+16);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
+		return NULL;
 	}
 	sprintf(filepath, re1ps1_room, is_shock, num_stage, num_stage, num_room);
 

@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 #include "../render.h"
+#include "../log.h"
 
 #include "../g_common/room.h"
 

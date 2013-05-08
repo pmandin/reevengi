@@ -117,6 +117,8 @@ menu_t *menu_ctor(void)
 	this->dtor = dtor;
 	this->init = init;
 	this->draw = draw;
+
+	return this;
 }
 
 static void dtor(menu_t *this)

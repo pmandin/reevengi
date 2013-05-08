@@ -962,6 +962,8 @@ game_t *game_re2ps1_ctor(game_t *this)
 	this->room->load_background = load_background;
 
 	this->player->load_model = load_model;
+
+	return this;
 }
 
 static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
@@ -972,7 +974,7 @@ static char *getFilename(room_t *this, int num_stage, int num_room, int num_came
 	filepath = malloc(strlen(re2ps1_room_path)+1+sizeof(filename));
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
+		return NULL;
 	}
 	sprintf(filepath, re2ps1_room_path, (num_stage==1) ? "" : "2");
 

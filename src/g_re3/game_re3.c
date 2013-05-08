@@ -88,6 +88,8 @@ game_t *game_re3_ctor(game_t *this)
 	/* Init default room and player pos */
 	this->num_room = 13;
 #endif
+
+	return this;
 }
 
 static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h)

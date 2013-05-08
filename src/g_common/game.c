@@ -111,6 +111,8 @@ game_t *game_ctor(void)
 	this->player = player_ctor();
 	this->room = room_ctor();
 	this->menu = menu_ctor();
+
+	return this;
 }
 
 static void dtor(game_t *this)
