@@ -95,6 +95,8 @@ static const char *re1ps1game_movies[] = {
 
 /*--- Variables ---*/
 
+static const char *is_shock;
+
 /*--- Functions prototypes ---*/
 
 static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
@@ -125,13 +127,14 @@ game_t *game_re1ps1_ctor(game_t *this)
 
 	this->load_font = load_font;
 
+	is_shock = ((game->minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
+
 	return this;
 }
 
 static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
-	const char *is_shock = ((game->minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 
 	filepath = malloc(strlen(re1ps1_room)+16);
 	if (!filepath) {
@@ -207,7 +210,6 @@ static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_ca
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
-	const char *is_shock = ((game->minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	int re1_stage = (num_stage>5 ? num_stage-5 : num_stage);
 	int row_offset = get_row_offset(re1_stage, num_stage, num_room, num_camera);
 
@@ -230,7 +232,6 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 static render_skel_t *load_model(player_t *this, int num_model)
 {
 	char *filepath;
-	const char *is_shock = ((game->minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	const char *filename = re1ps1_model1;
 	render_skel_t *model = NULL;
 	void *emd;
@@ -284,7 +285,6 @@ static void load_font(game_t *this)
 	PHYSFS_sint64 length;
 	int retval = 0;
 	char *filepath;
-	const char *is_shock = ((game->minor == GAME_RE1_PS1_SHOCK) ? "usa" : "");
 	const char *filename = re1ps1_font;
 
 	filepath = malloc(strlen(filename)+16);
