@@ -37,7 +37,7 @@
 #include "game_re1.h"
 #include "depack_pak.h"
 #include "video.h"
-#include "g_re1/emd.h"
+#include "emd.h"
 #include "background_tim.h"
 #include "room_rdt.h"
 
@@ -246,7 +246,7 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 
 	free(filepath);
 
-	loadbackground_mask(row_offset, re1_stage);
+/*	load_bgmask(row_offset, re1_stage);*/
 }
 
 static int load_pak_bg(room_t *this, const char *filename, int row_offset)
