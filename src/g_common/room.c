@@ -23,6 +23,7 @@
 
 #include "../log.h"
 #include "../parameters.h"
+#include "../filesystem.h"
 
 #include "room.h"
 #include "game.h"
@@ -38,6 +39,9 @@
 /*--- Functions prototypes ---*/
 
 static void dtor(room_t *this);
+
+static char *getFilename(room_t *this, int stage, int room, int camera);
+static void loadFile(room_t *this, int stage, int room, int camera);
 
 static void load(room_t *this, int stage, int room, int camera);
 static void init(room_t *this);
@@ -85,6 +89,9 @@ room_t *room_ctor(void)
 
 	this->dtor = dtor;
 
+	this->getFilename = getFilename;
+	this->loadFile = loadFile;
+
 	this->load = load;
 	this->init = init;
 
@@ -123,9 +130,46 @@ static void dtor(room_t *this)
 	free(this);
 }
 
+static char *getFilename(room_t *this, int stage, int room, int camera)
+{
+	return strdup("");
+}
+
+static void loadFile(room_t *this, int stage, int room, int camera)
+{
+	PHYSFS_sint64 length;
+	void *file;
+	char *filename;
+	int retval = 0;
+	
+	filename = this->getFilename(this, stage, room, camera);
+	if (!filename) {
+		return;
+	}
+
+	logMsg(1, "room: Loading %s ...\n", filename);
+
+	file = FS_Load(filename, &length);
+	if (file) {
+		this->file = file;
+		this->file_length = length;
+		this->init(this);
+
+		retval = 1;
+	}
+
+	logMsg(1, "room: %s loading %s ...\n",
+		retval ? "Done" : "Failed",
+		filename);
+
+	free(filename);
+}
+
 static void load(room_t *this, int stage, int room, int camera)
 {
 	unload(this);
+
+	this->loadFile(this, stage, room, camera);
 }
 
 static void init(room_t *this)

@@ -57,6 +57,10 @@ typedef struct room_s room_t;
 struct room_s {
 	void (*dtor)(room_t *this);
 
+	/* Return full path to room filename, ptr must be freed */
+	char *(*getFilename)(room_t *this, int stage, int room, int camera);
+	void (*loadFile)(room_t *this, int stage, int room, int camera);
+
 	void (*load)(room_t *this, int stage, int room, int camera);
 	void (*init)(room_t *this);
 

@@ -98,8 +98,7 @@ static const char *is_shock = "";
 
 /*--- Functions prototypes ---*/
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
-static int loadroom_rdt(room_t *this, const char *filename);
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
 
 static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera);
 
@@ -119,7 +118,8 @@ game_t *game_re1ps1_ctor(game_t *this)
 		this->movies_list = (char **) re1ps1game_movies;
 	}
 
-	this->room->load = load_room;
+	this->room->getFilename = getFilename;
+
 	this->room->load_background = load_background;
 
 	this->player->load_model = load_model;
@@ -133,7 +133,7 @@ game_t *game_re1ps1_ctor(game_t *this)
 	return this;
 }
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
@@ -143,31 +143,6 @@ static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 		return;
 	}
 	sprintf(filepath, re1ps1_room, is_shock, num_stage, num_stage, num_room);
-
-	logMsg(1, "rdt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "rdt: %s loading %s ...\n",
-		loadroom_rdt(this, filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int loadroom_rdt(room_t *this, const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	this->file = file;
-	this->file_length = length;
-	this->init(this);
-
-	return 1;
 }
 
 static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera)

@@ -102,8 +102,7 @@ static int game_country = 0;
 
 /*--- Functions prototypes ---*/
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
-static int loadroom_rdt(room_t *this, const char *filename);
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
 
 static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera);
 
@@ -134,7 +133,8 @@ game_t *game_re1pc_ctor(game_t *this)
 		}
 	}
 
-	this->room->load = load_room;
+	this->room->getFilename = getFilename;
+
 	this->room->load_background = load_background;
 /*	this->room->load_bgmask = load_bgmask;*/
 
@@ -147,42 +147,17 @@ game_t *game_re1pc_ctor(game_t *this)
 	return this;
 }
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
 {
 	char *filepath;
 
 	filepath = malloc(strlen(re1pcgame_room)+32);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
-		return;
+		return NULL;
 	}
 	sprintf(filepath, re1pcgame_room, re1_country[game_country],
 		num_stage, num_stage, num_room);
-
-	logMsg(1, "rdt: Start loading %s ...\n", filepath);
-
-	logMsg(1, "rdt: %s loading %s ...\n",
-		loadroom_rdt(this, filepath) ? "Done" : "Failed",
-		filepath);
-
-	free(filepath);
-}
-
-static int loadroom_rdt(room_t *this, const char *filename)
-{
-	PHYSFS_sint64 length;
-	void *file;
-
-	file = FS_Load(filename, &length);
-	if (!file) {
-		return 0;
-	}
-
-	this->file = file;
-	this->file_length = length;
-	this->init(this);
-
-	return 1;
 }
 
 static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera)
