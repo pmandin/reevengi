@@ -24,9 +24,12 @@
 
 #include <SDL.h>
 
+#include "player.h"
+#include "menu.h"
+#include "game.h"
+
 #include "render_texture.h"
 #include "render_skel.h"
-#include "state.h"
 #include "render_text.h"
 
 /*--- Defines ---*/
@@ -51,7 +54,7 @@ typedef struct {
 	int x,y;	/* Top left position (in chars) */
 	int strtype;
 	void *str;	/* Pointer to string or int value */
-} menu_t;
+} menu_item_t;
 
 /*--- Variables ---*/
 
@@ -59,42 +62,61 @@ static char model_name[32];
 
 /*--- Constants ---*/
 
-menu_t main_menu[1+10+8]={
+menu_item_t main_menu[1+10+8]={
 	{0,0, STR_TYPE_TEXT, PACKAGE_STRING},
 
 	{0,2, STR_TYPE_TEXT, "Stage :"},
-	{8,2, STR_TYPE_INT, &game_state.num_stage},
+	{8,2, STR_TYPE_INT, &game->num_stage},
 	{0,3, STR_TYPE_TEXT, "Room  :"},
-	{8,3, STR_TYPE_HEXA2, &game_state.num_room},
+	{8,3, STR_TYPE_HEXA2, &game->num_room},
 	{0,4, STR_TYPE_TEXT, "Camera:"},
-	{8,4, STR_TYPE_HEXA2, &game_state.num_camera},
+	{8,4, STR_TYPE_HEXA2, &game->num_camera},
 	{0,5, STR_TYPE_TEXT, "Model :"},
 	{8,5, STR_TYPE_TEXT, model_name},
 	{0,6, STR_TYPE_TEXT, "Anim  :"},
-	{8,6, STR_TYPE_INT, &game_state.num_anim},
+	{8,6, STR_TYPE_INT, &game->player->num_anim},
 
 	{0,8, STR_TYPE_TEXT, "Player X:"},
-	{10,8, STR_TYPE_FLOAT_AS_INT, &game_state.player_x},
+	{10,8, STR_TYPE_FLOAT_AS_INT, &game->player->x},
 	{0,9, STR_TYPE_TEXT, "Player Y:"},
-	{10,9, STR_TYPE_FLOAT_AS_INT, &game_state.player_y},
+	{10,9, STR_TYPE_FLOAT_AS_INT, &game->player->y},
 	{0,10, STR_TYPE_TEXT, "Player Z:"},
-	{10,10, STR_TYPE_FLOAT_AS_INT, &game_state.player_z},
+	{10,10, STR_TYPE_FLOAT_AS_INT, &game->player->z},
 	{0,11, STR_TYPE_TEXT, "Player A:"},
-	{10,11, STR_TYPE_FLOAT_AS_INT, &game_state.player_a}
+	{10,11, STR_TYPE_FLOAT_AS_INT, &game->player->a}
 };
+
+/*--- Functions prototypes ---*/
+
+static void dtor(menu_t *this);
 
 /*--- Functions ---*/
 
+menu_t *menu_ctor(void)
+{
+	menu_t *this;
+
+	this = (menu_t *) calloc(1, sizeof(menu_t));
+	this->dtor = dtor;
+}
+
+static void dtor(menu_t *this)
+{
+	free(this);
+}
+
 void menu_render(void)
 {
+	player_t *player = game->player;
+
 	int i, x,y;
 	char tmpstr[32];
 
-	game_state.get_model_name(model_name);
+	player->get_model_name(player, model_name);
 
 	x = START_X;
 	y = START_Y;
-	for (i=0; i<sizeof(main_menu)/sizeof(menu_t); i++) {
+	for (i=0; i<sizeof(main_menu)/sizeof(menu_item_t); i++) {
 		int px = x + (main_menu[i].x*8);
 		int py = y + (main_menu[i].y*11);
 		char *str = (char *) main_menu[i].str;

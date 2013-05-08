@@ -21,6 +21,20 @@
 #ifndef MENU_H
 #define MENU_H 1
 
+/*--- Types ---*/
+
+typedef struct menu_s menu_t;
+
+struct menu_s {
+	void (*dtor)(menu_t *this);
+
+	void (*draw_menu)(menu_t *this);
+};
+
+/*--- Functions protocotypes ---*/
+
+menu_t *menu_ctor(void);
+
 void menu_render(void);
 
 #endif /* MENU_H */
