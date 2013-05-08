@@ -31,6 +31,8 @@
 #include "rdt_rid.h"
 #include "rdt_rvd.h"
 #include "rdt_pri.h"
+#include "rdt_scd.h"
+#include "rdt_scd_dump.h"
 
 /*--- Constants ---*/
 
@@ -116,6 +118,14 @@ game_t *game_re1_ctor(game_t *this)
 
 	room->initMasks = rdt1_pri_initMasks;
 	room->drawMasks = rdt1_pri_drawMasks;
+
+	room->scriptInit = rdt1_scd_scriptInit;
+	room->scriptGetInstLen = rdt1_scd_scriptGetInstLen;
+	room->scriptExecInst = rdt1_scd_scriptExecInst;
+	/*room->scriptPrintInst = rdt1_scd_scriptPrintInst;*/
+
+	room->scriptDump = rdt1_scd_scriptDump;
+	room->scriptExec = rdt1_scd_scriptExec;
 
 #if 0
 	/* Init default room and player pos */

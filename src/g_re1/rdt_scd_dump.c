@@ -26,16 +26,17 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "room.h"
-#include "room_rdt.h"
-#include "state.h"
-#include "log.h"
-#include "room_rdt_script_common.h"
-#include "parameters.h"
+#include "../log.h"
+#include "../parameters.h"
+
+#include "../g_common/room.h"
+
+#include "rdt.h"
+#include "rdt_scd_common.h"
 
 #ifndef ENABLE_SCRIPT_DISASM
 
-void room_rdt1_scriptDump(room_t *this, int num_script)
+void rdt1_scd_scriptDump(room_t *this, int num_script)
 {
 }
 
@@ -118,7 +119,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		memset(strBuf, 0, sizeof(strBuf));
 
-		inst_len = this->scriptPrivGetInstLen((Uint8 *) inst);
+		inst_len = this->scriptGetInstLen(this, (Uint8 *) inst);
 
 		if (params.verbose>=2) {
 			int i;

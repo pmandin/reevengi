@@ -19,9 +19,11 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT1_SCRIPT_DUMP_H
-#define ROOM_RDT1_SCRIPT_DUMP_H 1
+#ifndef RDT_SCD_DUMP_H
+#define RDT_SCD_DUMP_H 1
 
-void room_rdt1_scriptDump(room_t *this, int num_script);
+/*--- Functions ---*/
 
-#endif /* ROOM_RDT1_SCRIPT_DUMP_H */
+void rdt1_scd_scriptDump(room_t *this, int num_script);
+
+#endif /* RDT_SCD_DUMP_H */

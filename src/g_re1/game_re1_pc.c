@@ -39,7 +39,6 @@
 #include "video.h"
 #include "emd.h"
 #include "background_tim.h"
-#include "room_rdt.h"
 
 /*--- Defines ---*/
 

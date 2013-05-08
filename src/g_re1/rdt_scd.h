@@ -1,8 +1,8 @@
 /*
-	Room description
-	RE1 RDT script
+	RE1 SCD
+	Game scripts
 
-	Copyright (C) 2009	Patrice Mandin
+	Copyright (C) 2009-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,9 +19,15 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT_SCRIPT_H
-#define ROOM_RDT_SCRIPT_H 1
+#ifndef RDT_SCD_H
+#define RDT_SCD_H 1
 
-void room_rdt_scriptInit(room_t *this);
+/*--- Functions ---*/
 
-#endif /* ROOM_RDT_SCRIPT_H */
+Uint8 *rdt1_scd_scriptInit(room_t *this, int num_script);
+int rdt1_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr);
+void rdt1_scd_scriptExecInst(room_t *this);
+
+void rdt1_scd_scriptExec(room_t *this, int num_script);
+
+#endif /* RDT_SCD_H */
