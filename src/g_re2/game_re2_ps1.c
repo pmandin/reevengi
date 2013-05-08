@@ -1025,8 +1025,7 @@ static int loadroom_rdt(room_t *this, const char *filename)
 
 	this->file = file;
 	this->file_length = length;
-
-	room_rdt2_init(this);
+	this->init(this);
 
 	return 1;
 }
@@ -1089,7 +1088,7 @@ render_skel_t *load_model(player_t *this, int num_model)
 				int num_model2 = num_model-parsed;
 				num_file += 2;
 				ems_array = re2ps1demo22_ems;
-				parsed = re2ps1_parse_ems(num_model2,
+				parsed = parse_ems(num_model2,
 					re2ps1demo22_ems, sizeof(re2ps1demo22_ems)/sizeof(re2ps1_ems_t),
 					&num_tim, &num_emd);
 			}
@@ -1103,7 +1102,7 @@ render_skel_t *load_model(player_t *this, int num_model)
 				int num_model2 = num_model-parsed;
 				num_file += 2;
 				ems_array = re2ps1gamel2_ems;
-				parsed = re2ps1_parse_ems(num_model2,
+				parsed = parse_ems(num_model2,
 					re2ps1gamel2_ems, sizeof(re2ps1gamel2_ems)/sizeof(re2ps1_ems_t),
 					&num_tim, &num_emd);
 			}

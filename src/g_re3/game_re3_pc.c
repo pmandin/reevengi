@@ -195,7 +195,7 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 	logMsg(1, "jpg: Start loading %s ...\n", filepath);
 
 	logMsg(1, "jpg: %s loading %s ...\n",
-		re3pc_load_jpg_bg(this, filepath) ? "Done" : "Failed",
+		load_jpg_bg(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
@@ -243,7 +243,7 @@ void load_bgmask(room_t *this, int num_stage, int num_room, int num_camera)
 	logMsg(1, "sld: Start loading %s ...\n", filepath);
 
 	logMsg(1, "sld: %s loading %s ...\n",
-		re3pc_load_tim_bgmask(this, filepath) ? "Done" : "Failed",
+		load_tim_bgmask(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
@@ -336,7 +336,7 @@ static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 	logMsg(1, "rdt: Start loading %s ...\n", filepath);
 
 	logMsg(1, "rdt: %s loading %s ...\n",
-		re3pc_loadroom_rdt(this, filepath) ? "Done" : "Failed",
+		loadroom_rdt(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
@@ -354,8 +354,7 @@ static int loadroom_rdt(room_t *this, const char *filename)
 
 	this->file = file;
 	this->file_length = length;
-
-	room_rdt3_init(this);
+	this->init(this);
 
 	return 1;
 }

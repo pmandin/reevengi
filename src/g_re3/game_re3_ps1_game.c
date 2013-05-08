@@ -1904,7 +1904,7 @@ static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
 	logMsg(1, "ard: Start loading %s ...\n", filepath);
 
 	logMsg(1, "ard: %s loading %s ...\n",
-		re3ps1game_loadroom_ard(this, filepath) ? "Done" : "Failed",
+		loadroom_ard(this, filepath) ? "Done" : "Failed",
 		filepath);
 
 	free(filepath);
@@ -1966,8 +1966,7 @@ static int loadroom_ard(room_t *this, const char *filename)
 
 	this->file = file;
 	this->file_length = len;
-
-	room_rdt3_init(this);
+	this->init(this);
 
 	free(ard_file);
 	return 1;
