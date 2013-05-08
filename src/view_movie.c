@@ -32,8 +32,13 @@
 #include <libavformat/avformat.h>
 #endif
 
-#include "state.h"
 #include "filesystem.h"
+
+#include "g_common/game.h"
+#include "g_re1/game_re1.h"
+#include "g_re2/game_re2.h"
+#include "g_re3/game_re3.h"
+
 #include "view_movie.h"
 
 /*--- Defines ---*/
@@ -94,30 +99,18 @@ static int movie_decode_video(SDL_Surface *screen);
 
 int view_movie_input(SDL_Event *event)
 {
-	int max_movies;
-
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->key.keysym.sym) {
 			case KEY_MOVIE_DOWN:
-				game_state.num_movie -= 1;
-				if (game_state.num_movie<0) {
-					game_state.num_movie = 0;
-				}
-				state_newmovie();
+				game->prev_movie(game);
 				restart_movie = 1;
 				break;						
 			case KEY_MOVIE_UP:
-				max_movies = state_getnummovies();
-				game_state.num_movie += 1;
-				if (game_state.num_movie >= max_movies) {
-					game_state.num_movie = max_movies-1;
-				}
-				state_newmovie();
+				game->next_movie(game);
 				restart_movie = 1;
 				break;						
 			case KEY_MOVIE_RESET:
-				game_state.num_movie = 0;
-				state_newmovie();
+				game->reset_movie(game);
 				restart_movie = 1;
 				break;						
 			default:
@@ -135,16 +128,17 @@ int view_movie_update(SDL_Surface *screen)
 	if (first_time) {
 		first_time = 0;
 
+		avcodec_register_all();
 		av_register_all();
 	}
 
 	if (restart_movie) {
-		printf("Playing movie %d: %s\n", game_state.num_movie, game_state.cur_movie);
+		printf("Playing movie %d: %s\n", game->num_movie, game->cur_movie);
 		restart_movie = 0;
 
 		movie_shutdown();
 
-		if (movie_init(game_state.cur_movie)!=0) {
+		if (movie_init(game->cur_movie)!=0) {
 			return 0;
 		}
 	}
@@ -161,20 +155,49 @@ int view_movie_update(SDL_Surface *screen)
 
 static void check_emul_cd(void)
 {
+	emul_cd = 0;
+
 	/* Emulate CD read for PS1 games */
-	switch(game_state.version) {
-		case GAME_RE1_PS1_DEMO:
-		case GAME_RE1_PS1_GAME:
-		case GAME_RE1_PS1_SHOCK:
-		case GAME_RE2_PS1_DEMO:
-		case GAME_RE2_PS1_GAME_LEON:
-		case GAME_RE2_PS1_GAME_CLAIRE:
-		case GAME_RE3_PS1_DEMO:
-		case GAME_RE3_PS1_GAME:
-			emul_cd = 1;
+	switch(game->major) {
+		case GAME_RE1:
+			{
+				switch(game->minor) {
+					case GAME_RE1_PS1_DEMO:
+					case GAME_RE1_PS1_GAME:
+					case GAME_RE1_PS1_SHOCK:
+						emul_cd=1;
+						break;
+					default:
+						break;
+				}
+			}
+			break;
+		case GAME_RE2:
+			{
+				switch(game->minor) {
+					case GAME_RE2_PS1_DEMO:
+					case GAME_RE2_PS1_GAME_LEON:
+					case GAME_RE2_PS1_GAME_CLAIRE:
+						emul_cd=1;
+						break;
+					default:
+						break;
+				}
+			}
+			break;
+		case GAME_RE3:
+			{
+				switch(game->minor) {
+					case GAME_RE3_PS1_DEMO:
+					case GAME_RE3_PS1_GAME:
+						emul_cd=1;
+						break;
+					default:
+						break;
+				}
+			}
 			break;
 		default:
-			emul_cd = 0;
 			break;
 	}
 }
@@ -212,7 +235,7 @@ static int movie_init(const char *filename)
 
 	input_fmt.flags |= AVFMT_NOFILE;
 
-	err = av_open_input_stream(&fmt_ctx, &bio_ctx, filename, &input_fmt, NULL);
+	err = avformat_open_input(&fmt_ctx, &bio_ctx, filename, &input_fmt, NULL);
 	if (err<0) {
 		fprintf(stderr,"Can not open stream: %d\n", err);
 		movie_shutdown();
@@ -245,11 +268,11 @@ static int movie_init(const char *filename)
 
 		printf("movie: stream %d: %s: ", i, codec->name);
 		switch(cc->codec_type) {
-			case CODEC_TYPE_VIDEO:
+			case AVMEDIA_TYPE_VIDEO:
 				printf("video, %dx%d, %08x", cc->width, cc->height, cc->pix_fmt);
 				vidstream = i;
 				break;
-			case CODEC_TYPE_AUDIO:
+			case AVMEDIA_TYPE_AUDIO:
 				printf("audio, %d Hz, %d channels",
 					cc->sample_rate, cc->channels
 				);
@@ -283,7 +306,7 @@ void movie_shutdown(void)
 	}
 
 	if (fmt_ctx) {
-		av_close_input_file( fmt_ctx );
+		avformat_close_input( fmt_ctx );
 		fmt_ctx = NULL;
 	}
 #endif

@@ -22,8 +22,11 @@
 
 #include <SDL.h>
 
-#include "state.h"
 #include "filesystem.h"
+
+#include "g_common/room.h"
+#include "g_common/game.h"
+
 #include "background_bss.h"
 #include "depack_vlc.h"
 #include "depack_mdec.h"
@@ -67,7 +70,7 @@ static int background_vlc_load(SDL_RWops *src, int chunk_size, int row_offset)
 	int dstBufLen;
 	int retval = 0;
 
-	SDL_RWseek(src, game_state.num_camera * chunk_size, RW_SEEK_SET);
+	SDL_RWseek(src, game->num_camera * chunk_size, RW_SEEK_SET);
 
 	vlc_depack(src, &dstBuffer, &dstBufLen);
 
@@ -98,9 +101,9 @@ static int background_mdec_load(SDL_RWops *src, int row_offset)
 	if (dstBuffer && dstBufLen) {
 		SDL_Surface *image = mdec_surface(dstBuffer, WIDTH, HEIGHT, row_offset);
 		if (image) {
-			game_state.background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
-			if (game_state.background) {
-				game_state.background->load_from_surf(game_state.background, image);
+			game->room->background = render.createTexture(RENDER_TEXTURE_CACHEABLE);
+			if (game->room->background) {
+				game->room->background->load_from_surf(game->room->background, image);
 				retval = 1;
 			}
 			SDL_FreeSurface(image);
