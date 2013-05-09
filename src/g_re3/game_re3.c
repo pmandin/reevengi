@@ -27,6 +27,15 @@
 
 #include "game_re3.h"
 
+#include "../g_re2/rdt.h"
+#include "../g_re2/rdt_rid.h"
+#include "../g_re2/rdt_rvd.h"
+#include "../g_re2/rdt_pri.h"
+#include "../g_re2/rdt_msg.h"
+
+#include "rdt_scd.h"
+#include "rdt_scd_dump.h"
+
 /*--- Constants ---*/
 
 static const game_detect_t game_detect[]={
@@ -64,6 +73,7 @@ void game_re3_detect(game_t *this)
 		if (game_file_exists(game_detect[i].filename)) {
 			this->major = GAME_RE3;
 			this->minor = game_detect[i].version;
+			this->name = game_detect[i].name;
 			break;
 		}
 		i++;
@@ -72,6 +82,8 @@ void game_re3_detect(game_t *this)
 
 game_t *game_re3_ctor(game_t *this)
 {
+	room_t *room;
+
 	switch(this->minor) {
 		case GAME_RE3_PS1_GAME:
 			this = game_re3ps1game_ctor(this);
@@ -83,6 +95,30 @@ game_t *game_re3_ctor(game_t *this)
 	}
 
 	this->get_char = get_char;
+
+	room = this->room;
+
+	room->init = rdt2_init;
+
+	room->getNumCameras = rdt2_rid_getNumCameras;
+	room->getCamera = rdt2_rid_getCamera;
+
+	room->getNumCamSwitches = rdt2_rvd_getNumCamSwitches;
+	room->getCamSwitch = rdt2_rvd_getCamSwitch;
+
+	room->getNumBoundaries = rdt2_rvd_getNumBoundaries;
+	room->getBoundary = rdt2_rvd_getBoundary;
+
+	room->initMasks = rdt2_pri_initMasks;
+	room->drawMasks = rdt2_pri_drawMasks;
+
+	room->getText = rdt2_msg_getText;
+
+	room->scriptInit = rdt3_scd_scriptInit;
+	room->scriptGetInstLen = rdt3_scd_scriptGetInstLen;
+	room->scriptExecInst = rdt3_scd_scriptExecInst;
+
+	room->scriptDump = rdt3_scd_scriptDump;
 
 #if 0
 	/* Init default room and player pos */
