@@ -19,7 +19,12 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <assert.h>
 #include <SDL.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "../g_common/room.h"
 
@@ -55,11 +60,14 @@ void rdt1_rvd_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room
 
 static int rdt1_rvd_getNumRvd(room_t *this, SDL_bool boundary_flag)
 {
-	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
-	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
+	rdt1_header_t *rdt_header;
+	Uint32 offset;
 	rdt1_rvd_t *rvd_array;
 	int i=0, j=0;
 
+	rdt_header = (rdt1_header_t *) this->file;
+	assert(rdt_header);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
 	rvd_array = (rdt1_rvd_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(rvd_array[i].to) != 0xffff) {
@@ -77,11 +85,14 @@ static int rdt1_rvd_getNumRvd(room_t *this, SDL_bool boundary_flag)
 
 static void rdt1_rvd_getRvd(room_t *this, SDL_bool boundary_flag, int num_rvd, room_camswitch_t *room_rvd)
 {
-	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
-	Uint32 offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
+	rdt1_header_t *rdt_header;
+	Uint32 offset;
 	rdt1_rvd_t *rvd_array;
 	int i=0, j=0;
 
+	rdt_header = (rdt1_header_t *) this->file;
+	assert(rdt_header);
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
 	rvd_array = (rdt1_rvd_t *) &((Uint8 *) this->file)[offset];
 
 	while (SDL_SwapLE16(rvd_array[i].to) != 0xffff) {

@@ -30,6 +30,7 @@
 #include "player.h"
 #include "menu.h"
 #include "game.h"
+#include "fs_ignorecase.h"
 
 /*--- Types ---*/
 
@@ -145,6 +146,7 @@ int game_file_exists(const char *filename)
 
 	logMsg(2, "fs: Checking %s file\n", filename);
 
+#if 0
 	curfile = PHYSFS_openRead(filename);
 	if (curfile) {
 		if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
@@ -176,6 +178,12 @@ int game_file_exists(const char *filename)
 	}
 
 /*	logMsg(2, "fs:  %s.\n", detected ? "found" : "not found");*/
+#else
+	filename2 = strdup(filename);
+
+	logMsg(2, "fs: Checking %s file\n", filename);
+	detected = (PHYSFSEXT_locateCorrectCase(filename2) == 0);
+#endif
 
 	return detected;
 }

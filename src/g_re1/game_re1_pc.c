@@ -63,7 +63,7 @@ static const char *re1pcgame_room = "%s/stage%d/room%d%02x0.rdt";
 static const char *re1pcgame_model1 = "%s/enemy/char1%d.emd";
 static const char *re1pcgame_model2 = "%s/enemy/em10%02x.emd";
 static const char *re1pcgame_model3 = "%s/enemy/em11%02x.emd";
-static const char *re1pcgame_font = "%s/Data/fontus.tim";
+static const char *re1pcgame_font = "%s/data/fontus.tim";
 
 static const char *re1pcgame_movies[] = {
 	"horr/usa/movie/capcom.avi",
@@ -126,7 +126,7 @@ game_t *game_re1pc_ctor(game_t *this)
 	char filename[32];
 
 	for (i=0; i<NUM_COUNTRIES; i++) {
-		sprintf(filename, "%s/Data/CAPCOM.PTC", re1_country[i]);
+		sprintf(filename, "%s/data/capcom.ptc", re1_country[i]);
 		if (game_file_exists(filename)) {
 			game_country = i;
 			break;
@@ -158,6 +158,8 @@ static char *getFilename(room_t *this, int num_stage, int num_room, int num_came
 	}
 	sprintf(filepath, re1pcgame_room, re1_country[game_country],
 		num_stage, num_stage, num_room);
+
+	logMsg(1, "game_re1: Room filename %s\n", filepath);
 
 	return filepath;
 }

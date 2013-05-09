@@ -35,6 +35,8 @@
 #include "physfsrwops.h"
 #include "log.h"
 
+#include "g_common/fs_ignorecase.h"
+
 /*--- Defines ---*/
 
 /*--- Global variables ---*/
@@ -114,7 +116,18 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 	PHYSFS_file	*curfile;
 	PHYSFS_sint64	curlength;
 	void	*buffer;
+	char *filename2 = strdup(filename);
 
+	filename2 = strdup(filename);
+	if (!filename2) {
+		return NULL;
+	}
+	if (PHYSFSEXT_locateCorrectCase(filename2) != 0) {
+		free(filename2);
+		return NULL;
+	}
+
+#if 0
 	curfile=PHYSFS_openRead(filename);
 	if (curfile==NULL) {
 		/* Try in upper case */
@@ -152,6 +165,9 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 /*		fprintf(stderr, "fs: can not open %s\n", filename);*/
 		return NULL;
 	}
+#else
+	curfile=PHYSFS_openRead(filename2);
+#endif
 	
 	curlength = PHYSFS_fileLength(curfile);
 	if (filelength!=NULL) {
@@ -162,12 +178,14 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 	if (buffer == NULL) {
 /*		fprintf(stderr,"fs: not enough memory for %s\n",filename);*/
 		PHYSFS_close(curfile);
+		free(filename2);
 		return NULL;
 	}
 
 	PHYSFS_read(curfile, buffer, curlength, 1);
 	PHYSFS_close(curfile);
 
+	free(filename2);
 	return(buffer);
 }
 
@@ -211,9 +229,24 @@ int FS_Save(const char *filename, void *buffer, PHYSFS_sint64 length)
 SDL_RWops *FS_makeRWops(const char *filename)
 {
 	PHYSFS_file	*curfile;
+	char *filename2;
 
+	filename2 = strdup(filename);
+	if (!filename2) {
+		return NULL;
+	}
+	if (PHYSFSEXT_locateCorrectCase(filename2) != 0) {
+		free(filename2);
+		return NULL;
+	}
+
+#if 0
 	curfile=PHYSFS_openRead(filename);
+#else
+	curfile=PHYSFS_openRead(filename2);
+#endif
 	if (curfile==NULL) {
+		free(filename2);
 		return NULL;
 	}
 
