@@ -336,12 +336,14 @@ void view_background_update(void)
 		clockPause();
 
 		if (reload_room) {
+			logMsg(1, "view_background: Load room\n");
 			room->load(room, game->num_stage, game->num_room, game->num_camera);
 			reload_room = 0;
 			reload_bg = 1;
 			/*refresh_player_pos = 1;*/
 		}
 		if (reload_bg) {
+			logMsg(1, "view_background: Load background\n");
 			room->load_background(room, game->num_stage, game->num_room, game->num_camera);
 			reload_bg = 0;
 			refresh_bg = 1;
@@ -381,6 +383,10 @@ static void processPlayerMovement(void)
 	Uint32 tick_current = clockGet();
 	player_t *player = game->player;
 	room_t *room = game->room;
+
+	if (!room->file) {
+		return;
+	}
 
 	was_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 
