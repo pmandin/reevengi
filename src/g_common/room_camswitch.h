@@ -1,5 +1,6 @@
 /*
-	Room map
+	Room
+	Camera switches and boundaries
 
 	Copyright (C) 2007-2013	Patrice Mandin
 
@@ -18,13 +19,9 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_MAP_H
-#define ROOM_MAP_H 1
+#ifndef ROOM_CAMSWITCH_H
+#define ROOM_CAMSWITCH_H 1
 
-/*--- Functions ---*/
+void room_camswitch_init(room_t *this);
 
-void room_map_init(room_t *this);
-
-void room_map_init_data(room_t *this);
-
-#endif /* ROOM_MAP_H */
+#endif /* ROOM_CAMSWITCH_H */

@@ -564,10 +564,9 @@ void view_background_draw(void)
 		drawOrigin();	/* what the camera looks at */
 	}
 
-	/*if (render_map) {
-		room_map_draw(room);
-		room_map_drawPlayer(player->x, player->z, player->a);
-	}*/
+	if (render_map) {
+		room->drawMap(room);
+	}
 }
 
 static void drawOrigin(void)

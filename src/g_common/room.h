@@ -111,6 +111,9 @@ struct room_s {
 
 	void (*scriptDump)(room_t *this, int num_script);	/* Dump a script */
 	void (*scriptExec)(room_t *this, int num_script);	/* Execute script */
+
+	/*--- Map ---*/
+	void (*drawMap)(room_t *this);
 };
 
 /*--- Variables ---*/
