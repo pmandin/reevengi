@@ -72,7 +72,10 @@ CHECK_ZLIB()
 # SDL_image
 
 if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image])
+	PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image], [have_sdlimage=yes], [have_sdlimage=no])
+	if [[ "x$have_sdlimage" = "xyes" ]]; then
+		AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
+	fi
 else
 	TMP_CFLAGS=$CFLAGS
 	TMP_CPPFLAGS=$CPPFLAGS
@@ -84,8 +87,9 @@ else
 		have_sdlimage_lib=yes, have_sdlimage_lib=no,
 		$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
 	if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
-		SDLIMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
-		AC_DEFINE(ENABLE_SDLIMAGE, 1, [Define if you have SDL_image])
+		SDL_IMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
+		SDL_IMAGE_CFLAGS=""
+		AC_DEFINE(HAVE_SDLIMAGE, 1, [Define if you have SDL_image])
 	else
 		AC_MSG_WARN([*** SDL_image not found!])
 	fi
@@ -129,15 +133,15 @@ fi
 
 # Talloc
 
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES([LIBTALLOC], [talloc])
-fi
+#if test "x$PKG_CONFIG" != "x"; then
+#	PKG_CHECK_MODULES([LIBTALLOC], [talloc])
+#fi
 
 # Cdio
 
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES([LIBCDIO], [libcdio])
-fi
+#if test "x$PKG_CONFIG" != "x"; then
+#	PKG_CHECK_MODULES([LIBCDIO], [libcdio])
+#fi
 
 # Gamma setting
 # Some SDL versions have a bug using windib driver that makes it crash
@@ -179,7 +183,8 @@ fi
 # Outputs
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
-AC_SUBST(SDLIMAGE_LIBS)
+AC_SUBST(SDL_IMAGE_CFLAGS)
+AC_SUBST(SDL_IMAGE_LIBS)
 AC_SUBST(PHYSFS_CFLAGS)
 AC_SUBST(PHYSFS_LIBS)
 

@@ -27,7 +27,7 @@
 #endif
 
 #include <SDL.h>
-#ifdef ENABLE_SDLIMAGE
+#ifdef HAVE_SDLIMAGE
 #include <SDL_image.h>
 #endif
 
@@ -215,7 +215,7 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 
 int load_jpg_bg(room_t *this, const char *filename)
 {
-#ifdef ENABLE_SDLIMAGE
+#ifdef HAVE_SDLIMAGE
 	SDL_RWops *src;
 	int retval = 0;
 	
