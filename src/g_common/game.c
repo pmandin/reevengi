@@ -175,7 +175,7 @@ int game_file_exists(const char *filename)
 		}
 	}
 
-	logMsg(2, "fs:  %s.\n", detected ? "found" : "not found");
+/*	logMsg(2, "fs:  %s.\n", detected ? "found" : "not found");*/
 
 	return detected;
 }

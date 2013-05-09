@@ -52,9 +52,9 @@ static const char *re1_country[6]={
 	"horr/usa",
 	"horr/ger",
 	"horr/jpn",
-	"usa",
-	"ger",
-	"jpn"
+	"USA",
+	"GER",
+	"JPN"
 };
 
 static const char *re1pcgame_bg = "%s/stage%d/rc%d%02x%d.pak";
@@ -63,7 +63,7 @@ static const char *re1pcgame_room = "%s/stage%d/room%d%02x0.rdt";
 static const char *re1pcgame_model1 = "%s/enemy/char1%d.emd";
 static const char *re1pcgame_model2 = "%s/enemy/em10%02x.emd";
 static const char *re1pcgame_model3 = "%s/enemy/em11%02x.emd";
-static const char *re1pcgame_font = "%s/data/fontus.tim";
+static const char *re1pcgame_font = "%s/Data/fontus.tim";
 
 static const char *re1pcgame_movies[] = {
 	"horr/usa/movie/capcom.avi",
@@ -126,7 +126,7 @@ game_t *game_re1pc_ctor(game_t *this)
 	char filename[32];
 
 	for (i=0; i<NUM_COUNTRIES; i++) {
-		sprintf(filename, "%s/data/capcom.ptc", re1_country[i]);
+		sprintf(filename, "%s/Data/CAPCOM.PTC", re1_country[i]);
 		if (game_file_exists(filename)) {
 			game_country = i;
 			break;
@@ -377,14 +377,14 @@ static void load_font(game_t *this)
 	int retval = 0;
 	char *filepath;
 
-	logMsg(1, "Loading font from %s...\n", re1pcgame_font);
-
 	filepath = malloc(strlen(re1pcgame_font)+32);
 	if (!filepath) {
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
 	sprintf(filepath, re1pcgame_font, re1_country[game_country]);
+
+	logMsg(1, "Loading font from %s...\n", filepath);
 
 	font_file = FS_Load(filepath, &length);
 	if (font_file) {
