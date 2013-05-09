@@ -126,7 +126,8 @@ game_t *game_re1_ctor(game_t *this)
 	room->scriptInit = rdt1_scd_scriptInit;
 	room->scriptGetInstLen = rdt1_scd_scriptGetInstLen;
 	room->scriptExecInst = rdt1_scd_scriptExecInst;
-	/*room->scriptPrintInst = rdt1_scd_scriptPrintInst;*/
+
+	room->scriptDump = rdt1_scd_scriptDump;
 
 #if 0
 	/* Init default room and player pos */

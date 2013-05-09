@@ -77,7 +77,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 void rdt3_scd_scriptDump(room_t *this, int num_script)
 {
 	rdt2_header_t *rdt_header;
-	Uint32 offset, smaller_offset, script_length;
+	Uint32 offset, smaller_offset, script_length = 0;
 	Uint16 *functionArrayPtr;
 	int i, num_funcs, room_script = RDT2_OFFSET_INIT_SCRIPT;
 

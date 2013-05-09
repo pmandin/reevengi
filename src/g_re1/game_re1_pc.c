@@ -52,9 +52,9 @@ static const char *re1_country[6]={
 	"horr/usa",
 	"horr/ger",
 	"horr/jpn",
-	"USA",
-	"GER",
-	"JPN"
+	"usa",
+	"ger",
+	"jpn"
 };
 
 static const char *re1pcgame_bg = "%s/stage%d/rc%d%02x%d.pak";

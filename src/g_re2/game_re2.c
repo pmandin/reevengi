@@ -34,6 +34,7 @@
 #include "rdt_pri.h"
 #include "rdt_msg.h"
 #include "rdt_scd.h"
+#include "rdt_scd_dump.h"
 
 /*--- Constants ---*/
 
@@ -141,7 +142,8 @@ game_t *game_re2_ctor(game_t *this)
 	room->scriptInit = rdt2_scd_scriptInit;
 	room->scriptGetInstLen = rdt2_scd_scriptGetInstLen;
 	room->scriptExecInst = rdt2_scd_scriptExecInst;
-	/*room->scriptPrintInst = rdt2_scd_scriptPrintInst;*/
+
+	room->scriptDump = rdt2_scd_scriptDump;
 
 #if 0
 	/* Init default room and player pos */
