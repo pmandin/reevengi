@@ -138,50 +138,44 @@ static void dtor(game_t *this)
 
 int game_file_exists(const char *filename)
 {
-	char *filenamedir;
-	int detected = 0;
+	char *filename2;
+	int i, detected = 0;
+	PHYSFS_file *curfile;
+	char dummy;
 
-	filenamedir = malloc(strlen(params.basedir)+strlen(filename)+4);
-	if (filenamedir) {
-		PHYSFS_file	*curfile;
+	logMsg(2, "fs: Checking %s file\n", filename);
 
-		sprintf(filenamedir, "%s/%s", params.basedir, filename);
-
-		logMsg(2, "fs: Checking %s file\n", filename);
-
-		curfile = PHYSFS_openRead(filename);
-		if (curfile) {
-			char dummy;
-
-			if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
-				detected = 1;
-			}
-
-			PHYSFS_close(curfile);
+	curfile = PHYSFS_openRead(filename);
+	if (curfile) {
+		if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
+			detected = 1;
 		}
 
-		/* Try in upper case */
-		if (!detected) {
-			int i;
+		PHYSFS_close(curfile);
+	}
 
-			for (i=0; i<strlen(filenamedir); i++) {
-				filenamedir[i] = toupper(filenamedir[i]);
+	/* Try in upper case */
+	if (!detected) {
+		filename2 = calloc(1, strlen(filename)+1);
+		if (filename2) {
+			for (i=0; i<strlen(filename2); i++) {
+				filename2[i] = toupper(filename[i]);
 			}
 
 			curfile = PHYSFS_openRead(filename);
 			if (curfile) {
-				char dummy;
-
 				if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
 					detected = 1;
 				}
 
 				PHYSFS_close(curfile);
 			}
-		}
 
-		free(filenamedir);
+			free(filename2);
+		}
 	}
+
+	logMsg(2, "fs:  %s.\n", detected ? "found" : "not found");
 
 	return detected;
 }
