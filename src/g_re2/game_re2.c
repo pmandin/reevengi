@@ -23,16 +23,22 @@
 #include "../log.h"
 #include "../parameters.h"
 
+#include "../g_common/player.h"
+#include "../g_common/room.h"
 #include "../g_common/game.h"
 
 #include "game_re2.h"
+#include "rdt.h"
+#include "rdt_rid.h"
+#include "rdt_rvd.h"
+#include "rdt_pri.h"
 
 /*--- Constants ---*/
 
 static const game_detect_t game_detect[]={
-	{GAME_RE2_PC_GAME_LEON, "PL0/ZMOVIE/R108L.BIN", "Resident Evil 2 [LEON], PC"},
-	{GAME_RE2_PC_GAME_CLAIRE, "PL1/ZMOVIE/R108C.BIN", "Resident Evil 2 [CLAIRE], PC"},
-	{GAME_RE2_PC_DEMO_P, "Regist/LeonP.exe", "Resident Evil 2 Preview, PC"},
+	{GAME_RE2_PC_GAME_LEON, "pl0/zmovie/r108l.bin", "Resident Evil 2 [LEON], PC"},
+	{GAME_RE2_PC_GAME_CLAIRE, "pl1/zmovie/r108c.bin", "Resident Evil 2 [CLAIRE], PC"},
+	{GAME_RE2_PC_DEMO_P, "regist/leonp.exe", "Resident Evil 2 Preview, PC"},
 	{GAME_RE2_PC_DEMO_U, "regist/leonu.exe", "Resident Evil 2 Preview, PC"},
 
 	{GAME_RE2_PS1_DEMO, "sced_003.60", "Resident Evil 2 Preview (UK), PS1"},
@@ -78,6 +84,7 @@ void game_re2_detect(game_t *this)
 		if (game_file_exists(game_detect[i].filename)) {
 			this->major = GAME_RE2;
 			this->minor = game_detect[i].version;
+			this->name = game_detect[i].name;
 			break;
 		}
 		i++;
@@ -86,6 +93,8 @@ void game_re2_detect(game_t *this)
 
 game_t *game_re2_ctor(game_t *this)
 {
+	room_t *room;
+
 	switch(this->minor) {
 		case GAME_RE2_PS1_DEMO:
 		case GAME_RE2_PS1_DEMO2:
@@ -108,6 +117,22 @@ game_t *game_re2_ctor(game_t *this)
 	}
 
 	this->get_char = get_char;
+
+	room = this->room;
+
+	room->init = rdt2_init;
+
+	room->getNumCameras = rdt2_rid_getNumCameras;
+	room->getCamera = rdt2_rid_getCamera;
+
+	room->getNumCamSwitches = rdt2_rvd_getNumCamSwitches;
+	room->getCamSwitch = rdt2_rvd_getCamSwitch;
+
+	room->getNumBoundaries = rdt2_rvd_getNumBoundaries;
+	room->getBoundary = rdt2_rvd_getBoundary;
+
+	room->initMasks = rdt2_pri_initMasks;
+	room->drawMasks = rdt2_pri_drawMasks;
 
 #if 0
 	/* Init default room and player pos */
