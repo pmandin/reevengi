@@ -28,20 +28,16 @@
 #include <SDL.h>
 #include <math.h>
 
-#include "state.h"
+#include "parameters.h"
+#include "log.h"
+#include "clock.h"
+
+#include "g_common/game.h"
+#include "g_common/room.h"
+#include "g_common/player.h"
+
 #include "video.h"
 #include "render.h"
-#include "parameters.h"
-#include "room.h"
-#include "g_re1/re1_pc_game.h"
-#include "g_re1/re1_ps1.h"
-#include "g_re2/re2_pc_demo.h"
-#include "g_re2/re2_pc_game.h"
-#include "g_re2/re2_ps1.h"
-#include "g_re3/re3_pc.h"
-#include "g_re3/re3_ps1_game.h"
-#include "clock.h"
-#include "log.h"
 
 /*--- Defines ---*/
 
@@ -101,7 +97,7 @@ static int reload_room = 1;
 static int refresh_bg = 1;
 static int reload_model = 1;
 
-static render_skel_t *player_model = NULL;
+/*static render_skel_t *player_model = NULL;*/
 static int render_model = RENDER_WIREFRAME;
 static int prev_render_model = -1;
 
@@ -149,100 +145,63 @@ void view_background_init(void)
 void view_background_input(SDL_Event *event)
 {
 	int start_movement = 0;
+	player_t *player = game->player;
 
 	switch(event->type) {
 	case SDL_KEYDOWN:
 		switch (event->key.keysym.sym) {
 			case KEY_STAGE_DOWN:
-				--game_state.num_stage;
-				if (game_state.num_stage < 1) {
-					game_state.num_stage = 7;
-				}
+				game->prev_stage(game);
 				reload_room = 1;
 				refresh_player_pos = 1;
 				break;						
 			case KEY_STAGE_UP:
-				++game_state.num_stage;
-				if (game_state.num_stage > 7) {
-					game_state.num_stage = 1;
-				}
+				game->next_stage(game);
 				reload_room = 1;
 				refresh_player_pos = 1;
 				break;						
 			case KEY_STAGE_RESET:
-				game_state.num_stage = 1;
+				game->reset_stage(game);
 				reload_room = 1;
 				refresh_player_pos = 1;
 				break;						
 			case KEY_ROOM_DOWN:
-				--game_state.num_room;
-				if (game_state.num_room < 0) {
-					game_state.num_room = 0x1c;
-				}
+				game->prev_room(game);
 				reload_room = 1;
 				refresh_player_pos = 1;
 				break;						
 			case KEY_ROOM_UP:
-				++game_state.num_room;
-				if (game_state.num_room > 0x1c) {
-					game_state.num_room = 0;
-				}
+				game->next_room(game);
 				reload_room = 1;
 				refresh_player_pos = 1;
 				break;						
 			case KEY_ROOM_RESET:
-				game_state.num_room = 0;
+				game->reset_room(game);
 				reload_room = 1;
 				refresh_player_pos = 1;
 				break;						
 			case KEY_CAMERA_DOWN:
-				if (!game_state.room) {
-					game_state.num_camera = 0;
-				} else {
-					--game_state.num_camera;
-					if (game_state.num_camera<0) {
-						if (game_state.room->num_cameras>0) {
-							game_state.num_camera = game_state.room->num_cameras-1;
-						} else {
-							game_state.num_camera = 0;
-						}
-					}
-				}
+				game->prev_camera(game);
 				reload_bg = 1;
 				break;			
 			case KEY_CAMERA_UP:
-				if (!game_state.room) {
-					game_state.num_camera = 0;
-				} else {
-					++game_state.num_camera;
-					if (game_state.num_camera>=game_state.room->num_cameras) {
-						game_state.num_camera = 0;
-					}
-				}
+				game->next_camera(game);
 				reload_bg = 1;
-				break;						
+				break;
 			case KEY_CAMERA_RESET:
-				game_state.num_camera = 0;
+				game->reset_camera(game);
 				reload_bg = 1;
 				break;						
 			case KEY_MODEL_DOWN:
-				--game_state.num_model;
-				if (game_state.num_model<0) {
-					game_state.num_model=0;
-				} else {
-					reload_model = 1;
-				}
+				player->prev_model(player);
+				reload_model = 1;
 				break;
 			case KEY_MODEL_UP:
-				++game_state.num_model;
-				if (game_state.num_model>100) {
-					game_state.num_model=100;
-				} else {
-					reload_model = 1;
-				}
+				player->next_model(player);
+				reload_model = 1;
 				break;
 			case KEY_MODEL_RESET:
-				game_state.num_model = 0;
+				player->reset_model(player);
 				reload_model = 1;
 				break;
 			case KEY_TOGGLE_GRID:
@@ -308,20 +267,10 @@ void view_background_input(SDL_Event *event)
 				render.setRenderDepth(render_depth);
 				break;
 			case KEY_ANIM_DOWN:
-				if (game_state.num_anim>0) {
-					--game_state.num_anim;
-				}
+				player->prev_anim(player);
 				break;
 			case KEY_ANIM_UP:
-				{
-					if (player_model) {
-						int num_anims = player_model->getNumAnims(player_model);
-
-						if (game_state.num_anim<num_anims-1) {
-							++game_state.num_anim;
-						}
-					}
-				}
+				player->next_anim(player);
 				break;
 			case KEY_TOGGLE_ANIM:
 				switch(render_anim) {
@@ -363,10 +312,10 @@ void view_background_input(SDL_Event *event)
 
 	if (start_movement) {
 		tick_movement = clockGet();
-		playerstart_x = game_state.player_x;
-		playerstart_y = game_state.player_y;
-		playerstart_z = game_state.player_z;
-		playerstart_a = game_state.player_a;
+		playerstart_x = player->x;
+		playerstart_y = player->y;
+		playerstart_z = player->z;
+		playerstart_a = player->a;
 	}
 }
 
@@ -377,6 +326,9 @@ void view_background_refresh(void)
 
 void view_background_update(void)
 {
+	player_t *player = game->player;
+	room_t *room = game->room;
+
 	processPlayerMovement();
 
 	/* Pause game clock while loading stuff */
@@ -384,13 +336,13 @@ void view_background_update(void)
 		clockPause();
 
 		if (reload_room) {
-			game_state.load_room();
+			room->load(room, game->num_stage, game->num_room, game->num_camera);
 			reload_room = 0;
 			reload_bg = 1;
 			/*refresh_player_pos = 1;*/
 		}
 		if (reload_bg) {
-			game_state.load_background();
+			room->load_background(room, game->num_stage, game->num_room, game->num_camera);
 			reload_bg = 0;
 			refresh_bg = 1;
 		}
@@ -401,17 +353,17 @@ void view_background_update(void)
 			refresh_bg = 0;
 		}
 		if (reload_model) {
-			player_model = game_state.load_model(game_state.num_model);
+			player->model = player->load_model(player, player->num_model);
 			reload_model = 0;
 
-			if (player_model) {
-				int num_anims = player_model->getNumAnims(player_model);
+			if (player->model) {
+				int num_anims = player->model->getNumAnims(player->model);
 
-				if (game_state.num_anim>=num_anims) {
-					game_state.num_anim = num_anims-1;
+				if (player->num_anim>=num_anims) {
+					player->num_anim = num_anims-1;
 				}
-				if (game_state.num_anim<0) {
-					game_state.num_anim = 0;
+				if (player->num_anim<0) {
+					player->num_anim = 0;
 				}
 			}
 		}
@@ -427,101 +379,106 @@ static void processPlayerMovement(void)
 	float new_x, new_z;
 	int new_camera, was_inside, is_inside;
 	Uint32 tick_current = clockGet();
+	player_t *player = game->player;
+	room_t *room = game->room;
 
-	was_inside = (room_checkBoundary(game_state.room, game_state.num_camera, game_state.player_x, game_state.player_z) == 0);
+	was_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 
 	if (player_moveforward) {
-		new_x = playerstart_x + cos((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		new_z = playerstart_z - sin((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
+		new_x = playerstart_x + cos((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
+		new_z = playerstart_z - sin((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
+		is_inside = (room->checkBoundary(room, game->num_camera, new_x, new_z) == 0);
 #ifdef DISABLE_CAM_SWITCH
 		is_inside = was_inside;
 #endif
 		if (was_inside && !is_inside) {
 			/* Player can not go out */
 		} else {
-			game_state.player_x = new_x;
-			game_state.player_z = new_z;
+			player->x = new_x;
+			player->z = new_z;
 		}
-		new_camera = room_checkCamswitch(game_state.room, game_state.num_camera, game_state.player_x, game_state.player_z);
+		new_camera = room->checkCamSwitch(room, game->num_camera, player->x, player->z);
 #ifdef DISABLE_CAM_SWITCH
 		new_camera = -1;
 #endif
 		if (new_camera != -1) {
-			game_state.num_camera = new_camera;
+			game->num_camera = new_camera;
 			reload_bg = 1;
 		}
 	}
 	if (player_movebackward) {
-		new_x = playerstart_x - cos((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		new_z = playerstart_z + sin((game_state.player_a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		is_inside = (room_checkBoundary(game_state.room, game_state.num_camera, new_x, new_z) == 0);
+		new_x = playerstart_x - cos((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
+		new_z = playerstart_z + sin((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
+		is_inside = (room->checkBoundary(room, game->num_camera, new_x, new_z) == 0);
 #ifdef DISABLE_CAM_SWITCH
 		is_inside = was_inside;
 #endif
 		if (was_inside && !is_inside) {
 			/* Player can not go out */
 		} else {
-			game_state.player_x = new_x;
-			game_state.player_z = new_z;
+			player->x = new_x;
+			player->z = new_z;
 		}
-		new_camera = room_checkCamswitch(game_state.room, game_state.num_camera, game_state.player_x, game_state.player_z);
+		new_camera = room->checkCamSwitch(room, game->num_camera, player->x, player->z);
 #ifdef DISABLE_CAM_SWITCH
 		new_camera = -1;
 #endif
 		if (new_camera != -1) {
-			game_state.num_camera = new_camera;
+			game->num_camera = new_camera;
 			reload_bg = 1;
 		}
 	}
 	if (player_moveup) {
-		game_state.player_y = playerstart_y - 5.0f*(tick_current-tick_movement);
+		player->y = playerstart_y - 5.0f*(tick_current-tick_movement);
 	}
 	if (player_movedown) {
-		game_state.player_y = playerstart_y + 5.0f*(tick_current-tick_movement);
+		player->y = playerstart_y + 5.0f*(tick_current-tick_movement);
 	}
 	if (player_turnleft) {
-		game_state.player_a = playerstart_a - 1.0f*(tick_current-tick_movement);
-		while (game_state.player_a < 0.0f) {
-			game_state.player_a += 4096.0f;
+		player->a = playerstart_a - 1.0f*(tick_current-tick_movement);
+		while (player->a < 0.0f) {
+			player->a += 4096.0f;
 		}
 	}
 	if (player_turnright) {
-		game_state.player_a = playerstart_a + 1.0f*(tick_current-tick_movement);
-		while (game_state.player_a > 4096.0f) {
-			game_state.player_a -= 4096.0f;
+		player->a = playerstart_a + 1.0f*(tick_current-tick_movement);
+		while (player->a > 4096.0f) {
+			player->a -= 4096.0f;
 		}
 	}
 }
 
 static void processEnterDoor(void)
 {
+#if 0
+	player_t *player = game->player;
+	room_t *room = game->room;
 	room_door_t *door;
 
-	if (!game_state.room) {
-		return;
-	}
-	if (!game_state.room->enterDoor) {
+	if (!room->enterDoor) {
 		return;
 	}
 
-	door = game_state.room->enterDoor(game_state.room, game_state.player_x, game_state.player_z);
+	door = room->enterDoor(room, player->x, player->z);
 	if (door) {
-		game_state.player_x = door->next_x;
-		game_state.player_y = door->next_y;
-		game_state.player_z = door->next_z;
-		game_state.player_a = door->next_dir;
+		player->x = door->next_x;
+		player->y = door->next_y;
+		player->z = door->next_z;
+		player->a = door->next_dir;
 
-		game_state.num_stage = door->next_stage;
-		game_state.num_room = door->next_room;
-		game_state.num_camera = door->next_camera;
+		game->num_stage = door->next_stage;
+		game->num_room = door->next_room;
+		game->num_camera = door->next_camera;
 
 		reload_room = 1;
 	}
+#endif
 }
 
 void view_background_draw(void)
 {
+	player_t *player = game->player;
+	room_t *room = game->room;
 	room_camera_t room_camera;
 
 	render.startFrame();
@@ -533,17 +490,19 @@ void view_background_draw(void)
 	}
 
 	/* Draw background, dithered if needed */
-	if (game_state.background) {
+	if (room->background) {
+		render_texture_t *room_bg = room->background;
+
 		render.set_dithering(params.dithering);
 		render.set_useDirtyRects(1);	/* restore background only on dirtied zones */
-		render.set_texture(0, game_state.background);
+		render.set_texture(0, room_bg);
 
 		render.bitmap.clipSource(0,0,0,0);
 		render.bitmap.clipDest(
 			video.viewport.x,video.viewport.y,
 			video.viewport.w,video.viewport.h);
 		render.bitmap.setScaler(
-			game_state.background->w, game_state.background->h,
+			room_bg->w, room_bg->h,
 			video.viewport.w,video.viewport.h);
 		render.bitmap.setDepth(0, 0.0f);
 		render.bitmap.drawImage();
@@ -555,24 +514,21 @@ void view_background_draw(void)
 	/* Background completely restored, clear dirty rectangles list */
 	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 
-	if (!game_state.room) {
-		return;
-	}
-	if (!game_state.room->getCamera) {
-		return;
-	}
-
 	if (render_masks) {
-		(*game_state.room->drawMasks)(game_state.room, game_state.num_camera);
+		room->drawMasks(room, game->num_camera);
 	}
 
-	(*game_state.room->getCamera)(game_state.room, game_state.num_camera, &room_camera);
+	if (!room->getCamera) {
+		return;
+	}
+
+	room->getCamera(room, game->num_camera, &room_camera);
 
 #ifndef ENABLE_DEBUG_POS
 	if (refresh_player_pos) {
-		game_state.player_x = room_camera.to_x;
-		game_state.player_y = room_camera.to_y;
-		game_state.player_z = room_camera.to_z;
+		player->x = room_camera.to_x;
+		player->y = room_camera.to_y;
+		player->z = room_camera.to_z;
 		refresh_player_pos = 0;
 	}
 #endif
@@ -602,10 +558,10 @@ void view_background_draw(void)
 		drawOrigin();	/* what the camera looks at */
 	}
 
-	if (render_map) {
-		room_map_draw(game_state.room);
-		room_map_drawPlayer(game_state.player_x, game_state.player_z, game_state.player_a);
-	}
+	/*if (render_map) {
+		room_map_draw(room);
+		room_map_drawPlayer(player->x, player->z, player->a);
+	}*/
 }
 
 static void drawOrigin(void)
@@ -666,49 +622,51 @@ static void drawGrid(void)
 
 static void drawPlayer(void)
 {
+	player_t *player = game->player;
+
 	render.set_render(render_model);
 
 	render.set_color(0x004488cc);
 
 	render.push_matrix();
-	render.translate(game_state.player_x, game_state.player_y, game_state.player_z);
-	render.rotate((game_state.player_a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
+	render.translate(player->x, player->y, player->z);
+	render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
-	if (player_model) {
+	if (player->model) {
 		Sint16 posx,posy,posz;
 		Uint32 cur_tick = clockGet();
 
 		if (render_model!=prev_render_model) {
-			player_model->download(player_model);
+			player->model->download(player->model);
 			prev_render_model = render_model;
 		}
 
 		switch(render_anim) {
 			case -1:
-				game_state.num_frame = ((tick_anim - cur_tick)*15)/1000;
+				player->num_frame = ((tick_anim - cur_tick)*15)/1000;
 				break;
 			case 1:
-				game_state.num_frame = ((cur_tick - tick_anim)*15)/1000;
+				player->num_frame = ((cur_tick - tick_anim)*15)/1000;
 				break;
 			case 0:
 			default:
 				break;
 		}
 
-		if (player_model->setAnimFrame(player_model, game_state.num_anim, game_state.num_frame)==0) {
+		if (player->model->setAnimFrame(player->model, player->num_anim, player->num_frame)==0) {
 			tick_anim = cur_tick;
 		}
 
 		render.set_blending(1);
 
-		player_model->getAnimPosition(player_model, &posx, &posy, &posz);
+		player->model->getAnimPosition(player->model, &posx, &posy, &posz);
 		render.translate((float) -posx, (float) -posy, (float) -posz);
 
-		player_model->draw(player_model, 0);
+		player->model->draw(player->model, 0);
 		render.set_blending(0);
 		if (render_bones) {
 			render.set_color(0x0000ff00);
-			player_model->drawBones(player_model, 0);
+			player->model->drawBones(player->model, 0);
 		}
 #if 0
 	} else {

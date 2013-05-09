@@ -25,23 +25,26 @@
 #include "config.h"
 #endif
 
-#include "state.h"
-#include "parameters.h"
-#include "g_re1/re1_ps1.h"
-#include "g_re1/re1_pc_game.h"
-#include "g_re2/re2_pc_game.h"
-#include "g_re2/re2_ps1.h"
-#include "g_re2/re2_pc_demo.h"
-#include "g_re3/re3_ps1_game.h"
-#include "g_re3/re3_pc.h"
+#include "render_texture.h"
+#include "render_mask.h"
+#include "render_skel.h"
+
+#include "g_common/game.h"
+#include "g_common/menu.h"
+
+#include "g_re1/game_re1.h"
+#include "g_re2/game_re2.h"
+#include "g_re3/game_re3.h"
+
 #include "view_background.h"
 #include "view_movie.h"
-#include "filesystem.h"
-#include "log.h"
-#include "clock.h"
 #include "render_texture_list.h"
 #include "render_skel_list.h"
-#include "menu.h"
+
+#include "clock.h"
+#include "parameters.h"
+#include "filesystem.h"
+#include "log.h"
 
 #include "video.h"
 #include "render.h"
@@ -53,6 +56,8 @@
 #define KEY_GAMMA_RESET		SDLK_w
 
 /*--- Global variables ---*/
+
+game_t *game;
 
 video_t video;
 render_t render;
@@ -85,83 +90,44 @@ int main(int argc, char **argv)
 
 	FS_AddArchive(params.basedir);
 
-	state_init();
-	logMsg(0, "Game version: %s\n", state_getGameName());
-	switch(game_state.version) {
-		case GAME_RE1_PS1_DEMO:
-		case GAME_RE1_PS1_GAME:
-			re1ps1_init(&game_state);
-			break;
-		case GAME_RE2_PS1_DEMO:
-		case GAME_RE2_PS1_DEMO2:
-		case GAME_RE2_PS1_GAME_LEON:
-		case GAME_RE2_PS1_GAME_CLAIRE:
-			re2ps1_init(&game_state);
-			break;
-		case GAME_RE3_PS1_GAME:
-			re3ps1game_init(&game_state);
-			break;
-		case GAME_RE1_PC_GAME:
-			re1pcgame_init(&game_state);
-			break;
-		case GAME_RE2_PC_DEMO_P:
-		case GAME_RE2_PC_DEMO_U:
-			re2pcdemo_init(&game_state);
-			if (params.viewmode == VIEWMODE_MOVIE) {
-				logMsg(1, "No movies to play\n");
-				params.viewmode = VIEWMODE_BACKGROUND;
-			}
-			break;
-		case GAME_RE2_PC_GAME_LEON:
-		case GAME_RE2_PC_GAME_CLAIRE:
-			re2pcgame_init(&game_state);
-			break;
-		case GAME_RE3_PC_DEMO:
-		case GAME_RE3_PC_GAME:
-			re3pc_init(&game_state);
-			break;
-		default:
-			FS_Shutdown();
-			exit(1);
+	/* Detect version */
+	game = game_ctor();
+	if (game->major == GAME_UNKNOWN) {
+		game_re1_detect(game);
+	}
+	if (game->major == GAME_UNKNOWN) {
+		game_re2_detect(game);
+	}
+	if (game->major == GAME_UNKNOWN) {
+		game_re3_detect(game);
+	}
+	logMsg(0, "Game version: %s\n", game->name);
+	if (game->major == GAME_UNKNOWN) {
+		FS_Shutdown();
+		exit(1);
 	}
 
-#if 0
-	/* Init default room and player pos */
-	switch(game_state.version) {
-		case GAME_RE1_PS1_DEMO:
-		case GAME_RE1_PS1_GAME:
-		case GAME_RE1_PS1_SHOCK:
-		case GAME_RE1_PC_DEMO:
-		case GAME_RE1_PC_GAME:
-			game_state.num_room = 6;
+	/* Then create game specific stuff */
+	switch(game->major) {
+		case GAME_RE1:
+			game = game_re1_ctor(game);
 			break;
-		case GAME_RE2_PS1_DEMO:
-		case GAME_RE2_PS1_DEMO2:
-		case GAME_RE2_PS1_GAME_LEON:
-		case GAME_RE2_PS1_GAME_CLAIRE:
-		case GAME_RE2_PC_DEMO_P:
-		case GAME_RE2_PC_DEMO_U:
-		case GAME_RE2_PC_GAME_LEON:
-		case GAME_RE2_PC_GAME_CLAIRE:
-			/*game_state.player_x = -1530.0f;
-			game_state.player_y = 2020.0f;
-			game_state.player_z = 2700.0f;
-			game_state.player_a = 3072.0f;*/
+		case GAME_RE2:
+			game = game_re2_ctor(game);
 			break;
-		case GAME_RE3_PS1_DEMO:
-		case GAME_RE3_PS1_GAME:
-		case GAME_RE3_PC_DEMO:
-		case GAME_RE3_PC_GAME:
-			game_state.num_room = 13;
+		case GAME_RE3:
+			game = game_re3_ctor(game);
 			break;
 		default:
 			break;
 	}
-#endif
+
+
+
 
 	if (params.viewmode == VIEWMODE_MOVIE) {	
 #ifdef ENABLE_MOVIES
-		state_newmovie();
+		game->switch_movie(game));
 		params.use_opengl = 0;
 #else
 		logMsg(0,"Movie player disabled\n");
@@ -209,10 +175,11 @@ int main(int argc, char **argv)
 	switch_mode=1;
 
 	/* Init viewer */
-	game_state.load_font();
-	if (!game_state.font) {
+	game->load_font(game);
+	if (!game->font) {
 		logMsg(0, "No font. Menu disabled.\n");
 	}
+	game->menu->init(game->menu, game, game->player);
 
 	clockInit();
 	switch(params.viewmode) {
@@ -242,9 +209,12 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	game_state.shutdown();
 	video.shutDown();
 	render.shutdown();
+
+	game->dtor(game);
+
+	logMsg(0,"fs: shutdown\n");
 	FS_Shutdown();
 
 	SDL_Quit();
@@ -264,7 +234,7 @@ static int viewer_loop(void)
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
 					case SDLK_ESCAPE:
-						/*if (!game_state.font) {*/
+						/*if (!game->font) {*/
 							quit=1;
 						/*} else {
 							disp_menu ^= 1;
@@ -359,7 +329,7 @@ static void viewer_update(void)
 	}
 
 	if (disp_menu) {
-		menu_render();
+		game->menu->draw(game->menu);
 	}
 
 	video.swapBuffers();

@@ -79,6 +79,8 @@ struct game_s {
 	void (*next_movie)(game_t *this);
 	void (*reset_movie)(game_t *this);
 
+	void (*switch_movie)(game_t *this);
+
 	/*--- Font for ASCII text ---*/
 	render_texture_t *font;
 

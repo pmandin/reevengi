@@ -63,9 +63,9 @@ static void reset_camera(game_t *this);
 static void prev_movie(game_t *this);
 static void next_movie(game_t *this);
 static void reset_movie(game_t *this);
+static void switch_movie(game_t *this);
 
 static int getnummovies(game_t *this);
-static void switch_movie(game_t *this);
 
 /*--- Functions ---*/
 
@@ -107,6 +107,7 @@ game_t *game_ctor(void)
 	this->prev_movie = prev_movie;
 	this->next_movie = next_movie;
 	this->reset_movie = reset_movie;
+	this->switch_movie = switch_movie;
 
 	this->player = player_ctor();
 	this->room = room_ctor();
@@ -271,7 +272,7 @@ static void prev_movie(game_t *this)
 		this->num_movie=0;
 	}
 
-	switch_movie(this);
+	this->switch_movie(this);
 }
 
 static void next_movie(game_t *this)
@@ -283,14 +284,14 @@ static void next_movie(game_t *this)
 		this->num_movie = max_num_movies-1;
 	}
 
-	switch_movie(this);
+	this->switch_movie(this);
 }
 
 static void reset_movie(game_t *this)
 {
 	this->num_movie = 0;
 
-	switch_movie(this);
+	this->switch_movie(this);
 }
 
 static int getnummovies(game_t *this)

@@ -83,10 +83,12 @@ struct room_s {
 	/*--- Camera switches ---*/
 	int (*getNumCamSwitches)(room_t *this);
 	void (*getCamSwitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+	int (*checkCamSwitch)(room_t *this, int num_camera, float x, float y);
 
 	/*--- Boundaries ---*/
 	int (*getNumBoundaries)(room_t *this);
 	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_boundary);
+	int (*checkBoundary)(room_t *this, int num_camera, float x, float y);
 
 	/*--- Background masking ---*/
 	render_texture_t *bg_mask;
