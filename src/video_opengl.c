@@ -34,7 +34,6 @@
 #include "parameters.h"
 #include "video.h"
 #include "render.h"
-#include "state.h"
 #include "log.h"
 
 /*--- Variables ---*/

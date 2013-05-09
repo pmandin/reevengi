@@ -1,5 +1,5 @@
 /*
-	RE1 PRI
+	RE2 PRI
 	Background masking
 
 	Copyright (C) 2009-2013	Patrice Mandin
@@ -34,7 +34,7 @@
 
 void rdt2_pri_initMasks(room_t *this, int num_camera)
 {
-	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	rdt2_header_t *rdt_header;
 	Uint32 offset;
 	rdt2_rid_t *cam_array;
 	rdt2_pri_header_t *mask_hdr;
@@ -50,6 +50,7 @@ void rdt2_pri_initMasks(room_t *this, int num_camera)
 		return;
 	}
 
+	rdt_header = (rdt2_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAMERAS]);
 	cam_array = (rdt2_rid_t *) &((Uint8 *) this->file)[offset];
 

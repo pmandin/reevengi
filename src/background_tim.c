@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <SDL.h>
 
-#include "state.h"
 #include "background_tim.h"
 
 /*--- Functions ---*/
