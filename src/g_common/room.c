@@ -52,6 +52,7 @@ static void init(room_t *this);
 
 static void load_background(room_t *this, int stage, int room, int camera);
 static void load_bgmask(room_t *this, int stage, int room, int camera);
+static void changeCamera(room_t *this, int num_stage, int num_room, int num_camera);
 
 static void unload(room_t *this);
 static void unload_background(room_t *this);
@@ -88,6 +89,7 @@ room_t *room_ctor(void)
 
 	this->load_background = load_background;
 	this->load_bgmask = load_bgmask;
+	this->changeCamera = changeCamera;
 
 	this->getNumCameras = getNumCameras;
 	this->getCamera = getCamera;
@@ -207,6 +209,14 @@ static void unload_bgmask(room_t *this)
 		free(this->rdr_mask);
 		this->rdr_mask=NULL;
 	}
+}
+
+static void changeCamera(room_t *this, int num_stage, int num_room, int num_camera)
+{
+	this->load_background(this, num_stage, num_room, num_camera);
+
+	this->load_bgmask(this, num_stage, num_room, num_camera);
+	this->initMasks(this, num_camera);
 }
 
 static int getNumCameras(room_t *this)

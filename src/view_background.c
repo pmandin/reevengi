@@ -344,7 +344,7 @@ void view_background_update(void)
 		}
 		if (reload_bg) {
 			logMsg(1, "view_background: Load background\n");
-			room->load_background(room, game->num_stage, game->num_room, game->num_camera);
+			room->changeCamera(room, game->num_stage, game->num_room, game->num_camera);
 			reload_bg = 0;
 			refresh_bg = 1;
 		}

@@ -66,6 +66,7 @@ struct room_s {
 
 	void (*load_background)(room_t *this, int stage, int room, int camera);
 	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
+	void (*changeCamera)(room_t *this, int stage, int room, int camera);
 
 	/* RDT file */
 	void *file;
