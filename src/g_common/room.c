@@ -72,7 +72,6 @@ static void getText(room_t *this, int lang, int num_text, char *buffer, int buff
 static Uint8 *scriptInit(room_t *this, int num_script);
 static int scriptGetInstLen(room_t *this, Uint8 *curInstPtr);
 static void scriptExecInst(room_t *this);
-static void scriptPrintInst(room_t *this);
 
 static void scriptDump(room_t *this, int num_script);
 static void scriptExec(room_t *this, int num_script);
@@ -121,7 +120,6 @@ room_t *room_ctor(void)
 	this->scriptInit = scriptInit;
 	this->scriptGetInstLen = scriptGetInstLen;
 	this->scriptExecInst = scriptExecInst;
-	this->scriptPrintInst = scriptPrintInst;
 
 	this->scriptDump = scriptDump;
 	this->scriptExec = scriptExec;
@@ -363,10 +361,6 @@ static void scriptExecInst(room_t *this)
 {
 }
 
-static void scriptPrintInst(room_t *this)
-{
-}
-
 static void scriptDump(room_t *this, int num_script)
 {
 	Uint8 *inst;
@@ -394,7 +388,7 @@ static void scriptDump(room_t *this, int num_script)
 			logMsg(2, strBuf);
 		}
 
-		this->scriptPrintInst(this);
+		/*this->scriptPrintInst(this);*/
 		inst = scriptNextInst(this);
 	}
 }

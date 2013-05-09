@@ -140,52 +140,11 @@ static void dtor(game_t *this)
 int game_file_exists(const char *filename)
 {
 	char *filename2;
-	int i, detected = 0;
-	PHYSFS_file *curfile;
-	char dummy;
 
-	logMsg(2, "fs: Checking %s file\n", filename);
-
-#if 0
-	curfile = PHYSFS_openRead(filename);
-	if (curfile) {
-		if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
-			detected = 1;
-		}
-
-		PHYSFS_close(curfile);
-	}
-
-	/* Try in upper case */
-	if (!detected) {
-		filename2 = calloc(1, strlen(filename)+1);
-		if (filename2) {
-			for (i=0; i<strlen(filename2); i++) {
-				filename2[i] = toupper(filename[i]);
-			}
-
-			curfile = PHYSFS_openRead(filename);
-			if (curfile) {
-				if (PHYSFS_read(curfile, &dummy, 1, 1)>0) {
-					detected = 1;
-				}
-
-				PHYSFS_close(curfile);
-			}
-
-			free(filename2);
-		}
-	}
-
-/*	logMsg(2, "fs:  %s.\n", detected ? "found" : "not found");*/
-#else
 	filename2 = strdup(filename);
-
 	logMsg(2, "fs: Checking %s file\n", filename);
-	detected = (PHYSFSEXT_locateCorrectCase(filename2) == 0);
-#endif
 
-	return detected;
+	return (PHYSFSEXT_locateCorrectCase(filename2) == 0);
 }
 
 static void load_font(game_t *this)

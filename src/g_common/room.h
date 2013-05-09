@@ -108,7 +108,6 @@ struct room_s {
 	Uint8 *(*scriptInit)(room_t *this, int num_script);	/* Init a script, return ptr of first inst */
 	int (*scriptGetInstLen)(room_t *this, Uint8 *curInstPtr);	/* Get current instruction length */
 	void (*scriptExecInst)(room_t *this);	/* Execute an instruction */
-	void (*scriptPrintInst)(room_t *this);	/* Print an instruction */
 
 	void (*scriptDump)(room_t *this, int num_script);	/* Dump a script */
 	void (*scriptExec)(room_t *this, int num_script);	/* Execute script */
