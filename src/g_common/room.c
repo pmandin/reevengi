@@ -67,6 +67,8 @@ static int checkBoundary(room_t *this, int num_camera, float x, float y);
 static void initMasks(room_t *this, int num_camera);
 static void drawMasks(room_t *this, int num_camera);
 
+static void getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
+
 static Uint8 *scriptInit(room_t *this, int num_script);
 static int scriptGetInstLen(room_t *this, Uint8 *curInstPtr);
 static void scriptExecInst(room_t *this);
@@ -113,6 +115,8 @@ room_t *room_ctor(void)
 
 	this->initMasks = initMasks;
 	this->drawMasks = drawMasks;
+
+	this->getText = getText;
 
 	this->scriptInit = scriptInit;
 	this->scriptGetInstLen = scriptGetInstLen;
@@ -338,6 +342,10 @@ static void initMasks(room_t *this, int num_camera)
 }
 
 static void drawMasks(room_t *this, int num_camera)
+{
+}
+
+static void getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen)
 {
 }
 

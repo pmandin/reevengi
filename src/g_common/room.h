@@ -97,6 +97,9 @@ struct room_s {
 	void (*initMasks)(room_t *this, int num_camera);
 	void (*drawMasks)(room_t *this, int num_camera);
 
+	/*--- Texts ---*/
+	void (*getText)(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
+
 	/*--- Script execution ---*/
 	Uint8 *cur_inst;
 	int cur_inst_offset;

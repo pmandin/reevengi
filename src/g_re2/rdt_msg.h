@@ -1,6 +1,6 @@
 /*
-	Room description
-	RE2 RDT manager
+	RE2 MSG
+	Text messages
 
 	Copyright (C) 2009-2013	Patrice Mandin
 
@@ -19,30 +19,17 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_H
-#define RDT_H 1
+#ifndef RDT_MSG_H
+#define RDT_MSG_H 1
 
 /*--- Defines ---*/
 
-#define RDT2_OFFSET_CAMERAS	7
-#define RDT2_OFFSET_CAM_SWITCHES	8
-#define RDT2_OFFSET_TEXT_LANG1	13
-#define RDT2_OFFSET_TEXT_LANG2	14
-#define RDT2_OFFSET_INIT_SCRIPT	16
-#define RDT2_OFFSET_ROOM_SCRIPT	17
-#define RDT2_OFFSET_ANIMS	18
+/*--- External types ---*/
 
 /*--- Types ---*/
 
-typedef struct {
-	Uint8	unknown0;
-	Uint8	num_cameras;
-	Uint8	unknown1[6];
-	Uint32	offsets[21];
-} rdt2_header_t;
-
 /*--- Functions ---*/
 
-void rdt2_init(room_t *this);
+void rdt2_msg_getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
 
-#endif /* RDT_H */
+#endif /* RDT_MSG_H */

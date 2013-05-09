@@ -27,21 +27,6 @@
 
 #include "rdt.h"
 
-/*--- Constants ---*/
-
-static const char txt2asc[0x60]={
-	' ','.','?','?', '?','(',')','?', '?','?','?','?', '0','1','2','3',
-	'4','5','6','7', '8','9',':','?', ',','"','!','?', '?','A','B','C',
-	'D','E','F','G', 'H','I','J','K', 'L','M','N','O', 'P','Q','R','S',
-	'T','U','V','W', 'X','Y','Z','[', '/',']','\'','-', '_','a','b','c',
-	'd','e','f','g', 'h','i','j','k', 'l','m','n','o', 'p','q','r','s',
-	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','?'
-};
-
-static const char *txtcolor[6]={
-	"white", "green", "red", "grey", "blue", "black"
-};
-
 /*--- Types ---*/
 
 typedef struct {
@@ -122,7 +107,7 @@ void rdt2_init(room_t *this)
 
 static void rdt2_displayTexts(room_t *this, int num_lang)
 {
-	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
+	rdt2_header_t *rdt_header;
 	int room_lang = (num_lang==0) ? RDT2_OFFSET_TEXT_LANG1 : RDT2_OFFSET_TEXT_LANG2;
 	Uint32 offset;
 	Uint16 *txtOffsets, txtCount;
@@ -131,6 +116,7 @@ static void rdt2_displayTexts(room_t *this, int num_lang)
 
 	logMsg(1, "Language %d\n", num_lang);
 
+	rdt_header = (rdt2_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[room_lang]);
 	if (offset == 0) {
 		logMsg(1, " No texts to display\n");
@@ -141,98 +127,7 @@ static void rdt2_displayTexts(room_t *this, int num_lang)
 
 	txtCount = SDL_SwapLE16(txtOffsets[0]) >> 1;
 	for (i=0; i<txtCount; i++) {
-		room_rdt2_getText(this, num_lang, i, tmpBuf, sizeof(tmpBuf));
+		this->getText(this, num_lang, i, tmpBuf, sizeof(tmpBuf));
 		logMsg(1, " Text[0x%02x]: %s\n", i, tmpBuf);
-	}
-}
-
-void room_rdt2_getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen)
-{
-	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
-	int room_lang = (lang==0) ? RDT2_OFFSET_TEXT_LANG1 : RDT2_OFFSET_TEXT_LANG2;
-	Uint32 offset;
-	Uint16 *txtOffsets, txtCount;
-	Uint8 *txtPtr;
-	int i = 0;
-	char strBuf[32];
-
-	memset(buffer, 0, sizeof(bufferLen));
-	
-	offset = SDL_SwapLE32(rdt_header->offsets[room_lang]);
-	if (offset == 0) {
-		return;
-	}
-
-	txtOffsets = (Uint16 *) &((Uint8 *) this->file)[offset];
-
-	txtCount = SDL_SwapLE16(txtOffsets[0]) >> 1;
-	if (num_text>=txtCount) {
-		return;
-	}
-
-	txtPtr = &((Uint8 *) this->file)[offset + SDL_SwapLE16(txtOffsets[num_text])];
-
-	while ((txtPtr[i] != 0xfe) && (i<bufferLen-1)) {
-		switch(txtPtr[i]) {
-			case 0xf3:
-				strncat(buffer, "[0xf3]", bufferLen-1);
-				break;
-			case 0xf8:
-				/* Item */
-				sprintf(strBuf, "<item id=\"%d\">", txtPtr[i+1]);
-				strncat(buffer, strBuf, bufferLen-1);
-				i++;
-				break;
-			case 0xf9:
-				/* Text color */
-				if (txtPtr[i+1]<6) {
-					sprintf(strBuf, "<text color=\"%s\">", txtcolor[txtPtr[i+1]]);
-				} else {
-					sprintf(strBuf, "<text color=\"0x%02x\">", txtPtr[i+1]);
-				}
-				strncat(buffer, strBuf, bufferLen-1);
-				i++;
-				break;
-			case 0xfa:
-				switch (txtPtr[i+1]) {
-					case 0:
-						sprintf(strBuf, "<p>");
-						break;
-					case 1:
-						sprintf(strBuf, "</p>");
-						break;
-					default:
-						sprintf(strBuf, "[0xfa][0x%02x]", txtPtr[i+1]);
-						break;
-				}
-				strncat(buffer, strBuf, bufferLen-1);
-				i++;
-				break;
-			case 0xfb:
-				/* Yes/No question */
-				strncat(buffer, "[Yes/No]", bufferLen-1);
-				break;
-			case 0xfc:
-				/* Carriage return */
-				strncat(buffer, "<br>", bufferLen-1);
-				break;
-			case 0xfd:
-				/* Wait player input */
-				sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[i+1]);
-				strncat(buffer, strBuf, bufferLen-1);
-				i++;
-				break;
-			default:
-				if (txtPtr[i]<0x60) {
-					sprintf(strBuf, "%c", txt2asc[txtPtr[i]]);
-				} else if (txtPtr[i]==0x79) {
-					sprintf(strBuf, ".");
-				} else {
-					sprintf(strBuf, "[0x%02x]", txtPtr[i]);
-				}
-				strncat(buffer, strBuf, bufferLen-1);
-				break;
-		}
-		i++;
 	}
 }
