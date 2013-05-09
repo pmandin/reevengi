@@ -26,15 +26,17 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "room.h"
-#include "room_rdt3.h"
-#include "log.h"
-#include "parameters.h"
-#include "room_rdt3_script_common.h"
+#include "../log.h"
+#include "../parameters.h"
+
+#include "../g_common/room.h"
+#include "../g_re2/rdt.h"
+
+#include "rdt_scd_common.h"
 
 #ifndef ENABLE_SCRIPT_DISASM
 
-void room_rdt3_scriptDump(room_t *this, int num_script)
+void rdt3_scd_scriptDump(room_t *this, int num_script)
 {
 }
 
@@ -72,21 +74,21 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 /*--- Functions ---*/
 
-void room_rdt3_scriptDump(room_t *this, int num_script)
+void rdt3_scd_scriptDump(room_t *this, int num_script)
 {
-	rdt3_header_t *rdt_header;
+	rdt2_header_t *rdt_header;
 	Uint32 offset, smaller_offset, script_length;
 	Uint16 *functionArrayPtr;
-	int i, num_funcs, room_script = RDT3_OFFSET_INIT_SCRIPT;
+	int i, num_funcs, room_script = RDT2_OFFSET_INIT_SCRIPT;
 
 	assert(this);
 
 	if (num_script == ROOM_SCRIPT_RUN) {
 		return;
-		/*room_script = RDT3_OFFSET_ROOM_SCRIPT;*/
+		/*room_script = RDT2_OFFSET_ROOM_SCRIPT;*/
 	}
 
-	rdt_header = (rdt3_header_t *) this->file;
+	rdt_header = (rdt2_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
 
 	if (offset==0) {
@@ -168,7 +170,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		memset(strBuf, 0, sizeof(strBuf));
 
-		inst_len = this->scriptPrivGetInstLen((Uint8 *) inst);
+		inst_len = this->scriptGetInstLen(this, (Uint8 *) inst);
 
 		if (params.verbose>=2) {
 			int i;

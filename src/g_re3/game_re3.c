@@ -23,6 +23,7 @@
 #include "../log.h"
 #include "../parameters.h"
 
+#include "../g_common/room.h"
 #include "../g_common/game.h"
 
 #include "game_re3.h"

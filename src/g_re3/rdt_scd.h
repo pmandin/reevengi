@@ -19,9 +19,13 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT3_SCRIPT_H
-#define ROOM_RDT3_SCRIPT_H 1
+#ifndef RDT_SCD_H
+#define RDT_SCD_H 1
 
-void room_rdt3_scriptInit(room_t *this);
+Uint8 *rdt3_scd_scriptInit(room_t *this, int num_script);
+int rdt3_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr);
+void rdt3_scd_scriptExecInst(room_t *this);
 
-#endif /* ROOM_RDT3_SCRIPT_H */
+void rdt3_scd_scriptExec(room_t *this, int num_script);
+
+#endif /* RDT_SCD_H */

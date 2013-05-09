@@ -26,11 +26,13 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "room.h"
-#include "room_rdt3.h"
-#include "log.h"
-#include "room_rdt3_script_common.h"
-#include "room_rdt3_script_dump.h"
+#include "../log.h"
+
+#include "../g_common/room.h"
+#include "../g_re2/rdt.h"
+
+#include "rdt_scd_common.h"
+#include "rdt_scd_dump.h"
 
 /*--- Types ---*/
 
@@ -246,39 +248,24 @@ static const script_inst_len_t inst_length[]={
 	{0x8f,		2}
 };
 
-/*--- Functions prototypes ---*/
-
-static Uint8 *scriptFirstInst(room_t *this, int num_script);
-static int scriptGetInstLen(Uint8 *curInstPtr);
-static void scriptExecInst(room_t *this);
-
 /*--- Functions ---*/
 
-void room_rdt3_scriptInit(room_t *this)
+Uint8 *rdt3_scd_scriptInit(room_t *this, int num_script)
 {
-	this->scriptPrivFirstInst = scriptFirstInst;
-	this->scriptPrivGetInstLen = scriptGetInstLen;
-	this->scriptPrivExecInst = scriptExecInst;
-
-	this->scriptDump = room_rdt3_scriptDump;
-}
-
-static Uint8 *scriptFirstInst(room_t *this, int num_script)
-{
-	rdt3_header_t *rdt_header;
+	rdt2_header_t *rdt_header;
 	Uint32 offset, smaller_offset;
 	Uint16 *functionArrayPtr;
-	int i, room_script = RDT3_OFFSET_INIT_SCRIPT;
+	int i, room_script = RDT2_OFFSET_INIT_SCRIPT;
 
 	if (!this) {
 		return NULL;
 	}
 	if (num_script == ROOM_SCRIPT_RUN) {
 		return NULL;
-		/*room_script = RDT3_OFFSET_ROOM_SCRIPT;*/
+		/*room_script = RDT2_OFFSET_ROOM_SCRIPT;*/
 	}
 
-	rdt_header = (rdt3_header_t *) this->file;
+	rdt_header = (rdt2_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
 
 	this->script_length = this->cur_inst_offset = 0;
@@ -311,7 +298,7 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 	return this->cur_inst;
 }
 
-static int scriptGetInstLen(Uint8 *curInstPtr)
+int rdt3_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 {
 	int i;
 
@@ -326,8 +313,9 @@ static int scriptGetInstLen(Uint8 *curInstPtr)
 	return 0;
 }
 
-static void scriptExecInst(room_t *this)
+void rdt3_scd_scriptExecInst(room_t *this)
 {
+#if 0
 	script_inst_t *inst;
 
 	if (!this) {
@@ -363,4 +351,5 @@ static void scriptExecInst(room_t *this)
 			}
 			break;
 	}
+#endif
 }

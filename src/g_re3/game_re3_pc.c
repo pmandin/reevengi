@@ -44,7 +44,6 @@
 #include "video.h"
 #include "render.h"
 #include "emd.h"
-#include "room_rdt3.h"
 #include "depack_sld.h"
 
 /*--- Defines ---*/

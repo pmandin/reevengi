@@ -35,7 +35,6 @@
 
 #include "game_re3.h"
 #include "background_bss.h"
-#include "room_rdt3.h"
 #include "render.h"
 
 /*--- Defines ---*/
