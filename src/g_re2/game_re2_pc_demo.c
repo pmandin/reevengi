@@ -40,7 +40,6 @@
 #include "video.h"
 #include "render.h"
 #include "emd.h"
-#include "room_rdt2.h"
 
 /*--- Defines ---*/
 

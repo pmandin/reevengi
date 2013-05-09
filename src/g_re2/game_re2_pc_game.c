@@ -40,7 +40,6 @@
 
 #include "depack_adt.h"
 #include "emd.h"
-#include "room_rdt2.h"
 #include "video.h"
 #include "render.h"
 

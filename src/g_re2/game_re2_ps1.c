@@ -38,7 +38,6 @@
 #include "game_re2.h"
 #include "background_bss.h"
 #include "emd.h"
-#include "room_rdt2.h"
 
 /*--- Defines ---*/
 

@@ -1,6 +1,6 @@
 /*
 	Room description
-	RE2 RDT script dump
+	RE2 RDT script dumper
 
 	Copyright (C) 2009-2010	Patrice Mandin
 
@@ -19,9 +19,9 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT2_SCRIPT_DUMP_H
-#define ROOM_RDT2_SCRIPT_DUMP_H 1
+#ifndef RDT_SCD_DUMP_H
+#define RDT_SCD_DUMP_H 1
 
-void room_rdt2_scriptDump(room_t *this, int num_script);
+void rdt2_scd_scriptDump(room_t *this, int num_script);
 
-#endif /* ROOM_RDT2_SCRIPT_DUMP_H */
+#endif /* RDT_SCD_DUMP_H */

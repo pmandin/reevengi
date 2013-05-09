@@ -33,6 +33,7 @@
 #include "rdt_rvd.h"
 #include "rdt_pri.h"
 #include "rdt_msg.h"
+#include "rdt_scd.h"
 
 /*--- Constants ---*/
 
@@ -136,6 +137,11 @@ game_t *game_re2_ctor(game_t *this)
 	room->drawMasks = rdt2_pri_drawMasks;
 
 	room->getText = rdt2_msg_getText;
+
+	room->scriptInit = rdt2_scd_scriptInit;
+	room->scriptGetInstLen = rdt2_scd_scriptGetInstLen;
+	room->scriptExecInst = rdt2_scd_scriptExecInst;
+	/*room->scriptPrintInst = rdt2_scd_scriptPrintInst;*/
 
 #if 0
 	/* Init default room and player pos */

@@ -19,8 +19,8 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_RDT2_SCRIPT_COMMON_H
-#define ROOM_RDT2_SCRIPT_COMMON_H 1
+#ifndef RDT_SCD_COMMON_H
+#define RDT_SCD_COMMON_H 1
 
 /*--- Defines ---*/
 
@@ -685,4 +685,4 @@ typedef union {
 
 } script_inst_t;
 
-#endif /* ROOM_RDT2_SCRIPT_COMMON_H */
+#endif /* RDT_SCD_COMMON_H */

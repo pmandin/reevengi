@@ -26,11 +26,14 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "room.h"
-#include "room_rdt2.h"
-#include "log.h"
-#include "room_rdt2_script_common.h"
-#include "room_rdt2_script_dump.h"
+#include "../log.h"
+
+#include "../g_common/room.h"
+
+#include "rdt.h"
+#include "rdt_scd.h"
+#include "rdt_scd_common.h"
+#include "rdt_scd_dump.h"
 
 typedef struct {
 	Uint8 opcode;
@@ -202,24 +205,9 @@ static const script_inst_len_t inst_length[]={
 	{0x8e,		24}
 };
 
-/*--- Functions prototypes ---*/
-
-static Uint8 *scriptFirstInst(room_t *this, int num_script);
-static int scriptGetInstLen(Uint8 *curInstPtr);
-static void scriptExecInst(room_t *this);
-
 /*--- Functions ---*/
 
-void room_rdt2_scriptInit(room_t *this)
-{
-	this->scriptPrivFirstInst = scriptFirstInst;
-	this->scriptPrivGetInstLen = scriptGetInstLen;
-	this->scriptPrivExecInst = scriptExecInst;
-
-	this->scriptDump = room_rdt2_scriptDump;
-}
-
-static Uint8 *scriptFirstInst(room_t *this, int num_script)
+Uint8 *rdt2_scd_scriptInit(room_t *this, int num_script)
 {
 	rdt2_header_t *rdt_header;
 	Uint32 offset, smaller_offset;
@@ -266,7 +254,7 @@ static Uint8 *scriptFirstInst(room_t *this, int num_script)
 	return this->cur_inst;
 }
 
-static int scriptGetInstLen(Uint8 *curInstPtr)
+int rdt2_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 {
 	int i;
 
@@ -281,8 +269,9 @@ static int scriptGetInstLen(Uint8 *curInstPtr)
 	return 0;
 }
 
-static void scriptExecInst(room_t *this)
+void rdt2_scd_scriptExecInst(room_t *this)
 {
+#if 0
 	script_inst_t *inst;
 
 	if (!this) {
@@ -317,7 +306,6 @@ static void scriptExecInst(room_t *this)
 				this->addDoor(this, &roomDoor);
 			}
 			break;
-#if 0
 		case INST_ITEM_SET:
 			{
 				script_item_set_t *itemSet = (script_item_set_t *) inst;
@@ -342,6 +330,6 @@ static void scriptExecInst(room_t *this)
 				}
 			}
 			break;
-#endif
 	}
+#endif
 }

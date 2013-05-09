@@ -26,15 +26,17 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "room.h"
-#include "room_rdt2.h"
-#include "room_rdt2_script_common.h"
 #include "log.h"
 #include "parameters.h"
 
+#include "../g_common/room.h"
+
+#include "rdt.h"
+#include "rdt_scd_common.h"
+
 #ifndef ENABLE_SCRIPT_DISASM
 
-void room_rdt2_scriptDump(room_t *this, int num_script)
+void rdt2_scd_scriptDump(room_t *this, int num_script)
 {
 }
 
@@ -257,10 +259,10 @@ static void getBitArrayName(char *dest, int num_array, int num_bit);
 
 /*--- Functions ---*/
 
-void room_rdt2_scriptDump(room_t *this, int num_script)
+void rdt2_scd_scriptDump(room_t *this, int num_script)
 {
 	rdt2_header_t *rdt_header;
-	Uint32 offset, smaller_offset, script_length;
+	Uint32 offset, smaller_offset, script_length = 0;
 	Uint16 *functionArrayPtr;
 	int i, num_funcs, room_script = RDT2_OFFSET_INIT_SCRIPT;
 
@@ -339,7 +341,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		memset(strBuf, 0, sizeof(strBuf));
 
-		inst_len = this->scriptPrivGetInstLen((Uint8 *) inst);
+		inst_len = this->scriptGetInstLen(this, (Uint8 *) inst);
 
 		if (params.verbose>=2) {
 			int i;
@@ -683,10 +685,10 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
-					room_rdt2_getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+					this->getText(this, 0, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
 					logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
 
-					room_rdt2_getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
+					this->getText(this, 1, inst->print_text.id, tmpBuf, sizeof(tmpBuf));
 					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
 				}
 				break;
