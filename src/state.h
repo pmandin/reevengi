@@ -32,7 +32,7 @@
 
 /*--- Enums ---*/
 
-enum {
+/*enum {
 	GAME_UNKNOWN,
 	GAME_RE1_PS1_DEMO,
 	GAME_RE1_PS1_GAME,
@@ -51,7 +51,7 @@ enum {
 	GAME_RE2_PC_GAME_CLAIRE,
 	GAME_RE3_PC_DEMO,
 	GAME_RE3_PC_GAME
-};
+};*/
 
 /*--- Types ---*/
 
