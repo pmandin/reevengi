@@ -197,6 +197,10 @@ static void drawCameras(room_t *this)
 		vertex_t v[2];
 		float dx, dy, adx, ady, angle, radius;
 
+		if (i!=game->num_camera) {
+			continue;
+		}
+
 		this->getCamera(this, i, &room_camera);
 
 		dx = room_camera.to_x - room_camera.from_x;
@@ -247,6 +251,10 @@ static void drawCamswitches(room_t *this)
 		vertex_t v[4];
 
 		this->getCamSwitch(this, i, &room_camswitch);
+
+		if (room_camswitch.from != game->num_camera) {
+			continue;
+		}
 
 		render.set_color(MAP_COLOR_CAMSWITCH);
 
