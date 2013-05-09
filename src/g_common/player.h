@@ -64,6 +64,18 @@ struct player_s {
 	void (*prev_anim)(player_t *this);
 	void (*next_anim)(player_t *this);
 	void (*reset_anim)(player_t *this);
+
+	/*--- Movement ---*/
+	Uint32 tick_movement;
+	float start_x, start_y, start_z, start_a;
+
+	void (*move_start)(player_t *this);	
+	void (*move_forward)(player_t *this);	
+	void (*move_backward)(player_t *this);	
+	void (*move_up)(player_t *this);	
+	void (*move_down)(player_t *this);	
+	void (*turn_left)(player_t *this);	
+	void (*turn_right)(player_t *this);	
 };
 
 /*--- Variables ---*/

@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 #include <SDL.h>
-#include <math.h>
 
 #include "parameters.h"
 #include "log.h"
@@ -116,8 +115,6 @@ static int player_moveup = 0;
 static int player_movedown = 0;
 static int player_turnleft = 0;
 static int player_turnright = 0;
-static float playerstart_x = 0, playerstart_y = 0, playerstart_z = 0, playerstart_a = 0;
-static Uint32 tick_movement = 0;
 static Uint32 tick_anim = 0;
 
 /*--- Functions prototypes ---*/
@@ -311,11 +308,7 @@ void view_background_input(SDL_Event *event)
 	}
 
 	if (start_movement) {
-		tick_movement = clockGet();
-		playerstart_x = player->x;
-		playerstart_y = player->y;
-		playerstart_z = player->z;
-		playerstart_a = player->a;
+		player->move_start(player);
 	}
 }
 
@@ -378,9 +371,8 @@ void view_background_update(void)
 
 static void processPlayerMovement(void)
 {
-	float new_x, new_z;
+	float prev_x, prev_z;
 	int new_camera, was_inside, is_inside;
-	Uint32 tick_current = clockGet();
 	player_t *player = game->player;
 	room_t *room = game->room;
 
@@ -391,17 +383,19 @@ static void processPlayerMovement(void)
 	was_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 
 	if (player_moveforward) {
-		new_x = playerstart_x + cos((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		new_z = playerstart_z - sin((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		is_inside = (room->checkBoundary(room, game->num_camera, new_x, new_z) == 0);
+		prev_x = player->x;
+		prev_z = player->z;
+
+		player->move_forward(player);
+
+		is_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 #ifdef DISABLE_CAM_SWITCH
 		is_inside = was_inside;
 #endif
 		if (was_inside && !is_inside) {
 			/* Player can not go out */
-		} else {
-			player->x = new_x;
-			player->z = new_z;
+			player->x = prev_x;
+			player->z = prev_z;
 		}
 		new_camera = room->checkCamSwitch(room, game->num_camera, player->x, player->z);
 #ifdef DISABLE_CAM_SWITCH
@@ -413,17 +407,19 @@ static void processPlayerMovement(void)
 		}
 	}
 	if (player_movebackward) {
-		new_x = playerstart_x - cos((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		new_z = playerstart_z + sin((player->a*M_PI)/2048.0f)*5.0f*(tick_current-tick_movement);
-		is_inside = (room->checkBoundary(room, game->num_camera, new_x, new_z) == 0);
+		prev_x = player->x;
+		prev_z = player->z;
+
+		player->move_backward(player);
+
+		is_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 #ifdef DISABLE_CAM_SWITCH
 		is_inside = was_inside;
 #endif
 		if (was_inside && !is_inside) {
 			/* Player can not go out */
-		} else {
-			player->x = new_x;
-			player->z = new_z;
+			player->x = prev_x;
+			player->z = prev_z;
 		}
 		new_camera = room->checkCamSwitch(room, game->num_camera, player->x, player->z);
 #ifdef DISABLE_CAM_SWITCH
@@ -435,22 +431,16 @@ static void processPlayerMovement(void)
 		}
 	}
 	if (player_moveup) {
-		player->y = playerstart_y - 5.0f*(tick_current-tick_movement);
+		player->move_up(player);
 	}
 	if (player_movedown) {
-		player->y = playerstart_y + 5.0f*(tick_current-tick_movement);
+		player->move_down(player);
 	}
 	if (player_turnleft) {
-		player->a = playerstart_a - 1.0f*(tick_current-tick_movement);
-		while (player->a < 0.0f) {
-			player->a += 4096.0f;
-		}
+		player->turn_left(player);
 	}
 	if (player_turnright) {
-		player->a = playerstart_a + 1.0f*(tick_current-tick_movement);
-		while (player->a > 4096.0f) {
-			player->a -= 4096.0f;
-		}
+		player->turn_right(player);
 	}
 }
 

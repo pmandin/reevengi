@@ -20,9 +20,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <SDL.h>
 
 #include "../log.h"
+#include "../clock.h"
 
 #include "../render_texture.h"
 #include "../render_skel.h"
@@ -32,8 +34,6 @@
 /*--- Types ---*/
 
 /*--- Constants ---*/
-
-#define ANIM_HZ 15
 
 /*--- Global variables ---*/
 
@@ -55,6 +55,14 @@ static void reset_model(player_t *this);
 static void prev_anim(player_t *this);
 static void next_anim(player_t *this);
 static void reset_anim(player_t *this);
+
+static void move_start(player_t *this);	
+static void move_forward(player_t *this);	
+static void move_backward(player_t *this);	
+static void move_up(player_t *this);	
+static void move_down(player_t *this);	
+static void turn_left(player_t *this);	
+static void turn_right(player_t *this);	
 
 /*--- Functions ---*/
 
@@ -81,6 +89,14 @@ player_t *player_ctor(void)
 	this->prev_anim = prev_anim;
 	this->next_anim = next_anim;
 	this->reset_anim = reset_anim;
+
+	this->move_start = move_start;
+	this->move_forward = move_forward;
+	this->move_backward = move_backward;
+	this->move_up = move_up;
+	this->move_down = move_down;
+	this->turn_left = turn_left;
+	this->turn_right = turn_right;
 
 #ifdef ENABLE_DEBUG_POS
 	this->x = 13148.0f;
@@ -168,4 +184,63 @@ static void next_anim(player_t *this)
 static void reset_anim(player_t *this)
 {
 	this->num_anim=0;
+}
+
+static void move_start(player_t *this)
+{
+	this->tick_movement = clockGet();
+	this->start_x = this->x;
+	this->start_y = this->y;
+	this->start_z = this->z;
+	this->start_a = this->a;
+}
+
+static void move_forward(player_t *this)
+{
+	Uint32 tick_current = clockGet();
+
+	this->x = this->start_x + cos((this->a*M_PI)/2048.0f)*5.0f*(tick_current-this->tick_movement);
+	this->z = this->start_z - sin((this->a*M_PI)/2048.0f)*5.0f*(tick_current-this->tick_movement);
+}
+
+static void move_backward(player_t *this)
+{
+	Uint32 tick_current = clockGet();
+
+	this->x = this->start_x - cos((this->a*M_PI)/2048.0f)*5.0f*(tick_current-this->tick_movement);
+	this->z = this->start_z + sin((this->a*M_PI)/2048.0f)*5.0f*(tick_current-this->tick_movement);
+}
+
+static void move_up(player_t *this)
+{
+	Uint32 tick_current = clockGet();
+
+	this->y = this->start_y - 5.0f*(tick_current-this->tick_movement);
+}
+
+static void move_down(player_t *this)
+{
+	Uint32 tick_current = clockGet();
+
+	this->y = this->start_y + 5.0f*(tick_current-this->tick_movement);
+}
+
+static void turn_left(player_t *this)
+{
+	Uint32 tick_current = clockGet();
+
+	this->a = this->start_a - 1.0f*(tick_current-this->tick_movement);
+	while (this->a < 0.0f) {
+		this->a += 4096.0f;
+	}
+}
+
+static void turn_right(player_t *this)
+{
+	Uint32 tick_current = clockGet();
+
+	this->a = this->start_a + 1.0f*(tick_current-this->tick_movement);
+	while (this->a > 4096.0f) {
+		this->a -= 4096.0f;
+	}
 }
