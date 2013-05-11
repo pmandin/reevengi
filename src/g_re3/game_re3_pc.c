@@ -34,15 +34,14 @@
 #include "filesystem.h"
 #include "parameters.h"
 #include "log.h"
+#include "video.h"
+#include "render.h"
 
 #include "../g_common/game.h"
 #include "../g_common/player.h"
 #include "../g_common/room.h"
 
 #include "game_re3.h"
-
-#include "video.h"
-#include "render.h"
 #include "emd.h"
 #include "depack_sld.h"
 

@@ -28,14 +28,14 @@
 #include "filesystem.h"
 #include "parameters.h"
 #include "log.h"
+#include "render.h"
+#include "background_bss.h"
 
 #include "../g_common/room.h"
 #include "../g_common/player.h"
 #include "../g_common/game.h"
 
 #include "game_re3.h"
-#include "background_bss.h"
-#include "render.h"
 
 /*--- Defines ---*/
 
