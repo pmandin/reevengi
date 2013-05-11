@@ -34,7 +34,6 @@
 #include "filesystem.h"
 #include "parameters.h"
 #include "log.h"
-#include "video.h"
 #include "render.h"
 
 #include "../g_common/game.h"

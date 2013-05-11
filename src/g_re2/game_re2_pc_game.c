@@ -28,7 +28,6 @@
 #include "filesystem.h"
 #include "log.h"
 #include "parameters.h"
-#include "video.h"
 #include "render.h"
 
 #include "../render_texture.h"

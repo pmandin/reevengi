@@ -29,7 +29,6 @@
 #include "log.h"
 #include "render.h"
 #include "parameters.h"
-#include "video.h"
 #include "background_tim.h"
 
 #include "../g_common/player.h"
