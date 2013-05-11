@@ -56,6 +56,7 @@ static void minMaxCameras(room_t *this);
 static void minMaxCamswitches(room_t *this);
 static void minMaxBoundaries(room_t *this);
 
+static void setMapMode(room_t *this, int new_map_mode);
 static void drawMap(room_t *this);
 
 static void drawCameras(room_t *this);
@@ -72,7 +73,10 @@ static void drawPlayer(player_t *this);
 
 void room_map_init(room_t *this)
 {
+	this->map_mode = ROOM_MAP_OFF;
+
 	this->drawMap = drawMap;
+	this->setMapMode = setMapMode;
 }
 
 void room_map_init_data(room_t *this)
@@ -172,20 +176,35 @@ static void minMaxBoundaries(room_t *this)
 	}
 }
 
+void setMapMode(room_t *this, int new_map_mode)
+{
+	this->map_mode = new_map_mode;
+}
+
 static void drawMap(room_t *this)
 {
-	/* Set ortho projection */
-	render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);
+	switch(this->map_mode) {
+		case ROOM_MAP_2D:
+			render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);
+			break;
+		case ROOM_MAP_3D:
+			/* Keep current projection */
+			break;		
+	}
 
 	drawBoundaries(this);
 	drawCamswitches(this);
-	drawCameras(this);
+	if (this->map_mode == ROOM_MAP_2D) {
+		drawCameras(this);
+	}
 
 	/*drawObstacles(this);
 	drawItems(this);
 	drawDoors(this);*/
 
-	drawPlayer(game->player);
+	if (this->map_mode == ROOM_MAP_2D) {
+		drawPlayer(game->player);
+	}
 }
 
 static void drawCameras(room_t *this)
@@ -278,6 +297,10 @@ static void drawBoundaries(room_t *this)
 
 		this->getBoundary(this, i, &room_camswitch);
 
+		if (room_camswitch.from != game->num_camera) {
+			continue;
+		}
+
 		render.set_color(MAP_COLOR_BOUNDARY);
 
 		for (j=0; j<4; j++) {
@@ -299,9 +322,6 @@ void drawPlayer(player_t *player)
 	float angle = player->a;
 
 	render.set_texture(0, NULL);
-
-	/* Set ortho projection */
-	render.set_ortho(minx * 0.5f,maxx * 0.5f, minz * 0.5f,maxz * 0.5f, -1.0f,1.0f);
 
 	render.set_color(MAP_COLOR_PLAYER);
 

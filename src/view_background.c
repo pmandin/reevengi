@@ -64,7 +64,7 @@
 
 #define KEY_TOGGLE_GRID		SDLK_y
 #define KEY_TOGGLE_RESTORE	SDLK_h
-#define KEY_TOGGLE_MAP		SDLK_n
+#define KEY_TOGGLE_MAP		SDLK_TAB
 #define KEY_TOGGLE_BONES	SDLK_j
 #define KEY_TOGGLE_MASKS	SDLK_i
 
@@ -102,7 +102,6 @@ static int prev_render_model = -1;
 
 static int render_grid = 0;
 static int render_restore = 0;
-static int render_map = 0;
 static int render_bones = 0;
 static int render_masks = 1;
 static int render_depth = 0;
@@ -118,6 +117,8 @@ static int player_turnright = 0;
 static Uint32 tick_anim = 0;
 
 /*--- Functions prototypes ---*/
+
+static void toggle_map_mode(void);
 
 static void processPlayerMovement(void);
 static void processEnterDoor(void);
@@ -208,7 +209,7 @@ void view_background_input(SDL_Event *event)
 				render_restore ^= 1;
 				break;
 			case KEY_TOGGLE_MAP:
-				render_map ^= 1;
+				toggle_map_mode();
 				break;
 			case KEY_TOGGLE_MASKS:
 				render_masks ^= 1;
@@ -309,6 +310,23 @@ void view_background_input(SDL_Event *event)
 
 	if (start_movement) {
 		player->move_start(player);
+	}
+}
+
+static void toggle_map_mode(void)
+{
+	room_t *room = game->room;
+
+	switch(room->map_mode) {
+		case ROOM_MAP_OFF:
+			room->setMapMode(room, ROOM_MAP_2D);
+			break;
+		case ROOM_MAP_2D:
+			room->setMapMode(room, ROOM_MAP_3D);
+			break;
+		case ROOM_MAP_3D:
+			room->setMapMode(room, ROOM_MAP_OFF);
+			break;
 	}
 }
 
@@ -554,7 +572,7 @@ void view_background_draw(void)
 		drawOrigin();	/* what the camera looks at */
 	}
 
-	if (render_map) {
+	if (room->map_mode != ROOM_MAP_OFF) {
 		room->drawMap(room);
 	}
 }
