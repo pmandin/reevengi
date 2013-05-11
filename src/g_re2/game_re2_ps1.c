@@ -28,6 +28,7 @@
 #include "filesystem.h"
 #include "parameters.h"
 #include "log.h"
+#include "background_bss.h"
 
 #include "../render_texture.h"
 
@@ -36,7 +37,6 @@
 #include "../g_common/game.h"
 
 #include "game_re2.h"
-#include "background_bss.h"
 #include "emd.h"
 
 /*--- Defines ---*/

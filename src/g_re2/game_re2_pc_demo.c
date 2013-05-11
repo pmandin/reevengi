@@ -28,6 +28,8 @@
 #include "filesystem.h"
 #include "parameters.h"
 #include "log.h"
+#include "video.h"
+#include "render.h"
 
 #include "../render_texture.h"
 
@@ -37,8 +39,6 @@
 
 #include "game_re2.h"
 #include "depack_adt.h"
-#include "video.h"
-#include "render.h"
 #include "emd.h"
 
 /*--- Defines ---*/
