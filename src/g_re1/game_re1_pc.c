@@ -29,6 +29,8 @@
 #include "log.h"
 #include "render.h"
 #include "parameters.h"
+#include "video.h"
+#include "background_tim.h"
 
 #include "../g_common/player.h"
 #include "../g_common/room.h"
@@ -36,9 +38,7 @@
 
 #include "game_re1.h"
 #include "depack_pak.h"
-#include "video.h"
 #include "emd.h"
-#include "background_tim.h"
 
 /*--- Defines ---*/
 
