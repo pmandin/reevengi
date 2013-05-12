@@ -183,9 +183,15 @@ void setMapMode(room_t *this, int new_map_mode)
 
 static void drawMap(room_t *this)
 {
+	player_t *player=game->player;
+
 	switch(this->map_mode) {
 		case ROOM_MAP_2D:
-			render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);
+			/*logMsg(1, "%d %d %d %d\n",minx,maxx,minz,maxz);
+			render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);*/
+			render.set_ortho(-16000.0f, 16000.0f, -16000.0f, 16000.0f, -1.0f, 1.0f);
+			render.translate(-player->x, -player->z, 0.0f);
+			/*render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,0.0f,1.0f);*/
 			break;
 		case ROOM_MAP_3D:
 			/* Keep current projection */
@@ -242,18 +248,18 @@ static void drawCameras(room_t *this)
 
 		render.set_color(MAP_COLOR_CAMERA);
 
-		v[0].x = room_camera.from_x * 0.5f;
-		v[0].y = room_camera.from_z * 0.5f;
+		v[0].x = room_camera.from_x;
+		v[0].y = room_camera.from_z;
 		v[0].z = 1.0f;
 
-		v[1].x = (room_camera.from_x + radius * cos(((angle+30.0f)*M_PI)/180.0f)) * 0.5f;
-		v[1].y = (room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f)) * 0.5f;
+		v[1].x = room_camera.from_x + radius * cos(((angle+30.0f)*M_PI)/180.0f);
+		v[1].y = room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f);
 		v[1].z = 1.0f;
 
 		render.line(&v[0], &v[1]);
 
-		v[1].x = (room_camera.from_x + radius * cos(((angle-30.0f)*M_PI)/180.0f)) * 0.5f;
-		v[1].y = (room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f)) * 0.5f;
+		v[1].x = room_camera.from_x + radius * cos(((angle-30.0f)*M_PI)/180.0f);
+		v[1].y = room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f);
 		v[1].z = 1.0f;
 
 		render.line(&v[0], &v[1]);
@@ -278,8 +284,8 @@ static void drawCamswitches(room_t *this)
 		render.set_color(MAP_COLOR_CAMSWITCH);
 
 		for (j=0; j<4; j++) {
-			v[j].x = room_camswitch.x[j] * 0.5f;
-			v[j].y = room_camswitch.y[j] * 0.5f;
+			v[j].x = room_camswitch.x[j];
+			v[j].y = room_camswitch.y[j];
 			v[j].z = 1.0f;
 		}
 
@@ -304,8 +310,8 @@ static void drawBoundaries(room_t *this)
 		render.set_color(MAP_COLOR_BOUNDARY);
 
 		for (j=0; j<4; j++) {
-			v[j].x = room_camswitch.x[j] * 0.5f;
-			v[j].y = room_camswitch.y[j] * 0.5f;
+			v[j].x = room_camswitch.x[j];
+			v[j].y = room_camswitch.y[j];
 			v[j].z = 1.0f;
 		}
 
@@ -325,24 +331,24 @@ void drawPlayer(player_t *player)
 
 	render.set_color(MAP_COLOR_PLAYER);
 
-	v[0].x = (x - radius * cos((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
-	v[0].y = (y - radius * sin((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
+	v[0].x = (x - radius * cos((-angle * M_PI) / 2048.0f) * 0.5f);
+	v[0].y = (y - radius * sin((-angle * M_PI) / 2048.0f) * 0.5f);
 	v[0].z = 1.0f;
 
-	v[1].x = (x + radius * cos((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
-	v[1].y = (y + radius * sin((-angle * M_PI) / 2048.0f) * 0.5f) * 0.5f;
+	v[1].x = (x + radius * cos((-angle * M_PI) / 2048.0f) * 0.5f);
+	v[1].y = (y + radius * sin((-angle * M_PI) / 2048.0f) * 0.5f);
 	v[1].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
 
-	v[0].x = (x + radius * cos((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
-	v[0].y = (y + radius * sin((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].x = (x + radius * cos((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
+	v[0].y = (y + radius * sin((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
 
-	v[0].x = (x + radius * cos((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
-	v[0].y = (y + radius * sin((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f) * 0.5f;
+	v[0].x = (x + radius * cos((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
+	v[0].y = (y + radius * sin((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
 	v[0].z = 1.0f;
 
 	render.line(&v[0], &v[1]);
