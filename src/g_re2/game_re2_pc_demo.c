@@ -37,7 +37,7 @@
 #include "../g_common/game.h"
 
 #include "game_re2.h"
-#include "depack_adt.h"
+#include "adt.h"
 #include "emd.h"
 
 /*--- Defines ---*/

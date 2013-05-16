@@ -38,7 +38,7 @@
 
 #include "game_re2_pc_game.h"
 #include "game_re2.h"
-#include "depack_adt.h"
+#include "adt.h"
 #include "emd.h"
 
 /*--- Defines ---*/
