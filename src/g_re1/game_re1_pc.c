@@ -3,7 +3,7 @@
 	PC
 	Game
 
-	Copyright (C) 2007	Patrice Mandin
+	Copyright (C) 2007-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@
 #include "../g_common/game.h"
 
 #include "game_re1.h"
-#include "depack_pak.h"
+#include "pak.h"
 #include "emd.h"
 
 /*--- Defines ---*/
