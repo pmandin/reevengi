@@ -2,7 +2,7 @@
 	RE3
 	PC
 
-	Copyright (C) 2007	Patrice Mandin
+	Copyright (C) 2007-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 
 #include "game_re3.h"
 #include "emd.h"
-#include "depack_sld.h"
+#include "sld.h"
 
 /*--- Defines ---*/
 
