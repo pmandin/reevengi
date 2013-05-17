@@ -40,7 +40,7 @@
 #include "video.h"
 #include "render.h"
 #include "log.h"
-#include "render_skel_list.h"
+#include "r_common/render_skel_list.h"
 
 /*--- Functions prototypes ---*/
 

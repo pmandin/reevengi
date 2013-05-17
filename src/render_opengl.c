@@ -40,8 +40,8 @@
 #include "render_skel_opengl.h"
 #include "render_mask_opengl.h"
 #include "r_soft/matrix.h"
-#include "render_texture_list.h"
-#include "render_skel_list.h"
+#include "r_common/render_texture_list.h"
+#include "r_common/render_skel_list.h"
 
 /*--- Variables ---*/
 

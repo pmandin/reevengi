@@ -37,7 +37,7 @@
 #include "r_soft/dither.h"
 #include "parameters.h"
 #include "log.h"
-#include "render_texture_list.h"
+#include "r_common/render_texture_list.h"
 
 /*--- Functions prototypes ---*/
 

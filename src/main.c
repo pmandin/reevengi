@@ -38,8 +38,8 @@
 
 #include "view_background.h"
 #include "view_movie.h"
-#include "render_texture_list.h"
-#include "render_skel_list.h"
+#include "r_common/render_texture_list.h"
+#include "r_common/render_skel_list.h"
 
 #include "clock.h"
 #include "parameters.h"

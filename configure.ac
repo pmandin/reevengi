@@ -196,6 +196,7 @@ src/g_common/Makefile
 src/g_re1/Makefile
 src/g_re2/Makefile
 src/g_re3/Makefile
+src/r_common/Makefile
 src/r_opengl/Makefile
 src/r_soft/Makefile
 vs2005/Makefile

@@ -26,8 +26,8 @@
 #include "draw.h"
 #include "r_soft/draw_simple.h"
 #include "r_soft/draw_sbuffer.h"
-#include "render_texture_list.h"
-#include "render_skel_list.h"
+#include "r_common/render_texture_list.h"
+#include "r_common/render_skel_list.h"
 #include "r_soft/dither.h"
 
 /*--- Defines ---*/
