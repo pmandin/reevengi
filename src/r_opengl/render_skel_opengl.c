@@ -31,7 +31,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include "r_opengl/dyngl.h"
+#include "dyngl.h"
 
 #include "render_texture.h"
 #include "render_texture_opengl.h"
@@ -40,7 +40,7 @@
 #include "video.h"
 #include "render.h"
 #include "log.h"
-#include "r_common/render_skel_list.h"
+#include "../r_common/render_skel_list.h"
 
 /*--- Functions prototypes ---*/
 
