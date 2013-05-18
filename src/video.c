@@ -27,10 +27,11 @@
 #include "parameters.h"
 #include "video.h"
 #include "render.h"
-#include "r_soft/dither.h"
 #include "log.h"
+
 #include "draw.h"
-#include "render_text.h"
+#include "r_common/render_text.h"
+#include "r_soft/dither.h"
 
 /*--- Function prototypes ---*/
 

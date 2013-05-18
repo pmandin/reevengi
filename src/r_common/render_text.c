@@ -20,12 +20,12 @@
 
 #include <SDL.h>
 
-#include "render_texture.h"
+#include "../render_texture.h"
 
-#include "g_common/game.h"
+#include "../g_common/game.h"
 
-#include "video.h"
-#include "render.h"
+#include "../video.h"
+#include "../render.h"
 
 void render_text(const char *str, int x, int y)
 {
