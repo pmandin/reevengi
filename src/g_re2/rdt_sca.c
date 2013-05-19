@@ -33,5 +33,39 @@
 
 void rdt2_sca_init(room_t *this)
 {
+	rdt2_header_t *rdt_header;
+	rdt2_sca_header_t *rdt_sca_hdr;
+	rdt2_sca_element_t *rdt_sca_elt;
+	Uint32 offset;
+	int i;
+
+	rdt_header = (rdt2_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_COLLISION]);
+	if (offset==0) {
+		return;
+	}
+
+	rdt_sca_hdr = (rdt2_sca_header_t *) &((Uint8 *) this->file)[offset];
+	offset += sizeof(rdt2_sca_header_t);
+
+	rdt_sca_elt = (rdt2_sca_element_t *) &((Uint8 *) this->file)[offset];
+
 	/* Display SCA data */
+	logMsg(1, "sca: cx=%d,cz=%d,count=%d,ceiling=%d\n",
+		SDL_SwapLE16(rdt_sca_hdr->cx),
+		SDL_SwapLE16(rdt_sca_hdr->cz),
+		SDL_SwapLE32(rdt_sca_hdr->count)-1,
+		SDL_SwapLE32(rdt_sca_hdr->ceiling));
+
+	for (i=0; i<SDL_SwapLE32(rdt_sca_hdr->count)-1; i++) {
+		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, id=0x%04x,type=0x%04x,floor=%d\n", i,
+			SDL_SwapLE16(rdt_sca_elt[i].x),
+			SDL_SwapLE16(rdt_sca_elt[i].z),
+			SDL_SwapLE16(rdt_sca_elt[i].w),
+			SDL_SwapLE16(rdt_sca_elt[i].h),
+			SDL_SwapLE16(rdt_sca_elt[i].id),
+			SDL_SwapLE16(rdt_sca_elt[i].type),
+			SDL_SwapLE32(rdt_sca_elt[i].floor)
+		);
+	}
 }

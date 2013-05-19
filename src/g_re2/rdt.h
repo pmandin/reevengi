@@ -24,6 +24,7 @@
 
 /*--- Defines ---*/
 
+#define RDT2_OFFSET_COLLISION 6
 #define RDT2_OFFSET_CAMERAS	7
 #define RDT2_OFFSET_CAM_SWITCHES	8
 #define RDT2_OFFSET_TEXT_LANG1	13
