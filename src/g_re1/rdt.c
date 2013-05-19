@@ -26,6 +26,7 @@
 #include "../g_common/room.h"
 
 #include "rdt.h"
+#include "rdt_sca.h"
 
 void rdt1_init(room_t *this)
 {
@@ -45,4 +46,6 @@ void rdt1_init(room_t *this)
 
 	/*logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
 		this->num_cameras, this->num_camswitches, this->num_boundaries);*/
+
+	rdt1_sca_init(this);
 }
