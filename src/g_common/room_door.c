@@ -50,7 +50,8 @@ static void addDoor(room_t *this, room_door_t *door)
 	}
 
 	memcpy(&this->doors[this->num_doors], door, sizeof(room_door_t));
-	logMsg(1, "room_door: Adding door %d\n", this->num_doors);
+	logMsg(1, "room_door: Adding door %d (x=%d,y=%d,%dx%d)\n", this->num_doors,
+		door->x,door->y,door->w,door->h);
 
 	++this->num_doors;
 }
