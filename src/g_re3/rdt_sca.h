@@ -29,16 +29,16 @@
 /*--- Types ---*/
 
 typedef struct {
-	Sint16 cx, cz;
 	Uint32 count;
-	Sint32 ceiling;
+	Uint32 unknown[3];
 } rdt3_sca_header_t;
 
 typedef struct {
 	Sint16 x,z;
 	Uint16 w,h;
-	Uint16 id, type;
-	Uint32 floor;
+	Uint16 type;
+	Uint16 floor;
+	Uint32 flags;
 } rdt3_sca_element_t;
 
 /*--- Functions ---*/
