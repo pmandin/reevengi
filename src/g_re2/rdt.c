@@ -26,6 +26,7 @@
 #include "../g_common/room.h"
 
 #include "rdt.h"
+#include "rdt_sca.h"
 
 /*--- Types ---*/
 
@@ -71,34 +72,6 @@ static void rdt2_displayTexts(room_t *this, int num_lang);
 void rdt2_init(room_t *this)
 {
 	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
-
-	if (this->file_length > 4) {
-		this->num_cameras = this->getNumCameras(this);
-#if 0
-		this->num_camswitches = rdt2_getNumCamswitches(this);
-		this->num_boundaries = rdt2_getNumBoundaries(this);
-
-		this->getCamera = rdt2_getCamera;
-		this->getCamswitch = rdt2_getCamswitch;
-		this->getBoundary = rdt2_getBoundary;
-
-		this->drawMasks = rdt2_drawMasks;
-
-/*		switch(game_state.version) {
-			case GAME_RE3_PS1_GAME:
-			case GAME_RE3_PC_GAME:
-			case GAME_RE3_PC_DEMO:
-				room_rdt3_scriptInit(this);
-				break;
-			default:*/
-				room_rdt2_scriptInit(this);
-/*				break;
-		}*/
-#endif
-	}
-
-/*	logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
-		this->num_cameras, this->num_camswitches, this->num_boundaries);*/
 
 	/* Display texts */
 	rdt2_displayTexts(this, 0);	/* language 1 */
