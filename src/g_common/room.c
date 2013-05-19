@@ -144,6 +144,9 @@ static void loadFile(room_t *this, int stage, int room, int camera)
 		this->file_length = length;
 		this->init(this);
 
+		logMsg(2, "room: %d cameras angles, %d camera switches, %d boundaries\n",
+			this->num_cameras, this->getNumCamSwitches(this), this->getNumBoundaries(this));
+
 		retval = 1;
 	}
 
@@ -161,6 +164,13 @@ static void load(room_t *this, int stage, int room, int camera)
 	this->loadFile(this, stage, room, camera);
 
 	room_map_init_data(this);
+
+	/* Dump scripts if wanted */
+	if (params.dump_script) {
+		this->scriptDump(this, ROOM_SCRIPT_INIT);
+		this->scriptDump(this, ROOM_SCRIPT_RUN);
+	}
+	this->scriptExec(this, ROOM_SCRIPT_INIT);
 }
 
 static void init(room_t *this)
