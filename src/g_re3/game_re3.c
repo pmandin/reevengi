@@ -28,12 +28,13 @@
 
 #include "game_re3.h"
 
-#include "../g_re2/rdt.h"
 #include "../g_re2/rdt_rid.h"
 #include "../g_re2/rdt_rvd.h"
 #include "../g_re2/rdt_pri.h"
 #include "../g_re2/rdt_msg.h"
 
+#include "rdt.h"
+#include "rdt_sca.h"
 #include "rdt_scd.h"
 #include "rdt_scd_dump.h"
 
@@ -99,7 +100,7 @@ game_t *game_re3_ctor(game_t *this)
 
 	room = this->room;
 
-	room->init = rdt2_init;
+	room->init = rdt3_init;
 
 	room->getNumCameras = rdt2_rid_getNumCameras;
 	room->getCamera = rdt2_rid_getCamera;
