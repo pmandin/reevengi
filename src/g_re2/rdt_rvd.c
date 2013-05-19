@@ -27,6 +27,7 @@
 #endif
 
 #include "../g_common/room.h"
+#include "../g_common/room_camswitch.h"
 
 #include "rdt.h"
 #include "rdt_rvd.h"

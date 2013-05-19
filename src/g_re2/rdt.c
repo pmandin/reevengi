@@ -71,8 +71,6 @@ static void rdt2_displayTexts(room_t *this, int num_lang);
 
 void rdt2_init(room_t *this)
 {
-	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
-
 	/* Display texts */
 	rdt2_displayTexts(this, 0);	/* language 1 */
 	rdt2_displayTexts(this, 1);	/* language 2 */

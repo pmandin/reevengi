@@ -29,6 +29,7 @@
 #include "../log.h"
 
 #include "../g_common/room.h"
+#include "../g_common/room_door.h"
 
 #include "rdt.h"
 #include "rdt_scd.h"
@@ -271,7 +272,6 @@ int rdt2_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 
 void rdt2_scd_scriptExecInst(room_t *this)
 {
-#if 0
 	script_inst_t *inst;
 
 	if (!this) {
@@ -306,6 +306,7 @@ void rdt2_scd_scriptExecInst(room_t *this)
 				this->addDoor(this, &roomDoor);
 			}
 			break;
+#if 0
 		case INST_ITEM_SET:
 			{
 				script_item_set_t *itemSet = (script_item_set_t *) inst;
@@ -330,6 +331,8 @@ void rdt2_scd_scriptExecInst(room_t *this)
 				}
 			}
 			break;
-	}
 #endif
+		default:
+			break;
+	}
 }

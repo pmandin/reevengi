@@ -33,6 +33,7 @@
 
 #include "g_common/game.h"
 #include "g_common/room.h"
+#include "g_common/room_door.h"
 #include "g_common/player.h"
 
 #include "video.h"
@@ -464,7 +465,6 @@ static void processPlayerMovement(void)
 
 static void processEnterDoor(void)
 {
-#if 0
 	player_t *player = game->player;
 	room_t *room = game->room;
 	room_door_t *door;
@@ -486,7 +486,6 @@ static void processEnterDoor(void)
 
 		reload_room = 1;
 	}
-#endif
 }
 
 void view_background_draw(void)
