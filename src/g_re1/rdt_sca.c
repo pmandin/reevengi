@@ -57,7 +57,7 @@ void rdt1_sca_init(room_t *this)
 		SDL_SwapLE32(rdt_sca_hdr->count));
 
 	for (i=0; i<SDL_SwapLE32(rdt_sca_hdr->count); i++) {
-		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, id=0x%04x,type=0x%04x,floor=%d\n", i,
+		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, type=0x%04x,floor=0x%04x\n", i,
 			SDL_SwapLE16(rdt_sca_elt[i].x),
 			SDL_SwapLE16(rdt_sca_elt[i].z),
 			SDL_SwapLE16(rdt_sca_elt[i].w),

@@ -24,6 +24,9 @@
 
 /*--- Defines ---*/
 
+#define RDT_SCA_RECT	1
+#define RDT_SCA_CIRC	3
+
 /*--- External types ---*/
 
 /*--- Types ---*/
