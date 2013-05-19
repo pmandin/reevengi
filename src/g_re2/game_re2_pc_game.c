@@ -25,10 +25,10 @@
 
 #include <SDL.h>
 
-#include "filesystem.h"
-#include "log.h"
-#include "parameters.h"
-#include "render.h"
+#include "../filesystem.h"
+#include "../log.h"
+#include "../parameters.h"
+#include "../render.h"
 
 #include "../render_texture.h"
 

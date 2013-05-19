@@ -103,6 +103,8 @@ void rdt2_init(room_t *this)
 	/* Display texts */
 	rdt2_displayTexts(this, 0);	/* language 1 */
 	rdt2_displayTexts(this, 1);	/* language 2 */
+
+	rdt2_sca_init(this);
 }
 
 static void rdt2_displayTexts(room_t *this, int num_lang)

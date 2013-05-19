@@ -26,8 +26,8 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "log.h"
-#include "parameters.h"
+#include "../log.h"
+#include "../parameters.h"
 
 #include "../g_common/room.h"
 
