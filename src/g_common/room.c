@@ -113,13 +113,6 @@ static void dtor(room_t *this)
 {
 	logMsg(2, "room: dtor\n");
 
-	if (this->doors) {
-		free(this->doors);
-		this->doors = NULL;
-
-		this->num_doors=0;
-	}
-
 	unload_background(this);
 	unload_bgmask(this);
 	unload(this);
@@ -198,6 +191,13 @@ static void load_bgmask(room_t *this, int stage, int room, int camera)
 static void unload(room_t *this)
 {
 	logMsg(2, "room: unload\n");
+
+	if (this->doors) {
+		free(this->doors);
+		this->doors = NULL;
+
+		this->num_doors=0;
+	}
 
 	if (this->file) {
 		free(this->file);
