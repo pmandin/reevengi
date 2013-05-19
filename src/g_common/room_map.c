@@ -28,6 +28,8 @@
 
 #include "room.h"
 #include "room_map.h"
+#include "room_camswitch.h"
+#include "room_door.h"
 #include "player.h"
 #include "game.h"
 
@@ -63,8 +65,8 @@ static void drawCameras(room_t *this);
 static void drawCamswitches(room_t *this);
 static void drawBoundaries(room_t *this);
 
-/*static void room_map_drawDoors(room_t *this);
-static void room_map_drawObstacles(room_t *this);
+static void drawDoors(room_t *this);
+/*static void room_map_drawObstacles(room_t *this);
 static void room_map_drawItems(room_t *this);*/
 
 static void drawPlayer(player_t *this);
@@ -189,9 +191,9 @@ static void drawMap(room_t *this)
 		case ROOM_MAP_2D:
 			/*logMsg(1, "%d %d %d %d\n",minx,maxx,minz,maxz);
 			render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);*/
-			render.set_ortho(-16000.0f, 16000.0f, -16000.0f, 16000.0f, -1.0f, 1.0f);
+			render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -1.0f, 1.0f);
+			/*render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);*/
 			render.translate(-player->x, -player->z, 0.0f);
-			/*render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,0.0f,1.0f);*/
 			break;
 		case ROOM_MAP_3D:
 			/* Keep current projection */
@@ -205,8 +207,8 @@ static void drawMap(room_t *this)
 	}
 
 	/*drawObstacles(this);
-	drawItems(this);
-	drawDoors(this);*/
+	drawItems(this);*/
+	drawDoors(this);
 
 	if (this->map_mode == ROOM_MAP_2D) {
 		drawPlayer(game->player);
@@ -316,6 +318,66 @@ static void drawBoundaries(room_t *this)
 		}
 
 		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+	}
+}
+
+static void drawDoors(room_t *this)
+{
+	int i;
+
+	render.set_color(MAP_COLOR_DOOR);
+
+	for (i=0; i<this->num_doors; i++) {
+		room_door_t *door = &this->doors[i];
+		vertex_t v[4];
+
+#if 1
+		v[0].x = door->x;
+		v[0].y = door->y;
+		v[0].z = 1.0f;
+
+		v[1].x = door->x+door->w;
+		v[1].y = door->y;
+		v[1].z = 1.0f;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = door->x+door->w;
+		v[0].y = door->y+door->h;
+		v[0].z = 1.0f;
+
+		render.line(&v[0], &v[1]);
+
+		v[1].x = door->x;
+		v[1].y = door->y+door->h;
+		v[1].z = 1.0f;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = door->x;
+		v[0].y = door->y;
+		v[0].z = 1.0f;
+
+		render.line(&v[0], &v[1]);
+#else
+		v[0].x = door->x;
+		v[0].y = door->y;
+		v[0].z = 1.0f;
+
+		v[1].x = door->x+door->w;
+		v[1].y = door->y;
+		v[1].z = 1.0f;
+
+		v[2].x = door->x+door->w;
+		v[2].y = door->y+door->h;
+		v[2].z = 1.0f;
+
+		v[3].x = door->x;
+		v[3].y = door->y+door->h;
+		v[3].z = 1.0f;
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+#endif
 	}
 }
 

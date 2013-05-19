@@ -1,8 +1,7 @@
 /*
-	Room
-	Camera switches and boundaries
+	Room door
 
-	Copyright (C) 2007-2013	Patrice Mandin
+	Copyright (C) 2009-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,21 +18,22 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef ROOM_CAMSWITCH_H
-#define ROOM_CAMSWITCH_H 1
+#ifndef ROOM_DOOR_H
+#define ROOM_DOOR_H 1
 
 /*--- Types ---*/
 
-typedef struct room_camswitch_s room_camswitch_t;
+typedef struct room_door_s room_door_t;
 
-struct room_camswitch_s {
-	Uint8 from, to;	/* camera to switch from/to, to=0 for boundary */
-	Sint16 x[4];	/* Quad zone to check when player enters/exits it */
-	Sint16 y[4];
+struct room_door_s {
+	Sint16 x,y,w,h;
+
+	Sint16 next_x,next_y,next_z,next_dir;
+	Uint8 next_stage,next_room,next_camera;
 };
 
 /*--- Functions ---*/
 
-void room_camswitch_init(room_t *this);
+void room_door_init(room_t *this);
 
-#endif /* ROOM_CAMSWITCH_H */
+#endif /* ROOM_DOOR_H */

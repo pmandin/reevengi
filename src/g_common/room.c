@@ -31,6 +31,7 @@
 #include "room_script.h"
 #include "room_camswitch.h"
 #include "room_map.h"
+#include "room_door.h"
 
 /*--- Types ---*/
 
@@ -102,7 +103,7 @@ room_t *room_ctor(void)
 	this->getText = getText;
 
 	room_script_init(this);
-
+	room_door_init(this);
 	room_map_init(this);
 
 	return this;
@@ -111,6 +112,13 @@ room_t *room_ctor(void)
 static void dtor(room_t *this)
 {
 	logMsg(2, "room: dtor\n");
+
+	if (this->doors) {
+		free(this->doors);
+		this->doors = NULL;
+
+		this->num_doors=0;
+	}
 
 	unload_background(this);
 	unload_bgmask(this);
