@@ -30,55 +30,22 @@
 
 /*--- Types ---*/
 
-typedef struct {
-	Uint8 id[8];
-} rdt_anim_list_t;
-
-typedef struct {
-	Uint16 num_frames;
-	Uint16 num_sprites;
-	Uint8 w,h;
-	Uint16 unknown;
-} rdt_anim_header_t;
-
-typedef struct {
-	Uint8 sprite;
-	Uint8 unknown[7];
-} rdt_anim_step_t;
-
-typedef struct {
-	Uint8 x,y;
-	Sint8 offset_x,offset_y;
-} rdt_anim_sprite_t;
-
-typedef struct {
-	Uint16 offsets[8];
-} rdt_anim_unknown0_t;
-
-typedef struct {
-	Uint8 unknown[0x38];
-} rdt_anim_unknown1_t;
-
-typedef struct {
-	Uint32 length;
-} rdt_anim_end_t;
-
 /*--- Functions prototypes ---*/
 
-static void rdt2_displayTexts(room_t *this, int num_lang);
+static void displayTexts(room_t *this, int num_lang);
 
 /*--- Functions ---*/
 
 void rdt2_init(room_t *this)
 {
 	/* Display texts */
-	rdt2_displayTexts(this, 0);	/* language 1 */
-	rdt2_displayTexts(this, 1);	/* language 2 */
+	displayTexts(this, 0);	/* language 1 */
+	displayTexts(this, 1);	/* language 2 */
 
 	rdt2_sca_init(this);
 }
 
-static void rdt2_displayTexts(room_t *this, int num_lang)
+static void displayTexts(room_t *this, int num_lang)
 {
 	rdt2_header_t *rdt_header;
 	int room_lang = (num_lang==0) ? RDT2_OFFSET_TEXT_LANG1 : RDT2_OFFSET_TEXT_LANG2;
