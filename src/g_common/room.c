@@ -32,6 +32,7 @@
 #include "room_camswitch.h"
 #include "room_map.h"
 #include "room_door.h"
+#include "room_collision.h"
 
 /*--- Types ---*/
 
@@ -105,6 +106,7 @@ room_t *room_ctor(void)
 	room_script_init(this);
 	room_door_init(this);
 	room_map_init(this);
+	room_collision_init(this);
 
 	return this;
 }

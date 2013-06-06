@@ -29,13 +29,19 @@
 enum {
 	ROOM_MAP_OFF=0,
 	ROOM_MAP_2D,
-	ROOM_MAP_3D
+	ROOM_MAP_2D_TO_3D,
+	ROOM_MAP_3D,
+	ROOM_MAP_3D_TO_2D
 };
 
 /*--- External types ---*/
 
 typedef struct render_texture_s render_texture_t;
 typedef struct render_mask_s render_mask_t;
+
+typedef struct room_camswitch_s room_camswitch_t;
+typedef struct room_door_s room_door_t;
+typedef struct room_collision_s room_collision_t;
 
 /*--- Types ---*/
 
@@ -49,9 +55,6 @@ struct room_camera_s {
 	Sint32 to_y;
 	Sint32 to_z;
 };
-
-typedef struct room_camswitch_s room_camswitch_t;
-typedef struct room_door_s room_door_t;
 
 typedef struct room_s room_t;
 
@@ -123,10 +126,15 @@ struct room_s {
 	/* Return door entered, of NULL if none entered */
 	room_door_t *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
 
+	/*--- Collision objects ---*/
+	int (*getNumCollisions)(room_t *this);
+	void (*getCollision)(room_t *this, int num_collision, room_collision_t *room_collision);
+
 	/*--- Map ---*/
 	int map_mode;
 
-	void (*setMapMode)(room_t *this, int new_map_mode);
+	void (*toggleMapModePrev)(room_t *this);
+	void (*toggleMapModeNext)(room_t *this);
 	void (*drawMap)(room_t *this);
 };
 
