@@ -48,16 +48,24 @@
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
 
+#define MAP_TRANSITION_TIME	1000
+
 /*--- Variables ---*/
 
 static Sint16 minx, maxx, minz, maxz;
 static Uint32 clock_start;
+static float mtx_proj_from[4][4], mtx_proj_to[4][4], mtx_proj_cur[4][4];
+static float mtx_model_from[4][4], mtx_model_to[4][4], mtx_model_cur[4][4];
 
 /*--- Functions prototypes ---*/
 
 static void minMaxCameras(room_t *this);
 static void minMaxCamswitches(room_t *this);
 static void minMaxBoundaries(room_t *this);
+
+static void initMatrix2D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4]);
+static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4]);
+static void calcMatrix(Uint32 elapsed);
 
 static void toggleMapModePrev(room_t *this);
 static void toggleMapModeNext(room_t *this);
@@ -215,28 +223,93 @@ static void toggleMapModeNext(room_t *this)
 	}
 }
 
-static void drawMap(room_t *this)
+static void initMatrix2D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
 {
 	player_t *player=game->player;
 
+	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -1.0f, 1.0f);
+	render.get_proj_matrix(mtx_proj);
+
+	render.translate(-player->x, -player->z, 0.0f);
+	render.get_model_matrix(mtx_model);
+}
+
+static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
+{
+	room_camera_t room_camera;
+
+	this->getCamera(this, game->num_camera, &room_camera);
+
+	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
+	render.get_proj_matrix(mtx_proj);
+
+	render.set_modelview(
+		room_camera.from_x, room_camera.from_y, room_camera.from_z,
+		room_camera.to_x, room_camera.to_y, room_camera.to_z,
+		0.0f, -1.0f, 0.0f
+	);
+	render.get_model_matrix(mtx_model);
+}
+
+static void calcMatrix(Uint32 elapsed)
+{
+	float pos = (float) elapsed / (float) MAP_TRANSITION_TIME;
+	int i,j;
+
+	for (i=0; i<4; i++) {
+		for (j=0; j<4; j++) {
+			mtx_proj_cur[i][j]=mtx_proj_from[i][j]+
+				((mtx_proj_to[i][j]-mtx_proj_from[i][j])*pos);
+			mtx_model_cur[i][j]=mtx_model_cur[i][j]+
+				((mtx_model_cur[i][j]-mtx_model_cur[i][j])*pos);
+		}
+	}
+}
+
+static void drawMap(room_t *this)
+{
+	player_t *player=game->player;
+	Uint32 elapsed;
 	switch(this->map_mode) {
 		case ROOM_MAP_2D_TO_3D_INIT:
-			clock_start = clockGet();
-			this->map_mode = ROOM_MAP_2D_TO_3D_CALC;
-			logMsg(1, "map: ROOM_MAP_2D_TO_3D_CALC\n");
+			{
+				clock_start = clockGet();
+				this->map_mode = ROOM_MAP_2D_TO_3D_CALC;
+				initMatrix2D(this, mtx_proj_from, mtx_model_from);
+				initMatrix3D(this, mtx_proj_to, mtx_model_to);
+				logMsg(1, "map: ROOM_MAP_2D_TO_3D_CALC\n");
+			}
 			break;
 		case ROOM_MAP_2D_TO_3D_CALC:
-			this->map_mode = ROOM_MAP_3D;
-			logMsg(1, "map: ROOM_MAP_3D\n");
+			{
+				elapsed = clockGet() - clock_start;
+				if (elapsed > MAP_TRANSITION_TIME) {
+					this->map_mode = ROOM_MAP_3D;
+					logMsg(1, "map: ROOM_MAP_3D\n");
+				} else {
+					calcMatrix(elapsed);
+				}
+			}
 			break;
 		case ROOM_MAP_3D_TO_2D_INIT:
-			clock_start = clockGet();
-			this->map_mode = ROOM_MAP_3D_TO_2D_CALC;
-			logMsg(1, "map: ROOM_MAP_3D_TO_2D_CALC\n");
+			{
+				clock_start = clockGet();
+				this->map_mode = ROOM_MAP_3D_TO_2D_CALC;
+				initMatrix3D(this, mtx_proj_from, mtx_model_from);
+				initMatrix2D(this, mtx_proj_to, mtx_model_to);
+				logMsg(1, "map: ROOM_MAP_3D_TO_2D_CALC\n");
+			}
 			break;
 		case ROOM_MAP_3D_TO_2D_CALC:
-			this->map_mode = ROOM_MAP_2D;
-			logMsg(1, "map: ROOM_MAP_2D\n");
+			{
+				elapsed = clockGet() - clock_start;
+				if (elapsed > MAP_TRANSITION_TIME) {
+					this->map_mode = ROOM_MAP_2D;
+					logMsg(1, "map: ROOM_MAP_2D\n");
+				} else {
+					calcMatrix(elapsed);
+				}
+			}
 			break;
 	}
 
@@ -269,7 +342,7 @@ static void drawMap(room_t *this)
 	drawDoors(this);
 
 	if (this->map_mode == ROOM_MAP_2D) {
-		drawPlayer(game->player);
+		drawPlayer(player);
 	}
 }
 
