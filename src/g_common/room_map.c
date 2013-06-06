@@ -264,6 +264,9 @@ static void calcMatrix(Uint32 elapsed)
 				((mtx_model_cur[i][j]-mtx_model_cur[i][j])*pos);
 		}
 	}
+
+	render.set_proj_matrix(mtx_proj_cur);
+	render.set_model_matrix(mtx_model_cur);
 }
 
 static void drawMap(room_t *this)
