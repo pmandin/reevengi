@@ -73,6 +73,8 @@ static void pop_matrix(void);
 
 static void get_proj_matrix(float mtx[4][4]);
 static void get_model_matrix(float mtx[4][4]);
+static void set_proj_matrix(float mtx[4][4]);
+static void set_model_matrix(float mtx[4][4]);
 
 static void set_color(Uint32 color);
 static void set_render(int num_render);
@@ -125,6 +127,8 @@ void render_opengl_init(render_t *this)
 
 	this->get_proj_matrix = get_proj_matrix;
 	this->get_model_matrix = get_model_matrix;
+	this->set_proj_matrix = set_proj_matrix;
+	this->set_model_matrix = set_model_matrix;
 
 	this->set_color = set_color;
 	this->set_render = set_render;
@@ -293,6 +297,40 @@ static void get_model_matrix(float mtx[4][4])
 			mtx[i][j]=m[i][j];
 		}
 	}
+}
+
+static void set_proj_matrix(float mtx[4][4])
+{
+	GLfloat m[4][4];
+	int i,j;
+
+	for (i=0; i<4; i++) {
+		for (j=0; j<4;j++) {
+			m[i][j]=mtx[i][j];
+		}
+	}
+
+	gl.MatrixMode(GL_PROJECTION);
+	gl.LoadIdentity();
+	gl.MultMatrixf(&m[0][0]);
+
+	gl.MatrixMode(GL_MODELVIEW);
+}
+
+static void set_model_matrix(float mtx[4][4])
+{
+	GLfloat m[4][4];
+	int i,j;
+
+	for (i=0; i<4; i++) {
+		for (j=0; j<4;j++) {
+			m[i][j]=mtx[i][j];
+		}
+	}
+
+	gl.MatrixMode(GL_MODELVIEW);
+	gl.LoadIdentity();
+	gl.MultMatrixf(&m[0][0]);
 }
 
 static void set_color(Uint32 color)

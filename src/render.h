@@ -88,6 +88,8 @@ struct render_s {
 
 	void (*get_proj_matrix)(float mtx[4][4]);
 	void (*get_model_matrix)(float mtx[4][4]);
+	void (*set_proj_matrix)(float mtx[4][4]);
+	void (*set_model_matrix)(float mtx[4][4]);
 
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
 	void (*set_render)(int num_render);
