@@ -71,6 +71,9 @@ static void rotate(float angle, float x, float y, float z);
 static void push_matrix(void);
 static void pop_matrix(void);
 
+static void get_proj_matrix(float mtx[4][4]);
+static void get_model_matrix(float mtx[4][4]);
+
 static void recalc_frustum_mtx(void);
 
 static void set_color(Uint32 color);
@@ -122,6 +125,9 @@ void render_soft_init(render_t *this)
 	this->rotate = rotate;
 	this->push_matrix = push_matrix;
 	this->pop_matrix = pop_matrix;
+
+	this->get_proj_matrix = get_proj_matrix;
+	this->get_model_matrix = get_model_matrix;
 
 	this->set_color = set_color;
 	this->set_render = set_render;
@@ -317,6 +323,16 @@ static void pop_matrix(void)
 	}
 
 	--num_modelview_mtx;
+}
+
+static void get_proj_matrix(float mtx[4][4])
+{
+	memcpy(mtx, frustum_mtx, sizeof(float)*4*4);
+}
+
+static void get_model_matrix(float mtx[4][4])
+{
+	memcpy(mtx, modelview_mtx[num_modelview_mtx], sizeof(float)*4*4);
 }
 
 static void set_color(Uint32 color)

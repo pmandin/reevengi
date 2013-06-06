@@ -86,6 +86,9 @@ struct render_s {
 	void (*push_matrix)(void);
 	void (*pop_matrix)(void);
 
+	void (*get_proj_matrix)(float mtx[4][4]);
+	void (*get_model_matrix)(float mtx[4][4]);
+
 	void (*set_color)(Uint32 color);	/* color in ARGB format */
 	void (*set_render)(int num_render);
 	void (*set_texture)(int num_pal, render_texture_t *render_tex);
