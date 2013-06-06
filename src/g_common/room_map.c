@@ -63,8 +63,6 @@ static void toggleMapModeNext(room_t *this);
 static void drawMap(room_t *this);
 
 static void drawCameras(room_t *this);
-static void drawCamswitches(room_t *this);
-static void drawBoundaries(room_t *this);
 
 static void drawDoors(room_t *this);
 /*static void room_map_drawObstacles(room_t *this);
@@ -227,8 +225,12 @@ static void drawMap(room_t *this)
 			break;		
 	}
 
-	drawBoundaries(this);
-	drawCamswitches(this);
+	render.set_color(MAP_COLOR_BOUNDARY);
+	this->drawBoundaries(this);
+
+	render.set_color(MAP_COLOR_CAMSWITCH);
+	this->drawCamSwitches(this);
+
 	if (this->map_mode == ROOM_MAP_2D) {
 		drawCameras(this);
 	}
@@ -293,58 +295,6 @@ static void drawCameras(room_t *this)
 
 		render.line(&v[0], &v[1]);
 		/*break;*/
-	}
-}
-
-static void drawCamswitches(room_t *this)
-{
-	int i, j;
-
-	for (i=0; i<this->getNumCamSwitches(this); i++) {
-		room_camswitch_t room_camswitch;
-		vertex_t v[4];
-
-		this->getCamSwitch(this, i, &room_camswitch);
-
-		if (room_camswitch.from != game->num_camera) {
-			continue;
-		}
-
-		render.set_color(MAP_COLOR_CAMSWITCH);
-
-		for (j=0; j<4; j++) {
-			v[j].x = room_camswitch.x[j];
-			v[j].y = room_camswitch.y[j];
-			v[j].z = 1.0f;
-		}
-
-		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
-	}
-}
-
-static void drawBoundaries(room_t *this)
-{
-	int i, j;
-
-	for (i=0; i<this->getNumBoundaries(this); i++) {
-		room_camswitch_t room_camswitch;
-		vertex_t v[4];
-
-		this->getBoundary(this, i, &room_camswitch);
-
-		if (room_camswitch.from != game->num_camera) {
-			continue;
-		}
-
-		render.set_color(MAP_COLOR_BOUNDARY);
-
-		for (j=0; j<4; j++) {
-			v[j].x = room_camswitch.x[j];
-			v[j].y = room_camswitch.y[j];
-			v[j].z = 1.0f;
-		}
-
-		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 	}
 }
 

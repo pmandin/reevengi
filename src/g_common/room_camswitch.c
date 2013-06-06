@@ -25,19 +25,23 @@
 #include "../log.h"
 #include "../parameters.h"
 #include "../filesystem.h"
+#include "../render.h"
 
 #include "room.h"
 #include "room_camswitch.h"
+#include "game.h"
 
 /*--- Functions prototypes ---*/
 
 static int getNumCamSwitches(room_t *this);
 static void getCamSwitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
 static int checkCamSwitch(room_t *this, int num_camera, float x, float y);
+static void drawCamSwitches(room_t *this);
 
 static int getNumBoundaries(room_t *this);
 static void getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_boundary);
 static int checkBoundary(room_t *this, int num_camera, float x, float y);
+static void drawBoundaries(room_t *this);
 
 /*--- Functions ---*/
 
@@ -46,10 +50,12 @@ void room_camswitch_init(room_t *this)
 	this->getNumCamSwitches = getNumCamSwitches;
 	this->getCamSwitch = getCamSwitch;
 	this->checkCamSwitch = checkCamSwitch;
+	this->drawCamSwitches = drawCamSwitches;
 
 	this->getNumBoundaries = getNumBoundaries;
 	this->getBoundary = getBoundary;
 	this->checkBoundary = checkBoundary;
+	this->drawBoundaries = drawBoundaries;
 }
 
 static int getNumCamSwitches(room_t *this)
@@ -101,6 +107,30 @@ static int checkCamSwitch(room_t *this, int num_camera, float x, float y)
 	return -1;
 }
 
+static void drawCamSwitches(room_t *this)
+{
+	int i, j;
+
+	for (i=0; i<this->getNumCamSwitches(this); i++) {
+		room_camswitch_t room_camswitch;
+		vertex_t v[4];
+
+		this->getCamSwitch(this, i, &room_camswitch);
+
+		if (room_camswitch.from != game->num_camera) {
+			continue;
+		}
+
+		for (j=0; j<4; j++) {
+			v[j].x = room_camswitch.x[j];
+			v[j].y = room_camswitch.y[j];
+			v[j].z = 1.0f;
+		}
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+	}
+}
+
 static int getNumBoundaries(room_t *this)
 {
 	return 0;
@@ -148,4 +178,28 @@ static int checkBoundary(room_t *this, int num_camera, float x, float y)
 	}
 
 	return 0;
+}
+
+static void drawBoundaries(room_t *this)
+{
+	int i, j;
+
+	for (i=0; i<this->getNumBoundaries(this); i++) {
+		room_camswitch_t room_camswitch;
+		vertex_t v[4];
+
+		this->getBoundary(this, i, &room_camswitch);
+
+		if (room_camswitch.from != game->num_camera) {
+			continue;
+		}
+
+		for (j=0; j<4; j++) {
+			v[j].x = room_camswitch.x[j];
+			v[j].y = room_camswitch.y[j];
+			v[j].z = 1.0f;
+		}
+
+		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+	}
 }
