@@ -26,14 +26,6 @@
 #define ROOM_SCRIPT_INIT 0	/* Initialization script, run once */
 #define ROOM_SCRIPT_RUN	1	/* Running script, while the player is in the room */
 
-enum {
-	ROOM_MAP_OFF=0,
-	ROOM_MAP_2D,
-	ROOM_MAP_2D_TO_3D,
-	ROOM_MAP_3D,
-	ROOM_MAP_3D_TO_2D
-};
-
 /*--- External types ---*/
 
 typedef struct render_texture_s render_texture_t;

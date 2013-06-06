@@ -21,6 +21,16 @@
 #ifndef ROOM_MAP_H
 #define ROOM_MAP_H 1
 
+/*--- Defines ---*/
+
+enum {
+	ROOM_MAP_OFF=0,
+	ROOM_MAP_2D,
+	ROOM_MAP_2D_TO_3D,
+	ROOM_MAP_3D,
+	ROOM_MAP_3D_TO_2D
+};
+
 /*--- Functions ---*/
 
 void room_map_init(room_t *this);

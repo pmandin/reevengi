@@ -33,6 +33,7 @@
 
 #include "g_common/game.h"
 #include "g_common/room.h"
+#include "g_common/room_map.h"
 #include "g_common/room_door.h"
 #include "g_common/player.h"
 
