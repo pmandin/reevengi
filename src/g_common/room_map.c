@@ -58,7 +58,8 @@ static void minMaxCameras(room_t *this);
 static void minMaxCamswitches(room_t *this);
 static void minMaxBoundaries(room_t *this);
 
-static void setMapMode(room_t *this, int new_map_mode);
+static void toggleMapModePrev(room_t *this);
+static void toggleMapModeNext(room_t *this);
 static void drawMap(room_t *this);
 
 static void drawCameras(room_t *this);
@@ -78,7 +79,8 @@ void room_map_init(room_t *this)
 	this->map_mode = ROOM_MAP_OFF;
 
 	this->drawMap = drawMap;
-	this->setMapMode = setMapMode;
+	this->toggleMapModePrev = toggleMapModePrev;
+	this->toggleMapModeNext = toggleMapModeNext;
 }
 
 void room_map_init_data(room_t *this)
@@ -178,9 +180,34 @@ static void minMaxBoundaries(room_t *this)
 	}
 }
 
-void setMapMode(room_t *this, int new_map_mode)
+static void toggleMapModePrev(room_t *this)
 {
-	this->map_mode = new_map_mode;
+	switch(this->map_mode) {
+		case ROOM_MAP_OFF:
+			this->map_mode = ROOM_MAP_3D;
+			break;
+		case ROOM_MAP_2D:
+			this->map_mode = ROOM_MAP_OFF;
+			break;
+		case ROOM_MAP_3D:
+			this->map_mode = ROOM_MAP_2D;
+			break;
+	}
+}
+
+static void toggleMapModeNext(room_t *this)
+{
+	switch(this->map_mode) {
+		case ROOM_MAP_OFF:
+			this->map_mode = ROOM_MAP_2D;
+			break;
+		case ROOM_MAP_2D:
+			this->map_mode = ROOM_MAP_3D;
+			break;
+		case ROOM_MAP_3D:
+			this->map_mode = ROOM_MAP_OFF;
+			break;
+	}
 }
 
 static void drawMap(room_t *this)

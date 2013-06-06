@@ -117,6 +117,8 @@ static int player_turnleft = 0;
 static int player_turnright = 0;
 static Uint32 tick_anim = 0;
 
+static int shift_pressed = 0;
+
 /*--- Functions prototypes ---*/
 
 static void toggle_map_mode(void);
@@ -149,6 +151,10 @@ void view_background_input(SDL_Event *event)
 	switch(event->type) {
 	case SDL_KEYDOWN:
 		switch (event->key.keysym.sym) {
+			case SDLK_RSHIFT:
+			case SDLK_LSHIFT:
+				shift_pressed=1;
+				break;
 			case KEY_STAGE_DOWN:
 				game->prev_stage(game);
 				reload_room = 1;
@@ -285,6 +291,10 @@ void view_background_input(SDL_Event *event)
 		break;
 	case SDL_KEYUP:
 		switch (event->key.keysym.sym) {
+			case SDLK_RSHIFT:
+			case SDLK_LSHIFT:
+				shift_pressed=0;
+				break;
 			case KEY_MOVE_FORWARD:
 				player_moveforward = 0;
 				break;
@@ -318,16 +328,10 @@ static void toggle_map_mode(void)
 {
 	room_t *room = game->room;
 
-	switch(room->map_mode) {
-		case ROOM_MAP_OFF:
-			room->setMapMode(room, ROOM_MAP_2D);
-			break;
-		case ROOM_MAP_2D:
-			room->setMapMode(room, ROOM_MAP_3D);
-			break;
-		case ROOM_MAP_3D:
-			room->setMapMode(room, ROOM_MAP_OFF);
-			break;
+	if (shift_pressed) {
+		room->toggleMapModePrev(room);
+	} else {
+		room->toggleMapModeNext(room);
 	}
 }
 
