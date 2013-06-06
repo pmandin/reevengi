@@ -23,8 +23,8 @@
 #include <SDL.h>
 
 #include "../log.h"
-
 #include "../render.h"
+#include "../clock.h"
 
 #include "room.h"
 #include "room_map.h"
@@ -51,6 +51,7 @@
 /*--- Variables ---*/
 
 static Sint16 minx, maxx, minz, maxz;
+static Uint32 clock_start;
 
 /*--- Functions prototypes ---*/
 
@@ -183,12 +184,15 @@ static void toggleMapModePrev(room_t *this)
 	switch(this->map_mode) {
 		case ROOM_MAP_OFF:
 			this->map_mode = ROOM_MAP_3D;
+			logMsg(1, "map: ROOM_MAP_3D\n");
 			break;
 		case ROOM_MAP_2D:
 			this->map_mode = ROOM_MAP_OFF;
+			logMsg(1, "map: ROOM_MAP_OFF\n");
 			break;
 		case ROOM_MAP_3D:
-			this->map_mode = ROOM_MAP_2D;
+			this->map_mode = ROOM_MAP_3D_TO_2D_INIT;
+			logMsg(1, "map: ROOM_MAP_3D_TO_2D_INIT\n");
 			break;
 	}
 }
@@ -198,12 +202,15 @@ static void toggleMapModeNext(room_t *this)
 	switch(this->map_mode) {
 		case ROOM_MAP_OFF:
 			this->map_mode = ROOM_MAP_2D;
+			logMsg(1, "map: ROOM_MAP_2D\n");
 			break;
 		case ROOM_MAP_2D:
-			this->map_mode = ROOM_MAP_3D;
+			this->map_mode = ROOM_MAP_2D_TO_3D_INIT;
+			logMsg(1, "map: ROOM_MAP_2D_TO_3D_INIT\n");
 			break;
 		case ROOM_MAP_3D:
 			this->map_mode = ROOM_MAP_OFF;
+			logMsg(1, "map: ROOM_MAP_OFF\n");
 			break;
 	}
 }
@@ -211,6 +218,28 @@ static void toggleMapModeNext(room_t *this)
 static void drawMap(room_t *this)
 {
 	player_t *player=game->player;
+
+	switch(this->map_mode) {
+		case ROOM_MAP_2D_TO_3D_INIT:
+			clock_start = clockGet();
+			this->map_mode = ROOM_MAP_2D_TO_3D_CALC;
+			logMsg(1, "map: ROOM_MAP_2D_TO_3D_CALC\n");
+			break;
+		case ROOM_MAP_2D_TO_3D_CALC:
+			this->map_mode = ROOM_MAP_3D;
+			logMsg(1, "map: ROOM_MAP_3D\n");
+			break;
+		case ROOM_MAP_3D_TO_2D_INIT:
+			clock_start = clockGet();
+			this->map_mode = ROOM_MAP_3D_TO_2D_CALC;
+			logMsg(1, "map: ROOM_MAP_3D_TO_2D_CALC\n");
+			break;
+		case ROOM_MAP_3D_TO_2D_CALC:
+			this->map_mode = ROOM_MAP_2D;
+			logMsg(1, "map: ROOM_MAP_2D\n");
+			break;
+	}
+
 
 	switch(this->map_mode) {
 		case ROOM_MAP_2D:
