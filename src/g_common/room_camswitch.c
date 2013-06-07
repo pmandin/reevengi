@@ -123,8 +123,8 @@ static void drawCamSwitches(room_t *this)
 
 		for (j=0; j<4; j++) {
 			v[j].x = room_camswitch.x[j];
-			v[j].y = room_camswitch.y[j];
-			v[j].z = 1.0f;
+			v[j].y = 0.0f;
+			v[j].z = room_camswitch.y[j];
 		}
 
 		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
@@ -196,8 +196,8 @@ static void drawBoundaries(room_t *this)
 
 		for (j=0; j<4; j++) {
 			v[j].x = room_camswitch.x[j];
-			v[j].y = room_camswitch.y[j];
-			v[j].z = 1.0f;
+			v[j].y = 0.0f;
+			v[j].z = room_camswitch.y[j];
 		}
 
 		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
