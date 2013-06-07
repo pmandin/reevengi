@@ -83,6 +83,7 @@ static void set_render(int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
 static void set_dithering(int enable);
+static void set_depth(int enable);
 static void set_useDirtyRects(int enable);
 
 static Uint32 get_color_from_texture(vertex_t *v1);
@@ -138,7 +139,10 @@ void render_soft_init(render_t *this)
 	this->set_texture = set_texture;
 	this->set_blending = set_blending;
 	this->set_dithering = set_dithering;
+	this->set_depth = set_depth;
 	this->set_useDirtyRects = set_useDirtyRects;
+
+	this->depth_test = 1;
 
 	this->sortBackToFront = sortBackToFront;
 
@@ -373,6 +377,11 @@ static void set_blending(int enable)
 static void set_dithering(int enable)
 {
 	render.dithering = enable;
+}
+
+static void set_depth(int enable)
+{
+	render.depth_test = enable;
 }
 
 static void set_useDirtyRects(int enable)

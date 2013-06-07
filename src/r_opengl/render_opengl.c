@@ -81,6 +81,7 @@ static void set_render(int num_render);
 static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
 static void set_dithering(int enable);
+static void set_depth(int enable);
 static void set_useDirtyRects(int enable);
 static void set_color_from_texture(vertex_t *v1);
 
@@ -135,6 +136,7 @@ void render_opengl_init(render_t *this)
 	this->set_texture = set_texture;
 	this->set_blending = set_blending;
 	this->set_dithering = set_dithering;
+	this->set_depth = set_depth;
 	this->set_useDirtyRects = set_useDirtyRects;
 
 	this->sortBackToFront = sortBackToFront;
@@ -361,6 +363,15 @@ static void set_dithering(int enable)
 		gl.Enable(GL_DITHER);
 	} else {
 		gl.Disable(GL_DITHER);
+	}
+}
+
+static void set_depth(int enable)
+{
+	if (enable) {
+		gl.Enable(GL_DEPTH_TEST);
+	} else {
+		gl.Disable(GL_DEPTH_TEST);
 	}
 }
 
