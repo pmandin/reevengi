@@ -25,6 +25,7 @@
 #include "../log.h"
 #include "../render.h"
 #include "../clock.h"
+#include "../r_soft/matrix.h"
 
 #include "room.h"
 #include "room_map.h"
@@ -78,6 +79,8 @@ static void drawDoors(room_t *this);
 static void room_map_drawItems(room_t *this);*/
 
 static void drawPlayer(player_t *this);
+
+static void drawOrigin(void);
 
 /*--- Functions ---*/
 
@@ -227,15 +230,24 @@ static void initMatrix2D(room_t *this, float mtx_proj[4][4], float mtx_model[4][
 {
 	player_t *player=game->player;
 
-	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -1.0f, 1.0f);
+	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -20000.0f, 20000.0f);
+	render.rotate(270.0f, 1.0f,0.0f,0.0f);
+	/*render.translate(-player->x, 0.0f, -player->z);*/
 	render.get_proj_matrix(mtx_proj);
 
-	render.translate(-player->x, -player->z, 0.0f);
+	render.set_identity();
+	render.translate(-player->x, 0.0f, -player->z);
 	render.get_model_matrix(mtx_model);
+
+	logMsg(1, "map: init2d: projection\n");
+	mtx_print(mtx_proj);
+	logMsg(1, "map: init3d: modelview\n");
+	mtx_print(mtx_model);
 }
 
 static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
 {
+	player_t *player=game->player;
 	room_camera_t room_camera;
 
 	this->getCamera(this, game->num_camera, &room_camera);
@@ -248,7 +260,13 @@ static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][
 		room_camera.to_x, room_camera.to_y, room_camera.to_z,
 		0.0f, -1.0f, 0.0f
 	);
+	render.translate(0.0f, player->y+2000.0f, 0.0f);
 	render.get_model_matrix(mtx_model);
+
+	logMsg(1, "map: init3d: projection\n");
+	mtx_print(mtx_proj);
+	logMsg(1, "map: init3d: modelview\n");
+	mtx_print(mtx_model);
 }
 
 static void calcMatrix(Uint32 elapsed)
@@ -260,20 +278,37 @@ static void calcMatrix(Uint32 elapsed)
 		for (j=0; j<4; j++) {
 			mtx_proj_cur[i][j]=mtx_proj_from[i][j]+
 				((mtx_proj_to[i][j]-mtx_proj_from[i][j])*pos);
-			mtx_model_cur[i][j]=mtx_model_cur[i][j]+
-				((mtx_model_cur[i][j]-mtx_model_cur[i][j])*pos);
+			mtx_model_cur[i][j]=mtx_model_from[i][j]+
+				((mtx_model_to[i][j]-mtx_model_from[i][j])*pos);
 		}
 	}
 
 	render.set_proj_matrix(mtx_proj_cur);
 	render.set_model_matrix(mtx_model_cur);
+
+	logMsg(1, "map: calc: projection\n");
+	mtx_print(mtx_proj_cur);
+	logMsg(1, "map: calc: modelview\n");
+	mtx_print(mtx_model_cur);
 }
 
 static void drawMap(room_t *this)
 {
 	player_t *player=game->player;
 	Uint32 elapsed;
+/*	float angle;
+
+	angle = (clockGet() & 2047) * 360.0f / 2048.0f;
+	angle = 270.0f;*/
+
 	switch(this->map_mode) {
+		case ROOM_MAP_2D:
+			{
+				render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -20000.0f, 20000.0f);
+				render.rotate(270.0f, 1.0f,0.0f,0.0f);
+				render.translate(-player->x, 0.0f, -player->z);
+			}
+			break;
 		case ROOM_MAP_2D_TO_3D_INIT:
 			{
 				clock_start = clockGet();
@@ -294,6 +329,10 @@ static void drawMap(room_t *this)
 				}
 			}
 			break;
+		case ROOM_MAP_3D:
+			/* Keep current projection */
+			render.translate(0.0f, player->y+2000.0f, 0.0f);
+			break;		
 		case ROOM_MAP_3D_TO_2D_INIT:
 			{
 				clock_start = clockGet();
@@ -316,19 +355,7 @@ static void drawMap(room_t *this)
 			break;
 	}
 
-
-	switch(this->map_mode) {
-		case ROOM_MAP_2D:
-			/*logMsg(1, "%d %d %d %d\n",minx,maxx,minz,maxz);
-			render.set_ortho(minx*0.5f,maxx*0.5f, minz*0.5f,maxz*0.5f, -1.0f, 1.0f);*/
-			render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -1.0f, 1.0f);
-			/*render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);*/
-			render.translate(-player->x, -player->z, 0.0f);
-			break;
-		case ROOM_MAP_3D:
-			/* Keep current projection */
-			break;		
-	}
+	render.set_texture(0, NULL);
 
 	render.set_color(MAP_COLOR_BOUNDARY);
 	this->drawBoundaries(this);
@@ -336,22 +363,35 @@ static void drawMap(room_t *this)
 	render.set_color(MAP_COLOR_CAMSWITCH);
 	this->drawCamSwitches(this);
 
-	if (this->map_mode == ROOM_MAP_2D) {
-		drawCameras(this);
-	}
+	drawOrigin();
 
-	/*drawObstacles(this);
-	drawItems(this);*/
-	drawDoors(this);
-
-	if (this->map_mode == ROOM_MAP_2D) {
-		drawPlayer(player);
+	switch(this->map_mode) {
+		case ROOM_MAP_2D:
+		case ROOM_MAP_3D_TO_2D_INIT:
+		case ROOM_MAP_3D_TO_2D_CALC:
+			drawCameras(this);
+			/*drawObstacles(this);
+			drawItems(this);*/
+			drawDoors(this);
+			drawPlayer(player);
+			break;
+		case ROOM_MAP_3D:
+		case ROOM_MAP_2D_TO_3D_INIT:
+		case ROOM_MAP_2D_TO_3D_CALC:
+			/*drawObstacles(this);
+			drawItems(this);*/
+			drawDoors(this);
+			break;
+		default:
+			break;
 	}
 }
 
 static void drawCameras(room_t *this)
 {
 	int i;
+
+	render.set_color(MAP_COLOR_CAMERA);
 
 	for (i=0; i<this->num_cameras; i++) {
 		room_camera_t room_camera;
@@ -382,21 +422,19 @@ static void drawCameras(room_t *this)
 		}
 		angle = (angle * 180.0f) / M_PI;
 
-		render.set_color(MAP_COLOR_CAMERA);
-
 		v[0].x = room_camera.from_x;
-		v[0].y = room_camera.from_z;
-		v[0].z = 1.0f;
+		v[0].y = 0.0f;
+		v[0].z = room_camera.from_z;
 
 		v[1].x = room_camera.from_x + radius * cos(((angle+30.0f)*M_PI)/180.0f);
-		v[1].y = room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f);
-		v[1].z = 1.0f;
+		v[1].y = 0.0f;
+		v[1].z = room_camera.from_z + radius * sin(((angle+30.0f)*M_PI)/180.0f);
 
 		render.line(&v[0], &v[1]);
 
 		v[1].x = room_camera.from_x + radius * cos(((angle-30.0f)*M_PI)/180.0f);
-		v[1].y = room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f);
-		v[1].z = 1.0f;
+		v[1].y = 0.0f;
+		v[1].z = room_camera.from_z + radius * sin(((angle-30.0f)*M_PI)/180.0f);
 
 		render.line(&v[0], &v[1]);
 		/*break;*/
@@ -413,53 +451,33 @@ static void drawDoors(room_t *this)
 		room_door_t *door = &this->doors[i];
 		vertex_t v[4];
 
-#if 1
 		v[0].x = door->x;
-		v[0].y = door->y;
-		v[0].z = 1.0f;
+		v[0].y = 0.0f;
+		v[0].z = door->y;
 
 		v[1].x = door->x+door->w;
-		v[1].y = door->y;
-		v[1].z = 1.0f;
+		v[1].y = 0.0f;
+		v[1].z = door->y;
 
 		render.line(&v[0], &v[1]);
 
 		v[0].x = door->x+door->w;
-		v[0].y = door->y+door->h;
-		v[0].z = 1.0f;
+		v[0].y = 0.0f;
+		v[0].z = door->y+door->h;
 
 		render.line(&v[0], &v[1]);
 
 		v[1].x = door->x;
-		v[1].y = door->y+door->h;
-		v[1].z = 1.0f;
+		v[1].y = 0.0f;
+		v[1].z = door->y+door->h;
 
 		render.line(&v[0], &v[1]);
 
 		v[0].x = door->x;
-		v[0].y = door->y;
-		v[0].z = 1.0f;
+		v[0].y = 0.0f;
+		v[0].z = door->y;
 
 		render.line(&v[0], &v[1]);
-#else
-		v[0].x = door->x;
-		v[0].y = door->y;
-		v[0].z = 1.0f;
-
-		v[1].x = door->x+door->w;
-		v[1].y = door->y;
-		v[1].z = 1.0f;
-
-		v[2].x = door->x+door->w;
-		v[2].y = door->y+door->h;
-		v[2].z = 1.0f;
-
-		v[3].x = door->x;
-		v[3].y = door->y+door->h;
-		v[3].z = 1.0f;
-
-		render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
-#endif
 	}
 }
 
@@ -471,29 +489,50 @@ void drawPlayer(player_t *player)
 	float y = player->z;
 	float angle = player->a;
 
-	render.set_texture(0, NULL);
-
 	render.set_color(MAP_COLOR_PLAYER);
 
 	v[0].x = (x - radius * cos((-angle * M_PI) / 2048.0f) * 0.5f);
-	v[0].y = (y - radius * sin((-angle * M_PI) / 2048.0f) * 0.5f);
-	v[0].z = 1.0f;
+	v[0].y = 0.0f;
+	v[0].z = (y - radius * sin((-angle * M_PI) / 2048.0f) * 0.5f);
 
 	v[1].x = (x + radius * cos((-angle * M_PI) / 2048.0f) * 0.5f);
-	v[1].y = (y + radius * sin((-angle * M_PI) / 2048.0f) * 0.5f);
-	v[1].z = 1.0f;
+	v[1].y = 0.0f;
+	v[1].z = (y + radius * sin((-angle * M_PI) / 2048.0f) * 0.5f);
 
 	render.line(&v[0], &v[1]);
 
 	v[0].x = (x + radius * cos((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
-	v[0].y = (y + radius * sin((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
-	v[0].z = 1.0f;
+	v[0].y = 0.0f;
+	v[0].z = (y + radius * sin((-(angle-224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
 
 	render.line(&v[0], &v[1]);
 
 	v[0].x = (x + radius * cos((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
-	v[0].y = (y + radius * sin((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
-	v[0].z = 1.0f;
+	v[0].y = 0.0f;
+	v[0].z = (y + radius * sin((-(angle+224.0f) * M_PI) / 2048.0f) * 0.5f * 0.80f);
 
 	render.line(&v[0], &v[1]);
+}
+
+static void drawOrigin(void)
+{
+	vertex_t v[2];
+
+	render.push_matrix();
+
+	v[0].x = v[0].y = v[0].z = 0;
+	v[1].x = 3000; v[1].y = v[1].z = 0;
+
+	render.set_color(0x00ff0000); /* x red */
+	render.line(&v[0], &v[1]);
+
+	v[1].y = 3000; v[1].x = v[1].z = 0;
+	render.set_color(0x0000ff00);	/* y green */
+	render.line(&v[0], &v[1]);
+
+	v[1].z = 3000; v[1].x = v[1].y = 0;
+	render.set_color(0x000000ff);	/* z blue */
+	render.line(&v[0], &v[1]);
+
+	render.pop_matrix();
 }
