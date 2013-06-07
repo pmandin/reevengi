@@ -38,6 +38,12 @@ static void displayTexts(room_t *this, int num_lang);
 
 void rdt3_init(room_t *this)
 {
+	rdt3_header_t *rdt_header = (rdt3_header_t *) this->file;
+
+	if (this->file_length>4) {
+		this->num_cameras = this->getNumCameras(this);
+	}
+
 	/* Display texts */
 	displayTexts(this, 0);	/* language 1 */
 	displayTexts(this, 1);	/* language 2 */
