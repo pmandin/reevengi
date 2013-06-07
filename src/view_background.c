@@ -577,7 +577,9 @@ void view_background_draw(void)
 	}
 
 	if (room->map_mode != ROOM_MAP_OFF) {
+		render.set_depth(0);
 		room->drawMap(room);
+		render.set_depth(1);
 	}
 }
 
