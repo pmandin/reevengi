@@ -174,6 +174,8 @@ static void load(room_t *this, int stage, int room, int camera)
 		this->scriptDump(this, ROOM_SCRIPT_RUN);
 	}
 	this->scriptExec(this, ROOM_SCRIPT_INIT);
+
+	this->num_cameras = this->getNumCameras(this);
 }
 
 static void init(room_t *this)

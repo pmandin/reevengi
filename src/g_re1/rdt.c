@@ -30,22 +30,5 @@
 
 void rdt1_init(room_t *this)
 {
-	rdt1_header_t *rdt_header = (rdt1_header_t *) this->file;
-
-	if (this->file_length>4) {
-		this->num_cameras = this->getNumCameras(this);
-/*		this->num_camswitches = rdt_getNumCamswitches(this);
-		this->num_boundaries = rdt_getNumBoundaries(this);
-
-		this->getCamera = rdt_getCamera;
-		this->getCamswitch = rdt_getCamswitch;
-		this->getBoundary = rdt_getBoundary;
-
-		this->drawMasks = rdt_drawMasks;*/
-	}
-
-	/*logMsg(2, "%d cameras angles, %d camera switches, %d boundaries\n",
-		this->num_cameras, this->num_camswitches, this->num_boundaries);*/
-
 	rdt1_sca_init(this);
 }
