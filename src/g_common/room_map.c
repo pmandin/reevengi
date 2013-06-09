@@ -39,6 +39,7 @@
 #define MAP_COLOR_CAMERA	0x00ffffff
 #define MAP_COLOR_CAMSWITCH	0x00ffcc88
 #define MAP_COLOR_BOUNDARY	0x00ff0000
+#define MAP_COLOR_GRID		0x00202020
 
 #define MAP_COLOR_DOOR			0x0000cccc
 #define MAP_COLOR_OBSTACLE		0x00ffcc00
@@ -82,6 +83,7 @@ static void room_map_drawItems(room_t *this);*/
 static void drawPlayer(player_t *this);
 
 static void drawOrigin(void);
+static void drawGrid(void);
 
 /*--- Functions ---*/
 
@@ -231,7 +233,7 @@ static void setProjection2D(room_t *this)
 {
 	player_t *player=game->player;
 
-	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -20000.0f, 20000.0f);
+	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -100000.0f, 10000.0f);
 
 	render.set_identity();
 	render.rotate(270.0f, 1.0f,0.0f,0.0f);
@@ -252,7 +254,8 @@ static void setProjection3D(room_t *this)
 		room_camera.to_x, room_camera.to_y, room_camera.to_z,
 		0.0f, -1.0f, 0.0f
 	);
-	render.translate(0.0f, player->y+2000.0f, 0.0f);
+	render.scale(1.0f, -1.0f, 1.0f);
+	/*render.translate(0.0f, player->y+2000.0f, 0.0f);*/
 }
 
 static void initMatrix(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
@@ -386,6 +389,9 @@ static void drawMap(room_t *this)
 
 	render.set_texture(0, NULL);
 
+	render.set_color(MAP_COLOR_GRID);
+	drawGrid();
+
 	render.set_color(MAP_COLOR_BOUNDARY);
 	this->drawBoundaries(this);
 
@@ -488,25 +494,15 @@ static void drawDoors(room_t *this)
 		v[1].y = 0.0f;
 		v[1].z = door->y;
 
-		render.line(&v[0], &v[1]);
+		v[2].x = door->x+door->w;
+		v[2].y = 0.0f;
+		v[2].z = door->y+door->h;
 
-		v[0].x = door->x+door->w;
-		v[0].y = 0.0f;
-		v[0].z = door->y+door->h;
+		v[3].x = door->x;
+		v[3].y = 0.0f;
+		v[3].z = door->y+door->h;
 
-		render.line(&v[0], &v[1]);
-
-		v[1].x = door->x;
-		v[1].y = 0.0f;
-		v[1].z = door->y+door->h;
-
-		render.line(&v[0], &v[1]);
-
-		v[0].x = door->x;
-		v[0].y = 0.0f;
-		v[0].z = door->y;
-
-		render.line(&v[0], &v[1]);
+		render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
 	}
 }
 
@@ -547,8 +543,6 @@ static void drawOrigin(void)
 {
 	vertex_t v[2];
 
-	render.push_matrix();
-
 	v[0].x = v[0].y = v[0].z = 0;
 	v[1].x = 3000; v[1].y = v[1].z = 0;
 
@@ -562,8 +556,45 @@ static void drawOrigin(void)
 	v[1].z = 3000; v[1].x = v[1].y = 0;
 	render.set_color(0x000000ff);	/* z blue */
 	render.line(&v[0], &v[1]);
+}
 
-	render.pop_matrix();
+static void drawGrid(void)
+{
+	float i;
+	float px, pz;
+	vertex_t v[2];
+	player_t *player = game->player;
+
+	px = ((int) (player->x / 2000)) * 2000.0f;
+	pz = ((int) (player->z / 2000)) * 2000.0f;
+/*	logMsg(1, "map: %f,%f\n",px,pz);*/
+
+	/*render.push_matrix();*/
+	/*render.translate(px, 0.0f, pz);*/
+
+	for (i=-20000.0f; i<=20000.0f; i+=2000.0f) {
+		v[0].x = px-20000.0f;
+		v[0].y = 0.0f;
+		v[0].z = pz+i;
+
+		v[1].x = px+20000.0f;
+		v[1].y = 0.0f;
+		v[1].z = pz+i;
+
+		render.line(&v[0], &v[1]);
+
+		v[0].x = px+i;
+		v[0].y = 0.0f;
+		v[0].z = pz-20000.0f;
+
+		v[1].x = px+i;
+		v[1].y = 0.0f;
+		v[1].z = pz+20000.0f;
+
+		render.line(&v[0], &v[1]);
+	}
+
+	/*render.pop_matrix();*/
 }
 
 /*
