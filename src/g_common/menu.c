@@ -83,7 +83,7 @@ menu_item_t main_menu[1+10+8]={
 	{0,3, STR_TYPE_TEXT, PTR_NULL, "Room  :"},
 	{8,3, STR_TYPE_HEXA2, PTR_GAM_ROOM, NULL},
 	{0,4, STR_TYPE_TEXT, PTR_NULL, "Camera:"},
-	{8,4, STR_TYPE_HEXA2, PTR_GAM_STAGE, NULL},
+	{8,4, STR_TYPE_HEXA2, PTR_GAM_CAMERA, NULL},
 	{0,5, STR_TYPE_TEXT, PTR_NULL, "Model :"},
 	{8,5, STR_TYPE_TEXT, PTR_NULL, model_name},
 	{0,6, STR_TYPE_TEXT, PTR_NULL, "Anim  :"},
