@@ -64,8 +64,9 @@ static void minMaxCameras(room_t *this);
 static void minMaxCamswitches(room_t *this);
 static void minMaxBoundaries(room_t *this);
 
-static void initMatrix2D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4]);
-static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4]);
+static void setProjection2D(room_t *this);
+static void setProjection3D(room_t *this);
+static void initMatrix(room_t *this, float mtx_proj[4][4], float mtx_model[4][4]);
 static void calcMatrix(Uint32 elapsed);
 
 static void toggleMapModePrev(room_t *this);
@@ -226,26 +227,18 @@ static void toggleMapModeNext(room_t *this)
 	}
 }
 
-static void initMatrix2D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
+static void setProjection2D(room_t *this)
 {
 	player_t *player=game->player;
 
 	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -20000.0f, 20000.0f);
-	render.rotate(270.0f, 1.0f,0.0f,0.0f);
-	/*render.translate(-player->x, 0.0f, -player->z);*/
-	render.get_proj_matrix(mtx_proj);
 
 	render.set_identity();
+	render.rotate(270.0f, 1.0f,0.0f,0.0f);
 	render.translate(-player->x, 0.0f, -player->z);
-	render.get_model_matrix(mtx_model);
-
-	logMsg(1, "map: init2d: projection\n");
-	mtx_print(mtx_proj);
-	logMsg(1, "map: init3d: modelview\n");
-	mtx_print(mtx_model);
 }
 
-static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
+static void setProjection3D(room_t *this)
 {
 	player_t *player=game->player;
 	room_camera_t room_camera;
@@ -253,7 +246,6 @@ static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][
 	this->getCamera(this, game->num_camera, &room_camera);
 
 	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
-	render.get_proj_matrix(mtx_proj);
 
 	render.set_modelview(
 		room_camera.from_x, room_camera.from_y, room_camera.from_z,
@@ -261,11 +253,16 @@ static void initMatrix3D(room_t *this, float mtx_proj[4][4], float mtx_model[4][
 		0.0f, -1.0f, 0.0f
 	);
 	render.translate(0.0f, player->y+2000.0f, 0.0f);
+}
+
+static void initMatrix(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
+{
+	render.get_proj_matrix(mtx_proj);
 	render.get_model_matrix(mtx_model);
 
-	logMsg(1, "map: init3d: projection\n");
+	logMsg(1, "map: init: projection\n");
 	mtx_print(mtx_proj);
-	logMsg(1, "map: init3d: modelview\n");
+	logMsg(1, "map: init: modelview\n");
 	mtx_print(mtx_model);
 }
 
@@ -296,6 +293,7 @@ static void drawMap(room_t *this)
 {
 	player_t *player=game->player;
 	Uint32 elapsed;
+	static int first_print=1;
 /*	float angle;
 
 	angle = (clockGet() & 2047) * 360.0f / 2048.0f;
@@ -304,17 +302,29 @@ static void drawMap(room_t *this)
 	switch(this->map_mode) {
 		case ROOM_MAP_2D:
 			{
-				render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -20000.0f, 20000.0f);
-				render.rotate(270.0f, 1.0f,0.0f,0.0f);
-				render.translate(-player->x, 0.0f, -player->z);
+				setProjection2D(this);
+
+				if (first_print) {
+					render.get_proj_matrix(mtx_proj_cur);
+					render.get_model_matrix(mtx_model_cur);
+
+					logMsg(1, "map: 2d: projection\n");
+					mtx_print(mtx_proj_cur);
+					logMsg(1, "map: 2d: modelview\n");
+					mtx_print(mtx_model_cur);
+					
+					first_print=0;
+				}
 			}
 			break;
 		case ROOM_MAP_2D_TO_3D_INIT:
 			{
 				clock_start = clockGet();
 				this->map_mode = ROOM_MAP_2D_TO_3D_CALC;
-				initMatrix2D(this, mtx_proj_from, mtx_model_from);
-				initMatrix3D(this, mtx_proj_to, mtx_model_to);
+				setProjection2D(this);
+				initMatrix(this, mtx_proj_from, mtx_model_from);
+				setProjection3D(this);
+				initMatrix(this, mtx_proj_to, mtx_model_to);
 				logMsg(1, "map: ROOM_MAP_2D_TO_3D_CALC\n");
 			}
 			break;
@@ -324,21 +334,38 @@ static void drawMap(room_t *this)
 				if (elapsed > MAP_TRANSITION_TIME) {
 					this->map_mode = ROOM_MAP_3D;
 					logMsg(1, "map: ROOM_MAP_3D\n");
+
+					first_print=1;
 				} else {
 					calcMatrix(elapsed);
 				}
 			}
 			break;
 		case ROOM_MAP_3D:
-			/* Keep current projection */
-			render.translate(0.0f, player->y+2000.0f, 0.0f);
+			{
+				setProjection3D(this);
+
+				if (first_print) {
+					render.get_proj_matrix(mtx_proj_cur);
+					render.get_model_matrix(mtx_model_cur);
+
+					logMsg(1, "map: 2d: projection\n");
+					mtx_print(mtx_proj_cur);
+					logMsg(1, "map: 2d: modelview\n");
+					mtx_print(mtx_model_cur);
+					
+					first_print=0;
+				}
+			}
 			break;		
 		case ROOM_MAP_3D_TO_2D_INIT:
 			{
 				clock_start = clockGet();
 				this->map_mode = ROOM_MAP_3D_TO_2D_CALC;
-				initMatrix3D(this, mtx_proj_from, mtx_model_from);
-				initMatrix2D(this, mtx_proj_to, mtx_model_to);
+				setProjection3D(this);
+				initMatrix(this, mtx_proj_from, mtx_model_from);
+				setProjection2D(this);
+				initMatrix(this, mtx_proj_to, mtx_model_to);
 				logMsg(1, "map: ROOM_MAP_3D_TO_2D_CALC\n");
 			}
 			break;
@@ -348,6 +375,8 @@ static void drawMap(room_t *this)
 				if (elapsed > MAP_TRANSITION_TIME) {
 					this->map_mode = ROOM_MAP_2D;
 					logMsg(1, "map: ROOM_MAP_2D\n");
+
+					first_print=1;
 				} else {
 					calcMatrix(elapsed);
 				}
@@ -536,3 +565,58 @@ static void drawOrigin(void)
 
 	render.pop_matrix();
 }
+
+/*
+	3d gl
+
+[    5.533] map: 2d: projection
+(   1.299          0.000           0.000           0.000)
+(   0.000          1.732           0.000           0.000)
+(   0.000          0.000          -1.000         -32.008)
+(   0.000          0.000          -1.000           0.000)
+[    5.534] map: 2d: modelview
+(   0.975          0.000          -0.222        -4315.459)
+(   0.062         -0.960           0.274        -4495.813)
+(  -0.213         -0.281          -0.936        -8811.254)
+(   0.000          0.000           0.000           1.000)	
+
+	2d gl
+
+[   66.128] map: 2d: projection
+(   0.000          0.000           0.000          -0.000)
+(   0.000          0.000           0.000          -0.000)
+(   0.000          0.000           0.000          -0.000)
+(   0.000          0.000           0.000           1.000)
+[   66.128] map: 2d: modelview
+(   1.000          0.000           0.000        -6246.000)
+(   0.000         -0.000           1.000        -7992.000)
+(   0.000         -1.000          -0.000           0.000)
+(   0.000          0.000           0.000           1.000)
+
+	3d soft
+
+[    8.393] map: 2d: projection
+( 473.515         89.808         207.168        813752.375)
+(  25.245        466.341         110.853        2883009.250)
+(   0.213          0.281           0.936        8120.893)
+(   0.213          0.281           0.936        8148.921)
+[    8.394] map: 2d: modelview
+(   1.000          0.000           0.000           0.000)
+(   0.000          1.000           0.000        2360.000)
+(   0.000          0.000           1.000           0.000)
+(   0.000          0.000           0.000           1.000)
+
+	2d soft, nok
+
+[   53.668] map: 2d: projection
+(   0.016          0.000           0.000         320.000)
+(   0.000         -0.012           0.000         240.000)
+(   0.000          0.000           0.000           0.000)
+(   0.000          0.000           0.000           1.000)
+[   53.668] map: 2d: modelview
+(   1.000          0.000           0.000        -6246.000)
+(   0.000         -0.000           1.000        -7992.000)
+(   0.000         -1.000          -0.000           0.000)
+(   0.000          0.000           0.000           1.000)
+
+*/
