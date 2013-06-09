@@ -97,6 +97,9 @@ void game_re2_detect(game_t *this)
 game_t *game_re2_ctor(game_t *this)
 {
 	room_t *room;
+	player_t *player = game->player;
+
+	logMsg(2, "game: re2: ctor\n");
 
 	switch(this->minor) {
 		case GAME_RE2_PS1_DEMO:
@@ -145,13 +148,34 @@ game_t *game_re2_ctor(game_t *this)
 
 	room->scriptDump = rdt2_scd_scriptDump;
 
-#if 0
 	/* Init default room and player pos */
-	this->player.x = -1530.0f;
-	this->player.y = 2020.0f;
-	this->player.z = 2700.0f;
-	this->player.a = 3072.0f;
+
+#if 0
+	/* Config room */
+	player->x = -1530.0f;
+	player->y = 2020.0f;
+	player->z = 2700.0f;
+	player->a = 3072.0f;
 #endif
+
+	if ((params.stage==1) && (params.room==0) && (params.camera==0)) {
+		/* Game A */
+		player->x = -19025.0f;
+		player->y = 200.0f;
+		player->z = -20861.0f;
+		player->a = 337.0f;
+	}
+
+	if ((params.stage==1) && (params.room==4) && (params.camera==0)) {
+		/* Game B */
+	}
+
+/*	if ((params.stage==2) && (params.room==4) && (params.camera==3)) {
+		player->x = -7423.0f;
+		player->y = 0.0f;
+		player->z = -24492.0f;
+		player->a = 2048.0f;
+	}*/
 
 	return this;
 }
