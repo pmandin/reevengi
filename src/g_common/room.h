@@ -33,6 +33,7 @@ typedef struct render_mask_s render_mask_t;
 
 typedef struct room_camswitch_s room_camswitch_t;
 typedef struct room_door_s room_door_t;
+typedef struct room_item_s room_item_t;
 typedef struct room_collision_s room_collision_t;
 
 /*--- Types ---*/
@@ -119,6 +120,12 @@ struct room_s {
 
 	/* Return door entered, of NULL if none entered */
 	room_door_t *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
+
+	/*--- Items ---*/
+	int num_items;
+	room_item_t *items;
+
+	void (*addItem)(room_t *this, room_item_t *door);
 
 	/*--- Collision objects ---*/
 	int (*getNumCollisions)(room_t *this);

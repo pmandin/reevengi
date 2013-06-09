@@ -32,6 +32,7 @@
 #include "room_camswitch.h"
 #include "room_map.h"
 #include "room_door.h"
+#include "room_item.h"
 #include "room_collision.h"
 
 /*--- Types ---*/
@@ -107,6 +108,7 @@ room_t *room_ctor(void)
 	room_door_init(this);
 	room_map_init(this);
 	room_collision_init(this);
+	room_item_init(this);
 
 	return this;
 }
@@ -201,6 +203,13 @@ static void unload(room_t *this)
 		this->doors = NULL;
 
 		this->num_doors=0;
+	}
+
+	if (this->items) {
+		free(this->items);
+		this->items = NULL;
+
+		this->num_items=0;
 	}
 
 	if (this->file) {
