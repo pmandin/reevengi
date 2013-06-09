@@ -335,7 +335,7 @@ static void pop_matrix(void)
 
 static void get_proj_matrix(float mtx[4][4])
 {
-	memcpy(mtx, frustum_mtx, sizeof(float)*4*4);
+	memcpy(mtx, projection_mtx, sizeof(float)*4*4);
 }
 
 static void get_model_matrix(float mtx[4][4])
@@ -345,7 +345,9 @@ static void get_model_matrix(float mtx[4][4])
 
 static void set_proj_matrix(float mtx[4][4])
 {
-	memcpy(frustum_mtx, mtx, sizeof(float)*4*4);
+	memcpy(projection_mtx, mtx, sizeof(float)*4*4);
+
+	recalc_frustum_mtx();
 }
 
 static void set_model_matrix(float mtx[4][4])
