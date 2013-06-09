@@ -31,6 +31,7 @@
 #include "room_map.h"
 #include "room_camswitch.h"
 #include "room_door.h"
+#include "room_item.h"
 #include "player.h"
 #include "game.h"
 
@@ -77,8 +78,8 @@ static void drawMap(room_t *this);
 static void drawCameras(room_t *this);
 
 static void drawDoors(room_t *this);
-/*static void room_map_drawObstacles(room_t *this);
-static void room_map_drawItems(room_t *this);*/
+/*static void room_map_drawObstacles(room_t *this);*/
+static void drawItems(room_t *this);
 
 static void drawPlayer(player_t *this);
 
@@ -318,6 +319,8 @@ static void drawMap(room_t *this)
 					
 					first_print=0;
 				}
+
+				render.set_depth(0);
 			}
 			break;
 		case ROOM_MAP_2D_TO_3D_INIT:
@@ -405,21 +408,23 @@ static void drawMap(room_t *this)
 		case ROOM_MAP_3D_TO_2D_INIT:
 		case ROOM_MAP_3D_TO_2D_CALC:
 			drawCameras(this);
-			/*drawObstacles(this);
-			drawItems(this);*/
+			/*drawObstacles(this);*/
+			drawItems(this);
 			drawDoors(this);
 			drawPlayer(player);
 			break;
 		case ROOM_MAP_3D:
 		case ROOM_MAP_2D_TO_3D_INIT:
 		case ROOM_MAP_2D_TO_3D_CALC:
-			/*drawObstacles(this);
-			drawItems(this);*/
+			/*drawObstacles(this);*/
+			drawItems(this);
 			drawDoors(this);
 			break;
 		default:
 			break;
 	}
+
+	render.set_depth(1);
 }
 
 static void drawCameras(room_t *this)
@@ -501,6 +506,36 @@ static void drawDoors(room_t *this)
 		v[3].x = door->x;
 		v[3].y = 0.0f;
 		v[3].z = door->y+door->h;
+
+		render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
+	}
+}
+
+static void drawItems(room_t *this)
+{
+	int i;
+
+	render.set_color(MAP_COLOR_ITEM);
+
+	for (i=0; i<this->num_items; i++) {
+		room_item_t *item = &this->items[i];
+		vertex_t v[4];
+
+		v[0].x = item->x;
+		v[0].y = 0.0f;
+		v[0].z = item->y;
+
+		v[1].x = item->x+item->w;
+		v[1].y = 0.0f;
+		v[1].z = item->y;
+
+		v[2].x = item->x+item->w;
+		v[2].y = 0.0f;
+		v[2].z = item->y+item->h;
+
+		v[3].x = item->x;
+		v[3].y = 0.0f;
+		v[3].z = item->y+item->h;
 
 		render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
 	}

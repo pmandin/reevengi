@@ -404,6 +404,8 @@ static void processPlayerMovement(void)
 		return;
 	}
 
+	logMsg(2, "player: %f,%f,%f\n",player->x,player->y,player->z);
+
 	was_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 
 	if (player_moveforward) {
@@ -544,9 +546,9 @@ void view_background_draw(void)
 
 #ifndef ENABLE_DEBUG_POS
 	if (refresh_player_pos) {
-		player->x = room_camera.to_x;
+		/*player->x = room_camera.to_x;
 		player->y = room_camera.to_y;
-		player->z = room_camera.to_z;
+		player->z = room_camera.to_z;*/
 		refresh_player_pos = 0;
 	}
 #endif
@@ -577,9 +579,7 @@ void view_background_draw(void)
 	}
 
 	if (room->map_mode != ROOM_MAP_OFF) {
-		render.set_depth(0);
 		room->drawMap(room);
-		render.set_depth(1);
 	}
 }
 
