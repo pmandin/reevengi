@@ -138,7 +138,7 @@ struct room_s {
 
 	void (*toggleMapModePrev)(room_t *this);
 	void (*toggleMapModeNext)(room_t *this);
-	void (*drawMap)(room_t *this);
+	void (*drawMap)(room_t *this, int render_grid);
 };
 
 /*--- Variables ---*/

@@ -45,7 +45,7 @@
 #define MAP_COLOR_DOOR			0x0000cccc
 #define MAP_COLOR_ITEM			0x00ffff00
 #define MAP_COLOR_PLAYER		0x0000ff00
-#define MAP_COLOR_COLLISION		0x00ffc0ff
+#define MAP_COLOR_COLLISION		0x00c060c0
 
 #define MAP_COLOR_OBSTACLE		0x00ffcc00
 #define MAP_COLOR_WALLS			0x00ff00ff
@@ -75,7 +75,7 @@ static void calcMatrix(Uint32 elapsed);
 
 static void toggleMapModePrev(room_t *this);
 static void toggleMapModeNext(room_t *this);
-static void drawMap(room_t *this);
+static void drawMap(room_t *this, int render_grid);
 
 static void drawCameras(room_t *this);
 
@@ -297,7 +297,7 @@ static void calcMatrix(Uint32 elapsed)
 	mtx_print(mtx_model_cur);
 }
 
-static void drawMap(room_t *this)
+static void drawMap(room_t *this, int render_grid)
 {
 	player_t *player=game->player;
 	Uint32 elapsed;
@@ -396,8 +396,10 @@ static void drawMap(room_t *this)
 
 	render.set_texture(0, NULL);
 
-	render.set_color(MAP_COLOR_GRID);
-	drawGrid();
+	if (render_grid) {
+		render.set_color(MAP_COLOR_GRID);
+		drawGrid();
+	}
 
 	render.set_color(MAP_COLOR_BOUNDARY);
 	this->drawBoundaries(this);

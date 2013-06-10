@@ -127,9 +127,6 @@ static void toggle_map_mode(void);
 static void processPlayerMovement(void);
 static void processEnterDoor(void);
 
-static void drawOrigin(void);
-static void drawGrid(void);
-
 static void drawPlayer(void);
 
 /*--- Functions ---*/
@@ -546,9 +543,9 @@ void view_background_draw(void)
 
 #ifndef ENABLE_DEBUG_POS
 	if (refresh_player_pos) {
-		/*player->x = room_camera.to_x;
+		player->x = room_camera.to_x;
 		player->y = room_camera.to_y;
-		player->z = room_camera.to_z;*/
+		player->z = room_camera.to_z;
 		refresh_player_pos = 0;
 	}
 #endif
@@ -565,78 +562,9 @@ void view_background_draw(void)
 	/* Flush all 3D rendering to screen before drawing 2D stuff */
 	render.flushFrame();
 
-	/* No texture for grid and map */
-	render.set_texture(0, NULL);
-
-	if (render_grid) {
-		/* World origin */
-		drawOrigin();
-
-		render.translate(room_camera.to_x, room_camera.to_y, room_camera.to_z);
-		drawGrid();
-
-		drawOrigin();	/* what the camera looks at */
-	}
-
 	if (room->map_mode != ROOM_MAP_OFF) {
-		room->drawMap(room);
+		room->drawMap(room, render_grid);
 	}
-}
-
-static void drawOrigin(void)
-{
-	vertex_t v[2];
-
-	render.push_matrix();
-
-	v[0].x = v[0].y = v[0].z = 0;
-	v[1].x = 3000; v[1].y = v[1].z = 0;
-
-	render.set_color(0x00ff0000);
-	render.line(&v[0], &v[1]);
-
-	v[1].y = 3000; v[1].x = v[1].z = 0;
-	render.set_color(0x0000ff00);
-	render.line(&v[0], &v[1]);
-
-	v[1].z = 3000; v[1].x = v[1].y = 0;
-	render.set_color(0x000000ff);
-	render.line(&v[0], &v[1]);
-
-	render.pop_matrix();
-}
-
-static void drawGrid(void)
-{
-	int i;
-	vertex_t v[2];
-
-	render.set_color(0x00ffffff);
-
-	render.push_matrix();
-	render.scale(50.0f, 50.0f, 50.0f);
-	for (i=-400; i<=400; i+=100) {
-		v[0].x = -400;
-		v[0].y = 200;
-		v[0].z = i;
-
-		v[1].x = 400;
-		v[1].y = 200;
-		v[1].z = i;
-
-		render.line(&v[0], &v[1]);
-
-		v[0].x = i;
-		v[0].y = 200;
-		v[0].z = -400;
-
-		v[1].x = i;
-		v[1].y = 200;
-		v[1].z = 400;
-
-		render.line(&v[0], &v[1]);
-	}
-	render.pop_matrix();
 }
 
 static void drawPlayer(void)
