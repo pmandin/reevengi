@@ -33,7 +33,6 @@
 #include "room_map.h"
 #include "room_door.h"
 #include "room_item.h"
-#include "room_collision.h"
 
 /*--- Types ---*/
 
