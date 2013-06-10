@@ -122,10 +122,13 @@ game_t *game_re3_ctor(game_t *this)
 
 	room->scriptDump = rdt3_scd_scriptDump;
 
-#if 0
-	/* Init default room and player pos */
-	this->num_room = 13;
-#endif
+	room->getNumCollisions = rdt3_sca_getNumCollisions;
+	room->drawMapCollision = rdt3_sca_drawMapCollision;
+
+	if ((params.stage==1) && (params.room==0) && (params.camera==0)) {
+		/* Init default room and player pos */
+		this->num_room = 13;
+	}
 
 	return this;
 }
