@@ -35,6 +35,7 @@
 #include "rdt_msg.h"
 #include "rdt_scd.h"
 #include "rdt_scd_dump.h"
+#include "rdt_sca.h"
 
 /*--- Constants ---*/
 
@@ -147,6 +148,9 @@ game_t *game_re2_ctor(game_t *this)
 	room->scriptExecInst = rdt2_scd_scriptExecInst;
 
 	room->scriptDump = rdt2_scd_scriptDump;
+
+	room->getNumCollisions = rdt2_sca_getNumCollisions;
+	room->drawMapCollision = rdt2_sca_drawMapCollision;
 
 	/* Init default room and player pos */
 

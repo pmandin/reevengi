@@ -29,6 +29,22 @@
 #include "rdt.h"
 #include "rdt_sca.h"
 
+/*--- Types ---*/
+
+typedef struct {
+	Sint16 cx, cz;
+	Uint32 count;
+	Sint32 ceiling;
+	Uint32 dummy;	/* constant, 0xc5c5c5c5 */
+} rdt2_sca_header_t;
+
+typedef struct {
+	Sint16 x,z;
+	Uint16 w,h;
+	Uint16 id, type;
+	Uint32 floor;
+} rdt2_sca_element_t;
+
 /*--- Functions ---*/
 
 void rdt2_sca_init(room_t *this)
@@ -45,6 +61,7 @@ void rdt2_sca_init(room_t *this)
 		return;
 	}
 
+	logMsg(1, "sca: offset 0x%08x\n", offset);
 	rdt_sca_hdr = (rdt2_sca_header_t *) &((Uint8 *) this->file)[offset];
 	offset += sizeof(rdt2_sca_header_t);
 
@@ -68,4 +85,63 @@ void rdt2_sca_init(room_t *this)
 			SDL_SwapLE32(rdt_sca_elt[i].floor)
 		);
 	}
+}
+
+int rdt2_sca_getNumCollisions(room_t *this)
+{
+	rdt2_header_t *rdt_header;
+	rdt2_sca_header_t *rdt_sca_hdr;
+	Uint32 offset;
+
+	rdt_header = (rdt2_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_COLLISION]);
+	if (offset==0) {
+		return 0;
+	}
+
+	rdt_sca_hdr = (rdt2_sca_header_t *) &((Uint8 *) this->file)[offset];
+	offset += sizeof(rdt2_sca_header_t);
+
+	return SDL_SwapLE32(rdt_sca_hdr->count)-1;
+}
+
+void rdt2_sca_drawMapCollision(room_t *this, int num_collision)
+{
+	rdt2_header_t *rdt_header;
+	rdt2_sca_header_t *rdt_sca_hdr;
+	rdt2_sca_element_t *rdt_sca_elt;
+	Uint32 offset;
+	vertex_t v[4];
+
+	rdt_header = (rdt2_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_COLLISION]);
+	if (offset==0) {
+		return;
+	}
+
+	rdt_sca_hdr = (rdt2_sca_header_t *) &((Uint8 *) this->file)[offset];
+	if (num_collision >= SDL_SwapLE32(rdt_sca_hdr->count)-1) {
+		return;
+	}
+	offset += sizeof(rdt2_sca_header_t);
+
+	rdt_sca_elt = (rdt2_sca_element_t *) &((Uint8 *) this->file)[offset];
+
+	v[0].x = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].x);
+	v[0].y = 0.0f;
+	v[0].z = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].z);
+
+	v[1].x = v[0].x + (float) SDL_SwapLE16(rdt_sca_elt[num_collision].w);
+	v[1].y = 0.0f;
+	v[1].z = v[0].z;
+
+	v[2].x = v[1].x;
+	v[2].y = 0.0f;
+	v[2].z = v[1].z + (float) SDL_SwapLE16(rdt_sca_elt[num_collision].z);
+
+	v[3].x = v[0].x;
+	v[3].y = 0.0f;
+	v[3].z = v[2].z;
+
+	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 }
