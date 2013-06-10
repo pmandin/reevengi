@@ -69,6 +69,9 @@ static void drawMasks(room_t *this, int num_camera);
 
 static void getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
 
+static int getNumCollisions(room_t *this);
+static void drawMapCollision(room_t *this, int num_collision);
+
 /*--- Functions ---*/
 
 room_t *room_ctor(void)
@@ -104,10 +107,13 @@ room_t *room_ctor(void)
 
 	this->getText = getText;
 
+	this->getNumCollisions = getNumCollisions;
+	this->drawMapCollision = drawMapCollision;
+
 	room_script_init(this);
 	room_door_init(this);
 	room_map_init(this);
-	room_collision_init(this);
+	/*room_collision_init(this);*/
 	room_item_init(this);
 
 	return this;
@@ -269,5 +275,14 @@ static void drawMasks(room_t *this, int num_camera)
 }
 
 static void getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen)
+{
+}
+
+static int getNumCollisions(room_t *this)
+{
+	return 0;
+}
+
+static void drawMapCollision(room_t *this, int num_collision)
 {
 }

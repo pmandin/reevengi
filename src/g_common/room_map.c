@@ -43,10 +43,12 @@
 #define MAP_COLOR_GRID		0x00202020
 
 #define MAP_COLOR_DOOR			0x0000cccc
-#define MAP_COLOR_OBSTACLE		0x00ffcc00
 #define MAP_COLOR_ITEM			0x00ffff00
-#define MAP_COLOR_WALLS			0x00ff00ff
 #define MAP_COLOR_PLAYER		0x0000ff00
+#define MAP_COLOR_COLLISION		0x00ffc0ff
+
+#define MAP_COLOR_OBSTACLE		0x00ffcc00
+#define MAP_COLOR_WALLS			0x00ff00ff
 
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
@@ -85,6 +87,8 @@ static void drawPlayer(player_t *this);
 
 static void drawOrigin(void);
 static void drawGrid(void);
+
+static void drawCollisions(room_t *this);
 
 /*--- Functions ---*/
 
@@ -234,7 +238,7 @@ static void setProjection2D(room_t *this)
 {
 	player_t *player=game->player;
 
-	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -100000.0f, 10000.0f);
+	render.set_ortho(-20000.0f, 20000.0f, -20000.0f, 20000.0f, -20000.0f, 20000.0f);
 
 	render.set_identity();
 	render.rotate(270.0f, 1.0f,0.0f,0.0f);
@@ -409,6 +413,7 @@ static void drawMap(room_t *this)
 		case ROOM_MAP_3D_TO_2D_CALC:
 			drawCameras(this);
 			/*drawObstacles(this);*/
+			drawCollisions(this);
 			drawItems(this);
 			drawDoors(this);
 			drawPlayer(player);
@@ -417,6 +422,7 @@ static void drawMap(room_t *this)
 		case ROOM_MAP_2D_TO_3D_INIT:
 		case ROOM_MAP_2D_TO_3D_CALC:
 			/*drawObstacles(this);*/
+			drawCollisions(this);
 			drawItems(this);
 			drawDoors(this);
 			break;
@@ -630,6 +636,17 @@ static void drawGrid(void)
 	}
 
 	/*render.pop_matrix();*/
+}
+
+static void drawCollisions(room_t *this)
+{
+	int i;
+
+	render.set_color(MAP_COLOR_COLLISION);
+
+	for (i=0; i<this->getNumCollisions(this); i++) {
+		this->drawMapCollision(this, i);
+	}
 }
 
 /*

@@ -129,7 +129,9 @@ struct room_s {
 
 	/*--- Collision objects ---*/
 	int (*getNumCollisions)(room_t *this);
-	void (*getCollision)(room_t *this, int num_collision, room_collision_t *room_collision);
+	void (*drawMapCollision)(room_t *this, int num_collision);
+
+	/*void (*getCollision)(room_t *this, int num_collision, room_collision_t *room_collision);*/
 
 	/*--- Map ---*/
 	int map_mode;
