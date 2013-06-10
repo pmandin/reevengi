@@ -34,6 +34,7 @@
 #include "rdt_pri.h"
 #include "rdt_scd.h"
 #include "rdt_scd_dump.h"
+#include "rdt_sca.h"
 
 /*--- Constants ---*/
 
@@ -129,10 +130,11 @@ game_t *game_re1_ctor(game_t *this)
 
 	room->scriptDump = rdt1_scd_scriptDump;
 
-#if 0
+	room->getNumCollisions = rdt1_sca_getNumCollisions;
+	room->drawMapCollision = rdt1_sca_drawMapCollision;
+
 	/* Init default room and player pos */
 	this->num_room = 6;
-#endif
 
 	return this;
 }

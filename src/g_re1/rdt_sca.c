@@ -29,6 +29,26 @@
 #include "rdt.h"
 #include "rdt_sca.h"
 
+/*--- Defines ---*/
+
+#define RDT_SCA_RECT	1
+#define RDT_SCA_CIRC	3
+
+/*--- Types ---*/
+
+typedef struct {
+	Sint16 cx, cz;
+	Uint32 count;
+	Uint32 unknown[4];
+} rdt1_sca_header_t;
+
+typedef struct {
+	Sint16 x1,z1;
+	Sint16 x2,z2;
+	Uint16 type;
+	Uint16 floor;
+} rdt1_sca_element_t;
+
 /*--- Functions ---*/
 
 void rdt1_sca_init(room_t *this)
@@ -51,19 +71,79 @@ void rdt1_sca_init(room_t *this)
 	rdt_sca_elt = (rdt1_sca_element_t *) &((Uint8 *) this->file)[offset];
 
 	/* Display SCA data */
+
 	logMsg(1, "sca: cx=%d,cz=%d,count=%d\n",
 		SDL_SwapLE16(rdt_sca_hdr->cx),
 		SDL_SwapLE16(rdt_sca_hdr->cz),
 		SDL_SwapLE32(rdt_sca_hdr->count));
 
 	for (i=0; i<SDL_SwapLE32(rdt_sca_hdr->count); i++) {
-		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, type=0x%04x,floor=0x%04x\n", i,
-			SDL_SwapLE16(rdt_sca_elt[i].x),
-			SDL_SwapLE16(rdt_sca_elt[i].z),
-			SDL_SwapLE16(rdt_sca_elt[i].w),
-			SDL_SwapLE16(rdt_sca_elt[i].h),
+		logMsg(1, "sca: %d: p1=%d,%d p2=%d,%d type=0x%04x,floor=0x%04x\n", i,
+			SDL_SwapLE16(rdt_sca_elt[i].x1),
+			SDL_SwapLE16(rdt_sca_elt[i].z1),
+			SDL_SwapLE16(rdt_sca_elt[i].x2),
+			SDL_SwapLE16(rdt_sca_elt[i].z2),
 			SDL_SwapLE16(rdt_sca_elt[i].type),
 			SDL_SwapLE16(rdt_sca_elt[i].floor)
 		);
 	}
+}
+
+int rdt1_sca_getNumCollisions(room_t *this)
+{
+	rdt1_header_t *rdt_header;
+	rdt1_sca_header_t *rdt_sca_hdr;
+	Uint32 offset;
+
+	rdt_header = (rdt1_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_COLLISION]);
+	if (offset==0) {
+		return 0;
+	}
+
+	rdt_sca_hdr = (rdt1_sca_header_t *) &((Uint8 *) this->file)[offset];
+	offset += sizeof(rdt1_sca_header_t);
+
+	return SDL_SwapLE32(rdt_sca_hdr->count)-1;
+}
+
+void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
+{
+	rdt1_header_t *rdt_header;
+	rdt1_sca_header_t *rdt_sca_hdr;
+	rdt1_sca_element_t *rdt_sca_elt;
+	Uint32 offset;
+	vertex_t v[4];
+
+	rdt_header = (rdt1_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_COLLISION]);
+	if (offset==0) {
+		return;
+	}
+
+	rdt_sca_hdr = (rdt1_sca_header_t *) &((Uint8 *) this->file)[offset];
+	if (num_collision >= SDL_SwapLE32(rdt_sca_hdr->count)-1) {
+		return;
+	}
+	offset += sizeof(rdt1_sca_header_t);
+
+	rdt_sca_elt = (rdt1_sca_element_t *) &((Uint8 *) this->file)[offset];
+
+	v[0].x = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].x1);
+	v[0].y = 0.0f;
+	v[0].z = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].z1);
+
+	v[1].x = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].x2);
+	v[1].y = 0.0f;
+	v[1].z = v[0].z;
+
+	v[2].x = v[1].x;
+	v[2].y = 0.0f;
+	v[2].z = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].z2);
+
+	v[3].x = v[0].x;
+	v[3].y = 0.0f;
+	v[3].z = v[2].z;
+
+	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
 }

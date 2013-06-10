@@ -19,33 +19,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_SCA_H
-#define RDT_SCA_H 1
-
-/*--- Defines ---*/
-
-#define RDT_SCA_RECT	1
-#define RDT_SCA_CIRC	3
-
-/*--- External types ---*/
-
-/*--- Types ---*/
-
-typedef struct {
-	Sint16 cx, cz;
-	Uint32 count;
-	Uint32 unknown[4];
-} rdt1_sca_header_t;
-
-typedef struct {
-	Sint16 x,z;
-	Uint16 w,h;
-	Uint16 type;
-	Uint16 floor;
-} rdt1_sca_element_t;
+#ifndef RDT1_SCA_H
+#define RDT1_SCA_H 1
 
 /*--- Functions ---*/
 
 void rdt1_sca_init(room_t *this);
 
-#endif /* RDT_SCA_H */
+int rdt1_sca_getNumCollisions(room_t *this);
+void rdt1_sca_drawMapCollision(room_t *this, int num_collision);
+
+#endif /* RDT1_SCA_H */
