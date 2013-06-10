@@ -119,14 +119,14 @@ static const em_var_name_t em_var_name[]={
 	{0x0d, 0, "#EM_Z_POS"},	/* em[0x40].l */
 	{0x0e, 0, "#EM_X_ANGLE"},	/* em[0x74].w */
 	{0x0f, 0, "#EM_Y_ANGLE"},	/* em[0x76].w */
-	{0x10, 0, "#EM_Z_ANGLE"}	/* em[0x78].w */
+	{0x10, 0, "#EM_Z_ANGLE"},	/* em[0x78].w */
 	/*
 	{0x11, 1, ""},	em[0x106].b
 	{0x12, 1, ""},	em[0x154].w
-	{0x13, 1, ""},	em[0x1c2].w
-	{0x14, 1, ""},	em[0x1c4].w
-	{0x15, 1, ""},	em[0x1c6].w
-	{0x16, 1, ""},	em[0x1cc].w
+	{0x13, 1, ""},	em[0x1c2].w*/
+	{0x14, 0, "#EM_X_POS_NEW"},	/*em[0x1c4].w*/
+	{0x15, 0, "#EM_Z_POS_NEW"}	/*em[0x1c6].w*/
+	/*{0x16, 1, ""},	em[0x1cc].w
 	{0x17, 1, ""},	em[0x1d4].w
 	{0x18, 1, ""},	em[0x1d6].w
 	{0x19, 1, ""},	em[0x1d8].w
@@ -926,17 +926,22 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			/*case 0x4d:
 				strcat(strBuf, "???\n");
 				break;*/
-			case INST_ITEM_SET:
+			case INST_ITEM_AOT_SET:
 				{
-					sprintf(tmpBuf, "Item_aot_set id=0x%02x, %d, amount %d\n",
-						inst->item_set.id,
-						SDL_SwapLE16(inst->item_set.type),
-						SDL_SwapLE16(inst->item_set.amount));
+					sprintf(tmpBuf, "Item_aot_set id=0x%02x, type=%d, amount=%d, x=%d,y=%d,w=%d,h=%d\n",
+						inst->item_aot_set.id,
+						SDL_SwapLE16(inst->item_aot_set.type),
+						SDL_SwapLE16(inst->item_aot_set.amount),
+						SDL_SwapLE16(inst->item_aot_set.x),
+						SDL_SwapLE16(inst->item_aot_set.y),
+						SDL_SwapLE16(inst->item_aot_set.w),
+						SDL_SwapLE16(inst->item_aot_set.h)
+					);
 					strcat(strBuf, tmpBuf);
 					logMsg(1, "0x%08x: %s", offset, strBuf);
 
-					if (inst->item_set.type < 0x80) {
-						sprintf(strBuf, "#\t%s\n", item_name[inst->item_set.type]);
+					if (inst->item_aot_set.type < 0x80) {
+						sprintf(strBuf, "#\t%s\n", item_name[inst->item_aot_set.type]);
 					} else {
 						sprintf(strBuf, "#\tUnknown item\n");
 					}

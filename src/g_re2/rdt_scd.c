@@ -30,6 +30,7 @@
 
 #include "../g_common/room.h"
 #include "../g_common/room_door.h"
+#include "../g_common/room_item.h"
 
 #include "rdt.h"
 #include "rdt_scd.h"
@@ -131,7 +132,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_CAMSWITCH_SWAP,	sizeof(script_camswitch_swap_t)},
 	{0x4c,		5},
 	{0x4d,		22},
-	{INST_ITEM_SET,	sizeof(script_item_set_t)},
+	{INST_ITEM_AOT_SET,	sizeof(script_item_aot_set_t)},
 	{0x4f,		4},
 
 	/* 0x50-0x5f */
@@ -306,18 +307,18 @@ void rdt2_scd_scriptExecInst(room_t *this)
 				this->addDoor(this, &roomDoor);
 			}
 			break;
-#if 0
-		case INST_ITEM_SET:
+
+		case INST_ITEM_AOT_SET:
 			{
-				script_item_set_t *itemSet = (script_item_set_t *) inst;
+				script_item_aot_set_t *itemAotSet = (script_item_aot_set_t *) inst;
 				room_item_t item;
 
-				item.x = SDL_SwapLE16(itemSet->x);
-				item.y = SDL_SwapLE16(itemSet->y);
-				item.w = SDL_SwapLE16(itemSet->w);
-				item.h = SDL_SwapLE16(itemSet->h);
+				item.x = SDL_SwapLE16(itemAotSet->x);
+				item.y = SDL_SwapLE16(itemAotSet->y);
+				item.w = SDL_SwapLE16(itemAotSet->w);
+				item.h = SDL_SwapLE16(itemAotSet->h);
 
-				if (itemSet->type == ITEM_OBSTACLE) {
+				/*if (itemAotSet->type == ITEM_OBSTACLE) {
 					room_obstacle_t obstacle;
 
 					obstacle.x = item.x;
@@ -326,12 +327,12 @@ void rdt2_scd_scriptExecInst(room_t *this)
 					obstacle.h = item.h;
 
 					this->addObstacle(this, &obstacle);
-				} else {
+				} else*/ {
 					this->addItem(this, &item);
 				}
 			}
 			break;
-#endif
+
 		default:
 			break;
 	}

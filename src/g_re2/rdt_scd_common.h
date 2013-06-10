@@ -93,7 +93,7 @@
 #define INST_EM_SET	0x44
 #define INST_ACTIVATE_OBJECT	0x47
 #define INST_CAMSWITCH_SWAP	0x4b
-#define INST_ITEM_SET	0x4e
+#define INST_ITEM_AOT_SET	0x4e
 
 /* 0x50-0x5f */
 #define INST_SND_SET	0x51
@@ -480,7 +480,7 @@ typedef struct {
 	Uint16 type;
 	Uint16 amount;
 	Uint16 unknown1[2];
-} script_item_set_t;
+} script_item_aot_set_t;
 
 /* 0x50-0x5f */
 
@@ -658,7 +658,7 @@ typedef union {
 	script_inst46_t		inst46;
 	script_set_cur_obj_t	set_cur_obj;
 	script_camswitch_swap_t	camswitch_swap;
-	script_item_set_t	item_set;
+	script_item_aot_set_t	item_aot_set;
 
 	/* 0x50-0x5f */
 	script_snd_set_t	snd_set;
