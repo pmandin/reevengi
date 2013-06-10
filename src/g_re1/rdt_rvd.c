@@ -67,7 +67,10 @@ static int rdt1_rvd_getNumRvd(room_t *this, SDL_bool boundary_flag)
 	int i=0, j=0;
 
 	rdt_header = (rdt1_header_t *) this->file;
-	assert(rdt_header);
+	if (!rdt_header) {
+		return 0;
+	}
+
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT1_OFFSET_CAM_SWITCHES]);
 	rvd_array = (rdt1_rvd_t *) &((Uint8 *) this->file)[offset];
 

@@ -150,6 +150,10 @@ Uint8 *rdt1_scd_scriptInit(room_t *this, int num_script)
 	}
 
 	rdt_header = (rdt1_header_t *) this->file;
+	if (!rdt_header) {
+		return NULL;
+	}
+
 	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
 	scriptPtr = & (((Uint8 *) this->file)[offset]);
 
