@@ -143,5 +143,5 @@ void rdt2_sca_drawMapCollision(room_t *this, int num_collision)
 	v[3].y = 0.0f;
 	v[3].z = v[2].z;
 
-	render.quad_wf(&v[0], &v[1], &v[2], &v[3]);
+	render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
 }
