@@ -127,17 +127,17 @@ void rdt2_sca_drawMapCollision(room_t *this, int num_collision)
 
 	rdt_sca_elt = (rdt2_sca_element_t *) &((Uint8 *) this->file)[offset];
 
-	v[0].x = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].x);
+	v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x);
 	v[0].y = 0.0f;
-	v[0].z = (float) SDL_SwapLE16(rdt_sca_elt[num_collision].z);
+	v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z);
 
-	v[1].x = v[0].x + (float) SDL_SwapLE16(rdt_sca_elt[num_collision].w);
+	v[1].x = v[0].x + SDL_SwapLE16(rdt_sca_elt[num_collision].w);
 	v[1].y = 0.0f;
 	v[1].z = v[0].z;
 
 	v[2].x = v[1].x;
 	v[2].y = 0.0f;
-	v[2].z = v[1].z + (float) SDL_SwapLE16(rdt_sca_elt[num_collision].z);
+	v[2].z = v[1].z + SDL_SwapLE16(rdt_sca_elt[num_collision].h);
 
 	v[3].x = v[0].x;
 	v[3].y = 0.0f;
