@@ -29,6 +29,7 @@
 #include "../log.h"
 
 #include "../g_common/room.h"
+#include "../g_common/room_door.h"
 #include "../g_re2/rdt.h"
 
 #include "rdt_scd_common.h"
@@ -315,7 +316,6 @@ int rdt3_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 
 void rdt3_scd_scriptExecInst(room_t *this)
 {
-#if 0
 	script_inst_t *inst;
 
 	if (!this) {
@@ -351,5 +351,4 @@ void rdt3_scd_scriptExecInst(room_t *this)
 			}
 			break;
 	}
-#endif
 }
