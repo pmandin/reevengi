@@ -145,3 +145,34 @@ void rdt2_sca_drawMapCollision(room_t *this, int num_collision)
 
 	render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
 }
+
+int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y)
+{
+	rdt2_header_t *rdt_header;
+	rdt2_sca_header_t *rdt_sca_hdr;
+	rdt2_sca_element_t *rdt_sca_elt;
+	Uint32 offset;
+	int i, is_inside=1;
+	Sint16 x1,z1,x2,z2;
+
+	rdt_header = (rdt2_header_t *) this->file;
+	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_COLLISION]);
+	if (offset==0) {
+		return 0;
+	}
+
+	rdt_sca_hdr = (rdt2_sca_header_t *) &((Uint8 *) this->file)[offset];
+	if (num_collision >= SDL_SwapLE32(rdt_sca_hdr->count)-1) {
+		return 0;
+	}
+	offset += sizeof(rdt2_sca_header_t);
+
+	rdt_sca_elt = (rdt2_sca_element_t *) &((Uint8 *) this->file)[offset];
+
+	x1 = SDL_SwapLE16(rdt_sca_elt[num_collision].x);
+	z1 = SDL_SwapLE16(rdt_sca_elt[num_collision].z);
+	x2 = SDL_SwapLE16(rdt_sca_elt[num_collision].w) + x1;
+	z2 = SDL_SwapLE16(rdt_sca_elt[num_collision].h) + z2;
+
+	return ((x1>=x) && (x2<=x) && (z1>=y) && (z2<=y));
+}

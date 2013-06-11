@@ -151,6 +151,7 @@ game_t *game_re2_ctor(game_t *this)
 
 	room->getNumCollisions = rdt2_sca_getNumCollisions;
 	room->drawMapCollision = rdt2_sca_drawMapCollision;
+	room->checkCollision = rdt2_sca_checkCollision;
 
 	/* Init default room and player pos */
 

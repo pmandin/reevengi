@@ -32,5 +32,6 @@ void rdt2_sca_init(room_t *this);
 
 int rdt2_sca_getNumCollisions(room_t *this);
 void rdt2_sca_drawMapCollision(room_t *this, int num_collision);
+int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y);
 
 #endif /* RDT2_SCA_H */
