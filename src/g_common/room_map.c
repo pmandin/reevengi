@@ -46,6 +46,7 @@
 #define MAP_COLOR_ITEM			0x00ffff00
 #define MAP_COLOR_PLAYER		0x0000ff00
 #define MAP_COLOR_COLLISION		0x00c060c0
+#define MAP_COLOR_COLLISION_IN		0x00ff88ff
 
 #define MAP_COLOR_OBSTACLE		0x00ffcc00
 #define MAP_COLOR_WALLS			0x00ff00ff
@@ -88,7 +89,7 @@ static void drawPlayer(player_t *this);
 static void drawOrigin(void);
 static void drawGrid(void);
 
-static void drawCollisions(room_t *this);
+static void drawCollisions(room_t *this, player_t *player);
 
 /*--- Functions ---*/
 
@@ -415,7 +416,7 @@ static void drawMap(room_t *this, int render_grid)
 		case ROOM_MAP_3D_TO_2D_CALC:
 			drawCameras(this);
 			/*drawObstacles(this);*/
-			drawCollisions(this);
+			drawCollisions(this, player);
 			drawItems(this);
 			drawDoors(this);
 			drawPlayer(player);
@@ -424,7 +425,7 @@ static void drawMap(room_t *this, int render_grid)
 		case ROOM_MAP_2D_TO_3D_INIT:
 		case ROOM_MAP_2D_TO_3D_CALC:
 			/*drawObstacles(this);*/
-			drawCollisions(this);
+			drawCollisions(this, player);
 			drawItems(this);
 			drawDoors(this);
 			break;
@@ -640,13 +641,17 @@ static void drawGrid(void)
 	/*render.pop_matrix();*/
 }
 
-static void drawCollisions(room_t *this)
+static void drawCollisions(room_t *this, player_t *player)
 {
 	int i;
 
-	render.set_color(MAP_COLOR_COLLISION);
-
 	for (i=0; i<this->getNumCollisions(this); i++) {
+		render.set_color(
+			this->checkCollision(this, i, player->x, player->z) ?
+			MAP_COLOR_COLLISION_IN :
+			MAP_COLOR_COLLISION
+		);
+
 		this->drawMapCollision(this, i);
 	}
 }
