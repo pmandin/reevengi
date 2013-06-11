@@ -267,6 +267,10 @@ Uint8 *rdt3_scd_scriptInit(room_t *this, int num_script)
 	}
 
 	rdt_header = (rdt2_header_t *) this->file;
+	if (!rdt_header) {
+		return NULL;
+	}
+
 	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);
 
 	this->script_length = this->cur_inst_offset = 0;
