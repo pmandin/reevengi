@@ -32,7 +32,7 @@ int rdt2_rid_getNumCameras(room_t *this)
 {
 	rdt2_header_t *rdt_header = (rdt2_header_t *) this->file;
 
-	if (this->file_length<4) {
+	if ((!this->file) || (this->file_length<4)) {
 		return 0;
 	}
 
@@ -46,6 +46,10 @@ void rdt2_rid_getCamera(room_t *this, int num_camera, room_camera_t *room_camera
 	rdt2_rid_t *cam_array;
 
 	rdt_header = (rdt2_header_t *) this->file;
+	if (!this->file) {
+		return;
+	}
+
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAMERAS]);
 	cam_array = (rdt2_rid_t *) &((Uint8 *) this->file)[offset];
 

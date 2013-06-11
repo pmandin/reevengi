@@ -41,7 +41,7 @@ typedef struct {
 typedef struct {
 	Sint16 x,z;
 	Uint16 w,h;
-	Uint16 id, type;
+	Sint16 id, type;
 	Uint32 floor;
 } rdt2_sca_element_t;
 
@@ -75,7 +75,7 @@ void rdt2_sca_init(room_t *this)
 		SDL_SwapLE32(rdt_sca_hdr->ceiling));
 
 	for (i=0; i<SDL_SwapLE32(rdt_sca_hdr->count)-1; i++) {
-		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, id=0x%04x,type=0x%04x,floor=%d\n", i,
+		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, id=%d,type=%d,floor=%d\n", i,
 			SDL_SwapLE16(rdt_sca_elt[i].x),
 			SDL_SwapLE16(rdt_sca_elt[i].z),
 			SDL_SwapLE16(rdt_sca_elt[i].w),

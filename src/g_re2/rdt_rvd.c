@@ -42,6 +42,10 @@ int rdt2_rvd_getNumCamSwitches(room_t *this)
 	int i=0, num_switches = 0, prev_from = -1;
 
 	rdt_header = (rdt2_header_t *) this->file;
+	if (!rdt_header) {
+		return 0;
+	}
+
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAM_SWITCHES]);
 	camswitch_array = (rdt2_rvd_t *) &((Uint8 *) this->file)[offset];
 
@@ -115,6 +119,10 @@ int rdt2_rvd_getNumBoundaries(room_t *this)
 	int i=0, num_boundaries = 0, prev_from = -1;
 
 	rdt_header = (rdt2_header_t *) this->file;
+	if (!rdt_header) {
+		return 0;
+	}
+
 	offset = SDL_SwapLE32(rdt_header->offsets[RDT2_OFFSET_CAM_SWITCHES]);
 	camswitch_array = (rdt2_rvd_t *) &((Uint8 *) this->file)[offset];
 

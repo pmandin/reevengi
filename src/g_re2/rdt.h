@@ -19,8 +19,8 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_H
-#define RDT_H 1
+#ifndef RDT2_H
+#define RDT2_H 1
 
 /*--- Defines ---*/
 
@@ -46,4 +46,4 @@ typedef struct {
 
 void rdt2_init(room_t *this);
 
-#endif /* RDT_H */
+#endif /* RDT2_H */
