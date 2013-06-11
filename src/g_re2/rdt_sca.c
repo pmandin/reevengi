@@ -41,8 +41,8 @@ typedef struct {
 typedef struct {
 	Sint16 x,z;
 	Uint16 w,h;
-	Sint16 id, type;
-	Uint32 floor;
+	Sint16 type, floor;
+	Uint32 flags;
 } rdt2_sca_element_t;
 
 /*--- Functions ---*/
@@ -75,14 +75,14 @@ void rdt2_sca_init(room_t *this)
 		SDL_SwapLE32(rdt_sca_hdr->ceiling));
 
 	for (i=0; i<SDL_SwapLE32(rdt_sca_hdr->count)-1; i++) {
-		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, id=%d,type=%d,floor=%d\n", i,
+		logMsg(1, "sca: %d: x=%d,z=%d,w=%d,h=%d, type=0x%04x,floor=%d,flags=0x%08x\n", i,
 			SDL_SwapLE16(rdt_sca_elt[i].x),
 			SDL_SwapLE16(rdt_sca_elt[i].z),
 			SDL_SwapLE16(rdt_sca_elt[i].w),
 			SDL_SwapLE16(rdt_sca_elt[i].h),
-			SDL_SwapLE16(rdt_sca_elt[i].id),
-			SDL_SwapLE16(rdt_sca_elt[i].type),
-			SDL_SwapLE32(rdt_sca_elt[i].floor)
+			SDL_SwapLE16(rdt_sca_elt[i].type) & 0xffffUL,
+			SDL_SwapLE16(rdt_sca_elt[i].floor),
+			SDL_SwapLE32(rdt_sca_elt[i].flags)
 		);
 	}
 }
@@ -127,6 +127,10 @@ void rdt2_sca_drawMapCollision(room_t *this, int num_collision)
 
 	rdt_sca_elt = (rdt2_sca_element_t *) &((Uint8 *) this->file)[offset];
 
+	if (SDL_SwapLE16(rdt_sca_elt[num_collision].flags)>3) {
+		return;
+	}
+
 	v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x);
 	v[0].y = 0.0f;
 	v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z);
@@ -152,7 +156,7 @@ int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y)
 	rdt2_sca_header_t *rdt_sca_hdr;
 	rdt2_sca_element_t *rdt_sca_elt;
 	Uint32 offset;
-	int i, is_inside=1;
+	int i, is_inside;
 	float x1,z1,x2,z2;
 
 	rdt_header = (rdt2_header_t *) this->file;
@@ -169,10 +173,26 @@ int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y)
 
 	rdt_sca_elt = (rdt2_sca_element_t *) &((Uint8 *) this->file)[offset];
 
+	if (SDL_SwapLE16(rdt_sca_elt[num_collision].flags)>3) {
+		return 0;
+	}
+
 	x1 = SDL_SwapLE16(rdt_sca_elt[num_collision].x);
 	z1 = SDL_SwapLE16(rdt_sca_elt[num_collision].z);
 	x2 = SDL_SwapLE16(rdt_sca_elt[num_collision].w) + x1;
 	z2 = SDL_SwapLE16(rdt_sca_elt[num_collision].h) + z2;
 
-	return ((x1<=x) && (x<=x2) && (z1<=y) && (y<=z2));
+	is_inside= ((x1<=x) && (x<=x2) && (z1<=y) && (y<=z2));
+	if (is_inside) {
+		logMsg(1, "rdt2: sca: inside %d\n", num_collision);
+	}
+
+	return is_inside;
 }
+/*
+[   10.662] sca: 2: x=-32000,z=-32000,w=35506,h=5200, id=-384,type=-28020,floor=2047
+[   10.663] sca: 11: x=-11383,z=-21180,w=10760,h=1020, id=-384,type=-28604,floor=3
+[   10.663] sca: 22: x=-11383,z=-31680,w=13079,h=11080, id=-384,type=-28668,floor=1
+
+[   10.664] sca: 43: x=-7754,z=-11050,w=4770,h=6810, id=-8693,type=-28571,floor=3
+*/
