@@ -268,10 +268,10 @@ static void initMatrix(room_t *this, float mtx_proj[4][4], float mtx_model[4][4]
 	render.get_proj_matrix(mtx_proj);
 	render.get_model_matrix(mtx_model);
 
-	logMsg(1, "map: init: projection\n");
+	/*logMsg(1, "map: init: projection\n");
 	mtx_print(mtx_proj);
 	logMsg(1, "map: init: modelview\n");
-	mtx_print(mtx_model);
+	mtx_print(mtx_model);*/
 }
 
 static void calcMatrix(Uint32 elapsed)
@@ -291,10 +291,10 @@ static void calcMatrix(Uint32 elapsed)
 	render.set_proj_matrix(mtx_proj_cur);
 	render.set_model_matrix(mtx_model_cur);
 
-	logMsg(1, "map: calc: projection\n");
+	/*logMsg(1, "map: calc: projection\n");
 	mtx_print(mtx_proj_cur);
 	logMsg(1, "map: calc: modelview\n");
-	mtx_print(mtx_model_cur);
+	mtx_print(mtx_model_cur);*/
 }
 
 static void drawMap(room_t *this, int render_grid)
@@ -312,7 +312,7 @@ static void drawMap(room_t *this, int render_grid)
 			{
 				setProjection2D(this);
 
-				if (first_print) {
+				/*if (first_print) {
 					render.get_proj_matrix(mtx_proj_cur);
 					render.get_model_matrix(mtx_model_cur);
 
@@ -322,7 +322,7 @@ static void drawMap(room_t *this, int render_grid)
 					mtx_print(mtx_model_cur);
 					
 					first_print=0;
-				}
+				}*/
 
 				render.set_depth(0);
 			}
@@ -355,7 +355,7 @@ static void drawMap(room_t *this, int render_grid)
 			{
 				setProjection3D(this);
 
-				if (first_print) {
+				/*if (first_print) {
 					render.get_proj_matrix(mtx_proj_cur);
 					render.get_model_matrix(mtx_model_cur);
 
@@ -365,7 +365,7 @@ static void drawMap(room_t *this, int render_grid)
 					mtx_print(mtx_model_cur);
 					
 					first_print=0;
-				}
+				}*/
 			}
 			break;		
 		case ROOM_MAP_3D_TO_2D_INIT:
