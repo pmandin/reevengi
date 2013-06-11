@@ -70,6 +70,8 @@ static void getText(room_t *this, int lang, int num_text, char *buffer, int buff
 
 static int getNumCollisions(room_t *this);
 static void drawMapCollision(room_t *this, int num_collision);
+static int checkCollision(room_t *this, int num_collision, float x, float y);
+static int checkCollisions(room_t *this, float x, float y);
 
 /*--- Functions ---*/
 
@@ -108,11 +110,12 @@ room_t *room_ctor(void)
 
 	this->getNumCollisions = getNumCollisions;
 	this->drawMapCollision = drawMapCollision;
+	this->checkCollision = checkCollision;
+	this->checkCollisions = checkCollisions;
 
 	room_script_init(this);
 	room_door_init(this);
 	room_map_init(this);
-	/*room_collision_init(this);*/
 	room_item_init(this);
 
 	return this;
@@ -221,6 +224,7 @@ static void unload(room_t *this)
 	if (this->file) {
 		free(this->file);
 		this->file=NULL;
+		this->file_length=0;
 	}
 }
 
@@ -284,4 +288,22 @@ static int getNumCollisions(room_t *this)
 
 static void drawMapCollision(room_t *this, int num_collision)
 {
+}
+
+static int checkCollision(room_t *this, int num_collision, float x, float y)
+{
+	return 0;
+}
+
+static int checkCollisions(room_t *this, float x, float y)
+{
+	int i;
+
+	for (i=0; i<this->getNumCollisions(this); i++) {
+		if (this->checkCollision(this, i, x,y)) {
+			return 1;
+		}
+	}
+
+	return 0;
 }

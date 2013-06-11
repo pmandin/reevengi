@@ -130,8 +130,8 @@ struct room_s {
 	/*--- Collision objects ---*/
 	int (*getNumCollisions)(room_t *this);
 	void (*drawMapCollision)(room_t *this, int num_collision);
-
-	/*void (*getCollision)(room_t *this, int num_collision, room_collision_t *room_collision);*/
+	int (*checkCollision)(room_t *this, int num_collision, float x, float y);
+	int (*checkCollisions)(room_t *this, float x, float y);
 
 	/*--- Map ---*/
 	int map_mode;
