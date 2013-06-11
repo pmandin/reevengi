@@ -20,6 +20,7 @@
 */
 
 #include <SDL.h>
+#include <math.h>
 
 #include "../render.h"
 #include "../log.h"
@@ -28,6 +29,8 @@
 
 #include "rdt.h"
 #include "rdt_sca.h"
+
+/*--- Defines ---*/
 
 /*--- Types ---*/
 
@@ -131,23 +134,59 @@ void rdt2_sca_drawMapCollision(room_t *this, int num_collision)
 		return;
 	}
 
-	v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x);
-	v[0].y = 0.0f;
-	v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z);
+	switch(SDL_SwapLE16(rdt_sca_elt[num_collision].type) & 3) {
+		case 1:
+			{
+				v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x);
+				v[0].y = 0.0f;
+				v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z);
 
-	v[1].x = v[0].x + SDL_SwapLE16(rdt_sca_elt[num_collision].w);
-	v[1].y = 0.0f;
-	v[1].z = v[0].z;
+				v[1].x = v[0].x + SDL_SwapLE16(rdt_sca_elt[num_collision].w);
+				v[1].y = 0.0f;
+				v[1].z = v[0].z;
 
-	v[2].x = v[1].x;
-	v[2].y = 0.0f;
-	v[2].z = v[1].z + SDL_SwapLE16(rdt_sca_elt[num_collision].h);
+				v[2].x = v[1].x;
+				v[2].y = 0.0f;
+				v[2].z = v[1].z + SDL_SwapLE16(rdt_sca_elt[num_collision].h);
 
-	v[3].x = v[0].x;
-	v[3].y = 0.0f;
-	v[3].z = v[2].z;
+				v[3].x = v[0].x;
+				v[3].y = 0.0f;
+				v[3].z = v[2].z;
 
-	render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
+				render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
+			}
+			break;
+		case 2:
+			{
+				int rx, rz, cx, cz, i;
+
+				rx = SDL_SwapLE16(rdt_sca_elt[num_collision].w)/2;
+				rz = SDL_SwapLE16(rdt_sca_elt[num_collision].h)/2;
+
+				cx = SDL_SwapLE16(rdt_sca_elt[num_collision].x) + rx;
+				cz = SDL_SwapLE16(rdt_sca_elt[num_collision].z) + rz;
+
+				v[0].x = cx + rx;
+				v[0].y = v[1].y = 0;
+				v[0].z = cz;
+
+				for (i=0; i<16+1; i++) {
+					float angle = ( ((float) i) *M_PI)/8.0f;
+
+					v[1].x = cx + rx * cos(angle);
+					v[1].z = cz + rz * sin(angle);
+
+					render.line(&v[0], &v[1]);
+
+					v[0].x = v[1].x;
+					v[0].z = v[1].z;
+				}
+			}
+			break;
+		default:
+			break;
+	}
+
 }
 
 int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y)
@@ -183,9 +222,9 @@ int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y)
 	z2 = SDL_SwapLE16(rdt_sca_elt[num_collision].h) + z2;
 
 	is_inside= ((x1<=x) && (x<=x2) && (z1<=y) && (y<=z2));
-	if (is_inside) {
+	/*if (is_inside) {
 		logMsg(1, "rdt2: sca: inside %d\n", num_collision);
-	}
+	}*/
 
 	return is_inside;
 }
