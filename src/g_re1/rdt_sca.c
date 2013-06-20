@@ -139,25 +139,25 @@ void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
 	render.push_matrix();
 	render.translate(32768.0f, 0.0f, 32768.0f);
 
+	v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x1) ^ 0x8000;	/* not signed->signed */
+	v[0].y = 0;
+	v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z1) ^ 0x8000;
+
+	v[1].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x2) ^ 0x8000;
+	v[1].y = 0;
+	v[1].z = v[0].z;
+
+	v[2].x = v[1].x;
+	v[2].y = 0;
+	v[2].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z2) ^ 0x8000;
+
+	v[3].x = v[0].x;
+	v[3].y = 0;
+	v[3].z = v[2].z;
+
 	switch (SDL_SwapLE16(rdt_sca_elt[num_collision].type)) {
 		case RDT_SCA_RECT:
 			{
-				v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x1) ^ 0x8000;	/* not signed->signed */
-				v[0].y = 0;
-				v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z1) ^ 0x8000;
-
-				v[1].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x2) ^ 0x8000;
-				v[1].y = 0;
-				v[1].z = v[0].z;
-
-				v[2].x = v[1].x;
-				v[2].y = 0;
-				v[2].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z2) ^ 0x8000;
-
-				v[3].x = v[0].x;
-				v[3].y = 0;
-				v[3].z = v[2].z;
-
 				render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
 			}
 			break;
@@ -165,19 +165,11 @@ void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
 			{
 				int rx, rz, cx, cz, i;
 
-				v[0].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x1) ^ 0x8000;	/* not signed->signed */
-				v[0].y = 0;
-				v[0].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z1) ^ 0x8000;
+				cx = (v[0].x + v[2].x)/2;
+				cz = (v[0].z + v[2].z)/2;
 
-				v[1].x = SDL_SwapLE16(rdt_sca_elt[num_collision].x2) ^ 0x8000;
-				v[1].y = 0;
-				v[1].z = SDL_SwapLE16(rdt_sca_elt[num_collision].z2) ^ 0x8000;
-
-				cx = (v[0].x + v[1].x)/2;
-				cz = (v[0].z + v[1].z)/2;
-
-				rx = abs(v[0].x - v[1].x) / 2;
-				rz = abs(v[0].z - v[1].z) / 2;
+				rx = abs(v[0].x - v[2].x) / 2;
+				rz = abs(v[0].z - v[2].z) / 2;
 
 				v[0].x = cx + rx;
 				v[0].z = cz;
@@ -196,6 +188,7 @@ void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
 			}
 			break;
 		default:
+			logMsg(1, "rdt1: sca: Unsupported type %d\n", SDL_SwapLE16(rdt_sca_elt[num_collision].type));
 			break;
 	}
 
