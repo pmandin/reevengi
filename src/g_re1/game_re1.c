@@ -29,6 +29,7 @@
 
 #include "game_re1.h"
 #include "rdt.h"
+#include "rdt_msg.h"
 #include "rdt_rid.h"
 #include "rdt_rvd.h"
 #include "rdt_pri.h"
@@ -124,6 +125,8 @@ game_t *game_re1_ctor(game_t *this)
 	room->initMasks = rdt1_pri_initMasks;
 	room->drawMasks = rdt1_pri_drawMasks;
 
+	room->getText = rdt1_msg_getText;
+
 	room->scriptInit = rdt1_scd_scriptInit;
 	room->scriptGetInstLen = rdt1_scd_scriptGetInstLen;
 	room->scriptExecInst = rdt1_scd_scriptExecInst;
@@ -133,8 +136,12 @@ game_t *game_re1_ctor(game_t *this)
 	room->getNumCollisions = rdt1_sca_getNumCollisions;
 	room->drawMapCollision = rdt1_sca_drawMapCollision;
 
+#if 0
 	/* Init default room and player pos */
-	this->num_room = 6;
+	if ((params.stage==1) && (params.room==0) && (params.camera==0)) {
+		this->num_room = 6;
+	}
+#endif
 
 	return this;
 }
