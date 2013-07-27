@@ -29,12 +29,12 @@
 /*--- Constants ---*/
 
 static const char txt2asc[0x60]={
-	' ','.','?','?', '?','(',')','?', '?','?','?','?', '0','1','2','3',
-	'4','5','6','7', '8','9',':','?', ',','"','!','?', '?','A','B','C',
+	' ','.','~','~', '~','(',')','~', '~','~','~','~', '0','1','2','3',
+	'4','5','6','7', '8','9',':','~', ',','"','!','?', '~','A','B','C',
 	'D','E','F','G', 'H','I','J','K', 'L','M','N','O', 'P','Q','R','S',
 	'T','U','V','W', 'X','Y','Z','[', '/',']','\'','-', '_','a','b','c',
 	'd','e','f','g', 'h','i','j','k', 'l','m','n','o', 'p','q','r','s',
-	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','?'
+	't','u','v','w', 'x','y','z','?', '~','~','~','~', '~','~','~','~'
 };
 
 static const char *txtcolor[6]={
@@ -81,11 +81,55 @@ void rdt1_msg_getText(room_t *this, int lang, int num_text, char *buffer, int bu
 			- SDL_SwapLE16(txtOffsets[num_text]);
 	}
 
-/*	sprintf(strBuf, "(0x%08x %d) ", offset + SDL_SwapLE16(txtOffsets[num_text]), txtLen);
-	strncat(buffer, strBuf, bufferLen-1);*/
+	while ((txtPtr[i] != 0x01) && (i<txtLen-1) && (i<bufferLen-1)) {
+		switch(txtPtr[i]) {
+			case 0x02:
+				/* Carriage return */
+				strncat(buffer, "<br>", bufferLen-1);
+				break;
+			case 0x03:
+				/* Pause */
+				strncat(buffer, "[Pause]", bufferLen-1);
+				break;
+			case 0x08:
+				/* Yes/No question */
+				strncat(buffer, "[Yes/No]", bufferLen-1);
+				break;
+			case 0x74:
+				/* S+Dot */
+				strncat(buffer, "S.", bufferLen-1);
+				break;
+			case 0x75:
+				/* T+Dot */
+				strncat(buffer, "T.", bufferLen-1);
+				break;
+			case 0x76:
+				/* A+Dot */
+				strncat(buffer, "A.", bufferLen-1);
+				break;
+			case 0x77:
+				/* R+Dot */
+				strncat(buffer, "R.", bufferLen-1);
+				break;
+			case 0x79:
+				/* Dot+Space */
+				strncat(buffer, ". ", bufferLen-1);
+				break;
+			default:
+				if (/*(txtPtr[i]>0x04) &&*/ (txtPtr[i]<0x60)) {
+					char c = txt2asc[txtPtr[i]];
+					if (c=='~') {
+						sprintf(strBuf, "[0x%02x]", txtPtr[i]);
+					} else {
+						sprintf(strBuf, "%c", txt2asc[txtPtr[i]]);
+					}
+				} else {		
+					sprintf(strBuf, "[0x%02x]", txtPtr[i]);
+				}
+				strncat(buffer, strBuf, bufferLen-1);
+				break;
+		}
 
-/*	while ((txtPtr[i] != 0xfe) && (i<bufferLen-1)) {*/
-	while ((i<txtLen) && (i<bufferLen-1)) {
 #if 0
 		switch(txtPtr[i]) {
 			case 0xf3:
@@ -147,17 +191,9 @@ void rdt1_msg_getText(room_t *this, int lang, int num_text, char *buffer, int bu
 				strncat(buffer, strBuf, bufferLen-1);
 				break;
 		}
-#else
-				if (/*(txtPtr[i]>0x04) &&*/ (txtPtr[i]<0x60)) {
-					sprintf(strBuf, "%c", txt2asc[txtPtr[i]]);
-				} else {		
-					sprintf(strBuf, "[0x%02x]", txtPtr[i]);
-				}
-				strncat(buffer, strBuf, bufferLen-1);
 #endif
 		i++;
 	}
-
 }
 
 /* Find length of block message in RDT file, by finding the smallest offset
