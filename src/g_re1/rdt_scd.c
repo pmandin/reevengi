@@ -170,12 +170,7 @@ int rdt1_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 {
 	int i;
 
-	if (!this) {
-		return 0;
-	}
-	if (!this->cur_inst) {
-		return 0;
-	}
+	assert(curInstPtr);
 
 	for (i=0; i< sizeof(inst_length)/sizeof(script_inst_len_t); i++) {
 		if (inst_length[i].opcode == curInstPtr[0]) {
