@@ -41,19 +41,21 @@
 
 /*--- Defines ---*/
 
-#define NUM_COUNTRIES 6
+#define NUM_COUNTRIES 8
 
 /*--- Types ---*/
 
 /*--- Constant ---*/
 
-static const char *re1_country[6]={
+static const char *re1_country[NUM_COUNTRIES]={
 	"horr/usa",
 	"horr/ger",
 	"horr/jpn",
+	"horr/fra",
 	"usa",
 	"ger",
-	"jpn"
+	"jpn",
+	"fra"
 };
 
 static const char *re1pcgame_bg = "%s/stage%d/rc%d%02x%d.pak";

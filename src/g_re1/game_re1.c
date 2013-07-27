@@ -43,9 +43,11 @@ static const game_detect_t game_detect[]={
 	{GAME_RE1_PC_GAME, "horr/usa/data/capcom.ptc", "Resident Evil (US), PC"},
 	{GAME_RE1_PC_GAME, "horr/ger/data/capcom.ptc", "Resident Evil (DE), PC"},
 	{GAME_RE1_PC_GAME, "horr/jpn/data/capcom.ptc", "Resident Evil (JP), PC"},
+	{GAME_RE1_PC_GAME, "horr/fra/data/capcom.ptc", "Resident Evil (FR), PC"},
 	{GAME_RE1_PC_GAME, "usa/data/capcom.ptc", "Resident Evil (US), PC"},
 	{GAME_RE1_PC_GAME, "ger/data/capcom.ptc", "Resident Evil (DE), PC"},
 	{GAME_RE1_PC_GAME, "jpn/data/capcom.ptc", "Resident Evil (JP), PC"},
+	{GAME_RE1_PC_GAME, "fra/data/capcom.ptc", "Resident Evil (FR), PC"},
 
 	{GAME_RE1_PS1_DEMO, "slpm_800.27", "BioHazard Trial Edition (JP), PS1"},
 	{GAME_RE1_PS1_GAME, "ntsc.exe", "BioHazard 1.0 (JP), PS1"},
