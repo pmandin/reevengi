@@ -22,7 +22,7 @@ First bytecode usage by a room.
 0x12: room1000
 0x13: room1000
 0x14: room1000
-0x15: room2040 (maybe end of script)
+0x15: room6010
 0x16: room1000
 0x17: room1000
 0x18: room1000
@@ -107,7 +107,7 @@ First bytecode usage by a room.
 0x62: room2000
 0x63:
 0x64: room20d0
-0x65: room1150
+0x65: room1150 (maybe end of script)
 0x66: room1010
 0x67: room1000
 0x68: room6080
@@ -137,7 +137,7 @@ First bytecode usage by a room.
 0x7f: room40a0
 
 0x80: room6040
-0x81: room60a0 (maybe end of script)
+0x81: room60a0
 0x82: room6130
 0x83: room2160 (maybe end of script)
 0x84: room3040
@@ -148,6 +148,6 @@ First bytecode usage by a room.
 0x89: room40e0
 0x8a:
 0x8b:
-0x8c: room3050
+0x8c:
 0x8d:
 0x8e:
