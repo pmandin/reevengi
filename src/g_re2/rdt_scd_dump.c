@@ -92,6 +92,11 @@ typedef struct {
 	const char *name;
 } bitarray_name_t;
 
+typedef struct {
+	Uint8 model;
+	const char *name;
+} em_model_name_t;
+
 /*--- Constants ---*/
 
 static const char *cmp_imm_name[7]={
@@ -246,6 +251,67 @@ static const bitarray_name_t bitarray_names[]={
 	{0x1d, 0x11, "room1030.met_brad"}
 };
 
+static const em_model_name_t em_models[]={
+	{0x10, "Zombie (Police Officer)"},
+	{0x11, "Zombie (Male Civilian)"},
+	{0x12, "Zombie (Male Civilian)"},
+	{0x13, "Zombie (Female Civilian)"},
+	{0x15, "Zombie (Scientist)"},
+	{0x16, "Zombie (Male Civilian)"},
+	{0x17, "Zombie (Nude)"},
+	{0x18, "Zombie (Male Civilian)"},
+	{0x1e, "Zombie (Male Civilian)"},
+	{0x1f, "Zombie (Male Civilian)"},
+	{0x20, "Zombie (Dog)"},
+	{0x21, "Crow"},
+	{0x22, "Licker (Normal)"},
+	{0x23, "Alligator"},
+	{0x24, "Licker"},
+	{0x25, "Spider (Big)"},
+	{0x26, "Spider (Small)"},
+	{0x27, "G-Baby"},
+	{0x28, "G-Mutant"},
+	{0x29, "Insect"},
+	{0x2a, "Mr. X (Normal)"},
+	{0x2b, "Mr. X (Mutated)"},
+	{0x2c, "Mr. X (Arm)"},
+	{0x2d, "Zombie (Arm)"},
+	{0x2e, "Ivy (Form 1)"},
+	{0x2f, "Ivy (Tentacle)"},
+	{0x30, "William Birkin (Form 1)"},
+	{0x31, "William Birkin (Form 2)"},
+	{0x33, "William Birkin (Form 3)"},
+	{0x34, "William Birkin (Form 4)"},
+	{0x36, "William Birkin (Form 5)"},
+	{0x37, "William Birkin (Form 5 Tentacle 1)"},
+	{0x38, "William Birkin (Form 5 Tentacle 2)"},
+	{0x39, "Ivy (Form 2)"},
+	{0x3a, "Moth (Giant)"},
+	{0x3b, "Moth (Larvae)"},
+	{0x3e, "Fuse Case Machine-Arm"},
+	{0x3f, "Fuse Box"},
+	{0x40, "Brian Irons"},
+	{0x41, "Ada Wong"},
+	{0x42, "Brian Irons"},
+	{0x43, "Ada Wong (Injured)"},
+	{0x44, "Ben Bertolucci"},
+	{0x45, "Sherry Birkin"},
+	{0x46, "Ben Bertolucci"},
+	{0x47, "Annette Birkin"},
+	{0x48, "Robert Kendo"},
+	{0x49, "Annette Birkin"},
+	{0x4a, "Marvin Branagh"},
+	{0x4b, "Mayor's daughter"},
+	{0x4f, "Sherry Birkin (Claire's Vest)"},
+	{0x50, "Leon S. Kennedy"},
+	{0x51, "Claire Redfield"},
+	{0x54, "Leon S. Kennedy (Injured)"},
+	{0x55, "Claire Redfield (No Vest)"},
+	{0x58, "Leon S. Kennedy (Special 1)"},
+	{0x59, "Claire Redfield (Special)"},
+	{0x5a, "Leon S. Kennedy (Special 2)"}
+};
+
 /*--- Variables ---*/
 
 static char strBuf[256];
@@ -256,6 +322,7 @@ static char tmpBuf[256];
 static void reindent(int num_indent);
 static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
 static void getBitArrayName(char *dest, int num_array, int num_bit);
+static const char *getEmModelName(int num_model);
 
 /*--- Functions ---*/
 
@@ -875,13 +942,17 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, "Plc_flg\n");
 				break;
 			case INST_EM_SET:
-				sprintf(tmpBuf, "Sce_em_set id=0x%02x, model=0x%02x, pose=0x%04x, sound_bank=%d, killed=0x%02x, x=%d, y=%d, z=%d\n",
-					inst->em_set.id, inst->em_set.model,
-					SDL_SwapLE16(inst->em_set.pose), inst->em_set.sound_bank,
-					inst->em_set.killed,
-					(Sint16) SDL_SwapLE16(inst->em_set.x), (Sint16) SDL_SwapLE16(inst->em_set.y),
-					(Sint16) SDL_SwapLE16(inst->em_set.z));
-				strcat(strBuf, tmpBuf);
+				{
+					const char *model_name = getEmModelName(inst->em_set.model);
+
+					sprintf(tmpBuf, "Sce_em_set id=0x%02x, model=0x%02x (%s), pose=0x%04x, sound_bank=%d, killed=0x%02x, x=%d, y=%d, z=%d\n",
+						inst->em_set.id, inst->em_set.model, (model_name ? model_name : "???"),
+						SDL_SwapLE16(inst->em_set.pose), inst->em_set.sound_bank,
+						inst->em_set.killed,
+						(Sint16) SDL_SwapLE16(inst->em_set.x), (Sint16) SDL_SwapLE16(inst->em_set.y),
+						(Sint16) SDL_SwapLE16(inst->em_set.z));
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case 0x45:
 				strcat(strBuf, "Col_chg_set\n");
@@ -1232,6 +1303,19 @@ static void getBitArrayName(char dest[40], int num_array, int num_bit)
 	}
 
 	sprintf(dest, "array 0x%02x, bit 0x%02x", num_array, num_bit);
+}
+
+static const char *getEmModelName(int num_model)
+{
+	int i;
+
+	for (i=0; i<sizeof(em_models)/sizeof(em_model_name_t); i++) {
+		if (em_models[i].model == num_model) {
+			return em_models[i].name;
+		}
+	}
+
+	return NULL;
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */
