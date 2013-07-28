@@ -27,6 +27,7 @@
 #include "rdt_msg.h"
 
 /*--- Constants ---*/
+/* See horr/[country]/data/fontus.tim, second zone of image for complete character table */
 
 static const char txt2asc[0x60]={
 	' ','.','~','~', '~','(',')','~', '~','~','~','~', '0','1','2','3',
@@ -94,6 +95,27 @@ void rdt1_msg_getText(room_t *this, int lang, int num_text, char *buffer, int bu
 			case 0x08:
 				/* Yes/No question */
 				strncat(buffer, "[Yes/No]", bufferLen-1);
+				break;
+			case 0x5f:
+				strncat(buffer, "[a-grave]", bufferLen-1);
+				break;
+			case 0x63:
+				strncat(buffer, "[e-grave]", bufferLen-1);
+				break;
+			case 0x65:
+				strncat(buffer, "[e-acute]", bufferLen-1);
+				break;
+			case 0x67:
+				strncat(buffer, "[e-circ]", bufferLen-1);
+				break;
+			case 0x6d:
+				strncat(buffer, "[o-circ]", bufferLen-1);
+				break;
+			case 0x6f:
+				strncat(buffer, "[u-grave]", bufferLen-1);
+				break;
+			case 0x73:
+				strncat(buffer, "[c-cedil]", bufferLen-1);
 				break;
 			case 0x74:
 				/* S+Dot */
