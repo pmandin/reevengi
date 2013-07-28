@@ -1,0 +1,20 @@
+typedef struct {
+	Uint8 room;
+	Uint8 stage?;
+
+	/* weapon */
+	Uint8 ??;
+	Uint8 equipped_weapon?;
+		/*
+			0: none
+			1: knife (jill), gun (chris)
+			4: shotgun, gun (chris) bad texture
+		*/
+
+	Uint16 character;
+		/* 0 chris, 1 jill */
+	Uint16 player_x;
+	Uint16 player_z;
+	Uint16 player_a;
+	
+} re1_pdemo_t; 
