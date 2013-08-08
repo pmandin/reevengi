@@ -61,8 +61,6 @@ static char tmpBuf[256];
 
 /*--- Functions prototypes ---*/
 
-static void scd_scriptDump(room_t *this, int room_script);
-
 static void reindent(int num_indent);
 static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
 
@@ -70,28 +68,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 void rdt1_scd_scriptDump(room_t *this, int num_script)
 {
-	assert(this);
-
-	logMsg(1, "rdt: Dumping script %d\n", num_script);
-	switch(num_script) {
-		case ROOM_SCRIPT_INIT:
-			scd_scriptDump(this, RDT1_OFFSET_INIT_SCRIPT);
-			break;
-		case ROOM_SCRIPT_RUN:
-			scd_scriptDump(this, RDT1_OFFSET_ROOM_SCRIPT);
-			logMsg(1, "rdt: Dumping second script\n");
-			scd_scriptDump(this, RDT1_OFFSET_ROOM_SCRIPT2);
-			break;
-		default:
-			break;
-	}
-}
-
-static void scd_scriptDump(room_t *this, int room_script)
-{
 	rdt1_header_t *rdt_header;
 	Uint32 offset, script_length;
 	Uint8 *scriptPtr;
+	int room_script = RDT1_OFFSET_INIT_SCRIPT;
+
+	if (num_script == ROOM_SCRIPT_RUN) {
+		room_script = RDT1_OFFSET_ROOM_SCRIPT;
+	}
 
 	rdt_header = (rdt1_header_t *) this->file;
 	offset = SDL_SwapLE32(rdt_header->offsets[room_script]);

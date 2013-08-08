@@ -28,7 +28,6 @@
 #define RDT1_OFFSET_COLLISION		1
 #define RDT1_OFFSET_INIT_SCRIPT		6
 #define RDT1_OFFSET_ROOM_SCRIPT		7
-#define RDT1_OFFSET_ROOM_SCRIPT2	8
 #define RDT1_OFFSET_TEXT		11
 
 /*--- External types ---*/
