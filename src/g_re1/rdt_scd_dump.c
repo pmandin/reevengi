@@ -174,8 +174,30 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_CMP07:
 				strcat(strBuf, "OBJ07_TEST xxx\n");
 				break;
-			case INST_SET06:
-				strcat(strBuf, "OBJ06_SET xxx\n");
+			case INST_STAGEROOMCAM_SET:
+				{
+					const char *objName = "Unknown";
+
+					switch(inst->stageroomcam_set.object) {
+						case 0:
+							objName = "Stage";
+							break;
+						case 1:
+							objName = "Room";
+							break;
+						case 2:
+							objName = "Camera";
+							break;
+						default:
+							break;
+					}
+					
+					sprintf(tmpBuf, "STAGEROOMCAM_SET 0x%02x (%s) = 0x%02x (%d)\n",
+						inst->stageroomcam_set.object, objName,
+						SDL_SwapLE16(inst->stageroomcam_set.value),
+						SDL_SwapLE16(inst->stageroomcam_set.value));
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_DOOR_SET:
 				sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);

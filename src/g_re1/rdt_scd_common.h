@@ -33,7 +33,7 @@
 #define INST_BIT_OP	0x05
 #define INST_CMP06	0x06
 #define INST_CMP07	0x07
-#define INST_SET06	0x08
+#define INST_STAGEROOMCAM_SET	0x08
 #define INST_DOOR_SET	0x0c
 #define INST_ITEM_SET	0x0d
 #define INST_NOP0E	0x0e
@@ -49,6 +49,52 @@
 /* 0x30-0x3f */
 /* 0x40-0x4f */
 /* 0x50 */
+
+
+/*
+dexit
+dret
+dsleep
+next
+if8
+if16
+sfor
+efor
+dtask_init
+dtask_kill
+sv_work8
+add_work8
+sv_work16
+add_work16
+fade_in
+fade_out
+model_set
+cam_pset
+cam_aset
+cam_add
+cam_add2
+pos_pset
+pos_aset
+pos_add
+pos_add2
+dir_pset
+dir_aset
+dir_add
+dir_add2
+vert_set
+vert_add
+mess_disp
+call_se
+attri2_set
+color_set
+packed_add
+demo_sleep
+demo_stfoff
+
+0x0b mess_disp ?
+0x17 volume_set, pan_set
+*/
+
 
 /*--- Types ---*/
 
@@ -75,6 +121,12 @@ typedef struct {
 	Uint8 object;
 	Uint8 value;
 } script_bit_test_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 object; /* 0 stage, 1 room, 2 camera */
+	Uint16 value;
+} script_stageroomcam_set_t;
 
 typedef struct {
 	Uint8 opcode;
@@ -124,6 +176,7 @@ typedef union {
 	script_else_t	i_else;
 	script_endif_t	i_endif;
 	script_bit_test_t	bit_test;
+	script_stageroomcam_set_t	stageroomcam_set;
 	script_door_set_t	door_set;
 	script_item_set_t	item_set;
 
