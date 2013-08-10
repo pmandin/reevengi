@@ -57,7 +57,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_STAGEROOMCAM_SET,	sizeof(script_stageroomcam_set_t)},
 	{0x09,	2},
 	{0x0a,	2},
-	{0x0b,	4},
+	{INST_PRINT_MSG,	sizeof(script_printmsg_t)},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{INST_ITEM_SET,	sizeof(script_item_set_t)},
 	{INST_NOP0E,	2},

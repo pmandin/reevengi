@@ -34,6 +34,7 @@
 #define INST_CMP06	0x06
 #define INST_CMP07	0x07
 #define INST_STAGEROOMCAM_SET	0x08
+#define INST_PRINT_MSG	0x0b
 #define INST_DOOR_SET	0x0c
 #define INST_ITEM_SET	0x0d
 #define INST_NOP0E	0x0e
@@ -131,6 +132,12 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
+	Uint16 unknown;
+} script_printmsg_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
 	Sint16 x,y,w,h;
 	Uint8 unknown0[5];
 	Uint8 next_stage_and_room;	/* bits 7-5: stage, 4-0: room */
@@ -177,6 +184,7 @@ typedef union {
 	script_endif_t	i_endif;
 	script_bit_test_t	bit_test;
 	script_stageroomcam_set_t	stageroomcam_set;
+	script_printmsg_t	print_msg;	/* invalid */
 	script_door_set_t	door_set;
 	script_item_set_t	item_set;
 

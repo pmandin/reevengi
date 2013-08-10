@@ -199,6 +199,18 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
+#if 0
+			case INST_PRINT_MSG:
+				{
+					sprintf(tmpBuf, "PRINT_MSG 0x%02x\n", inst->print_msg.id);
+					strcat(strBuf, tmpBuf);
+					logMsg(1, "0x%08x: %s", offset, strBuf);
+
+					this->getText(this, 0, inst->print_msg.id, tmpBuf, sizeof(tmpBuf));
+					sprintf(strBuf, "#\t\t%s\n", tmpBuf);
+				}
+				break;
+#endif
 			case INST_DOOR_SET:
 				sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
 				strcat(strBuf, tmpBuf);
