@@ -243,6 +243,23 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 
+			/* 0x20-0x2f */
+
+			case INST_PLAYER_POS_SET:
+				sprintf(tmpBuf,
+					"PLAYER_POS_SET"
+					" unknown0=%d,player_a=%d,unknown1=%d"
+					",player_x=%d,player_y=%d,player_z=%d\n",
+					SDL_SwapLE16(inst->player_pos_set.unknown0),
+					SDL_SwapLE16(inst->player_pos_set.player_a),
+					SDL_SwapLE16(inst->player_pos_set.unknown1),
+					SDL_SwapLE16(inst->player_pos_set.player_x),
+					SDL_SwapLE16(inst->player_pos_set.player_y),
+					SDL_SwapLE16(inst->player_pos_set.player_z)
+				);
+				strcat(strBuf, tmpBuf);
+				break;
+
 			default:
 				sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
 				strcat(strBuf, tmpBuf);

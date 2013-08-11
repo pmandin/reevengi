@@ -47,6 +47,8 @@
 #define INST_OM_SET	0x1f
 
 /* 0x20-0x2f */
+#define INST_PLAYER_POS_SET	0x20
+
 /* 0x30-0x3f */
 /* 0x40-0x4f */
 /* 0x50 */
@@ -84,7 +86,7 @@ dir_add
 dir_add2
 vert_set
 vert_add
-mess_disp
+mess_disp	0x0b?
 call_se
 attri2_set
 color_set
@@ -93,6 +95,7 @@ demo_sleep
 demo_stfoff
 
 0x0b mess_disp ?
+0x14 event?
 0x17 volume_set, pan_set
 */
 
@@ -154,6 +157,11 @@ typedef struct {
 	Uint8 unknown[7];
 } script_item_set_t;
 
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+} script_nop0e_t;
+
 /* 0x10-0x1f */
 
 typedef struct {
@@ -169,6 +177,22 @@ typedef struct {
 } script_om_set_t;
 
 /* 0x20-0x2f */
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 unknown0;
+	Uint16 player_a;
+	Uint16 unknown1;
+	Uint16 player_x;
+	Uint16 player_y;
+	Uint16 player_z;
+} script_player_pos_set_t;
+
+/*typedef struct {
+	Uint8 opcode;
+} script_em_pos_set_t;*/
+
 /* 0x30-0x3f */
 /* 0x40-0x4f */
 /* 0x50 */
@@ -187,12 +211,15 @@ typedef union {
 	script_printmsg_t	print_msg;	/* invalid */
 	script_door_set_t	door_set;
 	script_item_set_t	item_set;
+	script_nop0e_t	nop0e;
 
 	/* 0x10-0x1f */
 	script_item_model_set_t	item_model_set;
 	script_om_set_t	om_set;
 
 	/* 0x20-0x2f */
+	script_player_pos_set_t	player_pos_set;
+
 	/* 0x30-0x3f */
 	/* 0x40-0x4f */
 	/* 0x50 */

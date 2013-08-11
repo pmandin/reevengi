@@ -60,7 +60,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_PRINT_MSG,	sizeof(script_printmsg_t)},
 	{INST_DOOR_SET,	sizeof(script_door_set_t)},
 	{INST_ITEM_SET,	sizeof(script_item_set_t)},
-	{INST_NOP0E,	2},
+	{INST_NOP0E,	sizeof(script_nop0e_t)},
 	{0x0f,	8},
 
 	{INST_CMP10,	2},
@@ -80,7 +80,7 @@ static const script_inst_len_t inst_length[]={
 	{0x1e,	4},
 	{INST_OM_SET,	sizeof(script_om_set_t)},
 
-	{0x20,	14},
+	{INST_PLAYER_POS_SET,	sizeof(script_player_pos_set_t)},
 	{0x21,	14},
 	{0x22,	4},
 	{0x23,	2},
