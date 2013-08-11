@@ -94,9 +94,9 @@ static const em_model_name_t em_models[]={
 	{0x22, "Barry Burton"},
 	{0x23, "Rebecca Chambers"},
 	{0x24, "Albert Wesker"},
-	{0x25, "Kenneth"},
-	{0x26, "Character 2 (crow scene)"},
-	{0x27, "Character 3 (underground)"},
+	{0x25, "Kenneth J. Sullivan"},
+	{0x26, "Forest Speyer"},
+	{0x27, "Enrico Marini"},
 	{0x28, "Character 4"},
 	{0x29, "Kenneth (Injured)"},
 	{0x2a, "Barry (Injured)"},
@@ -308,8 +308,8 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				{
 					const char *model_name = getEmModelName(inst->em_set.model);
 
-					sprintf(tmpBuf, "EM_SET model=0x%02x (%s)\n",
-						inst->em_set.model,
+					sprintf(tmpBuf, "EM_SET id=%d model=0x%02x (%s)\n",
+						inst->em_set.id, inst->em_set.model,
 						(model_name ? model_name : "???"));
 					strcat(strBuf, tmpBuf);
 				}
@@ -327,11 +327,23 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					" unknown0=%d,player_a=%d,unknown1=%d"
 					",player_x=%d,player_y=%d,player_z=%d\n",
 					SDL_SwapLE16(inst->player_pos_set.unknown0),
-					SDL_SwapLE16(inst->player_pos_set.player_a),
+					SDL_SwapLE16(inst->player_pos_set.a),
 					SDL_SwapLE16(inst->player_pos_set.unknown1),
-					SDL_SwapLE16(inst->player_pos_set.player_x),
-					SDL_SwapLE16(inst->player_pos_set.player_y),
-					SDL_SwapLE16(inst->player_pos_set.player_z)
+					SDL_SwapLE16(inst->player_pos_set.x),
+					SDL_SwapLE16(inst->player_pos_set.y),
+					SDL_SwapLE16(inst->player_pos_set.z)
+				);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_EM_POS_SET:
+				sprintf(tmpBuf,
+					"EM_POS_SET id=%d a=%d,unknown=%d,x=%d,y=%d,z=%d\n",
+					inst->em_pos_set.id,
+					SDL_SwapLE16(inst->em_pos_set.a),
+					SDL_SwapLE16(inst->em_pos_set.unknown),
+					SDL_SwapLE16(inst->em_pos_set.x),
+					SDL_SwapLE16(inst->em_pos_set.y),
+					SDL_SwapLE16(inst->em_pos_set.z)
 				);
 				strcat(strBuf, tmpBuf);
 				break;

@@ -50,6 +50,7 @@
 
 /* 0x20-0x2f */
 #define INST_PLAYER_POS_SET	0x20
+#define INST_EM_POS_SET		0x21
 
 /* 0x30-0x3f */
 #define INST_37		0x37
@@ -190,6 +191,9 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 model;
+	Uint8 unknown[16];
+	Uint8 id;
+	Uint8 unknown1[3];
 } script_em_set_t;
 
 typedef struct {
@@ -204,16 +208,19 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 dummy;
 	Uint16 unknown0;
-	Uint16 player_a;
+	Uint16 a;
 	Uint16 unknown1;
-	Uint16 player_x;
-	Uint16 player_y;
-	Uint16 player_z;
+	Uint16 x,y,z;
 } script_player_pos_set_t;
 
-/*typedef struct {
+typedef struct {
 	Uint8 opcode;
-} script_em_pos_set_t;*/
+	Uint8 id;
+	Uint16 dummy;
+	Uint16 a;
+	Uint16 unknown;
+	Uint16 x,y,z;
+} script_em_pos_set_t;
 
 /* 0x30-0x3f */
 
@@ -252,6 +259,7 @@ typedef union {
 
 	/* 0x20-0x2f */
 	script_player_pos_set_t	player_pos_set;
+	script_em_pos_set_t em_pos_set;
 
 	/* 0x30-0x3f */
 	script_inst37_t	inst37;
