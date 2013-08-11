@@ -260,6 +260,17 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 
+			/* 0x30-0x3f */
+
+			case INST_37:
+				sprintf(tmpBuf,
+					"INST37_ARRAY_SET[%d][%d] = %d\n",
+					inst->inst37.row, inst->inst37.col,
+					inst->inst37.value
+				);
+				strcat(strBuf, tmpBuf);
+				break;
+
 			default:
 				sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
 				strcat(strBuf, tmpBuf);

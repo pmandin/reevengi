@@ -50,6 +50,8 @@
 #define INST_PLAYER_POS_SET	0x20
 
 /* 0x30-0x3f */
+#define INST_37		0x37
+
 /* 0x40-0x4f */
 /* 0x50 */
 
@@ -194,6 +196,14 @@ typedef struct {
 } script_em_pos_set_t;*/
 
 /* 0x30-0x3f */
+
+typedef struct {
+	Uint8 opcode;	/* 0x37 */
+	Uint8 row;	/* row,col in 7*32 byte array */
+	Uint8 col;
+	Uint8 value;
+} script_inst37_t;
+
 /* 0x40-0x4f */
 /* 0x50 */
 
@@ -221,6 +231,8 @@ typedef union {
 	script_player_pos_set_t	player_pos_set;
 
 	/* 0x30-0x3f */
+	script_inst37_t	inst37;
+	
 	/* 0x40-0x4f */
 	/* 0x50 */
 
