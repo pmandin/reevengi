@@ -174,6 +174,11 @@ typedef struct {
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 model;
+} script_em_set_t;
+
+typedef struct {
+	Uint8 opcode;
 	Uint8 id;
 	Uint16 unknown[13];
 } script_om_set_t;
@@ -225,6 +230,7 @@ typedef union {
 
 	/* 0x10-0x1f */
 	script_item_model_set_t	item_model_set;
+	script_em_set_t	em_set;
 	script_om_set_t	om_set;
 
 	/* 0x20-0x2f */

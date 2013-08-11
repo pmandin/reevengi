@@ -54,15 +54,68 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 #define ITEM_TRIGGER2	0x09
 #define ITEM_TYPEWRITER	0x10
 
+/*--- Types ---*/
+
+typedef struct {
+	int model;
+	const char *name;
+} em_model_name_t;
+
 /*--- Variables ---*/
 
 static char strBuf[256];
 static char tmpBuf[256];
 
+static const em_model_name_t em_models[]={
+	{0x00, "Zombie (Scientist)"},
+	{0x01, "Zombie (Nude)"},
+	{0x02, "Zombie (Dog)"},
+	{0x03, "Spider (Brown)"},
+	{0x04, "Spider (Grey)"},
+	{0x05, "Crow"},
+	{0x06, "Hunter"},
+	{0x07, "Bee"},
+	{0x08, "Tentacle"},
+	{0x09, "Chimera"},
+	{0x0a, "Snake"},
+	{0x0b, "Shark"},
+	{0x0c, "Tyran (Grey)"},
+	{0x0d, "Yawn"},
+	{0x0e, "Plant 42 (Roots)"},
+	{0x0f, "Plant 42 (Tentacle)"},
+	{0x10, "Tyran (Pink)"},
+	{0x11, "Zombie"},
+	{0x12, "Yawn (Injured)"},
+	{0x13, "Web"},
+	{0x14, "Arm"},
+	{0x15, "Arm #2"},
+	{0x20, "Chris Redfield"},
+	{0x21, "Jill Valentine"},
+	{0x22, "Barry Burton"},
+	{0x23, "Rebecca Chambers"},
+	{0x24, "Albert Wesker"},
+	{0x25, "Kenneth"},
+	{0x26, "Character 2 (crow scene)"},
+	{0x27, "Character 3 (underground)"},
+	{0x28, "Character 4"},
+	{0x29, "Kenneth (Injured)"},
+	{0x2a, "Barry (Injured)"},
+	{0x2b, "Barry (Prisoner?)"},
+	{0x2c, "Rebecca (Prisoner?)"},
+	{0x2d, "Barry (#2)"},
+	{0x2e, "Wesker (#2)"},
+	{0x30, "Chris (Special #1)"},
+	{0x31, "Jill (Special #1)"},
+	{0x32, "Chris (Special #2)"},
+	{0x33, "Jill (Special #2)"}
+};
+
 /*--- Functions prototypes ---*/
 
 static void reindent(int num_indent);
 static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
+
+static const char *getEmModelName(int num_model);
 
 /*--- Functions ---*/
 
@@ -236,7 +289,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 			case INST_EM_SET:
-				strcat(strBuf, "EM_SET xxx\n");
+				{
+					const char *model_name = getEmModelName(inst->em_set.model);
+
+					sprintf(tmpBuf, "EM_SET model=0x%02x (%s)\n",
+						inst->em_set.model,
+						(model_name ? model_name : "???"));
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_OM_SET:
 				sprintf(tmpBuf, "OM_SET #0x%02x, xxx\n", inst->om_set.id);
@@ -301,6 +361,19 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		inst = (script_inst_t *) (&((Uint8 *) inst)[inst_len]);
 		/*printf("instlen %d, len %d\n", inst_len, length);*/
 	}
+}
+
+static const char *getEmModelName(int num_model)
+{
+	int i;
+
+	for (i=0; i<sizeof(em_models)/sizeof(em_model_name_t); i++) {
+		if (em_models[i].model == num_model) {
+			return em_models[i].name;
+		}
+	}
+
+	return NULL;
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */
