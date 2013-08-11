@@ -284,6 +284,22 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_CMP11:
 				strcat(strBuf, "OBJ11_TEST xxx\n");
 				break;
+			case INST_ITEM_ATTR_SET:
+				sprintf(tmpBuf, "ITEM_ATTR_SET object=0x%02x, u0:%d,%d u1:%d,%d,%d\n",
+					inst->item_attr_set.id,
+					inst->item_attr_set.unknown0[0], inst->item_attr_set.unknown0[1],
+					SDL_SwapLE16(inst->item_attr_set.unknown1[0]),
+					SDL_SwapLE16(inst->item_attr_set.unknown1[1]),
+					SDL_SwapLE16(inst->item_attr_set.unknown1[1])
+				);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_ITEM_ATTR2_SET:
+				sprintf(tmpBuf, "ITEM_ATTR2_SET object=0x%02x u0:%d,%d\n",
+					inst->item_attr2_set.id,
+					inst->item_attr2_set.unknown[0], inst->item_attr2_set.unknown[1]);
+				strcat(strBuf, tmpBuf);
+				break;
 			case INST_ITEM_MODEL_SET:
 				sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_MODEL_SET xxx\n", inst->item_model_set.id);
 				strcat(strBuf, tmpBuf);

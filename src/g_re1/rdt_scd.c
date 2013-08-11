@@ -65,8 +65,8 @@ static const script_inst_len_t inst_length[]={
 
 	{INST_CMP10,	2},
 	{INST_CMP11,	2},
-	{0x12,	10},
-	{0x13,	4},
+	{INST_ITEM_ATTR_SET,	sizeof(script_item_attr_set_t)},
+	{INST_ITEM_ATTR2_SET,	sizeof(script_item_attr2_set_t)},
 	{0x14,	4},
 	{0x15,	2},
 	{0x16,	2},

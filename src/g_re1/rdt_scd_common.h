@@ -42,6 +42,8 @@
 /* 0x10-0x1f */
 #define INST_CMP10	0x10
 #define INST_CMP11	0x11
+#define INST_ITEM_ATTR_SET	0x12
+#define INST_ITEM_ATTR2_SET	0x13
 #define INST_ITEM_MODEL_SET	0x18
 #define INST_EM_SET	0x1b
 #define INST_OM_SET	0x1f
@@ -169,6 +171,19 @@ typedef struct {
 typedef struct {
 	Uint8 opcode;
 	Uint8 id;
+	Uint8 unknown0[2];
+	Uint16 unknown1[3];
+} script_item_attr_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
+	Uint8 unknown[2];
+} script_item_attr2_set_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 id;
 	Uint16 unknown[12];
 } script_item_model_set_t;
 
@@ -229,6 +244,8 @@ typedef union {
 	script_nop0e_t	nop0e;
 
 	/* 0x10-0x1f */
+	script_item_attr_set_t	item_attr_set;
+	script_item_attr2_set_t	item_attr2_set;
 	script_item_model_set_t	item_model_set;
 	script_em_set_t	em_set;
 	script_om_set_t	om_set;
