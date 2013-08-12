@@ -308,9 +308,15 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				{
 					const char *model_name = getEmModelName(inst->em_set.model);
 
-					sprintf(tmpBuf, "EM_SET id=%d model=0x%02x (%s)\n",
+					sprintf(tmpBuf, "EM_SET id=%d model=0x%02x (%s), killed=%d, a=%d, x=%d,y=%d,z=%d\n",
 						inst->em_set.id, inst->em_set.model,
-						(model_name ? model_name : "???"));
+						(model_name ? model_name : "???"),
+						inst->em_set.killed,
+						SDL_SwapLE16(inst->em_set.a),
+						SDL_SwapLE16(inst->em_set.x),
+						SDL_SwapLE16(inst->em_set.y),
+						SDL_SwapLE16(inst->em_set.z)
+					);
 					strcat(strBuf, tmpBuf);
 				}
 				break;
