@@ -155,7 +155,9 @@ typedef struct {
 	Uint8 opcode;
 	Uint8 id;
 	Sint16 x,y,w,h;
-	Uint8 unknown0[5];
+	Uint8 unknown0[2];
+	Uint8 anim;
+	Uint8 unknown1[2];
 	Uint8 next_stage_and_room;	/* bits 7-5: stage, 4-0: room */
 	Sint16 next_x,next_y,next_z;
 	Sint16 next_dir;

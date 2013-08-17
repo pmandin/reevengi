@@ -30,6 +30,7 @@
 
 #include "../g_common/room.h"
 #include "../g_common/room_door.h"
+#include "../g_common/game.h"
 
 #include "rdt.h"
 #include "rdt_scd.h"
@@ -256,8 +257,17 @@ void rdt1_scd_scriptExecInst(room_t *this)
 				roomDoor.next_dir = SDL_SwapLE16(doorSet->next_dir);
 
 				next_stage = doorSet->next_stage_and_room>>5;
-				if (next_stage==0) {
-					next_stage = 1;
+				switch(next_stage) {
+					case 0:
+					default:
+						next_stage = game->num_stage;
+						break;
+					case 1:
+						next_stage = game->num_stage-1;
+						break;
+					case 2:
+						next_stage = game->num_stage+1;
+						break;
 				}
 				roomDoor.next_stage = next_stage;
 

@@ -30,6 +30,7 @@
 #include "../parameters.h"
 
 #include "../g_common/room.h"
+#include "../g_common/game.h"
 
 #include "rdt.h"
 #include "rdt_scd_common.h"
@@ -108,6 +109,18 @@ static const em_model_name_t em_models[]={
 	{0x31, "Jill (Special #1)"},
 	{0x32, "Chris (Special #2)"},
 	{0x33, "Jill (Special #2)"}
+};
+
+static const char *door_anims[]={
+	"door00", "door01", "door02", "door03",
+	"door04", "door05", "door06", "door07",
+	"door08", "door09", "door10", "door11",
+	"door12", "door13", "door14", "mon",
+	"ele03", "ele01", "ele01a", "ele01b",
+	"ele02", "ele04", "kai01", "kai03",
+	"kai02", "kai04", "lad00", "lad01",
+	"door00k", "door01k", "door03k", "door05k",
+	"door15"
 };
 
 /*--- Functions prototypes ---*/
@@ -265,8 +278,33 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 #endif
 			case INST_DOOR_SET:
-				sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET xxx\n", inst->door_set.id);
-				strcat(strBuf, tmpBuf);
+				{
+					int next_stage = (inst->door_set.next_stage_and_room>>5) & 7;
+
+					switch(next_stage) {
+						case 0:
+							next_stage=game->num_stage;
+							break;
+						case 1:
+							next_stage=game->num_stage-1;
+							break;
+						case 2:
+							next_stage=game->num_stage+1;
+							break;
+					}
+
+					sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET x=%d,y=%d,w=%d,h=%d anim=%d (%s), stage=%d,room=%d, px=%d,py=%d,pz=%d,pa=%d\n",
+						inst->door_set.id,
+						SDL_SwapLE16(inst->door_set.x), SDL_SwapLE16(inst->door_set.y),
+						SDL_SwapLE16(inst->door_set.w), SDL_SwapLE16(inst->door_set.h),
+						inst->door_set.anim,
+						(inst->door_set.anim < sizeof(door_anims)/sizeof(const char *) ? door_anims[inst->door_set.anim] : "???" ),
+						next_stage, inst->door_set.next_stage_and_room & 31,
+						SDL_SwapLE16(inst->door_set.next_x), SDL_SwapLE16(inst->door_set.next_y),
+						SDL_SwapLE16(inst->door_set.next_z), SDL_SwapLE16(inst->door_set.next_dir)
+					);
+					strcat(strBuf, tmpBuf);
+				}
 				break;
 			case INST_ITEM_SET:
 				sprintf(tmpBuf, "OBJECT #0x%02x = ITEM_SET xxx\n", inst->item_set.id);
