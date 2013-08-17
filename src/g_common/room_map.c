@@ -493,31 +493,39 @@ static void drawCameras(room_t *this)
 static void drawDoors(room_t *this)
 {
 	int i;
+	int unsign_val = (game->major == GAME_RE1 ? 0x8000 : 0);
 
 	render.set_color(MAP_COLOR_DOOR);
+
+	render.push_matrix();
+	if (game->major == GAME_RE1) {
+		render.translate(32768.0f, 0.0f, 32768.0f);
+	}
 
 	for (i=0; i<this->num_doors; i++) {
 		room_door_t *door = &this->doors[i];
 		vertex_t v[4];
 
-		v[0].x = door->x;
+		v[0].x = door->x ^ unsign_val;	/* not signed->signed */
 		v[0].y = 0.0f;
-		v[0].z = door->y;
+		v[0].z = door->y ^ unsign_val;
 
-		v[1].x = door->x+door->w;
+		v[1].x = v[0].x +  door->w;
 		v[1].y = 0.0f;
-		v[1].z = door->y;
+		v[1].z = v[0].z;
 
-		v[2].x = door->x+door->w;
+		v[2].x = v[1].x;
 		v[2].y = 0.0f;
-		v[2].z = door->y+door->h;
+		v[2].z = v[0].z + door->h;
 
-		v[3].x = door->x;
+		v[3].x = v[0].x;
 		v[3].y = 0.0f;
-		v[3].z = door->y+door->h;
+		v[3].z = v[2].z;
 
 		render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
 	}
+
+	render.pop_matrix();
 }
 
 static void drawItems(room_t *this)
