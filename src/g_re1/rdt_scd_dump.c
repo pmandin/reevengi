@@ -265,6 +265,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
+			case INST_CUT_SET09:
+				sprintf(tmpBuf, "CUT_SET09 %d\n", inst->cut_set.unknown);
+				strcat(strBuf, tmpBuf);
+				break;
+			case INST_CUT_SET0A:
+				sprintf(tmpBuf, "CUT_SET0A %d\n", inst->cut_set.unknown);
+				strcat(strBuf, tmpBuf);
+				break;
 #if 0
 			case INST_PRINT_MSG:
 				{
