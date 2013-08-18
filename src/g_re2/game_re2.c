@@ -92,7 +92,7 @@ game_t *game_re2_ctor(game_t *this)
 {
 	player_t *player = game->player;
 
-	logMsg(2, "game: re2: ctor\n");
+	logMsg(2, __FILE__ ": ctor\n");
 
 	switch(this->minor) {
 		case GAME_RE2_PS1_DEMO:

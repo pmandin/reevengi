@@ -341,7 +341,6 @@ void view_background_refresh(void)
 void view_background_update(void)
 {
 	player_t *player = game->player;
-	room_t *room = game->room;
 
 	processPlayerMovement();
 
@@ -351,14 +350,17 @@ void view_background_update(void)
 
 		if (reload_room) {
 			logMsg(1, "view_background: Load room\n");
-			room->load(room, game->num_stage, game->num_room, game->num_camera);
+			game->setRoom(game, game->num_stage, game->num_room);
+			/*room->load(room, game->num_stage, game->num_room, game->num_camera);*/
 			reload_room = 0;
 			reload_bg = 1;
 			/*refresh_player_pos = 1;*/
 		}
 		if (reload_bg) {
 			logMsg(1, "view_background: Load background\n");
-			room->changeCamera(room, game->num_stage, game->num_room, game->num_camera);
+			if (game->room) {
+				game->room->changeCamera(game->room, game->num_stage, game->num_room, game->num_camera);
+			}
 			reload_bg = 0;
 			refresh_bg = 1;
 		}
@@ -397,7 +399,7 @@ static void processPlayerMovement(void)
 	player_t *player = game->player;
 	room_t *room = game->room;
 
-	if (!room->file) {
+	if (!room) {
 		return;
 	}
 
@@ -507,7 +509,7 @@ void view_background_draw(void)
 	}
 
 	/* Draw background, dithered if needed */
-	if (room->background) {
+	if (room && room->background) {
 		render_texture_t *room_bg = room->background;
 
 		render.set_dithering(params.dithering);
@@ -531,39 +533,43 @@ void view_background_draw(void)
 	/* Background completely restored, clear dirty rectangles list */
 	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 
-	if (render_masks) {
-		room->drawMasks(room, game->num_camera);
-	}
+	if (room) {
+		if (render_masks) {
+			room->drawMasks(room, game->num_camera);
+		}
 
-	if (!room->getCamera) {
-		return;
-	}
+		/*if (!room->getCamera) {
+			return;
+		}*/
 
-	room->getCamera(room, game->num_camera, &room_camera);
+		room->getCamera(room, game->num_camera, &room_camera);
 
 #ifndef ENABLE_DEBUG_POS
-	if (refresh_player_pos) {
-		player->x = room_camera.to_x;
-		player->y = room_camera.to_y;
-		player->z = room_camera.to_z;
-		refresh_player_pos = 0;
-	}
+		if (refresh_player_pos) {
+			player->x = room_camera.to_x;
+			player->y = room_camera.to_y;
+			player->z = room_camera.to_z;
+			refresh_player_pos = 0;
+		}
 #endif
 
-	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
-	render.set_modelview(
-		room_camera.from_x, room_camera.from_y, room_camera.from_z,
-		room_camera.to_x, room_camera.to_y, room_camera.to_z,
-		0.0f, -1.0f, 0.0f
-	);
+		render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
+		render.set_modelview(
+			room_camera.from_x, room_camera.from_y, room_camera.from_z,
+			room_camera.to_x, room_camera.to_y, room_camera.to_z,
+			0.0f, -1.0f, 0.0f
+		);
+	}
 
 	drawPlayer();
 
 	/* Flush all 3D rendering to screen before drawing 2D stuff */
 	render.flushFrame();
 
-	if (room->map_mode != ROOM_MAP_OFF) {
-		room->drawMap(room, render_grid);
+	if (room) {
+		if (room->map_mode != ROOM_MAP_OFF) {
+			room->drawMap(room, render_grid);
+		}
 	}
 }
 

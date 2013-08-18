@@ -1846,7 +1846,7 @@ static int game_lang = 'u';
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera);
+static void load_room(room_t *this, int num_stage, int num_room);
 static int loadroom_ard(room_t *this, const char *filename);
 
 static void load_font(game_t *this);
@@ -1892,7 +1892,7 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 	free(filepath);
 }
 
-static void load_room(room_t *this, int num_stage, int num_room, int num_camera)
+static void load_room(room_t *this, int num_stage, int num_room)
 {
 	char *filepath;
 

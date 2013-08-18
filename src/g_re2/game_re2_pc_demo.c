@@ -66,7 +66,7 @@ static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
+static char *getFilename(room_t *this, int num_stage, int num_room);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_adt_bg(room_t *this, const char *filename);
@@ -102,7 +102,7 @@ void room_re2pcdemo_init(room_t *this)
 	this->load_bgmask = load_bgmask;
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room)
 {
 	char *filepath;
 

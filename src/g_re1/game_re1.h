@@ -31,6 +31,11 @@ enum {
 	GAME_RE1_PC_GAME,
 };
 
+/*--- External types ---*/
+
+typedef struct room_s room_t;
+typedef struct game_s game_t;
+
 /*--- Functions ---*/
 
 void game_re1_detect(game_t *this);

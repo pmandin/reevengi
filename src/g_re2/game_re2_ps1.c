@@ -919,7 +919,7 @@ static int game_player;
 
 /*--- Functions prototypes ---*/
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
+static char *getFilename(room_t *this, int num_stage, int num_room);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 
@@ -968,7 +968,7 @@ void room_re2ps1_init(room_t *this)
 	this->load_background = load_background;
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room)
 {
 	char *filepath;
 	char filename[16];

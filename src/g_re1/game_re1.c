@@ -88,6 +88,8 @@ void game_re1_detect(game_t *this)
 
 game_t *game_re1_ctor(game_t *this)
 {
+	logMsg(2, __FILE__ ": ctor\n");
+
 	switch(this->minor) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:

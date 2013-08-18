@@ -117,7 +117,7 @@ static int max_num_models = MAX_MODELS_DEMO;
 
 /*--- Functions prototypes ---*/
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
+static char *getFilename(room_t *this, int num_stage, int num_room);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_jpg_bg(room_t *this, const char *filename);
@@ -180,7 +180,7 @@ void room_re3pc_init(room_t *this)
 	this->load_bgmask = load_bgmask;
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room)
 {
 	char *filepath;
 

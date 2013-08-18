@@ -113,7 +113,7 @@ static void dtor(game_t *this);
 
 static int init_images(const char *filename);
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera);
+static char *getFilename(room_t *this, int num_stage, int num_room);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_image(room_t *this, int num_image);
@@ -242,7 +242,7 @@ static int init_images(const char *filename)
 	return retval;
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)
+static char *getFilename(room_t *this, int num_stage, int num_room)
 {
 	char *filepath;
 
