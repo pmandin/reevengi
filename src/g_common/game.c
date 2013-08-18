@@ -49,7 +49,7 @@ static void dtor(game_t *this);
 static void load_font(game_t *this);
 static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h);
 
-static room_t *game_room_ctor(int num_stage, int num_room);
+static room_t *game_room_ctor(game_t *this, int num_stage, int num_room);
 
 static void prev_stage(game_t *this);
 static void next_stage(game_t *this);
@@ -113,7 +113,7 @@ game_t *game_ctor(void)
 	this->switch_movie = switch_movie;
 
 	this->player = player_ctor();
-	this->room = room_ctor();
+	/*this->room = room_ctor();*/
 	this->menu = menu_ctor();
 
 	this->room_ctor = game_room_ctor;
@@ -159,7 +159,7 @@ static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h)
 {
 }
 
-static room_t *game_room_ctor(int num_stage, int num_room)
+static room_t *game_room_ctor(game_t *this, int num_stage, int num_room)
 {
 	return NULL;
 }
