@@ -149,10 +149,6 @@ game_t *game_re3pc_ctor(game_t *this)
 		}
 	}
 
-	this->room->getFilename = getFilename;
-	this->room->load_background = load_background;
-	this->room->load_bgmask = load_bgmask;
-
 	switch(this->minor) {
 		case GAME_RE3_PC_DEMO:
 			this->movies_list = (char **) re3pcdemo_movies;
@@ -175,6 +171,13 @@ game_t *game_re3pc_ctor(game_t *this)
 	this->load_font = load_font;
 
 	return this;
+}
+
+void room_re3pc_init(room_t *this)
+{
+	this->getFilename = getFilename;
+	this->load_background = load_background;
+	this->load_bgmask = load_bgmask;
 }
 
 static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)

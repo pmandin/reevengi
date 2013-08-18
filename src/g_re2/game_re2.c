@@ -29,13 +29,6 @@
 
 #include "game_re2.h"
 #include "rdt.h"
-#include "rdt_rid.h"
-#include "rdt_rvd.h"
-#include "rdt_pri.h"
-#include "rdt_msg.h"
-#include "rdt_scd.h"
-#include "rdt_scd_dump.h"
-#include "rdt_sca.h"
 
 /*--- Constants ---*/
 
@@ -97,7 +90,6 @@ void game_re2_detect(game_t *this)
 
 game_t *game_re2_ctor(game_t *this)
 {
-	room_t *room;
 	player_t *player = game->player;
 
 	logMsg(2, "game: re2: ctor\n");
@@ -125,33 +117,7 @@ game_t *game_re2_ctor(game_t *this)
 
 	this->get_char = get_char;
 
-	room = this->room;
-
-	room->init = rdt2_init;
-
-	room->getNumCameras = rdt2_rid_getNumCameras;
-	room->getCamera = rdt2_rid_getCamera;
-
-	room->getNumCamSwitches = rdt2_rvd_getNumCamSwitches;
-	room->getCamSwitch = rdt2_rvd_getCamSwitch;
-
-	room->getNumBoundaries = rdt2_rvd_getNumBoundaries;
-	room->getBoundary = rdt2_rvd_getBoundary;
-
-	room->initMasks = rdt2_pri_initMasks;
-	room->drawMasks = rdt2_pri_drawMasks;
-
-	room->getText = rdt2_msg_getText;
-
-	room->scriptInit = rdt2_scd_scriptInit;
-	room->scriptGetInstLen = rdt2_scd_scriptGetInstLen;
-	room->scriptExecInst = rdt2_scd_scriptExecInst;
-
-	room->scriptDump = rdt2_scd_scriptDump;
-
-	room->getNumCollisions = rdt2_sca_getNumCollisions;
-	room->drawMapCollision = rdt2_sca_drawMapCollision;
-	room->checkCollision = rdt2_sca_checkCollision;
+	this->room_ctor = rdt2_room_ctor;
 
 	/* Init default room and player pos */
 

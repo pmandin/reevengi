@@ -133,9 +133,6 @@ game_t *game_re2pcgame_ctor(game_t *this)
 		fprintf(stderr, "Error reading background archive infos\n");
 	}
 
-	this->room->getFilename = getFilename;
-	this->room->load_background = load_background;
-
 	switch(this->minor) {
 		case GAME_RE2_PC_GAME_LEON:
 			this->movies_list = (char **) re2pcgame_leon_movies;
@@ -181,6 +178,12 @@ game_t *game_re2pcgame_ctor(game_t *this)
 	this2->game.dtor = dtor;
 
 	return (game_t *) this2;
+}
+
+void room_re2pcgame_init(room_t *this)
+{
+	this->getFilename = getFilename;
+	this->load_background = load_background;
 }
 
 static void dtor(game_t *this)

@@ -35,7 +35,11 @@ enum {
 void game_re3_detect(game_t *this);
 
 game_t *game_re3_ctor(game_t *this);
+
 game_t *game_re3pc_ctor(game_t *this);
+void room_re3pc_init(room_t *this);
+
 game_t *game_re3ps1game_ctor(game_t *this);
+void room_re3ps1game_init(room_t *this);
 
 #endif /* GAME_RE3_H */

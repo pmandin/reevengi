@@ -87,16 +87,19 @@ game_t *game_re2pcdemo_ctor(game_t *this)
 		game_lang = 'p';
 	}
 
-	this->room->getFilename = getFilename;
-	this->room->load_background = load_background;
-	this->room->load_bgmask = load_bgmask;
-
 	this->player->load_model = load_model;
 	this->player->get_model_name = get_model_name;
 
 	this->load_font = load_font;
 
 	return this;
+}
+
+void room_re2pcdemo_init(room_t *this)
+{
+	this->getFilename = getFilename;
+	this->load_background = load_background;
+	this->load_bgmask = load_bgmask;
 }
 
 static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)

@@ -27,16 +27,7 @@
 #include "../g_common/game.h"
 
 #include "game_re3.h"
-
-#include "../g_re2/rdt_rid.h"
-#include "../g_re2/rdt_rvd.h"
-#include "../g_re2/rdt_pri.h"
-#include "../g_re2/rdt_msg.h"
-
 #include "rdt.h"
-#include "rdt_sca.h"
-#include "rdt_scd.h"
-#include "rdt_scd_dump.h"
 
 /*--- Constants ---*/
 
@@ -98,37 +89,14 @@ game_t *game_re3_ctor(game_t *this)
 
 	this->get_char = get_char;
 
-	room = this->room;
+	this->room_ctor = rdt3_room_ctor;
 
-	room->init = rdt3_init;
-
-	room->getNumCameras = rdt2_rid_getNumCameras;
-	room->getCamera = rdt2_rid_getCamera;
-
-	room->getNumCamSwitches = rdt2_rvd_getNumCamSwitches;
-	room->getCamSwitch = rdt2_rvd_getCamSwitch;
-
-	room->getNumBoundaries = rdt2_rvd_getNumBoundaries;
-	room->getBoundary = rdt2_rvd_getBoundary;
-
-	room->initMasks = rdt2_pri_initMasks;
-	room->drawMasks = rdt2_pri_drawMasks;
-
-	room->getText = rdt2_msg_getText;
-
-	room->scriptInit = rdt3_scd_scriptInit;
-	room->scriptGetInstLen = rdt3_scd_scriptGetInstLen;
-	room->scriptExecInst = rdt3_scd_scriptExecInst;
-
-	room->scriptDump = rdt3_scd_scriptDump;
-
-	room->getNumCollisions = rdt3_sca_getNumCollisions;
-	room->drawMapCollision = rdt3_sca_drawMapCollision;
-
+#if 0
 	if ((params.stage==1) && (params.room==0) && (params.camera==0)) {
 		/* Init default room and player pos */
 		this->num_room = 13;
 	}
+#endif
 
 	return this;
 }

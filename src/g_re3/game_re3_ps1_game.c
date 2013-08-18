@@ -1855,9 +1855,6 @@ static void load_font(game_t *this);
 
 game_t *game_re3ps1game_ctor(game_t *this)
 {
-	this->room->load_background = load_background;
-	this->room->load = load_room;
-
 	this->movies_list = (char **) re3ps1game_movies;
 
 	if (game_file_exists("cd_data/etc/sele_obf.tim")) {
@@ -1867,6 +1864,12 @@ game_t *game_re3ps1game_ctor(game_t *this)
 	this->load_font = load_font;
 
 	return this;
+}
+
+void room_re3ps1game_init(room_t *this)
+{
+	this->load_background = load_background;
+	this->load = load_room;
 }
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)

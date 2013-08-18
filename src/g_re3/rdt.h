@@ -33,6 +33,11 @@
 #define RDT3_OFFSET_ROOM_SCRIPT	17
 #define RDT3_OFFSET_ANIMS	18
 
+/*--- External types ---*/
+
+typedef struct room_s room_t;
+typedef struct game_s game_t;
+
 /*--- Types ---*/
 
 typedef struct {
@@ -43,6 +48,8 @@ typedef struct {
 } rdt3_header_t;
 
 /*--- Functions ---*/
+
+room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room);
 
 void rdt3_init(room_t *this);
 

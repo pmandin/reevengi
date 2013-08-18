@@ -957,12 +957,15 @@ game_t *game_re2ps1_ctor(game_t *this)
 			break;
 	}
 
-	this->room->getFilename = getFilename;
-	this->room->load_background = load_background;
-
 	this->player->load_model = load_model;
 
 	return this;
+}
+
+void room_re2ps1_init(room_t *this)
+{
+	this->getFilename = getFilename;
+	this->load_background = load_background;
 }
 
 static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)

@@ -24,9 +24,17 @@
 #include "../log.h"
 
 #include "../g_common/room.h"
+#include "../g_common/game.h"
 
+#include "game_re2.h"
 #include "rdt.h"
 #include "rdt_sca.h"
+#include "rdt_rid.h"
+#include "rdt_rvd.h"
+#include "rdt_pri.h"
+#include "rdt_msg.h"
+#include "rdt_scd.h"
+#include "rdt_scd_dump.h"
 
 /*--- Types ---*/
 
@@ -35,6 +43,61 @@
 static void displayTexts(room_t *this, int num_lang);
 
 /*--- Functions ---*/
+
+room_t *rdt2_room_ctor(game_t *this, int num_stage, int num_room)
+{
+	room_t *room;
+
+	room = room_ctor();
+	if (!room) {
+		return NULL;
+	}
+
+	room->init = rdt2_init;
+
+	room->getNumCameras = rdt2_rid_getNumCameras;
+	room->getCamera = rdt2_rid_getCamera;
+
+	room->getNumCamSwitches = rdt2_rvd_getNumCamSwitches;
+	room->getCamSwitch = rdt2_rvd_getCamSwitch;
+
+	room->getNumBoundaries = rdt2_rvd_getNumBoundaries;
+	room->getBoundary = rdt2_rvd_getBoundary;
+
+	room->initMasks = rdt2_pri_initMasks;
+	room->drawMasks = rdt2_pri_drawMasks;
+
+	room->getText = rdt2_msg_getText;
+
+	room->scriptInit = rdt2_scd_scriptInit;
+	room->scriptGetInstLen = rdt2_scd_scriptGetInstLen;
+	room->scriptExecInst = rdt2_scd_scriptExecInst;
+
+	room->scriptDump = rdt2_scd_scriptDump;
+
+	room->getNumCollisions = rdt2_sca_getNumCollisions;
+	room->drawMapCollision = rdt2_sca_drawMapCollision;
+	room->checkCollision = rdt2_sca_checkCollision;
+
+	switch(this->minor) {
+		case GAME_RE2_PS1_DEMO:
+		case GAME_RE2_PS1_DEMO2:
+		case GAME_RE2_PS1_GAME_LEON:
+		case GAME_RE2_PS1_GAME_CLAIRE:
+			room_re2ps1_init(room);
+			break;
+		case GAME_RE2_PC_DEMO_P:
+		case GAME_RE2_PC_DEMO_U:
+			room_re2pcdemo_init(room);
+			break;
+		case GAME_RE2_PC_GAME_LEON:
+		case GAME_RE2_PC_GAME_CLAIRE:
+			room_re2pcgame_init(room);
+			break;
+	}
+
+	return room;
+}
 
 void rdt2_init(room_t *this)
 {
