@@ -55,10 +55,10 @@ struct room_s {
 	void (*dtor)(room_t *this);
 
 	/* Return full path to room filename, ptr must be freed */
-	char *(*getFilename)(room_t *this, int stage, int room, int camera);
-	void (*loadFile)(room_t *this, int stage, int room, int camera);
+	char *(*getFilename)(room_t *this, int stage, int room);
+	void (*loadFile)(room_t *this, int stage, int room);
 
-	void (*load)(room_t *this, int stage, int room, int camera);
+	void (*load)(room_t *this, int stage, int room);
 	void (*init)(room_t *this);
 
 	void (*load_background)(room_t *this, int stage, int room, int camera);

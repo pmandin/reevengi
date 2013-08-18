@@ -46,10 +46,10 @@
 
 static void dtor(room_t *this);
 
-static char *getFilename(room_t *this, int stage, int room, int camera);
-static void loadFile(room_t *this, int stage, int room, int camera);
+static char *getFilename(room_t *this, int stage, int room);
+static void loadFile(room_t *this, int stage, int room);
 
-static void load(room_t *this, int stage, int room, int camera);
+static void load(room_t *this, int stage, int room);
 static void init(room_t *this);
 
 static void load_background(room_t *this, int stage, int room, int camera);
@@ -132,19 +132,19 @@ static void dtor(room_t *this)
 	free(this);
 }
 
-static char *getFilename(room_t *this, int stage, int room, int camera)
+static char *getFilename(room_t *this, int stage, int room)
 {
 	return strdup("");
 }
 
-static void loadFile(room_t *this, int stage, int room, int camera)
+static void loadFile(room_t *this, int stage, int room)
 {
 	PHYSFS_sint64 length;
 	void *file;
 	char *filename;
 	int retval = 0;
 	
-	filename = this->getFilename(this, stage, room, camera);
+	filename = this->getFilename(this, stage, room);
 	if (!filename) {
 		return;
 	}
@@ -170,11 +170,11 @@ static void loadFile(room_t *this, int stage, int room, int camera)
 	free(filename);
 }
 
-static void load(room_t *this, int stage, int room, int camera)
+static void load(room_t *this, int stage, int room)
 {
 	unload(this);
 
-	this->loadFile(this, stage, room, camera);
+	this->loadFile(this, stage, room);
 
 	room_map_init_data(this);
 

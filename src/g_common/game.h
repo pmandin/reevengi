@@ -70,6 +70,7 @@ struct game_s {
 	void (*reset_camera)(game_t *this);
 
 	/*--- Room ---*/
+	void (*setRoom)(game_t *this, int num_stage, int num_room);
 	room_t *(*room_ctor)(game_t *this, int num_stage, int num_room);
 
 	/*--- Movies ---*/

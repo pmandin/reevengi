@@ -49,6 +49,7 @@ static void dtor(game_t *this);
 static void load_font(game_t *this);
 static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h);
 
+static void setRoom(game_t *this, int num_stage, int num_room);
 static room_t *game_room_ctor(game_t *this, int num_stage, int num_room);
 
 static void prev_stage(game_t *this);
@@ -116,6 +117,7 @@ game_t *game_ctor(void)
 	/*this->room = room_ctor();*/
 	this->menu = menu_ctor();
 
+	this->setRoom = setRoom;
 	this->room_ctor = game_room_ctor;
 
 	return this;
@@ -162,6 +164,37 @@ static void get_char(game_t *this, int ascii, int *x, int *y, int *w, int *h)
 static room_t *game_room_ctor(game_t *this, int num_stage, int num_room)
 {
 	return NULL;
+}
+
+static void setRoom(game_t *this, int new_stage, int new_room)
+{
+	room_t *room;
+
+	if (this->room) {
+		this->room->dtor(this->room);
+		this->room = NULL;
+	}
+
+	room = game->room_ctor(game, new_stage, new_room);
+	if (!room) {
+		return;
+	}
+
+	room->loadFile(room, new_stage, new_room);
+
+	room_map_init_data(room);
+
+	/* Dump scripts if wanted */
+	if (params.dump_script) {
+		room->scriptDump(room, ROOM_SCRIPT_INIT);
+		room->scriptDump(room, ROOM_SCRIPT_RUN);
+	}
+	room->scriptExec(room, ROOM_SCRIPT_INIT);
+	room->scriptExec(room, ROOM_SCRIPT_RUN);
+
+	room->num_cameras = room->getNumCameras(room);
+
+	this->room = room;
 }
 
 static void prev_stage(game_t *this)
