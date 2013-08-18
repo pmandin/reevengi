@@ -69,6 +69,9 @@ struct game_s {
 	void (*next_camera)(game_t *this);
 	void (*reset_camera)(game_t *this);
 
+	/*--- Room ---*/
+	room_t *room_ctor(int num_stage, int num_room);
+
 	/*--- Movies ---*/
 
 	char **movies_list;	/* List of movies */
