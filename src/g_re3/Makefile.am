@@ -11,4 +11,6 @@ INCLUDES = -I$(top_srcdir)/src
 
 EXTRA_DIST = emd.h sld.h game_re3.h \
 	rdt_scd.h rdt_scd_common.h rdt_scd_dump.h rdt_sca.h \
-	rdt.h ard.h
+	rdt.h ard.h \
+	cd_raw.c
+
