@@ -36,6 +36,8 @@ typedef struct room_door_s room_door_t;
 typedef struct room_item_s room_item_t;
 typedef struct room_collision_s room_collision_t;
 
+typedef struct game_s game_t;
+
 /*--- Types ---*/
 
 typedef struct room_camera_s room_camera_t;
@@ -54,19 +56,21 @@ typedef struct room_s room_t;
 struct room_s {
 	void (*dtor)(room_t *this);
 
+	/* Stage and room of this structure */
+	int num_stage, num_room;
+
+	/*--- RDT file ---*/
+	void *file;
+	Uint32 file_length;
+
 	/* Return full path to room filename, ptr must be freed */
-	char *(*getFilename)(room_t *this, int stage, int room);
-	void (*loadFile)(room_t *this, int stage, int room);
+	char *(*getFilename)(room_t *this);
+	void (*loadFile)(room_t *this);
 
-	void (*load)(room_t *this, int stage, int room);
-
+	/*--- Background image ---*/
 	void (*load_background)(room_t *this, int stage, int room, int camera);
 	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
 	void (*changeCamera)(room_t *this, int stage, int room, int camera);
-
-	/* RDT file */
-	void *file;
-	Uint32 file_length;
 
 	/* Background image for current camera */
 	render_texture_t *background;
@@ -145,6 +149,6 @@ struct room_s {
 
 /*--- Functions ---*/
 
-room_t *room_ctor(void);
+room_t *room_ctor(game_t *game, int num_stage, int num_room);
 
 #endif /* ROOM_H */

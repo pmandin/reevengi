@@ -66,7 +66,7 @@ static int game_lang = 'u';
 
 /*--- Functions prototypes ---*/
 
-static char *getFilename(room_t *this, int num_stage, int num_room);
+static char *getFilename(room_t *this);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 static int load_adt_bg(room_t *this, const char *filename);
@@ -102,7 +102,7 @@ void room_re2pcdemo_init(room_t *this)
 	this->load_bgmask = load_bgmask;
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room)
+static char *getFilename(room_t *this)
 {
 	char *filepath;
 
@@ -111,7 +111,7 @@ static char *getFilename(room_t *this, int num_stage, int num_room)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, re2pcdemo_room, game_lang, num_stage, num_room);
+	sprintf(filepath, re2pcdemo_room, game_lang, this->num_stage, this->num_room);
 
 	return filepath;
 }

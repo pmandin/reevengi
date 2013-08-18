@@ -181,7 +181,7 @@ static void setRoom(game_t *this, int new_stage, int new_room)
 		return;
 	}
 
-	room->loadFile(room, new_stage, new_room);
+	room->loadFile(room);
 	if (!room->file) {
 		room->dtor(room);
 		return;

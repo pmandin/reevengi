@@ -46,10 +46,8 @@
 
 static void dtor(room_t *this);
 
-static char *getFilename(room_t *this, int stage, int room);
-static void loadFile(room_t *this, int stage, int room);
-
-static void load(room_t *this, int stage, int room);
+static char *getFilename(room_t *this);
+static void loadFile(room_t *this);
 
 static void load_background(room_t *this, int stage, int room, int camera);
 static void load_bgmask(room_t *this, int stage, int room, int camera);
@@ -75,11 +73,11 @@ static int checkCollisions(room_t *this, float x, float y);
 
 /*--- Functions ---*/
 
-room_t *room_ctor(void)
+room_t *room_ctor(game_t *game, int num_stage, int num_room)
 {
 	room_t *this;
 
-	logMsg(2, __FILE__ ": ctor\n");
+	logMsg(2, "room: ctor\n");
 
 	this = (room_t *) calloc(1, sizeof(room_t));
 	if (!this) {
@@ -90,8 +88,6 @@ room_t *room_ctor(void)
 
 	this->getFilename = getFilename;
 	this->loadFile = loadFile;
-
-	this->load = load;
 
 	this->load_background = load_background;
 	this->load_bgmask = load_bgmask;
@@ -118,12 +114,15 @@ room_t *room_ctor(void)
 	room_map_init(this);
 	room_item_init(this);
 
+	this->num_stage = num_stage;
+	this->num_room = num_room;
+
 	return this;
 }
 
 static void dtor(room_t *this)
 {
-	logMsg(2, __FILE__ ": dtor\n");
+	logMsg(2, "room: dtor\n");
 
 	unload_background(this);
 	unload_bgmask(this);
@@ -132,62 +131,41 @@ static void dtor(room_t *this)
 	free(this);
 }
 
-static char *getFilename(room_t *this, int stage, int room)
+static char *getFilename(room_t *this)
 {
-	return strdup("");
+	return NULL;
 }
 
-static void loadFile(room_t *this, int stage, int room)
+static void loadFile(room_t *this)
 {
 	PHYSFS_sint64 length;
 	void *file;
 	char *filename;
 	int retval = 0;
 	
-	filename = this->getFilename(this, stage, room);
+	filename = this->getFilename(this);
 	if (!filename) {
 		return;
 	}
 
-	logMsg(1, __FILE__ ": Loading %s ...\n", filename);
+	logMsg(1, "room: Loading %s ...\n", filename);
 
 	file = FS_Load(filename, &length);
 	if (file) {
 		this->file = file;
 		this->file_length = length;
 
-		logMsg(2, __FILE__ ": %d cameras angles, %d camera switches, %d boundaries\n",
+		logMsg(2, "room: %d cameras angles, %d camera switches, %d boundaries\n",
 			this->num_cameras, this->getNumCamSwitches(this), this->getNumBoundaries(this));
 
 		retval = 1;
 	}
 
-	logMsg(1, __FILE__ ": %s loading %s ...\n",
+	logMsg(1, "room: %s loading %s ...\n",
 		retval ? "Done" : "Failed",
 		filename);
 
 	free(filename);
-}
-
-static void load(room_t *this, int stage, int room)
-{
-	logMsg(1, __FILE__ ":load\n");
-
-	unload(this);
-
-	this->loadFile(this, stage, room);
-
-	room_map_init_data(this);
-
-	/* Dump scripts if wanted */
-	if (params.dump_script) {
-		this->scriptDump(this, ROOM_SCRIPT_INIT);
-		this->scriptDump(this, ROOM_SCRIPT_RUN);
-	}
-	this->scriptExec(this, ROOM_SCRIPT_INIT);
-	this->scriptExec(this, ROOM_SCRIPT_RUN);
-
-	this->num_cameras = this->getNumCameras(this);
 }
 
 static void load_background(room_t *this, int stage, int room, int camera)
@@ -202,7 +180,7 @@ static void load_bgmask(room_t *this, int stage, int room, int camera)
 
 static void unload(room_t *this)
 {
-	logMsg(2, __FILE__ ": unload\n");
+	logMsg(2, "room: unload\n");
 
 	if (this->doors) {
 		free(this->doors);
@@ -227,7 +205,7 @@ static void unload(room_t *this)
 
 static void unload_background(room_t *this)
 {
-	logMsg(2, __FILE__ ": unloadbackground\n");
+	logMsg(2, "room: unloadbackground\n");
 
 	if (this->background) {
 		free(this->background);
@@ -237,7 +215,7 @@ static void unload_background(room_t *this)
 
 static void unload_bgmask(room_t *this)
 {
-	logMsg(2, __FILE__ ": unloadbgmask\n");
+	logMsg(2, "room: unloadbgmask\n");
 
 	if (this->bg_mask) {
 		free(this->bg_mask);

@@ -46,7 +46,7 @@ room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
 {
 	room_t *room;
 
-	room = room_ctor();
+	room = room_ctor(this, num_stage, num_room);
 	if (!room) {
 		return NULL;
 	}

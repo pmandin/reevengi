@@ -103,7 +103,7 @@ static int game_country = 0;
 
 /*--- Functions prototypes ---*/
 
-static char *getFilename(room_t *this, int num_stage, int num_room);
+static char *getFilename(room_t *this);
 
 static int get_row_offset(int re1_stage, int num_stage, int num_room, int num_camera);
 
@@ -151,7 +151,7 @@ void room_re1pc_init(room_t *this)
 /*	this->load_bgmask = load_bgmask;*/
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room)
+static char *getFilename(room_t *this)
 {
 	char *filepath;
 
@@ -161,7 +161,7 @@ static char *getFilename(room_t *this, int num_stage, int num_room)
 		return NULL;
 	}
 	sprintf(filepath, re1pcgame_room, re1_country[game_country],
-		num_stage, num_stage, num_room);
+		this->num_stage, this->num_stage, this->num_room);
 
 	logMsg(1, "game_re1: Room filename %s\n", filepath);
 

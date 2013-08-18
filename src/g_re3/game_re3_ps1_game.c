@@ -1837,7 +1837,7 @@ static int game_lang = 'u';
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 
-static void load_room(room_t *this, int num_stage, int num_room);
+static void load_room(room_t *this);
 static int loadroom_ard(room_t *this, const char *filename);
 
 static void load_font(game_t *this);
@@ -1883,7 +1883,7 @@ static void load_background(room_t *this, int num_stage, int num_room, int num_c
 	free(filepath);
 }
 
-static void load_room(room_t *this, int num_stage, int num_room)
+static void load_room(room_t *this)
 {
 	char *filepath;
 
@@ -1892,7 +1892,7 @@ static void load_room(room_t *this, int num_stage, int num_room)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return;
 	}
-	sprintf(filepath, re3ps1game_room, num_stage, num_stage, num_room);
+	sprintf(filepath, re3ps1game_room, this->num_stage, this->num_stage, this->num_room);
 
 	logMsg(1, "ard: Start loading %s ...\n", filepath);
 

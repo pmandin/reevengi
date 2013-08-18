@@ -919,7 +919,7 @@ static int game_player;
 
 /*--- Functions prototypes ---*/
 
-static char *getFilename(room_t *this, int num_stage, int num_room);
+static char *getFilename(room_t *this);
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera);
 
@@ -968,7 +968,7 @@ void room_re2ps1_init(room_t *this)
 	this->load_background = load_background;
 }
 
-static char *getFilename(room_t *this, int num_stage, int num_room)
+static char *getFilename(room_t *this)
 {
 	char *filepath;
 	char filename[16];
@@ -978,9 +978,9 @@ static char *getFilename(room_t *this, int num_stage, int num_room)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, re2ps1_room_path, (num_stage==1) ? "" : "2");
+	sprintf(filepath, re2ps1_room_path, (this->num_stage==1) ? "" : "2");
 
-	sprintf(filename, "room%d%02x%d.rdt", num_stage, num_room, game_player);
+	sprintf(filename, "room%d%02x%d.rdt", this->num_stage, this->num_room, game_player);
 	strcat(filepath, filename);
 
 	return filepath;
