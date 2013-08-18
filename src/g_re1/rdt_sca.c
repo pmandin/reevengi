@@ -187,8 +187,18 @@ void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
 				}
 			}
 			break;
+		case 4:
+			{
+				render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
+			}
+			break;
+		case 5:
+			{
+				render.quad_wf(&v[3], &v[2], &v[1], &v[0]);
+			}
+			break;
 		default:
-			logMsg(1, "rdt1: sca: Unsupported type %d\n", SDL_SwapLE16(rdt_sca_elt[num_collision].type));
+			/*logMsg(1, "rdt1: sca: Unsupported type %d\n", SDL_SwapLE16(rdt_sca_elt[num_collision].type));*/
 			break;
 	}
 
