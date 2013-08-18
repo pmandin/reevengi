@@ -38,6 +38,7 @@
 
 /*--- Functions prototypes ---*/
 
+static void postLoad(room_t *this);
 static void displayTexts(room_t *this, int num_lang);
 
 /*--- Functions ---*/
@@ -50,6 +51,8 @@ room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
 	if (!room) {
 		return NULL;
 	}
+
+	room->postLoad = postLoad;
 
 	room->getNumCameras = rdt1_rid_getNumCameras;
 	room->getCamera = rdt1_rid_getCamera;
@@ -86,18 +89,21 @@ room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
 			break;
 	}
 
-/*	rdt1_header_t *rdt_header;
+	return room;
+}
+
+static void postLoad(room_t *this)
+{
+	/*rdt1_header_t *rdt_header;
 	int i;
 
 	rdt_header = (rdt1_header_t *) this->file;
+	logMsg(1, "RDT at 0x%08x, length %d\n", this->file, this->file_length);
 	for (i=0; i<19; i++) {
-		logMsg(2, "RDT header[%d]: 0x%08x\n", i, rdt_header->offsets[i]);
-	}
-*/
+		logMsg(1, "RDT header[%d]: 0x%08x\n", i, rdt_header->offsets[i]);
+	}*/
 
-	/*rdt1_sca_init(room);*/
-
-	return room;
+	rdt1_sca_init(this);
 }
 
 static void displayTexts(room_t *this, int num_lang)

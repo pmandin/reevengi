@@ -41,6 +41,7 @@
 
 /*--- Functions prototypes ---*/
 
+static void postLoad(room_t *this);
 static void displayTexts(room_t *this, int num_lang);
 
 /*--- Functions ---*/
@@ -53,6 +54,8 @@ room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room)
 	if (!room) {
 		return NULL;
 	}
+
+	room->postLoad = postLoad;
 
 	room->getNumCameras = rdt2_rid_getNumCameras;
 	room->getCamera = rdt2_rid_getCamera;
@@ -88,9 +91,13 @@ room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room)
 			break;
 	}
 
-	/*rdt3_sca_init(room);*/
-	
 	return room;
+}
+
+static void postLoad(room_t *this)
+{
+	/*rdt3_sca_init(room);*/
+
 }
 
 static void displayTexts(room_t *this, int num_lang)

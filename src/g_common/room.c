@@ -48,6 +48,7 @@ static void dtor(room_t *this);
 
 static char *getFilename(room_t *this);
 static void loadFile(room_t *this);
+static void postLoad(room_t *this);
 
 static void load_background(room_t *this, int stage, int room, int camera);
 static void load_bgmask(room_t *this, int stage, int room, int camera);
@@ -88,6 +89,7 @@ room_t *room_ctor(game_t *game, int num_stage, int num_room)
 
 	this->getFilename = getFilename;
 	this->loadFile = loadFile;
+	this->postLoad = postLoad;
 
 	this->load_background = load_background;
 	this->load_bgmask = load_bgmask;
@@ -95,8 +97,6 @@ room_t *room_ctor(game_t *game, int num_stage, int num_room)
 
 	this->getNumCameras = getNumCameras;
 	this->getCamera = getCamera;
-
-	room_camswitch_init(this);
 
 	this->initMasks = initMasks;
 	this->drawMasks = drawMasks;
@@ -109,6 +109,7 @@ room_t *room_ctor(game_t *game, int num_stage, int num_room)
 	this->checkCollision = checkCollision;
 	this->checkCollisions = checkCollisions;
 
+	room_camswitch_init(this);
 	room_script_init(this);
 	room_door_init(this);
 	room_map_init(this);
@@ -154,13 +155,14 @@ static void loadFile(room_t *this)
 
 	file = FS_Load(filename, &length);
 	if (file) {
-		this->file = file;
-		this->file_length = length;
+		if (length>=8) {
+			this->file = file;
+			this->file_length = length;
 
-		logMsg(2, "room: %d cameras angles, %d camera switches, %d boundaries\n",
-			this->num_cameras, this->getNumCamSwitches(this), this->getNumBoundaries(this));
-
-		retval = 1;
+			retval = 1;
+		} else {
+			free(file);
+		}
 	}
 
 	logMsg(1, "room: %s loading %s ...\n",
@@ -168,6 +170,10 @@ static void loadFile(room_t *this)
 		filename);
 
 	free(filename);
+}
+
+static void postLoad(room_t *this)
+{
 }
 
 static void load_background(room_t *this, int stage, int room, int camera)

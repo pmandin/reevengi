@@ -67,6 +67,8 @@ struct room_s {
 	char *(*getFilename)(room_t *this);
 	void (*loadFile)(room_t *this);
 
+	void (*postLoad)(room_t *this);	/* debug function after file loaded */
+
 	/*--- Background image ---*/
 	void (*load_background)(room_t *this, int stage, int room, int camera);
 	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
