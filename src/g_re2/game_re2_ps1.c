@@ -164,7 +164,7 @@ static char *getFilename(room_t *this)
 		fprintf(stderr, "Can not allocate mem for filepath\n");
 		return NULL;
 	}
-	sprintf(filepath, re2ps1_room_path, (this->num_stage==1) ? "" : "2");
+	sprintf(filepath, re2ps1_room_path, game_player, (this->num_stage==1) ? "" : "2");
 
 	sprintf(filename, "room%d%02x%d.rdt", this->num_stage, this->num_room, game_player);
 	strcat(filepath, filename);
