@@ -70,7 +70,7 @@ struct room_s {
 	/*--- Background image ---*/
 	void (*load_background)(room_t *this, int stage, int room, int camera);
 	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
-	void (*changeCamera)(room_t *this, int stage, int room, int camera);
+	void (*setCamera)(room_t *this, int camera);
 
 	/* Background image for current camera */
 	render_texture_t *background;
