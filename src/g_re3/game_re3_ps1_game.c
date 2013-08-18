@@ -1859,8 +1859,8 @@ game_t *game_re3ps1game_ctor(game_t *this)
 
 void room_re3ps1game_init(room_t *this)
 {
+	this->loadFile = load_room;
 	this->load_background = load_background;
-	this->load = load_room;
 }
 
 static void load_background(room_t *this, int num_stage, int num_room, int num_camera)
@@ -1915,7 +1915,6 @@ static int loadroom_ard(room_t *this, const char *filename)
 
 	this->file = file;
 	this->file_length = len;
-	/*this->init(this);*/
 
 	return 1;
 }

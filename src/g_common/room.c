@@ -50,7 +50,6 @@ static char *getFilename(room_t *this, int stage, int room);
 static void loadFile(room_t *this, int stage, int room);
 
 static void load(room_t *this, int stage, int room);
-static void init(room_t *this);
 
 static void load_background(room_t *this, int stage, int room, int camera);
 static void load_bgmask(room_t *this, int stage, int room, int camera);
@@ -66,6 +65,7 @@ static void getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
 static void initMasks(room_t *this, int num_camera);
 static void drawMasks(room_t *this, int num_camera);
 
+static void displayTexts(room_t *this, int num_lang);
 static void getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
 
 static int getNumCollisions(room_t *this);
@@ -79,7 +79,7 @@ room_t *room_ctor(void)
 {
 	room_t *this;
 
-	logMsg(2, "room: ctor\n");
+	logMsg(2, __FILE__ ": ctor\n");
 
 	this = (room_t *) calloc(1, sizeof(room_t));
 	if (!this) {
@@ -92,7 +92,6 @@ room_t *room_ctor(void)
 	this->loadFile = loadFile;
 
 	this->load = load;
-	this->init = init;
 
 	this->load_background = load_background;
 	this->load_bgmask = load_bgmask;
@@ -106,6 +105,7 @@ room_t *room_ctor(void)
 	this->initMasks = initMasks;
 	this->drawMasks = drawMasks;
 
+	this->displayTexts = displayTexts;
 	this->getText = getText;
 
 	this->getNumCollisions = getNumCollisions;
@@ -123,7 +123,7 @@ room_t *room_ctor(void)
 
 static void dtor(room_t *this)
 {
-	logMsg(2, "room: dtor\n");
+	logMsg(2, __FILE__ ": dtor\n");
 
 	unload_background(this);
 	unload_bgmask(this);
@@ -149,21 +149,20 @@ static void loadFile(room_t *this, int stage, int room)
 		return;
 	}
 
-	logMsg(1, "room: Loading %s ...\n", filename);
+	logMsg(1, __FILE__ ": Loading %s ...\n", filename);
 
 	file = FS_Load(filename, &length);
 	if (file) {
 		this->file = file;
 		this->file_length = length;
-		this->init(this);
 
-		logMsg(2, "room: %d cameras angles, %d camera switches, %d boundaries\n",
+		logMsg(2, __FILE__ ": %d cameras angles, %d camera switches, %d boundaries\n",
 			this->num_cameras, this->getNumCamSwitches(this), this->getNumBoundaries(this));
 
 		retval = 1;
 	}
 
-	logMsg(1, "room: %s loading %s ...\n",
+	logMsg(1, __FILE__ ": %s loading %s ...\n",
 		retval ? "Done" : "Failed",
 		filename);
 
@@ -172,6 +171,8 @@ static void loadFile(room_t *this, int stage, int room)
 
 static void load(room_t *this, int stage, int room)
 {
+	logMsg(1, __FILE__ ":load\n");
+
 	unload(this);
 
 	this->loadFile(this, stage, room);
@@ -189,10 +190,6 @@ static void load(room_t *this, int stage, int room)
 	this->num_cameras = this->getNumCameras(this);
 }
 
-static void init(room_t *this)
-{
-}
-
 static void load_background(room_t *this, int stage, int room, int camera)
 {
 	unload_background(this);
@@ -205,7 +202,7 @@ static void load_bgmask(room_t *this, int stage, int room, int camera)
 
 static void unload(room_t *this)
 {
-	logMsg(2, "room: unload\n");
+	logMsg(2, __FILE__ ": unload\n");
 
 	if (this->doors) {
 		free(this->doors);
@@ -230,7 +227,7 @@ static void unload(room_t *this)
 
 static void unload_background(room_t *this)
 {
-	logMsg(2, "room: unloadbackground\n");
+	logMsg(2, __FILE__ ": unloadbackground\n");
 
 	if (this->background) {
 		free(this->background);
@@ -240,7 +237,7 @@ static void unload_background(room_t *this)
 
 static void unload_bgmask(room_t *this)
 {
-	logMsg(2, "room: unloadbgmask\n");
+	logMsg(2, __FILE__ ": unloadbgmask\n");
 
 	if (this->bg_mask) {
 		free(this->bg_mask);
@@ -274,6 +271,10 @@ static void initMasks(room_t *this, int num_camera)
 }
 
 static void drawMasks(room_t *this, int num_camera)
+{
+}
+
+static void displayTexts(room_t *this, int num_lang)
 {
 }
 

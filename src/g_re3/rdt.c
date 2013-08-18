@@ -54,8 +54,6 @@ room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room)
 		return NULL;
 	}
 
-	room->init = rdt3_init;
-
 	room->getNumCameras = rdt2_rid_getNumCameras;
 	room->getCamera = rdt2_rid_getCamera;
 
@@ -68,6 +66,7 @@ room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room)
 	room->initMasks = rdt2_pri_initMasks;
 	room->drawMasks = rdt2_pri_drawMasks;
 
+	room->displayTexts = displayTexts;
 	room->getText = rdt2_msg_getText;
 
 	room->scriptInit = rdt3_scd_scriptInit;
@@ -89,16 +88,9 @@ room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room)
 			break;
 	}
 
+	/*rdt3_sca_init(room);*/
+	
 	return room;
-}
-
-void rdt3_init(room_t *this)
-{
-	/* Display texts */
-	displayTexts(this, 0);	/* language 1 */
-	displayTexts(this, 1);	/* language 2 */
-
-	rdt3_sca_init(this);
 }
 
 static void displayTexts(room_t *this, int num_lang)

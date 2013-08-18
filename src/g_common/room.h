@@ -59,7 +59,6 @@ struct room_s {
 	void (*loadFile)(room_t *this, int stage, int room);
 
 	void (*load)(room_t *this, int stage, int room);
-	void (*init)(room_t *this);
 
 	void (*load_background)(room_t *this, int stage, int room, int camera);
 	void (*load_bgmask)(room_t *this, int stage, int room, int camera);
@@ -98,6 +97,7 @@ struct room_s {
 	void (*drawMasks)(room_t *this, int num_camera);
 
 	/*--- Texts ---*/
+	void (*displayTexts)(room_t *this, int num_lang);
 	void (*getText)(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
 
 	/*--- Script execution ---*/

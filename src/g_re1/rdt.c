@@ -38,7 +38,7 @@
 
 /*--- Functions prototypes ---*/
 
-static void displayText(room_t *this, int num_lang);
+static void displayTexts(room_t *this, int num_lang);
 
 /*--- Functions ---*/
 
@@ -50,8 +50,6 @@ room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
 	if (!room) {
 		return NULL;
 	}
-
-	room->init = rdt1_init;
 
 	room->getNumCameras = rdt1_rid_getNumCameras;
 	room->getCamera = rdt1_rid_getCamera;
@@ -65,6 +63,7 @@ room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
 	room->initMasks = rdt1_pri_initMasks;
 	room->drawMasks = rdt1_pri_drawMasks;
 
+	room->displayTexts = displayTexts;
 	room->getText = rdt1_msg_getText;
 
 	room->scriptInit = rdt1_scd_scriptInit;
@@ -87,11 +86,6 @@ room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
 			break;
 	}
 
-	return room;
-}
-
-void rdt1_init(room_t *this)
-{
 /*	rdt1_header_t *rdt_header;
 	int i;
 
@@ -100,13 +94,13 @@ void rdt1_init(room_t *this)
 		logMsg(2, "RDT header[%d]: 0x%08x\n", i, rdt_header->offsets[i]);
 	}
 */
-	/* Display text */
-	displayText(this, 0);
 
-	rdt1_sca_init(this);
+	/*rdt1_sca_init(room);*/
+
+	return room;
 }
 
-static void displayText(room_t *this, int num_lang)
+static void displayTexts(room_t *this, int num_lang)
 {
 	rdt1_header_t *rdt_header;
 	int room_lang = RDT1_OFFSET_TEXT /*(num_lang==0) ? RDT2_OFFSET_TEXT_LANG1 : RDT2_OFFSET_TEXT_LANG2*/;

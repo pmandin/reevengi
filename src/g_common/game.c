@@ -182,8 +182,20 @@ static void setRoom(game_t *this, int new_stage, int new_room)
 	}
 
 	room->loadFile(room, new_stage, new_room);
+	if (!room->file) {
+		room->dtor(room);
+		return;
+	}
 
 	room_map_init_data(room);
+
+	room->num_cameras = room->getNumCameras(room);
+
+	/* Display texts */
+	room->displayTexts(room, 0);
+	if ((game->major == GAME_RE2) || (game->major == GAME_RE3)) {
+		room->displayTexts(room, 1);
+	}
 
 	/* Dump scripts if wanted */
 	if (params.dump_script) {
@@ -192,8 +204,6 @@ static void setRoom(game_t *this, int new_stage, int new_room)
 	}
 	room->scriptExec(room, ROOM_SCRIPT_INIT);
 	room->scriptExec(room, ROOM_SCRIPT_RUN);
-
-	room->num_cameras = room->getNumCameras(room);
 
 	this->room = room;
 }
