@@ -75,7 +75,7 @@ void game_re3_detect(game_t *this)
 
 game_t *game_re3_ctor(game_t *this)
 {
-	room_t *room;
+	/*room_t *room;*/
 
 	switch(this->minor) {
 		case GAME_RE3_PS1_GAME:

@@ -158,9 +158,9 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 {
 	Uint32 *hdr_offsets, skel_offset, mesh_offset;
 	int i,j;
-	emd_skel_header_t *emd_skel_header;
+	/*emd_skel_header_t *emd_skel_header;*/
 	emd_skel_relpos_t *emd_skel_relpos;
-	emd_skel_data_t *emd_skel_data;
+	/*emd_skel_data_t *emd_skel_data;*/
 	emd_mesh_header_t *emd_mesh_header;
 	emd_mesh_object_t *emd_mesh_object;
 
@@ -173,12 +173,12 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 	/* Offset 0: Skeleton */
 	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
 
-	emd_skel_header = (emd_skel_header_t *)
-		(&((char *) emd_file)[skel_offset]);
+	/*emd_skel_header = (emd_skel_header_t *)
+		(&((char *) emd_file)[skel_offset]);*/
 	emd_skel_relpos = (emd_skel_relpos_t *)
 		(&((char *) emd_file)[skel_offset+sizeof(emd_skel_header_t)]);
-	emd_skel_data = (emd_skel_data_t *)
-		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
+	/*emd_skel_data = (emd_skel_data_t *)
+		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);*/
 
 	skeleton = render.createSkel(emd_file, emd_length, texture);
 	if (!skeleton) {
@@ -299,7 +299,7 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 static int getChild(render_skel_t *this, int num_parent, int num_child)
 {
 	Uint32 *hdr_offsets, skel_offset;
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_data_t *emd_skel_data;
 	int num_meshes;
@@ -310,7 +310,7 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 	assert(num_parent>=0);
 	assert(num_child>=0);
 
-	emd_header = (emd_header_t *) this->emd_file;
+	/*emd_header = (emd_header_t *) this->emd_file;*/
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) (this->emd_file))[(this->emd_length)-16]);
@@ -335,13 +335,13 @@ static int getChild(render_skel_t *this, int num_parent, int num_child)
 static int getNumAnims(render_skel_t *this)
 {
 	Uint32 *hdr_offsets, anim_offset;
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_anim_header_t *emd_anim_header;
 
 	assert(this);
 	assert(this->emd_file);
 
-	emd_header = (emd_header_t *) this->emd_file;
+	/*emd_header = (emd_header_t *) this->emd_file;*/
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) (this->emd_file))[(this->emd_length)-16]);
@@ -358,7 +358,7 @@ static int getNumAnims(render_skel_t *this)
 static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 {
 	Uint32 *hdr_offsets, anim_offset;
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_anim_header_t *emd_anim_header;
 	int num_anims;
 
@@ -367,7 +367,7 @@ static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 	assert(num_anim>=0);
 	assert(num_frame>=0);
 
-	emd_header = (emd_header_t *) this->emd_file;
+	/*emd_header = (emd_header_t *) this->emd_file;*/
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) (this->emd_file))[(this->emd_length)-16]);
@@ -391,7 +391,7 @@ static int setAnimFrame(render_skel_t *this, int num_anim, int num_frame)
 static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z)
 {
 	Uint32 *hdr_offsets, skel_offset, anim_offset, *ptr_skel_frame;
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_skel_header_t *emd_skel_header;
 	emd_skel_anim_t	*emd_skel_anim;
 	emd_anim_header_t *emd_anim_header;
@@ -400,7 +400,7 @@ static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z
 	assert(this);
 	assert(this->emd_file);
 
-	emd_header = (emd_header_t *) this->emd_file;
+	/*emd_header = (emd_header_t *) this->emd_file;*/
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) (this->emd_file))[(this->emd_length)-16]);
@@ -448,7 +448,7 @@ static void getAnimPosition(render_skel_t *this, Sint16 *x, Sint16 *y, Sint16 *z
 static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int *z)
 {
 	Uint32 *hdr_offsets, skel_offset, anim_offset, *ptr_skel_frame;
-	emd_header_t *emd_header;
+	/*emd_header_t *emd_header;*/
 	emd_skel_header_t *emd_skel_header;
 	Sint16 *ptr_angles;
 	emd_anim_header_t *emd_anim_header;
@@ -457,7 +457,7 @@ static void getAnimAngles(render_skel_t *this, int num_mesh, int *x, int *y, int
 	assert(this);
 	assert(this->emd_file);
 
-	emd_header = (emd_header_t *) this->emd_file;
+	/*emd_header = (emd_header_t *) this->emd_file;*/
 
 	hdr_offsets = (Uint32 *)
 		(&((char *) (this->emd_file))[(this->emd_length)-16]);

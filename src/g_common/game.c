@@ -27,6 +27,7 @@
 #include "../log.h"
 
 #include "room.h"
+#include "room_map.h"
 #include "player.h"
 #include "menu.h"
 #include "game.h"

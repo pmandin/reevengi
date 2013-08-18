@@ -248,7 +248,7 @@ static void setProjection2D(room_t *this)
 
 static void setProjection3D(room_t *this)
 {
-	player_t *player=game->player;
+	/*player_t *player=game->player;*/
 	room_camera_t room_camera;
 
 	this->getCamera(this, game->num_camera, &room_camera);
@@ -302,7 +302,7 @@ static void drawMap(room_t *this, int render_grid)
 {
 	player_t *player=game->player;
 	Uint32 elapsed;
-	static int first_print=1;
+/*	static int first_print=1;*/
 /*	float angle;
 
 	angle = (clockGet() & 2047) * 360.0f / 2048.0f;
@@ -346,7 +346,7 @@ static void drawMap(room_t *this, int render_grid)
 					this->map_mode = ROOM_MAP_3D;
 					logMsg(1, "map: ROOM_MAP_3D\n");
 
-					first_print=1;
+					/*first_print=1;*/
 				} else {
 					calcMatrix(elapsed);
 				}
@@ -387,7 +387,7 @@ static void drawMap(room_t *this, int render_grid)
 					this->map_mode = ROOM_MAP_2D;
 					logMsg(1, "map: ROOM_MAP_2D\n");
 
-					first_print=1;
+					/*first_print=1;*/
 				} else {
 					calcMatrix(elapsed);
 				}

@@ -163,9 +163,9 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 {
 	Uint32 *hdr_offsets, skel_offset, mesh_offset;
 	int i,j;
-	emd_skel_header_t *emd_skel_header;
+	/*emd_skel_header_t *emd_skel_header;*/
 	emd_skel_relpos_t *emd_skel_relpos;
-	emd_skel_data_t *emd_skel_data;
+	/*emd_skel_data_t *emd_skel_data;*/
 	emd_mesh_header_t *emd_mesh_header;
 	emd_mesh_object_t *emd_mesh_object;
 	emd_header_t *emd_header;
@@ -181,12 +181,12 @@ static render_skel_t *emd_load_render_skel(void *emd_file, Uint32 emd_length, re
 	/* Offset 3: Skeleton */
 	skel_offset = SDL_SwapLE32(hdr_offsets[EMD_SKELETON]);
 
-	emd_skel_header = (emd_skel_header_t *)
-		(&((char *) emd_file)[skel_offset]);
+	/*emd_skel_header = (emd_skel_header_t *)
+		(&((char *) emd_file)[skel_offset]);*/
 	emd_skel_relpos = (emd_skel_relpos_t *)
 		(&((char *) emd_file)[skel_offset+sizeof(emd_skel_header_t)]);
-	emd_skel_data = (emd_skel_data_t *)
-		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);
+	/*emd_skel_data = (emd_skel_data_t *)
+		(&((char *) emd_file)[skel_offset+SDL_SwapLE16(emd_skel_header->relpos_offset)]);*/
 
 	skeleton = render.createSkel(emd_file, emd_length, texture);
 	if (!skeleton) {
