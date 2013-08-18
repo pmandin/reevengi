@@ -24,10 +24,17 @@
 #include "../log.h"
 
 #include "../g_common/room.h"
+#include "../g_common/game.h"
 
+#include "game_re1.h"
 #include "rdt.h"
 #include "rdt_sca.h"
 #include "rdt_msg.h"
+#include "rdt_rid.h"
+#include "rdt_rvd.h"
+#include "rdt_pri.h"
+#include "rdt_scd.h"
+#include "rdt_scd_dump.h"
 
 /*--- Functions prototypes ---*/
 
@@ -35,8 +42,64 @@ static void displayText(room_t *this, int num_lang);
 
 /*--- Functions ---*/
 
+room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room)
+{
+	room_t *room;
+
+	room = room_ctor();
+	if (!room) {
+		return NULL;
+	}
+
+	room->init = rdt1_init;
+
+	room->getNumCameras = rdt1_rid_getNumCameras;
+	room->getCamera = rdt1_rid_getCamera;
+
+	room->getNumCamSwitches = rdt1_rvd_getNumCamSwitches;
+	room->getCamSwitch = rdt1_rvd_getCamSwitch;
+
+	room->getNumBoundaries = rdt1_rvd_getNumBoundaries;
+	room->getBoundary = rdt1_rvd_getBoundary;
+
+	room->initMasks = rdt1_pri_initMasks;
+	room->drawMasks = rdt1_pri_drawMasks;
+
+	room->getText = rdt1_msg_getText;
+
+	room->scriptInit = rdt1_scd_scriptInit;
+	room->scriptGetInstLen = rdt1_scd_scriptGetInstLen;
+	room->scriptExecInst = rdt1_scd_scriptExecInst;
+
+	room->scriptDump = rdt1_scd_scriptDump;
+
+	room->getNumCollisions = rdt1_sca_getNumCollisions;
+	room->drawMapCollision = rdt1_sca_drawMapCollision;
+
+	switch(this->minor) {
+		case GAME_RE1_PS1_DEMO:
+		case GAME_RE1_PS1_GAME:
+			room_re1ps1_init(room);
+			break;
+		case GAME_RE1_PC_DEMO:
+		case GAME_RE1_PC_GAME:
+			room_re1pc_init(room);
+			break;
+	}
+
+	return room;
+}
+
 void rdt1_init(room_t *this)
 {
+/*	rdt1_header_t *rdt_header;
+	int i;
+
+	rdt_header = (rdt1_header_t *) this->file;
+	for (i=0; i<19; i++) {
+		logMsg(2, "RDT header[%d]: 0x%08x\n", i, rdt_header->offsets[i]);
+	}
+*/
 	/* Display text */
 	displayText(this, 0);
 
@@ -60,6 +123,8 @@ static void displayText(room_t *this, int num_lang)
 		logMsg(1, " No texts to display\n");
 		return;
 	}
+
+	logMsg(2, "txt offset: 0x%08x\n", offset);
 
 	txtOffsets = (Uint16 *) &((Uint8 *) this->file)[offset];
 

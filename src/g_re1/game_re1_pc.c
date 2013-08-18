@@ -134,11 +134,6 @@ game_t *game_re1pc_ctor(game_t *this)
 		}
 	}
 
-	this->room->getFilename = getFilename;
-
-	this->room->load_background = load_background;
-/*	this->room->load_bgmask = load_bgmask;*/
-
 	this->movies_list = (char **) re1pcgame_movies;
 
 	this->load_font = load_font;
@@ -146,6 +141,14 @@ game_t *game_re1pc_ctor(game_t *this)
 	this->player->load_model = load_model;
 
 	return this;
+}
+
+void room_re1pc_init(room_t *this)
+{
+	this->getFilename = getFilename;
+
+	this->load_background = load_background;
+/*	this->load_bgmask = load_bgmask;*/
 }
 
 static char *getFilename(room_t *this, int num_stage, int num_room, int num_camera)

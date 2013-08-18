@@ -29,13 +29,6 @@
 
 #include "game_re1.h"
 #include "rdt.h"
-#include "rdt_msg.h"
-#include "rdt_rid.h"
-#include "rdt_rvd.h"
-#include "rdt_pri.h"
-#include "rdt_scd.h"
-#include "rdt_scd_dump.h"
-#include "rdt_sca.h"
 
 /*--- Constants ---*/
 
@@ -95,8 +88,6 @@ void game_re1_detect(game_t *this)
 
 game_t *game_re1_ctor(game_t *this)
 {
-	room_t *room;
-
 	switch(this->minor) {
 		case GAME_RE1_PS1_DEMO:
 		case GAME_RE1_PS1_GAME:
@@ -111,32 +102,7 @@ game_t *game_re1_ctor(game_t *this)
 	this->get_char = get_char;
 	this->player->get_model_name = get_model_name;
 
-	room = this->room;
-
-	room->init = rdt1_init;
-
-	room->getNumCameras = rdt1_rid_getNumCameras;
-	room->getCamera = rdt1_rid_getCamera;
-
-	room->getNumCamSwitches = rdt1_rvd_getNumCamSwitches;
-	room->getCamSwitch = rdt1_rvd_getCamSwitch;
-
-	room->getNumBoundaries = rdt1_rvd_getNumBoundaries;
-	room->getBoundary = rdt1_rvd_getBoundary;
-
-	room->initMasks = rdt1_pri_initMasks;
-	room->drawMasks = rdt1_pri_drawMasks;
-
-	room->getText = rdt1_msg_getText;
-
-	room->scriptInit = rdt1_scd_scriptInit;
-	room->scriptGetInstLen = rdt1_scd_scriptGetInstLen;
-	room->scriptExecInst = rdt1_scd_scriptExecInst;
-
-	room->scriptDump = rdt1_scd_scriptDump;
-
-	room->getNumCollisions = rdt1_sca_getNumCollisions;
-	room->drawMapCollision = rdt1_sca_drawMapCollision;
+	this->room_ctor = rdt1_room_ctor;
 
 #if 0
 	/* Init default room and player pos */

@@ -33,6 +33,9 @@
 
 /*--- External types ---*/
 
+typedef struct room_s room_t;
+typedef struct game_s game_t;
+
 /*--- Types ---*/
 
 typedef struct {
@@ -50,6 +53,8 @@ typedef struct {
 } rdt1_header_t;
 
 /*--- Functions ---*/
+
+room_t *rdt1_room_ctor(game_t *this, int num_stage, int num_room);
 
 void rdt1_init(room_t *this);
 
