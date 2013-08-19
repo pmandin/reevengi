@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 #include "../log.h"
+#include "../parameters.h"
 
 #include "../g_common/room.h"
 #include "../g_common/game.h"
@@ -68,7 +69,6 @@ room_t *rdt2_room_ctor(game_t *this, int num_stage, int num_room)
 	room->initMasks = rdt2_pri_initMasks;
 	room->drawMasks = rdt2_pri_drawMasks;
 
-	room->displayTexts = displayTexts;
 	room->getText = rdt2_msg_getText;
 
 	room->scriptInit = rdt2_scd_scriptInit;
@@ -104,6 +104,15 @@ room_t *rdt2_room_ctor(game_t *this, int num_stage, int num_room)
 static void postLoad(room_t *this)
 {
 	/*rdt2_sca_init(room);*/
+
+	displayTexts(this, 0);
+	displayTexts(this, 1);
+
+	/* Dump scripts if wanted */
+	if (params.dump_script) {
+		this->scriptDump(this, ROOM_SCRIPT_INIT);
+		this->scriptDump(this, ROOM_SCRIPT_RUN);
+	}
 }
 
 static void displayTexts(room_t *this, int num_lang)

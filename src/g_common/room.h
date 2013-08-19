@@ -103,7 +103,6 @@ struct room_s {
 	void (*drawMasks)(room_t *this, int num_camera);
 
 	/*--- Texts ---*/
-	void (*displayTexts)(room_t *this, int num_lang);
 	void (*getText)(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
 
 	/*--- Script execution ---*/

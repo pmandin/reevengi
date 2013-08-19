@@ -64,7 +64,6 @@ static void getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
 static void initMasks(room_t *this, int num_camera);
 static void drawMasks(room_t *this, int num_camera);
 
-static void displayTexts(room_t *this, int num_lang);
 static void getText(room_t *this, int lang, int num_text, char *buffer, int bufferLen);
 
 static int getNumCollisions(room_t *this);
@@ -101,7 +100,6 @@ room_t *room_ctor(game_t *game, int num_stage, int num_room)
 	this->initMasks = initMasks;
 	this->drawMasks = drawMasks;
 
-	this->displayTexts = displayTexts;
 	this->getText = getText;
 
 	this->getNumCollisions = getNumCollisions;
@@ -257,10 +255,6 @@ static void initMasks(room_t *this, int num_camera)
 }
 
 static void drawMasks(room_t *this, int num_camera)
-{
-}
-
-static void displayTexts(room_t *this, int num_lang)
 {
 }
 

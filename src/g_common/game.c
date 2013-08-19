@@ -196,17 +196,6 @@ static void setRoom(game_t *this, int new_stage, int new_room)
 	logMsg(1, "room: %d cameras angles, %d camera switches, %d boundaries\n",
 		room->num_cameras, room->getNumCamSwitches(room), room->getNumBoundaries(room));
 
-	/* Display texts */
-	room->displayTexts(room, 0);
-	if ((game->major == GAME_RE2) || (game->major == GAME_RE3)) {
-		room->displayTexts(room, 1);
-	}
-
-	/* Dump scripts if wanted */
-	if (params.dump_script) {
-		room->scriptDump(room, ROOM_SCRIPT_INIT);
-		room->scriptDump(room, ROOM_SCRIPT_RUN);
-	}
 	room->scriptExec(room, ROOM_SCRIPT_INIT);
 	room->scriptExec(room, ROOM_SCRIPT_RUN);
 
