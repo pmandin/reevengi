@@ -23,6 +23,8 @@
 
 #include <SDL.h>
 
+#include "../log.h"
+
 #include "render_texture.h"
 
 /*--- Variables ---*/
@@ -61,6 +63,8 @@ void list_render_texture_add(render_texture_t *texture)
 		return;
 	}
 
+	logMsg(2, "render_texture_list: add texture 0x%p at position %d\n", texture, render_texture_list_size);
+
 	render_texture_list = new_list;
 	render_texture_list[render_texture_list_size++] = texture;
 }
@@ -75,6 +79,8 @@ void list_render_texture_remove(render_texture_t *texture)
 
 	for (i=0; i<render_texture_list_size; i++) {
 		if (render_texture_list[i] == texture) {
+			logMsg(2, "render_texture_list: remove texture 0x%p at position %d\n", texture, i);
+
 			render_texture_list[i] = NULL;
 			return;
 		}
@@ -92,6 +98,8 @@ void list_render_texture_download(void)
 	for (i=0; i<render_texture_list_size; i++) {
 		render_texture_t *texture = render_texture_list[i];
 		if (texture) {
+			logMsg(2, "render_texture_list: download texture 0x%p at position %d\n", texture, i);
+
 			texture->download(texture);
 		}
 	}
