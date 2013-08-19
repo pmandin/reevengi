@@ -92,7 +92,7 @@ static void *ard_loadFile(const char *filename, int num_object, int *file_length
 		return NULL;
 	}
 
-	logMsg(3, __FILE__ ": Loading embedded file from offset 0x%08x\n", offset);
+	logMsg(3, "ard: Loading embedded file from offset 0x%08x\n", offset);
 
 	memcpy(file, &ard_file[offset], len);
 	free(ard_file);

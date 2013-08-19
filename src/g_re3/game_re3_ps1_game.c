@@ -25,11 +25,11 @@
 
 #include <SDL.h>
 
-#include "filesystem.h"
-#include "parameters.h"
-#include "log.h"
-#include "render.h"
-#include "background_bss.h"
+#include "../filesystem.h"
+#include "../parameters.h"
+#include "../log.h"
+#include "../render.h"
+#include "../background_bss.h"
 
 #include "../g_common/room.h"
 #include "../g_common/player.h"

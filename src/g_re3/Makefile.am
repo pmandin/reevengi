@@ -7,8 +7,6 @@ libg_re3_a_SOURCES = emd.c sld.c game_re3.c game_re3_pc.c \
 AM_CFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
 AM_CXXFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
 
-INCLUDES = -I$(top_srcdir)/src
-
 EXTRA_DIST = emd.h sld.h game_re3.h \
 	rdt_scd.h rdt_scd_common.h rdt_scd_dump.h rdt_sca.h \
 	rdt.h ard.h \

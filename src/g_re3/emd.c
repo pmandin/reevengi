@@ -23,11 +23,11 @@
 
 #include <SDL.h>
 
-#include "filesystem.h"
-#include "video.h"
-#include "render.h"
-#include "log.h"
-#include "render_skel.h"
+#include "../filesystem.h"
+#include "../video.h"
+#include "../render.h"
+#include "../log.h"
+#include "../render_skel.h"
 
 /*--- Defines ---*/
 

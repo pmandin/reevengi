@@ -31,10 +31,10 @@
 #include <SDL_image.h>
 #endif
 
-#include "filesystem.h"
-#include "parameters.h"
-#include "log.h"
-#include "render.h"
+#include "../filesystem.h"
+#include "../parameters.h"
+#include "../log.h"
+#include "../render.h"
 
 #include "../g_common/game.h"
 #include "../g_common/player.h"
