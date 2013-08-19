@@ -49,12 +49,6 @@
 #include "video.h"
 #include "render.h"
 
-/*--- Defines ---*/
-
-#define KEY_GAMMA_DOWN		SDLK_a
-#define KEY_GAMMA_UP		SDLK_q
-#define KEY_GAMMA_RESET		SDLK_w
-
 /*--- Global variables ---*/
 
 game_t *game;
@@ -165,9 +159,6 @@ int main(int argc, char **argv)
 	}
 
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
-#ifdef ENABLE_GAMMA
-	SDL_SetGamma(params.gamma, params.gamma, params.gamma);
-#endif
 
 	/* Force a mode switch */
 	new_width = video.width;
@@ -254,26 +245,6 @@ static int viewer_loop(void)
 							switch_mode=1;
 						}
 						break;
-#ifdef ENABLE_GAMMA
-					case KEY_GAMMA_DOWN:
-						params.gamma -= 0.1;
-						if (params.gamma<0.1) {
-							params.gamma = 0.1;
-						}
-						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
-						break;
-					case KEY_GAMMA_UP:
-						params.gamma += 0.1;
-						if (params.gamma>2.0) {
-							params.gamma = 2.0;
-						}
-						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
-						break;
-					case KEY_GAMMA_RESET:
-						params.gamma = 1.0;
-						SDL_SetGamma(params.gamma, params.gamma, params.gamma);
-						break;						
-#endif
 					default:
 						switch(params.viewmode) {
 							case VIEWMODE_BACKGROUND:

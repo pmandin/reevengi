@@ -9,8 +9,6 @@
 
 #define ENABLE_OPENGL 1
 
-/*#define ENABLE_GAMMA 1*/
-
 /* Enabled in VS project file */
 /*#define ENABLE_MOVIES 1*/
 

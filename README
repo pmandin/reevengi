@@ -39,10 +39,6 @@ Use at your own risks.
   Default is current directory.
   Example: -basedir /demos/re2demo
 
-"-gamma <value>" to change the gamma correction of the lightmaps.
-  Default is 1.0 .
-  Example: -gamma 1.2
-
 "-movie" to enable movie player mode.
 
 "-opengl" to enable OpenGL renderer.
@@ -95,10 +91,6 @@ F6		toggle between depth and color buffer
 F10		toggle menu on/off
 Alt+Enter	toggle between fullscreen and windowed mode.
 
-A		decrement gamma
-Q		increment gamma
-W		reset gamma
-
 Z		previous stage / previous movie
 S		next stage / next movie
 X		reset stage / reset movie
@@ -121,7 +113,7 @@ M		toggle animation (off/forward/backward)
 
 Y		toggle grid and origin display
 H		toggle background restoration display
-N		toggle map display.
+Tab		toggle map display.
 		Camera switches and boundary checks are enabled.
 		WHITE: camera, ORANGE: camera switch,
 		RED: boundary, GREEN ARROW: you, BLUE: door.

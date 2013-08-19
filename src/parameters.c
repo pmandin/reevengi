@@ -34,7 +34,6 @@
 
 #define DEFAULT_BASEDIR "."
 #define DEFAULT_VERBOSE 0
-#define DEFAULT_GAMMA 1.0f
 #define DEFAULT_USE_OPENGL 0
 #define DEFAULT_ASPECT_X 4
 #define DEFAULT_ASPECT_Y 3
@@ -51,7 +50,6 @@ params_t params = {
 	.verbose = DEFAULT_VERBOSE,
 	.log_file = PACKAGE_NAME ".log",
 	.basedir = DEFAULT_BASEDIR,
-	.gamma = DEFAULT_GAMMA,
 	.viewmode = VIEWMODE_BACKGROUND,
 	.use_opengl = DEFAULT_USE_OPENGL,
 	.aspect_x = DEFAULT_ASPECT_X,
@@ -103,12 +101,6 @@ int CheckParm(int argc,char **argv)
 	p = ParmPresent("-logfile", argc, argv);
 	if (p && p < argc-1) {
 		params.log_file = argv[p+1];
-	}
-
-	/*--- Check for gamma ---*/
-	p = ParmPresent("-gamma", argc, argv);
-	if (p && p < argc-1) {
-		params.gamma = atof(argv[p+1]);
 	}
 
 	/*--- Check for base directory ---*/
@@ -212,7 +204,6 @@ void DisplayUsage(void)
 	printf("Usage:\n");
 	printf("  [-basedir </path/to/gamedir>] (default=%s)\n", DEFAULT_BASEDIR);
 	printf("  [-movie] (switch to movie player mode)\n");
-	printf("  [-gamma <n>] (default=%.3f)\n", DEFAULT_GAMMA);
 	printf("  [-verbose <n>] (log verbosity, default=%d)\n", DEFAULT_VERBOSE);
 	printf("  [-logfile <filename>] (default=%s.log)\n", PACKAGE_NAME);
 	printf("  [-opengl] (enable opengl mode)\n");

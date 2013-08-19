@@ -43,10 +43,8 @@ esac
 # Checks for target
 
 SYS_SDLIMAGE_ADDLIBS=""
-WANT_GAMMA="yes"
 case "$host" in
 	*-*-mingw* | *-*-cygwin*)
-		WANT_GAMMA="no"
 		;;
 	*-*-mint*)
 		SYS_SDLIMAGE_ADDLIBS="-ltiff -ljpeg -lpng"
@@ -142,13 +140,6 @@ fi
 #if test "x$PKG_CONFIG" != "x"; then
 #	PKG_CHECK_MODULES([LIBCDIO], [libcdio])
 #fi
-
-# Gamma setting
-# Some SDL versions have a bug using windib driver that makes it crash
-
-if test "x$WANT_GAMMA" = "xyes"; then
-	AC_DEFINE(ENABLE_GAMMA, 1, [Define if you want gamma setting])
-fi
 
 # Movies using FFmpeg
 
