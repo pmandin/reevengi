@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
 	if (params.viewmode == VIEWMODE_MOVIE) {	
 #ifdef ENABLE_MOVIES
-		game->switch_movie(game));
+		game->switch_movie(game);
 		params.use_opengl = 0;
 #else
 		logMsg(0,"Movie player disabled\n");
