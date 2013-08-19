@@ -402,7 +402,11 @@ static void processPlayerMovement(void)
 		return;
 	}
 
-	logMsg(2, "player: %f,%f,%f\n",player->x,player->y,player->z);
+	if (player_moveforward || player_movebackward || player_moveup || player_movedown
+	   /*|| player_turnright || player_turnleft*/)
+	{
+		logMsg(2, "player: %f,%f,%f\n",player->x,player->y,player->z);
+	}
 
 	was_inside = (room->checkBoundary(room, game->num_camera, player->x, player->z) == 0);
 
