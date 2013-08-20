@@ -194,7 +194,7 @@ static void dec_dct_out(bs_context_t *ctxt,Uint16 *image,int size)
 
 	for(;size>0; size-=blocksize>>1,image+=blocksize) {
 		rl2blk(ctxt, blk);
-		yuv2rgb24(blk, (Uint8 *) image);
+		yuv2rgb24(blk, (Uint8 (*)[3]) image);
 	}
 }
 
@@ -286,7 +286,7 @@ SDL_Surface *mdec_surface(Uint8 *source, int width, int height, int row_offset)
 {
 	SDL_Surface *surface;
 	Uint8 *surface_line;
-	int x,y;
+	int /*x,*/y;
 	Uint32 rmask,gmask,bmask;
 
 	/* Source is BGR */

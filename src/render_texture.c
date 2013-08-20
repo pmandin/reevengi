@@ -199,7 +199,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	int w,h, tim_type;
 	tim_size_t *tim_size;
 	SDL_PixelFormat *fmt = video.screen->format /*&(this->format)*/;
-	int bytes_per_pixel;
+/*	int bytes_per_pixel;*/
 
 	if (!this || !tim_ptr) {
 		return;
@@ -227,7 +227,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	h = SDL_SwapLE16(tim_size->height);
 
 	tim_type = SDL_SwapLE32(tim_header->type);
-	bytes_per_pixel = 1;
+/*	bytes_per_pixel = 1;*/
 	paletted = 1;
 	switch(tim_type) {
 		case TIM_TYPE_4:
@@ -241,10 +241,10 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 		case TIM_TYPE_16:
 			logMsg(3, "texture: 16 bits source\n");
 			paletted = 0;
-			bytes_per_pixel=2;
+/*			bytes_per_pixel=2;
 			if (fmt->BytesPerPixel>2) {
 				bytes_per_pixel=4;
-			}
+			}*/
 			break;
 	}
 	if ((w==0) || (h==0)) {
