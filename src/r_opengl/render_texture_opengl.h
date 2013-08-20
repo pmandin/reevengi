@@ -22,6 +22,10 @@
 #ifndef RENDER_TEXTURE_OPENGL_H
 #define RENDER_TEXTURE_OPENGL_H 1
 
+/*--- External types ---*/
+
+typedef struct render_texture_s render_texture_t;
+
 /*--- Types ---*/
 
 typedef struct render_texture_gl_s render_texture_gl_t;

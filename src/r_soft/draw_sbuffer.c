@@ -26,11 +26,12 @@
 #include <SDL.h>
 #include <assert.h>
 
-#include "video.h"
-#include "parameters.h"
+#include "../video.h"
+#include "../parameters.h"
+#include "../render.h"
+#include "../draw.h"
+
 #include "dither.h"
-#include "render.h"
-#include "draw.h"
 #include "draw_simple.h"
 
 /*--- Defines ---*/

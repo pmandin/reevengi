@@ -30,13 +30,13 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include "dyngl.h"
+#include "../video.h"
+#include "../render.h"
+#include "../log.h"
+#include "../render_texture.h"
 
-#include "render_texture.h"
+#include "dyngl.h"
 #include "render_mesh_opengl.h"
-#include "video.h"
-#include "render.h"
-#include "log.h"
 
 /*--- Defines ---*/
 

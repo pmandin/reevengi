@@ -24,8 +24,9 @@
 
 #include <SDL.h>
 
-#include "video.h"
-#include "render.h"
+#include "../video.h"
+#include "../render.h"
+
 #include "matrix.h"
 
 /*--- Functions ---*/

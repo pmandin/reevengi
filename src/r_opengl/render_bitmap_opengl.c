@@ -28,12 +28,12 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include "dyngl.h"
+#include "../video.h"
+#include "../render.h"
+#include "../render_bitmap.h"
 
-#include "video.h"
-#include "render.h"
+#include "dyngl.h"
 #include "render_texture_opengl.h"
-#include "render_bitmap.h"
 
 /*--- Functions prototypes ---*/
 

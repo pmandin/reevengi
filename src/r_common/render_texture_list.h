@@ -21,7 +21,11 @@
 #ifndef RENDER_TEXTURE_LIST_H
 #define RENDER_TEXTURE_LIST_H 1
 
-#include "render_texture.h"
+/*#include "render_texture.h"*/
+
+/*--- External types ---*/
+
+typedef struct render_texture_s render_texture_t;
 
 /*--- Functions prototypes ---*/
 

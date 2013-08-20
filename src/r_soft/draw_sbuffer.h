@@ -22,6 +22,10 @@
 #ifndef DRAW_SBUFFER_H
 #define DRAW_SBUFFER_H 1
 
+/*--- External types ---*/
+
+typedef struct draw_s draw_t;
+
 /*--- Functions prototypes ---*/
 
 void draw_init_sbuffer(draw_t *draw);

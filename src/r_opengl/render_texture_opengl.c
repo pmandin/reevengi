@@ -28,17 +28,18 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include "dyngl.h"
+#include "../parameters.h"
+#include "../log.h"
+#include "../video.h"
+#include "../background_tim.h"
+#include "../render_texture.h"
 
-#include "parameters.h"
-#include "log.h"
-#include "video.h"
-
-#include "background_tim.h"
-#include "render_texture.h"
-#include "render_texture_opengl.h"
-#include "../r_soft/dither.h"
 #include "../r_common/render_texture_list.h"
+
+#include "../r_soft/dither.h"
+
+#include "dyngl.h"
+#include "render_texture_opengl.h"
 
 /*--- Functions prototypes ---*/
 

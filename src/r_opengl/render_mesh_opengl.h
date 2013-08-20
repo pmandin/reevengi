@@ -22,7 +22,11 @@
 #ifndef RENDER_MESH_OPENGL_H
 #define RENDER_MESH_OPENGL_H 1
 
-#include "render_mesh.h"
+/*#include "render_mesh.h"*/
+
+/*--- External types ---*/
+
+typedef struct render_mesh_s render_mesh_t;
 
 /*--- Types ---*/
 

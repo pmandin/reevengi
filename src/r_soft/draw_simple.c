@@ -21,12 +21,13 @@
 
 #include <SDL.h>
 
-#include "video.h"
-#include "parameters.h"
+#include "../video.h"
+#include "../parameters.h"
+#include "../render.h"
+#include "../log.h"
+#include "../draw.h"
+
 #include "dither.h"
-#include "render.h"
-#include "draw.h"
-#include "log.h"
 
 /*--- Defines ---*/
 

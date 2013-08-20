@@ -23,9 +23,9 @@
 
 #include <SDL.h>
 
-#include "video.h"
-#include "render.h"
-#include "render_skel.h"
+#include "../video.h"
+#include "../render.h"
+#include "../render_skel.h"
 
 /*--- Variables ---*/
 

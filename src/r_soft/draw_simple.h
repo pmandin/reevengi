@@ -22,6 +22,10 @@
 #ifndef DRAW_SIMPLE_H
 #define DRAW_SIMPLE_H 1
 
+/*--- External types ---*/
+
+typedef struct draw_s draw_t;
+
 /*--- Functions prototypes ---*/
 
 void draw_init_simple(draw_t *draw);
