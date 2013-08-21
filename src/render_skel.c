@@ -192,6 +192,10 @@ static void draw(render_skel_t *this, int num_parent)
 
 	this->getAnimAngles(this, num_parent, &angles[0], &angles[1], &angles[2]);
 
+	/*if (num_parent == 0) {
+		logMsg(2, "skel: %d,%d,%d\n", skel_mesh->x, skel_mesh->y, skel_mesh->z);
+	}*/
+
 	/* Draw mesh */
 	render.push_matrix();
 	render.translate(
