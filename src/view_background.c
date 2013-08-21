@@ -550,7 +550,7 @@ void view_background_draw(void)
 #ifndef ENABLE_DEBUG_POS
 		if (refresh_player_pos) {
 			player->x = room_camera.to_x;
-			player->y = room_camera.to_y;
+			player->y = 0 /*room_camera.to_y*/;
 			player->z = room_camera.to_z;
 			refresh_player_pos = 0;
 		}
@@ -589,7 +589,7 @@ static void drawPlayer(void)
 	render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
 	if (player->model) {
-		Sint16 posx,posy,posz;
+		/*Sint16 posx,posy,posz;*/
 		Uint32 cur_tick = clockGet();
 
 		if (render_model!=prev_render_model) {
@@ -615,8 +615,10 @@ static void drawPlayer(void)
 
 		render.set_blending(1);
 
-		player->model->getAnimPosition(player->model, &posx, &posy, &posz);
+		/*player->model->getAnimPosition(player->model, &posx, &posy, &posz);
 		render.translate((float) -posx, (float) -posy, (float) -posz);
+
+		logMsg(1,"player: %f %f %f, %d,%d,%d\n",player->x, player->y, player->z, posx,posy,posz);*/
 
 		player->model->draw(player->model, 0);
 		render.set_blending(0);
