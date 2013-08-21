@@ -41,7 +41,7 @@
 
 #include "dyngl.h"
 #include "render_texture_opengl.h"
-#include "render_skel_opengl.h"
+#include "render_skel.h"
 
 /*--- Functions prototypes ---*/
 

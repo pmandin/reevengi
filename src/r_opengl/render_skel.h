@@ -22,8 +22,6 @@
 #ifndef RENDER_SKEL_OPENGL_H
 #define RENDER_SKEL_OPENGL_H 1
 
-/*#include "render_skel.h"*/
-
 /*--- External types ---*/
 
 typedef struct render_skel_s render_skel_t;
