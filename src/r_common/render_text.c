@@ -48,7 +48,7 @@ void render_text(const char *str, int x, int y)
 		render.texture->w,render.texture->h);
 	render.bitmap.setDepth(0, 0.0f);
 
-	while (c=*str++) {
+	while ( (c=*str++) ) {
 		if (c>32) {
 			game->get_char(game, c, &sx, &sy, &sw, &sh);
 

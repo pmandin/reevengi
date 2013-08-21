@@ -617,8 +617,8 @@ static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)
 	/* Fill poly min/max array with segments */
 	p1 = num_vtx-1;
 	for (p2=0; p2<num_vtx; p2++) {
-		int v1 = p1;
-		int v2 = p2;
+		/*int v1 = p1;
+		int v2 = p2;*/
 		int x1,y1, x2,y2;
 		int dy, tmp;
 		int num_array = 1; /* max */
@@ -638,8 +638,8 @@ static void draw_poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)
 			tmp = y1; y1 = y2; y2 = tmp;
 			tmpz = w1; w1 = w2; w2 = tmpz;
 			num_array = 0;	/* min */
-			v1 = p2;
-			v2 = p1;
+			/*v1 = p2;
+			v2 = p1;*/
 		}
 		if (y1 < miny) {
 			miny = y1;

@@ -252,7 +252,7 @@ int rdt2_sca_checkCollision(room_t *this, int num_collision, float x, float y)
 	rdt2_sca_header_t *rdt_sca_hdr;
 	rdt2_sca_element_t *rdt_sca_elt;
 	Uint32 offset;
-	int i, is_inside;
+	int /*i,*/ is_inside;
 	float x1,z1,x2,z2;
 
 	rdt_header = (rdt2_header_t *) this->file;
