@@ -22,10 +22,6 @@
 #ifndef RENDER_BITMAP_H
 #define RENDER_BITMAP_H 1
 
-#include <SDL.h>
-
-#include "video.h"
-
 typedef struct render_bitmap_s render_bitmap_t;
 
 struct render_bitmap_s {

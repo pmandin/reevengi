@@ -21,7 +21,9 @@
 #ifndef RENDER_SKEL_H
 #define RENDER_SKEL_H 1
 
-#include "render_mesh.h"
+/*--- External types ---*/
+
+typedef struct render_mesh_s render_mesh_t;
 
 /*--- Types ---*/
 

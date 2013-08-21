@@ -34,6 +34,10 @@ enum {
 	RENDER_ARRAY_TEXCOORD
 };
 
+/*--- External types ---*/
+
+typedef struct render_texture_s render_texture_t;
+
 /*--- Types ---*/
 
 typedef struct {

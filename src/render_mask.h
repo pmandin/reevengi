@@ -21,16 +21,15 @@
 #ifndef RENDER_MASK_H
 #define RENDER_MASK_H 1
 
-#include <SDL.h>
-
-#include "video.h"
-#include "render_texture.h"
-
 /*--- Defines ---*/
 
 #define RENDER_MASK_WIDTH 320
 #define RENDER_MASK_HEIGHT 240
 #define RENDER_MASK_SEGS (RENDER_MASK_WIDTH/8)	/* 320 pixels, divided by 8 pixel wide blocks */
+
+/*--- External types ---*/
+
+typedef struct render_texture_s render_texture_t;
 
 /*--- Types ---*/
 
