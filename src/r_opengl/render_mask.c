@@ -33,7 +33,7 @@
 
 #ifdef ENABLE_OPENGL
 
-#include "render_mask_opengl.h"
+#include "render_mask.h"
 
 /*--- Functions prototypes ---*/
 
