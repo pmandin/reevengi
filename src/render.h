@@ -25,8 +25,9 @@
 #include "render_mesh.h"
 #include "render_skel.h"
 #include "render_bitmap.h"
-#include "render_mask.h"
 #include "draw.h"
+
+#include "r_common/render_mask.h"
 
 /*--- Defines ---*/
 

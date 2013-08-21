@@ -1,7 +1,8 @@
 /*
 	Draw background image mask
+	Software renderer
 
-	Copyright (C) 2010	Patrice Mandin
+	Copyright (C) 2010-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +19,8 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RENDER_MASK_OPENGL_H
-#define RENDER_MASK_OPENGL_H 1
+#ifndef RENDER_MASK_SOFT_H
+#define RENDER_MASK_SOFT_H 1
 
 /*--- External types ---*/
 
@@ -29,23 +30,40 @@ typedef struct render_mask_s render_mask_t;
 /*--- Types ---*/
 
 typedef struct {
-	Uint16 srcx, srcy;
-	Uint16 width, height;
-	Uint16 dstx, dsty;
-	float depth;
-} render_mask_gl_zone_t;
+	Uint16 x1, x2;
+	float w;
+} mask_seg_t;
 
-typedef struct render_mask_gl_s render_mask_gl_t;
+typedef struct {
+	Uint16 num_segs;
+	mask_seg_t	segs[RENDER_MASK_SEGS];	
+} mask_row_t;
 
-struct render_mask_gl_s {
+typedef struct {
+	Uint16 x1, x2;
+} mask_dirty_seg_t;
+
+typedef struct {
+	Uint16 num_segs;
+	mask_dirty_seg_t	segs[RENDER_MASK_SEGS];	
+} mask_dirty_row_t;
+
+typedef struct render_mask_soft_s render_mask_soft_t;
+
+struct render_mask_soft_s {
 	render_mask_t	render_mask;
 
-	int num_zones;
-	render_mask_gl_zone_t	*zones;
+	/* Sbuffer like structure for masking segments */
+	int miny, maxy;
+	mask_row_t	mask_row[RENDER_MASK_HEIGHT];	
+
+	/* Sbuffer like structure for dirty rectangles */
+	int dirty_miny, dirty_maxy;
+	mask_dirty_row_t	mask_dirty_row[RENDER_MASK_HEIGHT/16];
 };
 
 /*--- Functions ---*/
 
-render_mask_t *render_mask_opengl_create(render_texture_t *texture);
+render_mask_t *render_mask_soft_create(render_texture_t *texture);
 
-#endif /* RENDER_MASK_OPENGL_H */
+#endif /* RENDER_MASK_SOFT_H */

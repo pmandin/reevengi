@@ -18,34 +18,42 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RENDER_MASK_OPENGL_H
-#define RENDER_MASK_OPENGL_H 1
+#ifndef RENDER_MASK_H
+#define RENDER_MASK_H 1
+
+/*--- Defines ---*/
+
+#define RENDER_MASK_WIDTH 320
+#define RENDER_MASK_HEIGHT 240
+#define RENDER_MASK_SEGS (RENDER_MASK_WIDTH/8)	/* 320 pixels, divided by 8 pixel wide blocks */
 
 /*--- External types ---*/
 
 typedef struct render_texture_s render_texture_t;
-typedef struct render_mask_s render_mask_t;
 
 /*--- Types ---*/
 
-typedef struct {
-	Uint16 srcx, srcy;
-	Uint16 width, height;
-	Uint16 dstx, dsty;
-	float depth;
-} render_mask_gl_zone_t;
+typedef struct render_mask_s render_mask_t;
 
-typedef struct render_mask_gl_s render_mask_gl_t;
+struct render_mask_s {
+	void (*shutdown)(render_mask_t *this);
 
-struct render_mask_gl_s {
-	render_mask_t	render_mask;
+	/* Define a zone with mask in source texture, where to draw on dest */
+	void (*addZone)(render_mask_t *this,
+		int srcX, int srcY, int w,int h,
+		int dstX, int dstY, int depth);
 
-	int num_zones;
-	render_mask_gl_zone_t	*zones;
+	/* All zones defined, can prepare more stuff before using it for drawing */
+	void (*finishedZones)(render_mask_t *this);
+
+	/* Draw mask */
+	void (*drawMask)(render_mask_t *this);
+
+	render_texture_t *texture;
 };
 
 /*--- Functions ---*/
 
-render_mask_t *render_mask_opengl_create(render_texture_t *texture);
+void render_mask_init(render_mask_t *this, render_texture_t *texture);
 
-#endif /* RENDER_MASK_OPENGL_H */
+#endif /* RENDER_MASK_H */

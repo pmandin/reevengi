@@ -24,12 +24,12 @@
 #endif
 
 #include <assert.h>
-
 #include <SDL.h>
 
 #include "../video.h"
 #include "../render.h"
-#include "../render_mask.h"
+
+#include "../r_common/render_mask.h"
 
 #ifdef ENABLE_OPENGL
 
@@ -54,18 +54,14 @@ render_mask_t *render_mask_opengl_create(render_texture_t *texture)
 	render_mask_gl_t *gl_mask;
 	render_mask_t *mask;
 
-	mask = render_mask_soft_create(texture);
-	if (!mask) {
-		return NULL;
-	}
-
-	gl_mask = realloc(mask, sizeof(render_mask_gl_t));
+	gl_mask = calloc(1, sizeof(render_mask_gl_t));
 	if (!gl_mask) {
 		fprintf(stderr, "Can not allocate memory for render_mask\n");
 		return NULL;
 	}
 
 	mask = (render_mask_t *) gl_mask;
+	render_mask_init((render_mask_t *) mask, texture);
 
 	mask->shutdown = shutdown;
 	mask->addZone = addZone;

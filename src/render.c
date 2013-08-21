@@ -22,13 +22,16 @@
 
 #include "video.h"
 #include "render.h"
-#include "r_soft/matrix.h"
 #include "draw.h"
-#include "r_soft/draw_simple.h"
-#include "r_soft/draw_sbuffer.h"
+
 #include "r_common/render_texture_list.h"
 #include "r_common/render_skel_list.h"
+
+#include "r_soft/matrix.h"
 #include "r_soft/dither.h"
+#include "r_soft/draw_simple.h"
+#include "r_soft/draw_sbuffer.h"
+#include "r_soft/render_mask.h"
 
 /*--- Defines ---*/
 
