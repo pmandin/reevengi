@@ -24,13 +24,14 @@
 
 #include <SDL.h>
 
-#include "render_texture.h"
-#include "render_mesh.h"
+#include "../video.h"
+#include "../render.h"
+#include "../log.h"
+#include "../render_texture.h"
+#include "../render_mesh.h"
+
 #include "render_skel.h"
-#include "video.h"
-#include "render.h"
-#include "log.h"
-#include "r_common/render_skel_list.h"
+#include "render_skel_list.h"
 
 /*--- Functions prototypes ---*/
 

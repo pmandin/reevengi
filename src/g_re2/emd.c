@@ -20,7 +20,6 @@
 */
 
 #include <assert.h>
-
 #include <SDL.h>
 
 #include "../filesystem.h"
@@ -28,7 +27,7 @@
 #include "../video.h"
 #include "../render.h"
 
-#include "../render_skel.h"
+#include "../r_common/render_skel.h"
 
 /*--- Defines ---*/
 

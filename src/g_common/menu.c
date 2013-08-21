@@ -25,7 +25,7 @@
 #include <SDL.h>
 
 #include "../render_texture.h"
-#include "../render_skel.h"
+/*#include "../render_skel.h"*/
 #include "../r_common/render_text.h"
 
 #include "player.h"

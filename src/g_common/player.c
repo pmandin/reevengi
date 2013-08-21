@@ -27,7 +27,7 @@
 #include "../clock.h"
 
 #include "../render_texture.h"
-#include "../render_skel.h"
+#include "../r_common/render_skel.h"
 
 #include "player.h"
 

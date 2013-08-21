@@ -14,7 +14,6 @@ reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	parameters.c physfsrwops.c \
 	render.c \
 	render_mesh.c \
-	render_skel.c \
 	render_texture.c \
 	video.c video_opengl.c \
 	view_background.c view_movie.c
@@ -25,7 +24,6 @@ reevengi_headers = background_bss.h background_tim.h clock.h \
 	parameters.h physfsrwops.h \
 	render.h \
 	render_mesh.h  \
-	render_skel.h \
 	render_texture.h \
 	video.h \
 	view_background.h view_movie.h

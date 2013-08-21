@@ -23,11 +23,11 @@
 
 #include "render_texture.h"
 #include "render_mesh.h"
-#include "render_skel.h"
 #include "draw.h"
 
-#include "r_common/render_mask.h"
 #include "r_common/render_bitmap.h"
+#include "r_common/render_mask.h"
+#include "r_common/render_skel.h"
 
 #include "r_soft/render_bitmap.h"
 
