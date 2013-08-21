@@ -120,6 +120,8 @@ static Uint32 tick_anim = 0;
 
 static int shift_pressed = 0;
 
+static Sint16 anim_x=0,anim_y=0,anim_z=0;	/* base position for anim */
+
 /*--- Functions prototypes ---*/
 
 static void toggle_map_mode(void);
@@ -383,6 +385,10 @@ void view_background_update(void)
 					player->num_anim = 0;
 				}
 			}
+
+			/* Read base position */
+			player->model->setAnimFrame(player->model, 0, 0);
+			player->model->getAnimPosition(player->model, &anim_x, &anim_y, &anim_z);
 		}
 
 		clockUnpause();
@@ -589,7 +595,7 @@ static void drawPlayer(void)
 	render.rotate((player->a * 360.0f) / 4096.0f, 0.0f,1.0f,0.0f);
 
 	if (player->model) {
-		/*Sint16 posx,posy,posz;*/
+		Sint16 posx,posy,posz;
 		Uint32 cur_tick = clockGet();
 
 		if (render_model!=prev_render_model) {
@@ -613,15 +619,14 @@ static void drawPlayer(void)
 			tick_anim = cur_tick;
 		}
 
+		player->model->getAnimPosition(player->model, &posx, &posy, &posz);
+		render.translate((float) (anim_x-posx), (float) (anim_y-posy), (float) (anim_z-posz));
+		/*logMsg(1,"player: %d,%d,%d\n", posx,posy,posz);*/
+
 		render.set_blending(1);
-
-		/*player->model->getAnimPosition(player->model, &posx, &posy, &posz);
-		render.translate((float) -posx, (float) -posy, (float) -posz);
-
-		logMsg(1,"player: %f %f %f, %d,%d,%d\n",player->x, player->y, player->z, posx,posy,posz);*/
-
 		player->model->draw(player->model, 0);
 		render.set_blending(0);
+
 		if (render_bones) {
 			render.set_color(0x0000ff00);
 			player->model->drawBones(player->model, 0);
