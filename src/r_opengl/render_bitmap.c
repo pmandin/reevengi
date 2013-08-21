@@ -30,7 +30,7 @@
 
 #include "../video.h"
 #include "../render.h"
-#include "../render_bitmap.h"
+#include "../r_common/render_bitmap.h"
 
 #include "dyngl.h"
 #include "render_texture_opengl.h"
@@ -43,7 +43,8 @@ static void drawImage(void);
 
 void render_bitmap_opengl_init(render_bitmap_t *render_bitmap)
 {
-	render_bitmap_soft_init(render_bitmap);
+	render_bitmap_init(render_bitmap);
+
 	render.bitmap.drawImage = drawImage;
 }
 

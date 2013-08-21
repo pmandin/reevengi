@@ -2,7 +2,7 @@
 	Draw 2D bitmaps (background, font, etc)
 	from current texture, to the screen
 
-	Copyright (C) 2009	Patrice Mandin
+	Copyright (C) 2009-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 
 #ifndef RENDER_BITMAP_H
 #define RENDER_BITMAP_H 1
+
+/*--- Types ---*/
 
 typedef struct render_bitmap_s render_bitmap_t;
 
@@ -51,6 +53,8 @@ struct render_bitmap_s {
 	int depth_test, masking;
 	float depth;
 
+	/*--- Software renderer ---*/
+
 	/* Scale X,Y table from src to dest (gives dst pixel for a given src) */
 	Uint16 sizex_src2dst, sizey_src2dst;
 	Uint16 numx_src2dst, numy_src2dst;
@@ -64,8 +68,8 @@ struct render_bitmap_s {
 	Uint16 *scaley_dst2src;
 };
 
-void render_bitmap_soft_init(render_bitmap_t *render_bitmap);
+/*--- Functions ---*/
 
-void render_bitmap_opengl_init(render_bitmap_t *render_bitmap);
+void render_bitmap_init(render_bitmap_t *render_bitmap);
 
 #endif /* RENDER_BITMAP_H */

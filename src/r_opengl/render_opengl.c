@@ -43,7 +43,8 @@
 #include "render_texture_opengl.h"
 #include "render_mesh_opengl.h"
 #include "render_skel_opengl.h"
-#include "render_mask_opengl.h"
+#include "render_mask.h"
+#include "render_bitmap.h"
 
 /*--- Variables ---*/
 
