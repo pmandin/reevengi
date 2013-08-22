@@ -27,12 +27,9 @@
 #include "r_soft/dither.h"
 #include "parameters.h"
 #include "log.h"
+
+#include "r_common/r_misc.h"
 #include "r_common/render_texture_list.h"
-
-/*--- Defines ---*/
-
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#define MIN(x,y) ((x)<(y)?(x):(y))
 
 /*--- Functions prototypes ---*/
 
@@ -48,7 +45,6 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr);
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf);
 
 static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a);
-static int logbase2(int n);
 
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);
 
@@ -564,17 +560,6 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 	}
 
 	this->download(this);
-}
-
-static int logbase2(int n)
-{
-	int r = 0;
-
-	while (n>>=1) {
-		++r;
-	}
-
-	return r;
 }
 
 static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)

@@ -21,12 +21,9 @@
 #include <stdlib.h>
 #include <SDL.h>
 
+#include "../r_common/r_misc.h"
+
 #include "dirty_rects.h"
-
-/*--- Defines ---*/
-
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#define MIN(x,y) ((x)<(y)?(x):(y))
 
 /*--- Functions prototypes ---*/
 

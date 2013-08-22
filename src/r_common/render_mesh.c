@@ -29,11 +29,7 @@
 #include "../render_texture.h"
 
 #include "render_mesh.h"
-
-/*--- Defines ---*/
-
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#define MIN(x,y) ((x)<(y)?(x):(y))
+#include "r_misc.h"
 
 /*--- Functions prototypes ---*/
 

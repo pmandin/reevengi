@@ -26,6 +26,7 @@
 #include "../render.h"
 #include "../clock.h"
 #include "../r_soft/matrix.h"
+#include "../r_common/r_misc.h"
 
 #include "room.h"
 #include "room_map.h"
@@ -50,9 +51,6 @@
 
 #define MAP_COLOR_OBSTACLE		0x00ffcc00
 #define MAP_COLOR_WALLS			0x00ff00ff
-
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#define MIN(x,y) ((x)<(y)?(x):(y))
 
 #define MAP_TRANSITION_TIME	1000
 

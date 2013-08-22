@@ -34,6 +34,7 @@
 #include "../background_tim.h"
 #include "../render_texture.h"
 
+#include "../r_common/r_misc.h"
 #include "../r_common/render_texture_list.h"
 
 #include "../r_soft/dither.h"
@@ -47,8 +48,6 @@ static void upload(render_texture_t *this, int num_pal);
 static void download(render_texture_t *this);
 
 static void prepare_resize(render_texture_t *this, int *w, int *h);
-
-static int logbase2(int n);
 
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);
 
@@ -252,17 +251,6 @@ static void prepare_resize(render_texture_t *this, int *w, int *h)
 
 	*w = new_bound_w;
 	*h = new_bound_h;
-}
-
-static int logbase2(int n)
-{
-	int r = 0;
-
-	while (n>>=1) {
-		++r;
-	}
-
-	return r;
 }
 
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)

@@ -27,13 +27,11 @@
 #include "../log.h"
 
 #include "../r_common/render_bitmap.h"
+#include "../r_common/r_misc.h"
 
 #include "dither.h"
 
 /*--- Defines ---*/
-
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#define MIN(x,y) ((x)<(y)?(x):(y))
 
 /*#define BILINEAR_FILTER(start,end,coef)	\
 	(start) + ((((end)-(start)) * ((coef) & 65535)) >> 16)*/

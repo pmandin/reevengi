@@ -34,6 +34,8 @@
 #include "dither.h"
 #include "draw_simple.h"
 
+#include "../r_common/r_misc.h"
+
 /*--- Defines ---*/
 
 /* Debug print info */
@@ -53,11 +55,6 @@
 #define SEG1_BEHIND 1
 #define SEG1_CLIP_LEFT 2
 #define SEG1_CLIP_RIGHT 3
-
-#define MIN(x1, x2) \
-	( x1 < x2 ? x1 : x2)
-#define MAX(x1, x2) \
-	( x1 > x2 ? x1 : x2)
 
 /*--- Types ---*/
 
@@ -116,10 +113,6 @@ static sbuffer_draw_f draw_render_textured;
 /*--- Functions prototypes ---*/
 
 static void draw_shutdown(draw_t *this);
-
-#if defined(__GNUC__) && defined(__m68k__)
-static unsigned logbase2(unsigned n);
-#endif
 
 static void clear_sbuffer(void);
 
@@ -186,16 +179,6 @@ static void draw_shutdown(draw_t *this)
 	}
 	size_poly_minmaxx = 0;
 }
-
-#if defined(__GNUC__) && defined(__m68k__)
-static unsigned logbase2(unsigned n)
-{
-	unsigned log2 = 0;
-	while (n >>= 1)
-		++log2;
-	return log2;
-}
-#endif
 
 static void draw_resize(draw_t *this, int w, int h, int bpp)
 {
