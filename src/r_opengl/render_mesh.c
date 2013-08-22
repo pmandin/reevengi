@@ -35,8 +35,10 @@
 #include "../log.h"
 #include "../render_texture.h"
 
+#include "../r_common/render_mesh.h"
+
 #include "dyngl.h"
-#include "render_mesh_opengl.h"
+#include "render_mesh.h"
 
 /*--- Defines ---*/
 

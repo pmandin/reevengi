@@ -32,6 +32,7 @@
 #include "r_soft/draw_simple.h"
 #include "r_soft/draw_sbuffer.h"
 #include "r_soft/render_mask.h"
+#include "r_soft/render_mesh.h"
 
 /*--- Defines ---*/
 
@@ -118,7 +119,7 @@ void render_soft_init(render_t *this)
 	this->endFrame = render_endFrame;
 
 	this->createTexture = render_texture_create;
-	this->createMesh = render_mesh_create;
+	this->createMesh = render_mesh_soft_create;
 	this->createSkel = render_skel_create;
 
 	this->set_viewport = set_viewport;

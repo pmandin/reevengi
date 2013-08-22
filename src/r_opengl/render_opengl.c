@@ -41,7 +41,7 @@
 
 #include "dyngl.h"
 #include "render_texture_opengl.h"
-#include "render_mesh_opengl.h"
+#include "render_mesh.h"
 #include "render_skel.h"
 #include "render_mask.h"
 #include "render_bitmap.h"

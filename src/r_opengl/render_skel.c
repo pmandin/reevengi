@@ -35,8 +35,8 @@
 #include "../render.h"
 #include "../log.h"
 #include "../render_texture.h"
-#include "../render_mesh.h"
 
+#include "../r_common/render_mesh.h"
 #include "../r_common/render_skel_list.h"
 
 #include "dyngl.h"
