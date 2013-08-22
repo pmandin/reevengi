@@ -25,8 +25,6 @@
 #include "config.h"
 #endif
 
-#include "render_texture.h"
-
 #include "g_common/game.h"
 #include "g_common/menu.h"
 
