@@ -32,12 +32,10 @@
 #include "../log.h"
 #include "../video.h"
 #include "../background_tim.h"
-#include "../render_texture.h"
 
+#include "../r_common/render_texture.h"
 #include "../r_common/r_misc.h"
 #include "../r_common/render_texture_list.h"
-
-#include "../r_soft/dither.h"
 
 #include "dyngl.h"
 #include "render_texture_opengl.h"
@@ -255,7 +253,6 @@ static void prepare_resize(render_texture_t *this, int *w, int *h)
 
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
 {
-	/* Nothing to do */
 }
 
 #endif /* ENABLE_OPENGL */

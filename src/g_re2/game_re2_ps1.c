@@ -30,8 +30,6 @@
 #include "../log.h"
 #include "../background_bss.h"
 
-#include "../render_texture.h"
-
 #include "../g_common/player.h"
 #include "../g_common/room.h"
 #include "../g_common/game.h"

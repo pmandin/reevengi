@@ -20,16 +20,17 @@
 
 #include <SDL.h>
 
-#include "background_tim.h"
-#include "render_texture.h"
-#include "video.h"
-#include "render.h"
-#include "r_soft/dither.h"
-#include "parameters.h"
-#include "log.h"
+#include "../video.h"
+#include "../render.h"
+#include "../parameters.h"
+#include "../log.h"
+#include "../background_tim.h"
 
-#include "r_common/r_misc.h"
-#include "r_common/render_texture_list.h"
+#include "render_texture.h"
+#include "r_misc.h"
+#include "render_texture_list.h"
+
+#include "../r_soft/dither.h"
 
 /*--- Functions prototypes ---*/
 
@@ -595,43 +596,4 @@ static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
 {
-	Uint8 *src_line;
-	Uint8 *alpha_pal;
-	int x,y;
-
-	return;
-
-	if (!this) {
-		return;
-	}
-	if (this->bpp != 1) {
-		return;
-	}
-	if (params.use_opengl) {
-		return;
-	}
-	if (num_pal>=this->num_palettes) {
-		return;
-	}
-	x1 = MAX(0, MIN(this->w-1, x1));
-	y1 = MAX(0, MIN(this->h-1, y1));
-	x2 = MAX(0, MIN(this->w-1, x2));
-	y2 = MAX(0, MIN(this->h-1, y2));
-
-	src_line = this->pixels;
-	src_line += y1 * this->pitch;
-	src_line += x1;
-	alpha_pal = this->alpha_palettes[num_pal];
-	for (y=y1; y<y2; y++) {
-		Uint8 *src_col = src_line;
-		for (x=x1; x<x2; x++) {
-			Uint8 c = *src_col;
-
-			if (!alpha_pal[c]) {
-				*src_col = 0;
-			}
-			src_col++;
-		}
-		src_line += this->pitch;
-	}
 }

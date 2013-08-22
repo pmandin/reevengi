@@ -20,11 +20,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
 #include <SDL.h>
 
 #include "../log.h"
-#include "../render_texture.h"
+
+#include "render_texture.h"
 
 /*--- Variables ---*/
 

@@ -24,7 +24,6 @@
 #endif
 
 #include <stdio.h>
-
 #include <SDL.h>
 
 #ifdef ENABLE_OPENGL
@@ -33,14 +32,14 @@
 
 #include "../video.h"
 #include "../render.h"
-#include "../render_texture.h"
 
 #include "../r_soft/matrix.h"
 #include "../r_common/render_texture_list.h"
 #include "../r_common/render_skel_list.h"
+#include "../r_common/render_texture.h"
 
 #include "dyngl.h"
-#include "render_texture_opengl.h"
+#include "render_texture.h"
 #include "render_mesh.h"
 #include "render_skel.h"
 #include "render_mask.h"

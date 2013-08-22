@@ -21,17 +21,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
 #include <SDL.h>
 
 #include "../video.h"
 #include "../render.h"
 #include "../log.h"
-#include "../render_texture.h"
 
 #include "render_mesh.h"
 #include "render_skel.h"
 #include "render_skel_list.h"
+#include "render_texture.h"
 
 /*--- Functions prototypes ---*/
 

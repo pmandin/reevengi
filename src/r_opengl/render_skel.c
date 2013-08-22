@@ -34,13 +34,13 @@
 #include "../video.h"
 #include "../render.h"
 #include "../log.h"
-#include "../render_texture.h"
 
 #include "../r_common/render_mesh.h"
 #include "../r_common/render_skel_list.h"
+#include "../r_common/render_texture.h"
 
 #include "dyngl.h"
-#include "render_texture_opengl.h"
+#include "render_texture.h"
 #include "render_skel.h"
 
 /*--- Functions prototypes ---*/

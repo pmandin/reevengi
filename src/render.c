@@ -118,7 +118,7 @@ void render_soft_init(render_t *this)
 	this->flushFrame = render_flushFrame;
 	this->endFrame = render_endFrame;
 
-	this->createTexture = render_texture_create;
+	this->createTexture = render_texture_soft_create;
 	this->createMesh = render_mesh_soft_create;
 	this->createSkel = render_skel_create;
 

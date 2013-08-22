@@ -26,10 +26,10 @@
 #include "../render.h"
 #include "../log.h"
 #include "../parameters.h"
-#include "../render_texture.h"
 
-#include "render_mesh.h"
 #include "r_misc.h"
+#include "render_mesh.h"
+#include "render_texture.h"
 
 /*--- Functions prototypes ---*/
 

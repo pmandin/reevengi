@@ -21,15 +21,16 @@
 #ifndef RENDER_H
 #define RENDER_H 1
 
-#include "render_texture.h"
 #include "draw.h"
 
 #include "r_common/render_bitmap.h"
 #include "r_common/render_mask.h"
 #include "r_common/render_skel.h"
 #include "r_common/render_mesh.h"
+#include "r_common/render_texture.h"
 
 #include "r_soft/render_bitmap.h"
+#include "r_soft/render_texture.h"
 
 /*--- Defines ---*/
 
