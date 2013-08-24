@@ -33,7 +33,7 @@
 #include "../r_common/render_bitmap.h"
 
 #include "dyngl.h"
-#include "render_texture_opengl.h"
+#include "render_texture.h"
 
 /*--- Functions prototypes ---*/
 

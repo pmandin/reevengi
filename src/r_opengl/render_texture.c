@@ -38,7 +38,7 @@
 #include "../r_common/render_texture_list.h"
 
 #include "dyngl.h"
-#include "render_texture_opengl.h"
+#include "render_texture.h"
 
 /*--- Functions prototypes ---*/
 
