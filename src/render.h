@@ -21,8 +21,6 @@
 #ifndef RENDER_H
 #define RENDER_H 1
 
-#include "draw.h"
-
 #include "r_common/render_bitmap.h"
 #include "r_common/render_mask.h"
 #include "r_common/render_skel.h"
@@ -126,9 +124,6 @@ struct render_s {
 	Uint32 color;	/* Active color */
 	render_texture_t *texture;
 	int tex_pal;	/* Palette to use */
-
-	/* Software drawing */
-	draw_t	draw;
 
 	/* Display depth buffer */
 	int render_depth;

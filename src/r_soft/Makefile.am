@@ -1,7 +1,8 @@
 noinst_LIBRARIES = libr_soft.a
 
 libr_soft_a_SOURCES = dirty_rects.c dither.c draw_sbuffer.c draw_simple.c \
-	matrix.c render_mask.c render_bitmap.c render_mesh.c render_texture.c
+	matrix.c render_mask.c render_bitmap.c render_mesh.c render_texture.c \
+	draw.c
 
 AM_CFLAGS = $(SDL_CFLAGS)
 AM_CXXFLAGS = $(SDL_CFLAGS)

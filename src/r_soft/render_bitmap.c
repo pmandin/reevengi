@@ -30,6 +30,7 @@
 #include "../r_common/r_misc.h"
 
 #include "dither.h"
+#include "draw.h"
 
 /*--- Defines ---*/
 
@@ -890,5 +891,5 @@ static void drawImageDepth(void)
 		poly[i].pos[3] = 1.0f;
 	}
 
-	render.draw.polyTexture(&render.draw, poly, 4);
+	draw.polyTexture(&draw, poly, 4);
 }

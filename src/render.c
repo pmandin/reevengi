@@ -22,13 +22,13 @@
 
 #include "video.h"
 #include "render.h"
-#include "draw.h"
 
 #include "r_common/render_texture_list.h"
 #include "r_common/render_skel_list.h"
 
 #include "r_soft/matrix.h"
 #include "r_soft/dither.h"
+#include "r_soft/draw.h"
 #include "r_soft/draw_simple.h"
 #include "r_soft/draw_sbuffer.h"
 #include "r_soft/render_mask.h"
@@ -173,8 +173,8 @@ void render_soft_init(render_t *this)
 	this->setRenderDepth = setRenderDepth;
 	this->copyDepthToColor = copyDepthToColor;
 
-	/*draw_init_simple(&this->draw);*/
-	draw_init_sbuffer(&this->draw);
+	/*draw_init_simple(&draw);*/
+	draw_init_sbuffer(&draw);
 
 	this->render_mask_create = render_mask_soft_create;
 }
@@ -182,24 +182,24 @@ void render_soft_init(render_t *this)
 static void render_soft_shutdown(void)
 {
 	render.bitmap.shutdown(&render.bitmap);
-	render.draw.shutdown(&render.draw);
+	draw.shutdown(&draw);
 	list_render_texture_shutdown();
 	list_render_skel_shutdown();
 }
 
 static void render_resize(int w, int h, int bpp)
 {
-	render.draw.resize(&render.draw, w,h, bpp);
+	draw.resize(&draw, w,h, bpp);
 }
 
 static void render_startFrame(void)
 {
-	render.draw.startFrame(&render.draw);
+	draw.startFrame(&draw);
 }
 
 static void render_flushFrame(void)
 {
-	render.draw.flushFrame(&render.draw);
+	draw.flushFrame(&draw);
 }
 
 static void render_endFrame(void)
@@ -208,7 +208,7 @@ static void render_endFrame(void)
 		render.copyDepthToColor();
 	}
 
-	render.draw.endFrame(&render.draw);
+	draw.endFrame(&draw);
 }
 
 /* Recalculate frustum matrix = modelview*projection */
@@ -545,7 +545,7 @@ static void line(vertex_t *v1, vertex_t *v2)
 	v[1].x = segment[1][0]/segment[1][2];
 	v[1].y = segment[1][1]/segment[1][2];
 
-	render.draw.line(&render.draw, &v[0], &v[1]);
+	draw.line(&draw, &v[0], &v[1]);
 }
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -588,7 +588,7 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	v[2].x = segment[2][0]/segment[2][2];
 	v[2].y = segment[2][1]/segment[2][2];
 
-	render.draw.triangle(&render.draw, v);
+	draw.triangle(&draw, v);
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -637,7 +637,7 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	v[3].x = segment[3][0]/segment[3][2];
 	v[3].y = segment[3][1]/segment[3][2];
 
-	render.draw.quad(&render.draw, v);
+	draw.quad(&draw, v);
 }
 
 /*
@@ -722,9 +722,9 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	/* Draw polygon */
 	if (gouraud) {
-		render.draw.polyGouraud(&render.draw, poly, num_vtx);
+		draw.polyGouraud(&draw, poly, num_vtx);
 	} else {
-		render.draw.polyFill(&render.draw, poly, num_vtx);
+		draw.polyFill(&draw, poly, num_vtx);
 	}
 }
 
@@ -820,9 +820,9 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	/* Draw polygon */
 	if (gouraud) {
-		render.draw.polyGouraud(&render.draw, poly, num_vtx);
+		draw.polyGouraud(&draw, poly, num_vtx);
 	} else {
-		render.draw.polyFill(&render.draw, poly, num_vtx);
+		draw.polyFill(&draw, poly, num_vtx);
 	}
 }
 
@@ -889,7 +889,7 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	render.draw.polyTexture(&render.draw, poly, num_vtx);
+	draw.polyTexture(&draw, poly, num_vtx);
 }
 
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
@@ -952,7 +952,7 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
 
 	/* Draw polygon */
-	render.draw.polyTexture(&render.draw, poly, num_vtx);
+	draw.polyTexture(&draw, poly, num_vtx);
 }
 
 static void setRenderDepth(int show_depth)

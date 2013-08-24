@@ -29,6 +29,7 @@
 #include "../video.h"
 #include "../render.h"
 
+#include "draw.h"
 #include "render_mask.h"
 
 /*--- Functions prototypes ---*/
@@ -295,7 +296,7 @@ static void drawMask(render_mask_t *this)
 	assert(this);
 	soft_mask = (render_mask_soft_t *) this;
 
-	if ((soft_mask->miny > soft_mask->maxy) || !render.draw.addMaskSegment) {
+	if ((soft_mask->miny > soft_mask->maxy) || !draw.addMaskSegment) {
 		return;
 	}
 
@@ -311,7 +312,7 @@ static void drawMask(render_mask_t *this)
 			int dstXstart = (mask_seg->x1 * video.viewport.w ) / RENDER_MASK_WIDTH;
 			int dstXend = ((mask_seg->x2+1) * video.viewport.w ) / RENDER_MASK_WIDTH;
 
-			render.draw.addMaskSegment(&render.draw, y,
+			draw.addMaskSegment(&draw, y,
 				dstXstart,dstXend-1,
 				mask_seg->w);
 

@@ -21,7 +21,7 @@
 #ifndef DRAW_H
 #define DRAW_H 1
 
-/*---- Forward declaration ---*/
+/*---- External types ---*/
 
 struct vertexf_s;
 
@@ -62,5 +62,9 @@ struct draw_s {
 	/* Add mask segment */
 	void (*addMaskSegment)(draw_t *this, int y1, int x1, int x2, float w);
 };
+
+/*--- Variables ---*/
+
+extern draw_t draw;
 
 #endif /* DRAW_H */
