@@ -21,10 +21,11 @@
 
 #include <SDL.h>
 
-#include "../render.h"
 #include "../log.h"
 
 #include "../g_common/room.h"
+
+#include "../r_common/render.h"
 
 #include "rdt.h"
 #include "rdt_rid.h"
@@ -59,7 +60,7 @@ void rdt2_pri_initMasks(room_t *this, int num_camera)
 		return;
 	}
 
-	this->rdr_mask = render.render_mask_create(this->bg_mask);
+	this->rdr_mask = render.createMask(this->bg_mask);
 	if (!this->rdr_mask) {
 		return;
 	}

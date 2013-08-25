@@ -22,10 +22,11 @@
 #include <SDL.h>
 #include <math.h>
 
-#include "../render.h"
 #include "../log.h"
 
 #include "../g_common/room.h"
+
+#include "../r_common/render.h"
 
 #include "rdt.h"
 #include "rdt_sca.h"
@@ -117,7 +118,7 @@ int rdt1_sca_getNumCollisions(room_t *this)
 void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
 {
 	rdt1_header_t *rdt_header;
-	rdt1_sca_header_t *rdt_sca_hdr;
+/*	rdt1_sca_header_t *rdt_sca_hdr;*/
 	rdt1_sca_element_t *rdt_sca_elt;
 	Uint32 offset;
 	vertex_t v[4];
@@ -128,7 +129,7 @@ void rdt1_sca_drawMapCollision(room_t *this, int num_collision)
 		return;
 	}
 
-	rdt_sca_hdr = (rdt1_sca_header_t *) &((Uint8 *) this->file)[offset];
+/*	rdt_sca_hdr = (rdt1_sca_header_t *) &((Uint8 *) this->file)[offset];*/
 	if (num_collision >= rdt1_sca_getNumCollisions(this)) {
 		return;
 	}

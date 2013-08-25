@@ -27,8 +27,8 @@
 #include <SDL.h>
 
 #include "../video.h"
-#include "../render.h"
 
+#include "../r_common/render.h"
 #include "../r_common/render_mask.h"
 
 #ifdef ENABLE_OPENGL

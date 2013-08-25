@@ -23,8 +23,9 @@
 
 #include "../video.h"
 #include "../parameters.h"
-#include "../render.h"
 #include "../log.h"
+
+#include "../r_common/render.h"
 
 #include "draw.h"
 #include "dither.h"

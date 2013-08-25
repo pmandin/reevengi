@@ -34,11 +34,12 @@
 #include "../filesystem.h"
 #include "../parameters.h"
 #include "../log.h"
-#include "../render.h"
 
 #include "../g_common/game.h"
 #include "../g_common/player.h"
 #include "../g_common/room.h"
+
+#include "../r_common/render.h"
 
 #include "game_re3.h"
 #include "emd.h"

@@ -22,17 +22,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <SDL.h>
 
 #include "../filesystem.h"
 #include "../log.h"
 #include "../parameters.h"
-#include "../render.h"
 
 #include "../g_common/player.h"
 #include "../g_common/room.h"
 #include "../g_common/game.h"
+
+#include "../r_common/render.h"
 
 #include "game_re2_pc_game.h"
 #include "game_re2.h"

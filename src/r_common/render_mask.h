@@ -54,6 +54,8 @@ struct render_mask_s {
 
 /*--- Functions ---*/
 
+render_mask_t *render_mask_create(render_texture_t *texture);
+
 void render_mask_init(render_mask_t *this, render_texture_t *texture);
 
 #endif /* RENDER_MASK_H */

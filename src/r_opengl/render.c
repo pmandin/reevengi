@@ -31,12 +31,13 @@
 #include <SDL_opengl.h>
 
 #include "../video.h"
-#include "../render.h"
 
-#include "../r_soft/matrix.h"
+#include "../r_common/render.h"
 #include "../r_common/render_texture_list.h"
 #include "../r_common/render_skel_list.h"
 #include "../r_common/render_texture.h"
+
+#include "../r_soft/matrix.h"
 
 #include "dyngl.h"
 #include "render_texture.h"
@@ -52,12 +53,8 @@ static int gouraud;
 
 /*--- Functions prototypes ---*/
 
-static void render_opengl_shutdown(void);
-
-static void render_resize(int w, int h, int bpp);
-static void render_startFrame(void);
-static void render_flushFrame(void);
-static void render_endFrame(void);
+static void startFrame(void);
+static void endFrame(void);
 
 static void set_viewport(int x, int y, int w, int h);
 static void set_projection(float angle, float aspect, float z_near, float z_far);
@@ -84,10 +81,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex);
 static void set_blending(int enable);
 static void set_dithering(int enable);
 static void set_depth(int enable);
-static void set_useDirtyRects(int enable);
 static void set_color_from_texture(vertex_t *v1);
-
-static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx);
 
 static void line(vertex_t *v1, vertex_t *v2);
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3);
@@ -99,23 +93,21 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-static void setRenderDepth(int show_depth);
 static void copyDepthToColor(void);
 
 /*--- Functions ---*/
 
 void render_opengl_init(render_t *this)
 {
-	this->shutdown = render_opengl_shutdown;
+	render_init(this);
 
-	this->resize = render_resize;
-	this->startFrame = render_startFrame;
-	this->flushFrame = render_flushFrame;
-	this->endFrame = render_endFrame;
+	this->startFrame = startFrame;
+	this->endFrame = endFrame;
 
 	this->createTexture = render_texture_gl_create;
 	this->createMesh = render_mesh_gl_create;
 	this->createSkel = render_skel_gl_create;
+	this->createMask = render_mask_opengl_create;
 
 	this->set_viewport = set_viewport;
 	this->set_projection = set_projection;
@@ -139,39 +131,15 @@ void render_opengl_init(render_t *this)
 	this->set_blending = set_blending;
 	this->set_dithering = set_dithering;
 	this->set_depth = set_depth;
-	this->set_useDirtyRects = set_useDirtyRects;
-
-	this->sortBackToFront = sortBackToFront;
 
 	render_bitmap_opengl_init(&this->bitmap);
 
-	this->texture = NULL;
-	this->tex_pal = 0;
-
-	set_render(RENDER_WIREFRAME);
-	blending = 0;
-	gouraud = 0;
-	this->useDirtyRects = 0;
-
-	this->render_depth = 0;
-	this->setRenderDepth = setRenderDepth;
 	this->copyDepthToColor = copyDepthToColor;
 
-	this->render_mask_create = render_mask_opengl_create;
+	blending = gouraud = 0;
 }
 
-static void render_opengl_shutdown(void)
-{
-	render.bitmap.shutdown(&render.bitmap);
-	list_render_texture_shutdown();
-	list_render_skel_shutdown();
-}
-
-static void render_resize(int w, int h, int bpp)
-{
-}
-
-static void render_startFrame(void)
+static void startFrame(void)
 {
 	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.ClearDepth(1.0f);
@@ -183,16 +151,11 @@ static void render_startFrame(void)
 	gl.CullFace(GL_FRONT);
 }
 
-static void render_flushFrame(void)
-{
-}
-
-static void render_endFrame(void)
+static void endFrame(void)
 {
 	if (render.render_depth) {
 		render.copyDepthToColor();
 	}
-
 }
 
 static void set_viewport(int x, int y, int w, int h)
@@ -377,10 +340,6 @@ static void set_depth(int enable)
 	}
 }
 
-static void set_useDirtyRects(int enable)
-{
-}
-
 static void set_render(int num_render)
 {
 	render.line = line;
@@ -437,13 +396,6 @@ static void set_color_from_texture(vertex_t *v1)
 		color = (r<<16)|(g<<8)|b;
 	}
 	set_color(color);
-}
-
-/*
-	Sort vertex back to front
-*/
-static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
-{
 }
 
 /*
@@ -653,11 +605,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	gl.Disable(gl_tex->textureTarget);
 }
 
-static void setRenderDepth(int show_depth)
-{
-	render.render_depth = show_depth;
-}
-
 static void copyDepthToColor(void)
 {
 	GLsizei winWidth = video.viewport.w;
@@ -725,11 +672,11 @@ static void copyDepthToColor(void)
 
 #else
 
-#include "video.h"
-#include "render.h"
+#include "../r_common/render.h"
 
 void render_opengl_init(render_t *this)
 {
+	render_init(this);
 }
 
 #endif /* ENABLE_OPENGL */

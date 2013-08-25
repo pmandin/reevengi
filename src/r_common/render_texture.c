@@ -21,13 +21,13 @@
 #include <SDL.h>
 
 #include "../video.h"
-#include "../render.h"
 #include "../parameters.h"
 #include "../log.h"
 #include "../background_tim.h"
 
-#include "render_texture.h"
 #include "r_misc.h"
+#include "render.h"
+#include "render_texture.h"
 #include "render_texture_list.h"
 
 #include "../r_soft/dither.h"

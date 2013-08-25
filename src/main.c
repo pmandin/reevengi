@@ -32,18 +32,20 @@
 #include "g_re2/game_re2.h"
 #include "g_re3/game_re3.h"
 
-#include "view_background.h"
-#include "view_movie.h"
 #include "r_common/render_texture_list.h"
 #include "r_common/render_skel_list.h"
+#include "r_common/render.h"
+
+#include "r_opengl/render.h"
+#include "r_soft/render.h"
 
 #include "clock.h"
 #include "parameters.h"
 #include "filesystem.h"
 #include "log.h"
-
 #include "video.h"
-#include "render.h"
+#include "view_background.h"
+#include "view_movie.h"
 
 /*--- Global variables ---*/
 

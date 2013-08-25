@@ -21,10 +21,10 @@
 #include <SDL.h>
 
 #include "../video.h"
-#include "../render.h"
 
 #include "../g_common/game.h"
 
+#include "render.h"
 #include "render_texture.h"
 
 void render_text(const char *str, int x, int y)

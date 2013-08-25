@@ -24,9 +24,8 @@
 
 #include "../filesystem.h"
 #include "../log.h"
-#include "../video.h"
-#include "../render.h"
 
+#include "../r_common/render.h"
 #include "../r_common/render_skel.h"
 
 /*--- Defines ---*/

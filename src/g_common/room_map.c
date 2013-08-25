@@ -23,10 +23,10 @@
 #include <SDL.h>
 
 #include "../log.h"
-#include "../render.h"
 #include "../clock.h"
-#include "../r_soft/matrix.h"
 #include "../r_common/r_misc.h"
+#include "../r_common/render.h"
+#include "../r_soft/matrix.h"
 
 #include "room.h"
 #include "room_map.h"

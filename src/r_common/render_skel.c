@@ -23,10 +23,9 @@
 #include <assert.h>
 #include <SDL.h>
 
-#include "../video.h"
-#include "../render.h"
 #include "../log.h"
 
+#include "render.h"
 #include "render_mesh.h"
 #include "render_skel.h"
 #include "render_skel_list.h"

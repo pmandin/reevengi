@@ -22,12 +22,11 @@
 #include <stdlib.h>
 #include <SDL.h>
 
-#include "../video.h"
-#include "../render.h"
 #include "../log.h"
 #include "../parameters.h"
 
 #include "r_misc.h"
+#include "render.h"
 #include "render_mesh.h"
 #include "render_texture.h"
 

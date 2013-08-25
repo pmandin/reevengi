@@ -21,6 +21,10 @@
 #ifndef MATRIX_H
 #define MATRIX_H 1
 
+/*--- External types ---*/
+
+typedef struct vertexf_s vertexf_t;
+
 /*--- Defines ---*/
 
 enum {

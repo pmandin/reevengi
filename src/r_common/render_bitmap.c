@@ -22,8 +22,8 @@
 #include <SDL.h>
 
 #include "../video.h"
-#include "../render.h"
 
+#include "render.h"
 #include "render_bitmap.h"
 
 /*--- Functions prototypes ---*/

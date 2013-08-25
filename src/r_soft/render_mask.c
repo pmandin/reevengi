@@ -27,7 +27,8 @@
 #include <SDL.h>
 
 #include "../video.h"
-#include "../render.h"
+
+#include "../r_common/render.h"
 
 #include "draw.h"
 #include "render_mask.h"

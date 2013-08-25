@@ -30,6 +30,7 @@
 #include "parameters.h"
 #include "log.h"
 #include "clock.h"
+#include "video.h"
 
 #include "g_common/game.h"
 #include "g_common/room.h"
@@ -37,8 +38,7 @@
 #include "g_common/room_door.h"
 #include "g_common/player.h"
 
-#include "video.h"
-#include "render.h"
+#include "r_common/render.h"
 
 /*--- Defines ---*/
 

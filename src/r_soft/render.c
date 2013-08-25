@@ -20,19 +20,20 @@
 
 #include <SDL.h>
 
-#include "video.h"
-#include "render.h"
+#include "../video.h"
 
-#include "r_common/render_texture_list.h"
-#include "r_common/render_skel_list.h"
+#include "../r_common/render_texture_list.h"
+#include "../r_common/render_skel_list.h"
+#include "../r_common/render.h"
 
-#include "r_soft/matrix.h"
-#include "r_soft/dither.h"
-#include "r_soft/draw.h"
-#include "r_soft/draw_simple.h"
-#include "r_soft/draw_sbuffer.h"
-#include "r_soft/render_mask.h"
-#include "r_soft/render_mesh.h"
+#include "matrix.h"
+#include "dither.h"
+#include "draw.h"
+#include "draw_simple.h"
+#include "draw_sbuffer.h"
+#include "render_mask.h"
+#include "render_mesh.h"
+#include "render_texture.h"
 
 /*--- Defines ---*/
 
@@ -53,7 +54,8 @@ static int gouraud;
 
 /*--- Functions prototypes ---*/
 
-static void render_soft_shutdown(void);
+static void (*baseShutdown)(void);
+static void shutdown(void);
 
 static void render_resize(int w, int h, int bpp);
 static void render_startFrame(void);
@@ -84,8 +86,6 @@ static void recalc_frustum_mtx(void);
 
 static void set_color(Uint32 color);
 static void set_render(int num_render);
-static void set_texture(int num_pal, render_texture_t *render_tex);
-static void set_blending(int enable);
 static void set_dithering(int enable);
 static void set_depth(int enable);
 static void set_useDirtyRects(int enable);
@@ -105,13 +105,15 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
 static void setRenderDepth(int show_depth);
-static void copyDepthToColor(void);
 
 /*--- Functions ---*/
 
 void render_soft_init(render_t *this)
 {
-	this->shutdown = render_soft_shutdown;
+	render_init(this);
+	baseShutdown = this->shutdown;
+
+	this->shutdown = shutdown;
 
 	this->resize = render_resize;
 	this->startFrame = render_startFrame;
@@ -121,6 +123,7 @@ void render_soft_init(render_t *this)
 	this->createTexture = render_texture_soft_create;
 	this->createMesh = render_mesh_soft_create;
 	this->createSkel = render_skel_create;
+	this->createMask = render_mask_soft_create;
 
 	this->set_viewport = set_viewport;
 	this->set_projection = set_projection;
@@ -140,24 +143,13 @@ void render_soft_init(render_t *this)
 
 	this->set_color = set_color;
 	this->set_render = set_render;
-	this->set_texture = set_texture;
-	this->set_blending = set_blending;
 	this->set_dithering = set_dithering;
 	this->set_depth = set_depth;
 	this->set_useDirtyRects = set_useDirtyRects;
 
-	this->depth_test = 1;
-
 	this->sortBackToFront = sortBackToFront;
 
 	render_bitmap_soft_init(&this->bitmap);
-
-	this->texture = NULL;
-	this->tex_pal = -1;
-
-	this->texture = NULL;
-
-	set_render(RENDER_WIREFRAME);
 
 	num_modelview_mtx = 0;
 	mtx_setIdentity(modelview_mtx[0]);
@@ -166,25 +158,18 @@ void render_soft_init(render_t *this)
 	mtx_setIdentity(camera_mtx);
 	mtx_setIdentity(frustum_mtx);
 
-	gouraud = 0;
-	this->useDirtyRects = 0;
-
-	this->render_depth = 0;
 	this->setRenderDepth = setRenderDepth;
-	this->copyDepthToColor = copyDepthToColor;
 
 	/*draw_init_simple(&draw);*/
 	draw_init_sbuffer(&draw);
 
-	this->render_mask_create = render_mask_soft_create;
+	gouraud = 0;
 }
 
-static void render_soft_shutdown(void)
+static void shutdown(void)
 {
-	render.bitmap.shutdown(&render.bitmap);
 	draw.shutdown(&draw);
-	list_render_texture_shutdown();
-	list_render_skel_shutdown();
+	baseShutdown();
 }
 
 static void render_resize(int w, int h, int bpp)
@@ -374,10 +359,6 @@ static void set_color(Uint32 color)
 	} else {
 		render.color = SDL_MapRGBA(surf->format, r,g,b,a);
 	}
-}
-
-static void set_blending(int enable)
-{
 }
 
 static void set_dithering(int enable)
@@ -830,12 +811,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	Textured triangles/quads
 */
 
-static void set_texture(int num_pal, render_texture_t *render_tex)
-{
-	render.tex_pal = num_pal;
-	render.texture = render_tex;
-}
-
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
 	float segment[4][4], result[4][4];
@@ -958,8 +933,4 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 static void setRenderDepth(int show_depth)
 {
 	render.render_depth = show_depth;
-}
-
-static void copyDepthToColor(void)
-{
 }

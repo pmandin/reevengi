@@ -26,15 +26,15 @@
 #include <SDL.h>
 
 #ifdef ENABLE_OPENGL
-
 #include <SDL_opengl.h>
-
-#include "r_opengl/dyngl.h"
 
 #include "parameters.h"
 #include "video.h"
-#include "render.h"
 #include "log.h"
+
+#include "r_common/render.h"
+
+#include "r_opengl/dyngl.h"
 
 /*--- Variables ---*/
 

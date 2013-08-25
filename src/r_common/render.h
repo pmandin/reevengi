@@ -21,14 +21,11 @@
 #ifndef RENDER_H
 #define RENDER_H 1
 
-#include "r_common/render_bitmap.h"
-#include "r_common/render_mask.h"
-#include "r_common/render_skel.h"
-#include "r_common/render_mesh.h"
-#include "r_common/render_texture.h"
-
-#include "r_soft/render_bitmap.h"
-#include "r_soft/render_texture.h"
+#include "render_bitmap.h"
+#include "render_mask.h"
+#include "render_skel.h"
+#include "render_mesh.h"
+#include "render_texture.h"
 
 /*--- Defines ---*/
 
@@ -46,10 +43,12 @@ enum {
 
 /*--- Types ---*/
 
-typedef struct {
+typedef struct vertex_s vertex_t;
+
+struct vertex_s {
 	Sint16 x,y,z;	/* Vertex coords */
 	Uint16 u,v;	/* Texture coords */
-} vertex_t;
+};
 
 typedef struct vertexf_s vertexf_t;
 
@@ -72,6 +71,7 @@ struct render_s {
 	render_texture_t *(*createTexture)(int flags);
 	render_mesh_t *(*createMesh)(render_texture_t *texture);
 	render_skel_t *(*createSkel)(void *emd_file, Uint32 emd_length, render_texture_t *texture);
+	render_mask_t *(*createMask)(render_texture_t *texture);
 
 	void (*set_viewport)(int x, int y, int w, int h);
 	void (*set_projection)(float angle, float aspect,
@@ -129,17 +129,14 @@ struct render_s {
 	int render_depth;
 	void (*setRenderDepth)(int show_depth);
 	void (*copyDepthToColor)(void);
-
-	/* Background image mask */
-	render_mask_t * (*render_mask_create)(render_texture_t *texture);
 };
-
-void render_soft_init(render_t *render);
-
-void render_opengl_init(render_t *render);
 
 /*--- Variables ---*/
 
 extern render_t render;
+
+/*--- Functions ---*/
+
+void render_init(render_t *this);
 
 #endif /* RENDER_H */

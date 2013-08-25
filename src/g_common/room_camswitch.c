@@ -25,7 +25,7 @@
 #include "../log.h"
 #include "../parameters.h"
 #include "../filesystem.h"
-#include "../render.h"
+#include "../r_common/render.h"
 
 #include "room.h"
 #include "room_camswitch.h"

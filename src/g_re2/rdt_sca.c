@@ -22,10 +22,11 @@
 #include <SDL.h>
 #include <math.h>
 
-#include "../render.h"
 #include "../log.h"
 
 #include "../g_common/room.h"
+
+#include "../r_common/render.h"
 
 #include "rdt.h"
 #include "rdt_sca.h"

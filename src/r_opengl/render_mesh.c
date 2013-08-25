@@ -31,9 +31,9 @@
 #include <SDL_opengl.h>
 
 #include "../video.h"
-#include "../render.h"
 #include "../log.h"
 
+#include "../r_common/render.h"
 #include "../r_common/render_mesh.h"
 #include "../r_common/render_texture.h"
 

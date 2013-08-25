@@ -28,8 +28,8 @@
 
 #include "../video.h"
 #include "../parameters.h"
-#include "../render.h"
 
+#include "../r_common/render.h"
 #include "../r_common/r_misc.h"
 
 #include "dither.h"

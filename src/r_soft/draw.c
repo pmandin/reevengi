@@ -20,7 +20,7 @@
 
 #include <SDL.h>
 
-#include "../render.h"
+#include "../r_common/render.h"
 
 #include "draw.h"
 
