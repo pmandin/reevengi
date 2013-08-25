@@ -18,8 +18,107 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <SDL.h>
+
+#include "../render.h"
+
 #include "draw.h"
 
 /*--- Variables ---*/
 
 draw_t draw;
+
+/*--- Functions prototypes ---*/
+
+static void shutdown(draw_t *this);
+
+static void resize(draw_t *this, int w, int h, int bpp);
+static void startFrame(draw_t *this);
+static void flushFrame(draw_t *this);
+static void endFrame(draw_t *this);
+
+static void line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
+static void triangle(draw_t *this, draw_vertex_t v[3]);
+static void quad(draw_t *this, draw_vertex_t v[4]);
+
+static void poly_line(draw_t *this, vertexf_t *vtx, int num_vtx);
+static void poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx);
+static void poly_gouraud(draw_t *this, vertexf_t *vtx, int num_vtx);
+static void poly_tex(draw_t *this, vertexf_t *vtx, int num_vtx);
+
+static void add_mask_segment(draw_t *this, int y, int x1, int x2, float w);
+
+/*--- Functions ---*/
+
+void draw_init(draw_t *this)
+{
+	this->shutdown = shutdown;
+
+	this->resize = resize;
+	this->startFrame = startFrame;
+	this->flushFrame = flushFrame;
+	this->endFrame = endFrame;
+
+	this->line = line;
+	this->triangle = triangle;
+	this->quad = quad;
+
+	this->polyLine = poly_line;
+	this->polyFill = poly_fill;
+	this->polyGouraud = poly_gouraud;
+	this->polyTexture = poly_tex;
+
+	this->addMaskSegment = add_mask_segment;
+}
+
+static void shutdown(draw_t *this)
+{
+}
+
+static void resize(draw_t *this, int w, int h, int bpp)
+{
+}
+
+static void startFrame(draw_t *this)
+{
+}
+
+static void flushFrame(draw_t *this)
+{
+}
+
+static void endFrame(draw_t *this)
+{
+}
+
+static void line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2)
+{
+}
+
+static void triangle(draw_t *this, draw_vertex_t v[3])
+{
+}
+
+static void quad(draw_t *this, draw_vertex_t v[4])
+{
+}
+
+static void poly_line(draw_t *this, vertexf_t *vtx, int num_vtx)
+{
+}
+
+static void poly_fill(draw_t *this, vertexf_t *vtx, int num_vtx)
+{
+}
+
+static void poly_gouraud(draw_t *this, vertexf_t *vtx, int num_vtx)
+{
+}
+
+static void poly_tex(draw_t *this, vertexf_t *vtx, int num_vtx)
+{
+}
+
+static void add_mask_segment(draw_t *this, int y, int x1, int x2, float w)
+{
+}

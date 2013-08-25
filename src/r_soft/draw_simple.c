@@ -25,8 +25,8 @@
 #include "../parameters.h"
 #include "../render.h"
 #include "../log.h"
-#include "../draw.h"
 
+#include "draw.h"
 #include "dither.h"
 
 /*--- Defines ---*/
@@ -69,11 +69,6 @@ static poly_hline_t *poly_hlines = NULL;
 
 static void draw_shutdown(draw_t *this);
 
-static void draw_resize(draw_t *this, int w, int h, int bpp);
-static void draw_startFrame(draw_t *this);
-static void draw_flushFrame(draw_t *this);
-static void draw_endFrame(draw_t *this);
-
 static void draw_line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
 static void draw_triangle(draw_t *this, draw_vertex_t v[3]);
 static void draw_quad(draw_t *this, draw_vertex_t v[4]);
@@ -94,12 +89,9 @@ static int clip_line(int *x1, int *y1, int *x2, int *y2);
 
 void draw_init_simple(draw_t *draw)
 {
-	draw->shutdown = draw_shutdown;
+	draw_init(draw);
 
-	draw->resize = draw_resize;
-	draw->startFrame = draw_startFrame;
-	draw->flushFrame = draw_flushFrame;
-	draw->endFrame = draw_endFrame;
+	draw->shutdown = draw_shutdown;
 
 	draw->line = draw_line;
 	draw->triangle = draw_triangle;
@@ -118,22 +110,6 @@ static void draw_shutdown(draw_t *this)
 		poly_hlines = NULL;
 	}
 	size_poly_minmaxx = 0;
-}
-
-static void draw_resize(draw_t *this, int w, int h, int bpp)
-{
-}
-
-static void draw_startFrame(draw_t *this)
-{
-}
-
-static void draw_flushFrame(draw_t *this)
-{
-}
-
-static void draw_endFrame(draw_t *this)
-{
 }
 
 static void draw_line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2)

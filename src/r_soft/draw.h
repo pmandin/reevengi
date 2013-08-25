@@ -67,4 +67,8 @@ struct draw_s {
 
 extern draw_t draw;
 
+/*--- Functions ---*/
+
+void draw_init(draw_t *this);
+
 #endif /* DRAW_H */

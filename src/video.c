@@ -29,7 +29,6 @@
 #include "render.h"
 #include "log.h"
 
-#include "draw.h"
 #include "r_common/render_text.h"
 #include "r_soft/dither.h"
 
