@@ -71,4 +71,6 @@ extern draw_t draw;
 
 void draw_init(draw_t *this);
 
+int clip_line(int *x1, int *y1, int *x2, int *y2);
+
 #endif /* DRAW_H */
