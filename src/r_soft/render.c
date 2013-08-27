@@ -34,6 +34,7 @@
 #include "render_mask.h"
 #include "render_mesh.h"
 #include "render_texture.h"
+#include "render_bitmap.h"
 
 /*--- Defines ---*/
 
