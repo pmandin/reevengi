@@ -498,6 +498,7 @@ static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 
 static void line(vertex_t *v1, vertex_t *v2)
 {
+#if 0
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[2];
 
@@ -528,6 +529,72 @@ static void line(vertex_t *v1, vertex_t *v2)
 	v[1].y = segment[1][1]/segment[1][2];
 
 	draw.line(&draw, &v[0], &v[1]);
+#else
+	/*float segment[4][4], result[4][4]*/;
+	vertexf_t tri1[2], poly[16], poly2[16];
+	int clip_result, /*i,*/ num_vtx;
+	Uint32 color = 0xffffffff;
+
+	if (render.texture) {
+		color = get_color_from_texture(v1);
+		set_color(color);
+	} else {
+		Uint8 r,g,b,a;
+
+		SDL_GetRGBA(render.color, video.screen->format, &r,&g,&b,&a);
+		color = (a<<24)|(r<<16)|(g<<8)|b;
+	}
+
+	tri1[0].pos[0] = v1->x;
+	tri1[0].pos[1] = v1->y;
+	tri1[0].pos[2] = v1->z;
+	tri1[0].pos[3] = 1.0f;
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
+	tri1[0].col[0] = (color>>16) & 0xff;
+	tri1[0].col[1] = (color>>8) & 0xff;
+	tri1[0].col[2] = color & 0xff;
+	tri1[0].col[3] = (color>>24) & 0xff;
+
+	tri1[1].pos[0] = v2->x;
+	tri1[1].pos[1] = v2->y;
+	tri1[1].pos[2] = v2->z;
+	tri1[1].pos[3] = 1.0f;
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
+	tri1[1].col[0] = tri1[0].col[0];
+	tri1[1].col[1] = tri1[0].col[1];
+	tri1[1].col[2] = tri1[0].col[2];
+	tri1[1].col[3] = tri1[0].col[3];
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 2, tri1, poly);
+
+	num_vtx = 2;
+	clip_result = mtx_clipTriangle(poly, &num_vtx, poly2, clip_planes);
+	if (clip_result == CLIPPING_OUTSIDE) {
+		return;
+	}
+
+	/* Check face visible */
+	/*memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = poly[i].pos[0];
+		result[i][1] = poly[i].pos[1];
+		result[i][2] = poly[i].pos[2];
+		result[i][3] = poly[i].pos[3];
+	}
+
+	mtx_mult(frustum_mtx, result, segment);
+	if (mtx_faceVisible(segment)<0.0f) {
+		return;
+	}*/
+
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
+	/* Draw polygon */
+	draw.polyLine(&draw, poly, num_vtx);
+#endif
 }
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
@@ -576,10 +643,20 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[3], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
-	Uint32 color;
+	Uint32 color = 0xffffffff;
 
-	color = get_color_from_texture(v1);
-	set_color(color);
+	if (render.texture) {
+		color = get_color_from_texture(v1);
+		set_color(color);
+	} else {
+		Uint8 r,g,b,a;
+
+		SDL_GetRGBA(render.color, video.screen->format, &r,&g,&b,&a);
+		color = (a<<24)|(r<<16)|(g<<8)|b;
+	}
+
+	/*color = get_color_from_texture(v1);
+	set_color(color);*/
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
@@ -696,10 +773,17 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[4], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
-	Uint32 color;
+	Uint32 color = 0xffffffff;
 
-	color = get_color_from_texture(v1);
-	set_color(color);
+	if (render.texture) {
+		color = get_color_from_texture(v1);
+		set_color(color);
+	} else {
+		Uint8 r,g,b,a;
+
+		SDL_GetRGBA(render.color, video.screen->format, &r,&g,&b,&a);
+		color = (a<<24)|(r<<16)|(g<<8)|b;
+	}
 
 	tri1[0].pos[0] = v1->x;
 	tri1[0].pos[1] = v1->y;
