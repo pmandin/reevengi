@@ -532,6 +532,7 @@ static void line(vertex_t *v1, vertex_t *v2)
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
+#if 0
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[3];
 
@@ -571,10 +572,81 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	v[2].y = segment[2][1]/segment[2][2];
 
 	draw.triangle(&draw, v);
+#else
+	float segment[4][4], result[4][4];
+	vertexf_t tri1[3], poly[16], poly2[16];
+	int clip_result, i, num_vtx;
+	Uint32 color;
+
+	color = get_color_from_texture(v1);
+	set_color(color);
+
+	tri1[0].pos[0] = v1->x;
+	tri1[0].pos[1] = v1->y;
+	tri1[0].pos[2] = v1->z;
+	tri1[0].pos[3] = 1.0f;
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
+	tri1[0].col[0] = (color>>16) & 0xff;
+	tri1[0].col[1] = (color>>8) & 0xff;
+	tri1[0].col[2] = color & 0xff;
+	tri1[0].col[3] = (color>>24) & 0xff;
+
+	tri1[1].pos[0] = v2->x;
+	tri1[1].pos[1] = v2->y;
+	tri1[1].pos[2] = v2->z;
+	tri1[1].pos[3] = 1.0f;
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
+	tri1[1].col[0] = tri1[0].col[0];
+	tri1[1].col[1] = tri1[0].col[1];
+	tri1[1].col[2] = tri1[0].col[2];
+	tri1[1].col[3] = tri1[0].col[3];
+
+	tri1[2].pos[0] = v3->x;
+	tri1[2].pos[1] = v3->y;
+	tri1[2].pos[2] = v3->z;
+	tri1[2].pos[3] = 1.0f;
+	tri1[2].tx[0] = v3->u;
+	tri1[2].tx[1] = v3->v;
+	tri1[2].col[0] = tri1[0].col[0];
+	tri1[2].col[1] = tri1[0].col[1];
+	tri1[2].col[2] = tri1[0].col[2];
+	tri1[2].col[3] = tri1[0].col[3];
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 3, tri1, poly);
+
+	num_vtx = 3;
+	clip_result = mtx_clipTriangle(poly, &num_vtx, poly2, clip_planes);
+	if (clip_result == CLIPPING_OUTSIDE) {
+		return;
+	}
+
+	/* Check face visible */
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = poly[i].pos[0];
+		result[i][1] = poly[i].pos[1];
+		result[i][2] = poly[i].pos[2];
+		result[i][3] = poly[i].pos[3];
+	}
+
+	mtx_mult(frustum_mtx, result, segment);
+	if (mtx_faceVisible(segment)<0.0f) {
+		return;
+	}
+
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
+	/* Draw polygon */
+	draw.polyLine(&draw, poly, num_vtx);
+#endif
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
+#if 0
 	float segment[4][4], result[4][4];
 	draw_vertex_t v[4];
 
@@ -620,6 +692,87 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	v[3].y = segment[3][1]/segment[3][2];
 
 	draw.quad(&draw, v);
+#else
+	float segment[4][4], result[4][4];
+	vertexf_t tri1[4], poly[16], poly2[16];
+	int clip_result, i, num_vtx;
+	Uint32 color;
+
+	color = get_color_from_texture(v1);
+	set_color(color);
+
+	tri1[0].pos[0] = v1->x;
+	tri1[0].pos[1] = v1->y;
+	tri1[0].pos[2] = v1->z;
+	tri1[0].pos[3] = 1.0f;
+	tri1[0].tx[0] = v1->u;
+	tri1[0].tx[1] = v1->v;
+	tri1[0].col[0] = (color>>16) & 0xff;
+	tri1[0].col[1] = (color>>8) & 0xff;
+	tri1[0].col[2] = color & 0xff;
+	tri1[0].col[3] = (color>>24) & 0xff;
+
+	tri1[1].pos[0] = v2->x;
+	tri1[1].pos[1] = v2->y;
+	tri1[1].pos[2] = v2->z;
+	tri1[1].pos[3] = 1.0f;
+	tri1[1].tx[0] = v2->u;
+	tri1[1].tx[1] = v2->v;
+	tri1[1].col[0] = tri1[0].col[0];
+	tri1[1].col[1] = tri1[0].col[1];
+	tri1[1].col[2] = tri1[0].col[2];
+	tri1[1].col[3] = tri1[0].col[3];
+
+	tri1[2].pos[0] = v3->x;
+	tri1[2].pos[1] = v3->y;
+	tri1[2].pos[2] = v3->z;
+	tri1[2].pos[3] = 1.0f;
+	tri1[2].tx[0] = v3->u;
+	tri1[2].tx[1] = v3->v;
+	tri1[2].col[0] = tri1[0].col[0];
+	tri1[2].col[1] = tri1[0].col[1];
+	tri1[2].col[2] = tri1[0].col[2];
+	tri1[2].col[3] = tri1[0].col[3];
+
+	tri1[3].pos[0] = v4->x;
+	tri1[3].pos[1] = v4->y;
+	tri1[3].pos[2] = v4->z;
+	tri1[3].pos[3] = 1.0f;
+	tri1[3].tx[0] = v4->u;
+	tri1[3].tx[1] = v4->v;
+	tri1[3].col[0] = tri1[0].col[0];
+	tri1[3].col[1] = tri1[0].col[1];
+	tri1[3].col[2] = tri1[0].col[2];
+	tri1[3].col[3] = tri1[0].col[3];
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 4, tri1, poly);
+
+	num_vtx = 4;
+	clip_result = mtx_clipTriangle(poly, &num_vtx, poly2, clip_planes);
+	if (clip_result == CLIPPING_OUTSIDE) {
+		return;
+	}
+
+	/* Check face visible */
+	memset(result, 0, sizeof(float)*4*4);
+	for (i=0; i<3; i++) {
+		result[i][0] = poly[i].pos[0];
+		result[i][1] = poly[i].pos[1];
+		result[i][2] = poly[i].pos[2];
+		result[i][3] = poly[i].pos[3];
+	}
+
+	mtx_mult(frustum_mtx, result, segment);
+	if (mtx_faceVisible(segment)<0.0f) {
+		return;
+	}
+
+	/* Project poly in frustum */
+	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+
+	/* Draw polygon */
+	draw.polyLine(&draw, poly, num_vtx);
+#endif
 }
 
 /*
