@@ -34,7 +34,6 @@
 
 #include "dither.h"
 #include "draw.h"
-#include "draw_simple.h"
 
 /*--- Defines ---*/
 
@@ -145,7 +144,6 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w);
 void draw_init_sbuffer(draw_t *draw)
 {
 	draw_init(draw);
-	draw_init_simple(draw);	/* for wireframe stuff */
 
 	draw->shutdown = draw_shutdown;
 
