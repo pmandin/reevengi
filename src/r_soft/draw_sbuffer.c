@@ -1568,12 +1568,9 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
-		if (pminx<minx) {
-			minx = pminx;
-		}
-		if (pmaxx>maxx) {
-			maxx = pmaxx;
-		}
+
+		minx=MIN(minx, pminx);
+		maxx=MAX(maxx, pmaxx);
 
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[1];
@@ -1602,7 +1599,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
 	int miny = video.viewport.h, maxy = -1;
 	int minx = video.viewport.w, maxx = -1;
-	int y, p1, p2;
+	int y, p1, p2, prevx1, prevx2;
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
 
@@ -1724,25 +1721,38 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	segment.texture = render.texture;
 	segment.masking = render.bitmap.masking;
 
+	prevx1 = poly_hlines[miny].sbp[0].x;
+	prevx2 = poly_hlines[miny].sbp[1].x;
+
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
-		if (pminx<minx) {
-			minx = pminx;
-		}
-		if (pmaxx>maxx) {
-			maxx = pmaxx;
-		}
+
+		minx=MIN(minx, pminx);
+		maxx=MAX(maxx, pmaxx);
 
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[0];
+		if (prevx1<pminx) {
+			segment.start.x = prevx1+1;
+		} else if (prevx1>pminx) {
+			segment.end.x = prevx1-1;
+		}
 
 		draw_add_segment(y, &segment);
 
 		segment.start = poly_hlines[y].sbp[1];
 		segment.end = poly_hlines[y].sbp[1];
+		if (prevx2<pmaxx) {
+			segment.start.x = prevx2+1;
+		} else if (prevx2>pmaxx) {
+			segment.end.x = prevx2-1;
+		}
 
 		draw_add_segment(y, &segment);
+
+		prevx1 = pminx;
+		prevx2 = pmaxx;
 	}
 
 	/*dump_sbuffer();*/
