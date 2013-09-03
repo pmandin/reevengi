@@ -1021,6 +1021,15 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 	++row->num_segs;
 }
 
+static void add_base_segment_span(sbuffer_row_t *row, const sbuffer_segment_t *segment)
+{
+	sbuffer_segment_t *new_seg = &(row->segment[row->num_segs]);
+
+	memcpy(new_seg, segment, sizeof(sbuffer_segment_t));
+
+	++row->num_segs;
+}
+
 static void push_data_span(int num_seg, int num_segdata, sbuffer_row_t *row, int x1, int x2)
 {
 	sbuffer_segdata_t *new_segdata;
@@ -1460,7 +1469,7 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 label_insert_base:
 	/* Insert common segment data if needed */
 	if (segbase_inserted) {
-		add_base_segment(y, segment);
+		add_base_segment_span(row, segment);
 	}
 }
 
