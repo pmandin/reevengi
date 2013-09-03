@@ -1016,13 +1016,7 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 	sbuffer_row_t *row = &sbuffer_rows[y];
 	sbuffer_segment_t *new_seg = &(row->segment[row->num_segs]);
 
-	new_seg->render_mode = segment->render_mode;
-	new_seg->tex_num_pal = segment->tex_num_pal;
-	new_seg->masking = segment->masking;
-	new_seg->texture = segment->texture;
-
-	new_seg->start = segment->start;
-	new_seg->end = segment->end;
+	memcpy(new_seg, segment, sizeof(sbuffer_segment_t));
 
 	++row->num_segs;
 }
