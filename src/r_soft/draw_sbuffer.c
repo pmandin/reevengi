@@ -1098,7 +1098,7 @@ static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int
 	}
 }
 
-static void draw_add_segment(int y, const sbuffer_segment_t *segment)
+static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 {
 	sbuffer_row_t *row = &sbuffer_rows[y];
 	int x1,x2, i;
@@ -1110,24 +1110,24 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 
 	/* Clip if outside */
 	if ((x2<0) || (x1>=video.viewport.w)) {
-		return;
+		return 0;
 	}
 
 	x1 = MAX(0, x1);
 	x2 = MIN(video.viewport.w-1, x2);
 
 	if (x2<x1) {
-		return;
+		return 0;
 	}
 
 	/* Still room for common segment data ? */
 	if (row->num_segs>=NUM_SEGMENTS) {
-		fprintf(stderr,"Not enough segments for row %d\n",y);
-		return;
+		DEBUG_PRINT(("Not enough segments for row %d\n",y));
+		return 0;
 	}
 	if (row->num_segs_data>=NUM_SEGMENTS_DATA) {
-		fprintf(stderr,"Not enough data segments for row %d\n",y);
-		return;
+		DEBUG_PRINT(("Not enough data segments for row %d\n",y));
+		return 0;
 	}
 
 	DEBUG_PRINT(("-------add segment %d %d,%d (seg %d segdata %d)\n", y, x1,x2,
@@ -1469,6 +1469,8 @@ label_insert_base:
 	if (segbase_inserted) {
 		add_base_segment_span(row, segment);
 	}
+
+	return segbase_inserted;
 }
 
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
