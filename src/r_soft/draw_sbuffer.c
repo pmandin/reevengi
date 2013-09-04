@@ -1105,8 +1105,6 @@ static void draw_add_segment(int y, const sbuffer_segment_t *segment)
 	int segbase_inserted = 0;
 	int clip_seg, clip_pos;
 
-	assert((y>=0) && (y<video.viewport.h));
-
 	x1 = segment->start.x;
 	x2 = segment->end.x;
 
