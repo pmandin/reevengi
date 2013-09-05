@@ -964,12 +964,8 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	/* Render horizontal lines */
-	if (miny<0) {
-		miny = 0;
-	}
-	if (maxy>=video.viewport.h) {
-		maxy = video.viewport.h;
-	}
+	miny=MAX(miny, 0);
+	maxy=MIN(maxy, video.viewport.h);
 
 	/* Copy to other array for a single segment */
 	if (num_vtx==2) {
@@ -999,29 +995,13 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		if (draw_add_segment(y, &segment)) {
 			add_base_segment(y, &segment);
 		}
-
-/*		if (y==284) {
-			int seg_to_add = draw_add_segment(y, &segment);
-
-			DEBUG_PRINT((">>segtoadd: %d\n", seg_to_add));
-
-			if (seg_to_add) {
-				add_base_segment(y, &segment);
-			}
-
-			break;
-		}*/
 #endif
 	}
 
 	/*dump_sbuffer();*/
 
-	if (minx<0) {
-		minx = 0;
-	}
-	if (maxx>=video.viewport.w) {
-		maxx = video.viewport.w;
-	}
+	minx=MAX(minx, 0);
+	maxx=MIN(maxx, video.viewport.w);
 
 	/* Mark dirty rectangle */
 	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
@@ -1138,12 +1118,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	/* Render horizontal lines */
-	if (miny<0) {
-		miny = 0;
-	}
-	if (maxy>=video.viewport.h) {
-		maxy = video.viewport.h;
-	}
+	miny=MAX(miny, 0);
+	maxy=MIN(maxy, video.viewport.h);
 
 	/* Copy to other array for a single segment */
 	if (num_vtx==2) {
@@ -1205,12 +1181,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 	/*dump_sbuffer();*/
 
-	if (minx<0) {
-		minx = 0;
-	}
-	if (maxx>=video.viewport.w) {
-		maxx = video.viewport.w;
-	}
+	minx=MAX(minx, 0);
+	maxx=MIN(maxx, video.viewport.w);
 
 	/* Mark dirty rectangle */
 	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
