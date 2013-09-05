@@ -86,6 +86,8 @@ typedef struct {
 typedef struct {
 	Uint16 num_segs;
 	Uint16 num_segs_data;
+	Uint8 seg_full;
+	Uint8 span_full;
 	sbuffer_segment_t segment[NUM_SEGMENTS];
 	sbuffer_segdata_t segdata[NUM_SEGMENTS_DATA];
 } sbuffer_row_t;
@@ -237,6 +239,8 @@ static void clear_sbuffer(void)
 	for (i=0; i<sbuffer_numrows; i++) {
 		sbuffer_rows[i].num_segs = 0;
 		sbuffer_rows[i].num_segs_data = 0;
+		sbuffer_rows[i].seg_full = 0;
+		sbuffer_rows[i].span_full = 0;
 	}
 	sbuffer_seg_id = 0;
 }
@@ -261,21 +265,31 @@ static void draw_flushFrame(draw_t *this)
 
 	/* For each row */
 	for (i=0; i<sbuffer_numrows; i++, dst += surf->pitch) {
-		sbuffer_segdata_t *segdata = sbuffer_rows[i].segdata;
-		sbuffer_segment_t *segments = sbuffer_rows[i].segment;
+		sbuffer_row_t *row = &sbuffer_rows[i];
+		sbuffer_segdata_t *segdata = row->segdata;
+		sbuffer_segment_t *segments = row->segment;
 
-		if ((sbuffer_rows[i].num_segs==0) || (sbuffer_rows[i].num_segs_data==0)) {
+		if ((row->num_segs==0) || (row->num_segs_data==0)) {
 			continue;
 		}
 
+#if 0
+		if (row->seg_full) {
+			fprintf(stderr,"Not enough segments for row %d\n",i);
+		}
+		if (row->span_full) {
+			fprintf(stderr,"Not enough spans for row %d\n",i);
+		}
+#endif
+
 		/* Render list of segment */
-		for (j=0; j<sbuffer_rows[i].num_segs_data; j++) {
+		for (j=0; j<row->num_segs_data; j++) {
 			int last;
 			sbuffer_segment_t *current = &segments[segdata[j].id];
 
 			/* Find last segment to merge */
 			for (last=j;
-				(last<sbuffer_rows[i].num_segs_data-1) && (segdata[j].id==segdata[last+1].id);
+				(last<row->num_segs_data-1) && (segdata[j].id==segdata[last+1].id);
 				last++)
 			{
 			}
@@ -1129,12 +1143,10 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 	}
 
 	/* Still room for common segment data ? */
-	if (row->num_segs>=NUM_SEGMENTS) {
-		DEBUG_PRINT(("Not enough segments for row %d\n",y));
-		return 0;
-	}
-	if (row->num_segs_data>=NUM_SEGMENTS_DATA) {
-		DEBUG_PRINT(("Not enough data segments for row %d\n",y));
+	row->seg_full |= (row->num_segs>=NUM_SEGMENTS);
+	row->span_full |= (row->num_segs_data>=NUM_SEGMENTS_DATA);
+
+	if (row->seg_full || row->span_full) {
 		return 0;
 	}
 
