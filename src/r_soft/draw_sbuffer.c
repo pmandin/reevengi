@@ -484,10 +484,6 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 	int segbase_inserted = 0;
 	int clip_seg, clip_pos;
 
-	/*if (y!=284) {
-		return 0;
-	}*/
-
 	x1 = segment->start.x;
 	x2 = segment->end.x;
 
