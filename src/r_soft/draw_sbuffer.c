@@ -296,7 +296,7 @@ static void draw_flushFrame(draw_t *this)
 		SDL_UnlockSurface(surf);
 	}
 
-	clear_sbuffer();
+	/*clear_sbuffer();*/
 }
 
 static void draw_endFrame(draw_t *this)
