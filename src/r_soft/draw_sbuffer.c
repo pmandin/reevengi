@@ -1018,6 +1018,8 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 
 	memcpy(new_seg, segment, sizeof(sbuffer_segment_t));
 
+	DEBUG_PRINT((">>base segment %d added\n", row->num_segs));
+
 	++row->num_segs;
 }
 
@@ -1026,6 +1028,8 @@ static void add_base_segment_span(sbuffer_row_t *row, const sbuffer_segment_t *s
 	sbuffer_segment_t *new_seg = &(row->segment[row->num_segs]);
 
 	memcpy(new_seg, segment, sizeof(sbuffer_segment_t));
+
+	DEBUG_PRINT((">>base segment %d added\n", row->num_segs));
 
 	++row->num_segs;
 }
@@ -1104,6 +1108,10 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 	int x1,x2, i;
 	int segbase_inserted = 0;
 	int clip_seg, clip_pos;
+
+	/*if (y!=284) {
+		return 0;
+	}*/
 
 	x1 = segment->start.x;
 	x2 = segment->end.x;
@@ -1466,10 +1474,13 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 
 label_insert_base:
 	/* Insert common segment data if needed */
+#if 0
 	if (segbase_inserted) {
 		add_base_segment_span(row, segment);
 	}
+#endif
 
+	DEBUG_PRINT((">>spans with seg: %d\n", segbase_inserted));
 	return segbase_inserted;
 }
 
@@ -1609,7 +1620,25 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[1];
 
+#if 0
 		draw_add_segment(y, &segment);
+#else
+		if (draw_add_segment(y, &segment)) {
+			add_base_segment(y, &segment);
+		}
+
+/*		if (y==284) {
+			int seg_to_add = draw_add_segment(y, &segment);
+
+			DEBUG_PRINT((">>segtoadd: %d\n", seg_to_add));
+
+			if (seg_to_add) {
+				add_base_segment(y, &segment);
+			}
+
+			break;
+		}*/
+#endif
 	}
 
 	/*dump_sbuffer();*/
@@ -1773,7 +1802,13 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			segment.end.x = prevx1-1;
 		}
 
+#if 0
 		draw_add_segment(y, &segment);
+#else
+		if (draw_add_segment(y, &segment)) {
+			add_base_segment(y, &segment);
+		}
+#endif
 
 		segment.start = poly_hlines[y].sbp[1];
 		segment.end = poly_hlines[y].sbp[1];
@@ -1783,7 +1818,13 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			segment.end.x = prevx2-1;
 		}
 
+#if 0
 		draw_add_segment(y, &segment);
+#else
+		if (draw_add_segment(y, &segment)) {
+			add_base_segment(y, &segment);
+		}
+#endif
 
 		prevx1 = pminx;
 		prevx2 = pmaxx;
@@ -1833,7 +1874,12 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 	segment.masking = 1;
 #endif
 
+#if 0
 	draw_add_segment(y, &segment);
-
+#else
+	if (draw_add_segment(y, &segment)) {
+		add_base_segment(y, &segment);
+	}
+#endif
 	/* Upper layer will update dirty rectangles */
 }
