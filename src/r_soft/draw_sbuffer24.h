@@ -1,8 +1,8 @@
 /*
 	2D drawing functions
-	SBuffer renderer
+	SBuffer renderer, 24 bits mode
 
-	Copyright (C) 2008	Patrice Mandin
+	Copyright (C) 2008-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,42 +19,17 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef DRAW_SBUFFER_H
-#define DRAW_SBUFFER_H 1
+#ifndef DRAW_SBUFFER24_H
+#define DRAW_SBUFFER24_H 1
 
 /*--- External types ---*/
 
-typedef struct draw_s draw_t;
-typedef struct render_texture_s render_texture_t;
-
-/*--- Types ---*/
-
-typedef struct sbuffer_point_s sbuffer_point_t;
-
-struct sbuffer_point_s {
-	int x;		/* x on screen*/
-	float r,g,b;	/* color */
-	float u,v;	/* u,v coords */
-	float w;	/* w=1/z */
-};
-
 typedef struct sbuffer_segment_s sbuffer_segment_t;
 
-struct sbuffer_segment_s {
-	Uint8	dummy;
-	Uint8	render_mode;
-	Uint8	tex_num_pal;
-	Uint8	masking;
-	render_texture_t *texture;
-	sbuffer_point_t start, end;
-};
+/*--- Functions ---*/
 
-/*--- Variables ---*/
+void draw_render_fill24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+void draw_render_textured24(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
 
-extern int drawCorrectPerspective;
-
-/*--- Functions prototypes ---*/
-
-void draw_init_sbuffer(draw_t *draw);
-
-#endif /* DRAW_SBUFFER_H */
+#endif /* DRAW_SBUFFER24_H */
