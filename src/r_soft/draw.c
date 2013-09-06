@@ -83,6 +83,8 @@ void draw_init(draw_t *this)
 	this->polyTexture = poly_tex;
 
 	this->addMaskSegment = add_mask_segment;
+
+	this->correctPerspective = 0;
 }
 
 static void shutdown(draw_t *this)
