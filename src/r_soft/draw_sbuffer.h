@@ -49,10 +49,6 @@ struct sbuffer_segment_s {
 	sbuffer_point_t start, end;
 };
 
-/*--- Variables ---*/
-
-extern int drawCorrectPerspective;
-
 /*--- Functions prototypes ---*/
 
 void draw_init_sbuffer(draw_t *draw);

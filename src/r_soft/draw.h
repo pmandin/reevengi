@@ -61,6 +61,10 @@ struct draw_s {
 
 	/* Add mask segment */
 	void (*addMaskSegment)(draw_t *this, int y1, int x1, int x2, float w);
+
+	/* Perspective correction ? */
+	/* 0:none, 1:per scanline, 2:every 16 pixels */
+	int correctPerspective;
 };
 
 /*--- Variables ---*/

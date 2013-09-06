@@ -83,10 +83,6 @@ typedef struct {
 
 typedef void (*sbuffer_draw_f)(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
 
-/*--- Global variables ---*/
-
-int drawCorrectPerspective = 0; /* 0:none, 1:per scanline, 2:every 16 pixels */
-
 /*--- Variables ---*/
 
 /* for poly rendering */
@@ -931,7 +927,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 			float tv1 = vtx[v1].tx[1];
 			float dv = vtx[v2].tx[1] - tv1;
 			float dw = w2 - w1;
-			if (drawCorrectPerspective>0) {
+			if (draw.correctPerspective>0) {
 				r1 *= w1;
 				dr = vtx[v2].col[0]*w2 - r1;
 				g1 *= w1;
@@ -1085,7 +1081,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			float tv1 = vtx[v1].tx[1];
 			float dv = vtx[v2].tx[1] - tv1;
 			float dw = w2 - w1;
-			if (drawCorrectPerspective>0) {
+			if (draw.correctPerspective>0) {
 				r1 *= w1;
 				dr = vtx[v2].col[0]*w2 - r1;
 				g1 *= w1;

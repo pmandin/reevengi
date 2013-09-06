@@ -67,7 +67,7 @@ void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t
 	g2 = segment->end.g;
 	b2 = segment->end.b;
 
-	if (drawCorrectPerspective>0) {
+	if (draw.correctPerspective>0) {
 		r1 = segment->start.r / segment->start.w;
 		g1 = segment->start.g / segment->start.w;
 		b1 = segment->start.b / segment->start.w;
@@ -106,7 +106,7 @@ void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_
 	u2 = segment->end.u;
 	v2 = segment->end.v;
 
-	if (drawCorrectPerspective>0) {
+	if (draw.correctPerspective>0) {
 		u1 = segment->start.u / segment->start.w;
 		v1 = segment->start.v / segment->start.w;
 		u2 = segment->end.u / segment->end.w;
