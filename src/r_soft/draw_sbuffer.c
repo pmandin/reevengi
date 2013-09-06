@@ -516,24 +516,36 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 	if (row->num_segs == 0) {
 		DEBUG_PRINT(("----empty list\n"));
 		insert_data_span(row->num_segs,0,row, x1,x2);
+#if 0
 		segbase_inserted=1;
 		goto label_insert_base;
+#else
+		return 1;
+#endif
 	}
 
 	/* Finish before first ? */
 	if (x2 < row->segdata[0].x1) {
 		DEBUG_PRINT(("----finish before first (%d<%d)\n",x2,row->segdata[0].x1));
 		insert_data_span(row->num_segs,0,row, x1,x2);
+#if 0
 		segbase_inserted=1;
 		goto label_insert_base;
+#else
+		return 1;
+#endif
 	}
 
 	/* Start after last ? */
 	if (row->segdata[row->num_segs_data-1].x2 < x1) {
 		DEBUG_PRINT(("----start after last (%d<%d)\n", row->segdata[row->num_segs_data-1].x2, x1));
 		insert_data_span(row->num_segs,row->num_segs_data,row, x1,x2);
+#if 0
 		segbase_inserted=1;
 		goto label_insert_base;
+#else
+		return 1;
+#endif
 	}
 
 	/*--- Need to check against current list ---*/
