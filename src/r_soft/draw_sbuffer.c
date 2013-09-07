@@ -392,6 +392,8 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 	DEBUG_PRINT((">>base segment %d added\n", row->num_segs));
 
 	++row->num_segs;
+
+	row->seg_full |= (row->num_segs>=NUM_SEGMENTS);
 }
 
 static void add_base_segment_span(sbuffer_row_t *row, const sbuffer_segment_t *segment)
@@ -403,6 +405,8 @@ static void add_base_segment_span(sbuffer_row_t *row, const sbuffer_segment_t *s
 	DEBUG_PRINT((">>base segment %d added\n", row->num_segs));
 
 	++row->num_segs;
+
+	row->seg_full |= (row->num_segs>=NUM_SEGMENTS);
 }
 
 static void push_data_span(int num_seg, int num_segdata, sbuffer_row_t *row, int x1, int x2)
@@ -452,6 +456,8 @@ static void insert_data_span(int num_seg, int new_segdata, sbuffer_row_t *row, i
 	push_data_span(num_seg, new_segdata, row, x1,x2);
 	if (num_segs_data<NUM_SEGMENTS_DATA) {
 		++row->num_segs_data;
+
+		row->span_full |= (row->num_segs_data>=NUM_SEGMENTS_DATA);
 	}
 }
 
@@ -470,6 +476,8 @@ static void insert_data_segment(int num_seg, int new_segdata, int y, int x1, int
 	push_data_segment(num_seg, new_segdata, y, x1,x2);
 	if (num_segs_data<NUM_SEGMENTS_DATA) {
 		++row->num_segs_data;
+
+		row->span_full |= (row->num_segs_data>=NUM_SEGMENTS_DATA);
 	}
 }
 
@@ -479,6 +487,11 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 	int x1,x2, i;
 	int segbase_inserted = 0;
 	int clip_seg, clip_pos;
+
+	/* Still room for common segment data ? */
+	if (row->seg_full || row->span_full) {
+		return 0;
+	}
 
 	x1 = segment->start.x;
 	x2 = segment->end.x;
@@ -492,14 +505,6 @@ static int draw_add_segment(int y, const sbuffer_segment_t *segment)
 	x2 = MIN(video.viewport.w-1, x2);
 
 	if (x2<x1) {
-		return 0;
-	}
-
-	/* Still room for common segment data ? */
-	row->seg_full |= (row->num_segs>=NUM_SEGMENTS);
-	row->span_full |= (row->num_segs_data>=NUM_SEGMENTS_DATA);
-
-	if (row->seg_full || row->span_full) {
 		return 0;
 	}
 
