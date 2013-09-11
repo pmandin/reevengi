@@ -261,7 +261,8 @@ static void draw_flushFrame(draw_t *this)
 
 			/* Find last segment to merge */
 			for (last=j;
-				(last<row->num_segs_data-1) && (segdata[j].id==segdata[last+1].id);
+				(last<row->num_segs_data-1) && (segdata[j].id==segdata[last+1].id)
+				&& (segdata[last+1].x1-segdata[last].x2 == 1);
 				last++)
 			{
 			}
@@ -998,13 +999,9 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[1];
 
-#if 0
-		draw_add_segment(y, &segment);
-#else
 		if (draw_add_segment(y, &segment)) {
 			add_base_segment(y, &segment);
 		}
-#endif
 	}
 
 	/*dump_sbuffer();*/
@@ -1148,6 +1145,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
+		int add_seg;
 
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
@@ -1160,13 +1158,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			segment.end.x = prevx1-1;
 		}
 
-#if 0
 		draw_add_segment(y, &segment);
-#else
-		if (draw_add_segment(y, &segment)) {
-			add_base_segment(y, &segment);
-		}
-#endif
 
 		segment.start = poly_hlines[y].sbp[1];
 		segment.end = poly_hlines[y].sbp[1];
@@ -1176,13 +1168,11 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			segment.end.x = prevx2-1;
 		}
 
-#if 0
-		draw_add_segment(y, &segment);
-#else
-		if (draw_add_segment(y, &segment)) {
+		add_seg |= draw_add_segment(y, &segment);
+
+		if (add_seg) {
 			add_base_segment(y, &segment);
 		}
-#endif
 
 		prevx1 = pminx;
 		prevx2 = pmaxx;
