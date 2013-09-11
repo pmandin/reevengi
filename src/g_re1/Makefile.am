@@ -8,5 +8,5 @@ AM_CFLAGS = $(SDL_CFLAGS)
 AM_CXXFLAGS = $(SDL_CFLAGS)
 
 EXTRA_DIST = emd.h pak.h game_re1.h rdt.h rdt_rvd.h rdt_rid.h \
-	rdt_pri.c rdt_scd.h rdt_scd_common.h rdt_scd_dump.h \
+	rdt_pri.h rdt_scd.h rdt_scd_common.h rdt_scd_dump.h \
 	rdt_sca.h rdt_msg.h rdt_evt.h
