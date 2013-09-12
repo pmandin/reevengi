@@ -353,43 +353,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\depack_adt.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\depack_mdec.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\depack_pak.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\depack_sld.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\depack_vlc.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\dirty_rects.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\dither.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\draw_sbuffer.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\draw_simple.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\dyngl.c"
 				>
 			</File>
 			<File
@@ -409,23 +377,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\matrix.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\menu.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model_emd.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model_emd2.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model_emd3.c"
 				>
 			</File>
 			<File
@@ -434,122 +386,6 @@
 			</File>
 			<File
 				RelativePath="..\src\physfsrwops.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re1_pc_game.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re1_ps1.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re2_pc_demo.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re2_pc_game.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re2_ps1.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re3_pc.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re3_ps1_game.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_bitmap.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_bitmap_opengl.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mask.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mask_opengl.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mesh.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mesh_opengl.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_opengl.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_skel.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_skel_list.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_skel_opengl.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_text.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_texture.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_texture_list.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_texture_opengl.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt2.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt2_script.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt3_script.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt_script.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\state.c"
 				>
 			</File>
 			<File
@@ -587,47 +423,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\depack_adt.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\depack_mdec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\depack_pak.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\depack_sld.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\depack_vlc.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\dirty_rects.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\dither.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\draw.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\draw_sbuffer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\draw_simple.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\dyngl.h"
 				>
 			</File>
 			<File
@@ -643,139 +443,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\matrix.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\menu.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model_emd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model_emd2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\model_emd3.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\parameters.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\physfsrwops.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re1_pc_game.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re1_ps1.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re2_pc_demo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re2_pc_game.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re2_ps1.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re3_pc.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\re3_ps1_game.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mask.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mask_opengl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mesh.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_mesh_opengl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_skel.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_skel_list.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_skel_opengl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_text.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_texture.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_texture_list.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\render_texture_opengl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt2_script.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt3_script.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\room_rdt_script.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\state.h"
 				>
 			</File>
 			<File
