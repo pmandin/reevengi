@@ -1193,12 +1193,9 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 	segment.masking = 1;
 #endif
 
-#if 0
-	draw_add_segment(y, &segment);
-#else
 	if (draw_add_segment(y, &segment)) {
 		add_base_segment(y, &segment);
 	}
-#endif
+
 	/* Upper layer will update dirty rectangles */
 }
