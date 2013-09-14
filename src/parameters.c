@@ -44,26 +44,33 @@
 #define DEFAULT_ROOM 0
 #define DEFAULT_CAMERA 0
 
+#ifdef HAVE_DESIGNATED_INITIALIZERS
+# define SFINIT(f, v) f = v
+#else
+# define SFINIT(f, v) v
+#endif
+
 /*--- Global variables ---*/
 
 params_t params = {
-	.verbose = DEFAULT_VERBOSE,
-	.log_file = PACKAGE_NAME ".log",
-	.basedir = DEFAULT_BASEDIR,
-	.viewmode = VIEWMODE_BACKGROUND,
-	.use_opengl = DEFAULT_USE_OPENGL,
-	.aspect_x = DEFAULT_ASPECT_X,
-	.aspect_y = DEFAULT_ASPECT_Y,
-	.dithering = 0,
-	.linear = 0,
-	.dump_script = 0,
-	.width = 0,
-	.height = 0,
-	.bpp = 0,
-	.fps = 0,
-	.stage = DEFAULT_STAGE,
-	.room = DEFAULT_ROOM,
-	.camera = DEFAULT_CAMERA
+	SFINIT(.verbose, DEFAULT_VERBOSE),
+	SFINIT(.log_file, PACKAGE_NAME ".log"),
+	SFINIT(.basedir, DEFAULT_BASEDIR),
+	SFINIT(.viewmode, VIEWMODE_BACKGROUND),
+	SFINIT(.use_opengl, DEFAULT_USE_OPENGL),
+	SFINIT(.aspect_x, DEFAULT_ASPECT_X),
+	SFINIT(.aspect_y, DEFAULT_ASPECT_Y),
+	SFINIT(.aspect_user, 0),
+	SFINIT(.dithering, 0),
+	SFINIT(.linear, 0),
+	SFINIT(.dump_script, 0),
+	SFINIT(.width, 0),
+	SFINIT(.height, 0),
+	SFINIT(.bpp, 0),
+	SFINIT(.fps, 0),
+	SFINIT(.stage, DEFAULT_STAGE),
+	SFINIT(.room, DEFAULT_ROOM),
+	SFINIT(.camera, DEFAULT_CAMERA)
 };
 
 /*---- Variables ---*/
