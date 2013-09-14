@@ -9,4 +9,5 @@ AM_CXXFLAGS = $(SDL_CFLAGS)
 
 EXTRA_DIST = game.h fs_ignorecase.h menu.h player.h room.h room_script.h \
 	room_camswitch.h room_map.h room_door.h \
-	room_item.h
+	room_item.h \
+	libg_common.vcproj

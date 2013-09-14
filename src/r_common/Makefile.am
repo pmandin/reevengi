@@ -11,4 +11,5 @@ AM_CXXFLAGS = $(SDL_CFLAGS)
 
 EXTRA_DIST = render_skel_list.h render_texture_list.h \
 	render_text.h render_mask.h render_bitmap.h render_skel.h \
-	render_mesh.h r_misc.h render_texture.h render.h
+	render_mesh.h r_misc.h render_texture.h render.h \
+	libr_common.vcproj

@@ -13,4 +13,5 @@ reevengi_generated = dyngl_gl.c dyngl_gl.h dyngl_glext.c dyngl_glext.h
 
 EXTRA_DIST = $(reevengi_generated) dyngl.h render_mask.h \
 	render_mesh.h render_skel.h render_texture.h \
-	render_bitmap.h render.h
+	render_bitmap.h render.h \
+	libr_opengl.vcproj

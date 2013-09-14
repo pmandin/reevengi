@@ -27,4 +27,4 @@ reevengi_LDADD = g_re1/libg_re1.a g_re2/libg_re2.a g_re3/libg_re3.a \
 	r_opengl/libr_opengl.a r_soft/libr_soft.a \
 	r_common/libr_common.a 
 
-EXTRA_DIST = $(reevengi_headers)
+EXTRA_DIST = $(reevengi_headers) reevengi.vcproj

@@ -191,12 +191,5 @@ src/r_common/Makefile
 src/r_opengl/Makefile
 src/r_soft/Makefile
 vs2005/Makefile
-vs2005/libg_common/Makefile
-vs2005/libg_re1/Makefile
-vs2005/libg_re2/Makefile
-vs2005/libg_re3/Makefile
-vs2005/libr_common/Makefile
-vs2005/libr_soft/Makefile
-vs2005/libr_opengl/Makefile
 ])
 AC_OUTPUT
