@@ -2,7 +2,7 @@
 	2D drawing functions
 	SBuffer renderer
 
-	Copyright (C) 2008-2010	Patrice Mandin
+	Copyright (C) 2008-2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -566,7 +566,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 		4       nnnnnnnnnnn
 		*/
 		if (nx1<cx1) {
-			DEBUG_PRINT((" P3: new starts before current %d: insert %d,%d, will continue from pos %d\n", ic, x1,cx1-1, cx1));
+			DEBUG_PRINT((" P3: new starts before current %d: insert %d,%d, will continue from pos %d\n", ic, nx1,cx1-1, cx1));
 
 			insert_data_span(row->num_segs,ic,row, nx1,cx1-1);
 			segbase_inserted = 1;
@@ -686,7 +686,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 		}
 	}
 
-	DEBUG_PRINT(("--remain %d,%d\n",x1,x2));
+	DEBUG_PRINT(("--remain %d,%d\n",nx1,nx2));
 	if (nx1<=nx2) {
 		/* Insert last */
 		insert_data_span(row->num_segs,row->num_spans,row, nx1,nx2);
@@ -1188,9 +1188,15 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[1];
 
+#if 1
+		if (gen_seg_spans(y, &segment)) {
+			add_base_segment(y, &segment);
+		}
+#else
 		if (draw_add_segment(y, &segment)) {
 			add_base_segment(y, &segment);
 		}
+#endif
 	}
 
 	/*dump_sbuffer();*/
@@ -1347,8 +1353,11 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			segment.end.x = prevx1-1;
 		}
 
+#if 1
+		add_seg = gen_seg_spans(y, &segment);
+#else
 		add_seg = draw_add_segment(y, &segment);
-
+#endif
 		segment.start = poly_hlines[y].sbp[1];
 		segment.end = poly_hlines[y].sbp[1];
 		if (prevx2<pmaxx) {
@@ -1357,7 +1366,11 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			segment.end.x = prevx2-1;
 		}
 
+#if 1
+		add_seg |= gen_seg_spans(y, &segment);
+#else
 		add_seg |= draw_add_segment(y, &segment);
+#endif
 
 		if (add_seg) {
 			add_base_segment(y, &segment);
@@ -1395,21 +1408,17 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 	segment.start.x = x1;
 	segment.end.x = x2;
 	segment.start.w = segment.end.w = w;
-#if 0
-	segment.start.r = segment.end.r = 0xff;
-	segment.start.g = segment.end.g = 0;
-	segment.start.b = segment.end.b = 0xff;
-	segment.render_mode = RENDER_FILLED;
-	segment.tex_num_pal = 0;
-	segment.texture = NULL;
-	segment.masking = 0;
-#else
 	segment.masking = 1;
-#endif
 
+#if 1
+	if (gen_seg_spans(y, &segment)) {
+		add_base_segment(y, &segment);
+	}
+#else
 	if (draw_add_segment(y, &segment)) {
 		add_base_segment(y, &segment);
 	}
+#endif
 
 	/* Upper layer will update dirty rectangles */
 }
