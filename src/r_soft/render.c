@@ -530,7 +530,7 @@ static void line(vertex_t *v1, vertex_t *v2)
 
 	draw.line(&draw, &v[0], &v[1]);
 #else
-	/*float segment[4][4], result[4][4]*/;
+	/*float segment[4][4], result[4][4];*/
 	vertexf_t tri1[2], poly[16], poly2[16];
 	int clip_result, /*i,*/ num_vtx;
 	Uint32 color = 0xffffffff;
