@@ -455,9 +455,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 	nx1 = MAX(0, nx1);
 	nx2 = MIN(video.viewport.w-1, nx2);
 
-	if (nx1>nx2) {
-		return 0;
-	}
+	assert(nx1<=nx2);
 
 	DEBUG_PRINT(("-------add segment %d,%d (seg %d span %d)\n", nx1,nx2,
 		row->num_segs, row->num_spans));
@@ -771,6 +769,10 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
 
+		if (pminx>pmaxx) {
+			continue;
+		}
+
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
 
@@ -924,6 +926,10 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
 		int add_seg;
+
+		if (pminx>pmaxx) {
+			continue;
+		}
 
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
