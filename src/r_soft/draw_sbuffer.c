@@ -509,9 +509,11 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 	nx1 = MAX(0, nx1);
 	nx2 = MIN(video.viewport.w-1, nx2);
 
-	assert(nx1<=nx2);
+	if (nx1>nx2) {
+		return 0;
+	}
 
-	DEBUG_PRINT(("-------add segment %d %d,%d (seg %d span %d)\n", y, nx1,nx2,
+	DEBUG_PRINT(("-------add segment %d,%d (seg %d span %d)\n", nx1,nx2,
 		row->num_segs, row->num_spans));
 
 	/*--- Trivial cases ---*/
@@ -602,7 +604,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 			/* We have something like
 			    ccccccccccccc
 			    111111nnnn222 -> split current between 11111 and nnn222 */
-			DEBUG_PRINT(("  split current %d, from %d to %d\n", cx1, clip_x2-1));
+			DEBUG_PRINT(("  split current %d, from %d to %d\n", ic, cx1, clip_x2-1));
 
 			insert_data_span(current->id,ic,row, cx1,clip_x1-1);
 
