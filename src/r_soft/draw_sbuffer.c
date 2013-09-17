@@ -346,7 +346,7 @@ static int check_behind(const sbuffer_segment_t *seg1, const sbuffer_segment_t *
 	dw1 = s1w2 - s1w1;
 	dw2 = s2w2 - s2w1;
 
-	if (dw2 - dw1 < 0.0001f) {
+	if (dw2 - dw1 == 0.0f) {
 		return SEG1_FRONT;
 	}
 
@@ -594,7 +594,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 		clip_x1 = MAX(nx1, cx1);
 		clip_x2 = MIN(nx2, cx2);
 
-		DEBUG_PRINT((" P4: solve conflict between new and current for pos %d to %d", clip_x1, clip_x2));
+		DEBUG_PRINT((" P4: solve conflict between new and current for pos %d to %d\n", clip_x1, clip_x2));
 
 		clip_seg = check_behind(&(row->segment[current->id]),segment, clip_x1,clip_x2, &clip_pos);
 
@@ -602,6 +602,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 			/* We have something like
 			    ccccccccccccc
 			    111111nnnn222 -> split current between 11111 and nnn222 */
+			DEBUG_PRINT(("  split current %d, from %d to %d\n", cx1, clip_x2-1));
 
 			insert_data_span(current->id,ic,row, cx1,clip_x1-1);
 
