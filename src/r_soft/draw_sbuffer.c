@@ -436,6 +436,23 @@ static void insert_data_span(int num_seg, int new_span, sbuffer_row_t *row, int 
 	}
 }
 
+static void write_first_span(int num_seg, sbuffer_row_t *row, int x1, int x2)
+{
+	sbuffer_span_t *new_span;
+
+	assert(!(row->span_full));
+
+	new_span = &(row->span[0]);
+	new_span->id = num_seg;
+	new_span->next = SPAN_INVALID;
+	new_span->x1 = x1;
+	new_span->x2 = x2;
+
+	row->first_span = 0;
+
+	row->span_full |= ((++row->num_spans)>=MAX_SPANS);
+}
+
 static int insert_new_span(int num_seg, sbuffer_row_t *row, int x1, int x2,
 	int psi /* prev span index*/, int nsi /* next span index */)
 {
