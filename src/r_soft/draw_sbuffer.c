@@ -55,6 +55,8 @@
 #define MAX_SEGMENTS 128
 #define MAX_SPANS 256
 
+#define SPAN_INVALID -1
+
 #define SEG1_FRONT 0
 #define SEG1_BEHIND 1
 #define SEG1_CLIP_LEFT 2
@@ -67,8 +69,8 @@ typedef struct {
 } poly_hline_t;
 
 typedef struct {
-	Uint16 id;	/* Index in sbuffer_segment_t array for this row */
-	Uint16 dummy;
+	Sint16 id;	/* Index in sbuffer_segment_t array for this row */
+	Sint16 next;
 	Uint16 x1,x2;	/* Start,end on the row */
 } sbuffer_span_t;
 
@@ -77,6 +79,7 @@ typedef struct {
 	Uint16 num_spans;
 	Uint8 seg_full;
 	Uint8 span_full;
+	Sint16 first_span;
 	sbuffer_segment_t segment[MAX_SEGMENTS];
 	sbuffer_span_t span[MAX_SPANS];
 } sbuffer_row_t;
@@ -209,10 +212,11 @@ static void clear_sbuffer(void)
 	DEBUG_PRINT(("----------clearing sbuffer\n"));
 
 	for (i=0; i<sbuffer_numrows; i++) {
-		sbuffer_rows[i].num_segs = 0;
-		sbuffer_rows[i].num_spans = 0;
-		sbuffer_rows[i].seg_full = 0;
-		sbuffer_rows[i].span_full = 0;
+		sbuffer_rows[i].num_segs =
+			sbuffer_rows[i].num_spans =
+			sbuffer_rows[i].seg_full =
+			sbuffer_rows[i].span_full = 0;
+		sbuffer_rows[i].first_span = SPAN_INVALID;
 	}
 	sbuffer_seg_id = 0;
 }
@@ -430,6 +434,42 @@ static void insert_data_span(int num_seg, int new_span, sbuffer_row_t *row, int 
 
 		row->span_full |= (row->num_spans>=MAX_SPANS);
 	}
+}
+
+static int insert_new_span(int num_seg, sbuffer_row_t *row, int x1, int x2,
+	int psi /* prev span index*/, int nsi /* next span index */)
+{
+	sbuffer_span_t *new_span, *prev_span;
+
+	if (psi==SPAN_INVALID) {
+		/* New is now first */
+		assert(row->first_span != SPAN_INVALID);
+		assert(row->first_span == nsi);
+
+		row->first_span = row->num_spans;
+	} else {
+		/* Merge with previous ? */
+		prev_span = &(row->span[psi]);
+		if ((prev_span->id==num_seg) && (prev_span->x2 - x1 == 1)) {
+			prev_span->x2 = x2;
+			return 0; /* no insertion of new span */
+		}
+
+		assert(prev_span->next == nsi);
+
+		prev_span->next = row->num_spans;	/* Link previous to new */
+	}
+
+	assert(!(row->span_full));
+
+	new_span = &(row->span[row->num_spans]);
+	new_span->id = num_seg;
+	new_span->next = nsi;	/* Link new to next */
+	new_span->x1 = x1;
+	new_span->x2 = x2;
+
+	row->span_full |= ((++row->num_spans)>=MAX_SPANS);
+	return 1;
 }
 
 static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
