@@ -259,6 +259,7 @@ static void draw_flushFrame(draw_t *this)
 #endif
 
 		/* Render list of segment */
+#if 0
 		for (j=0; j<row->num_spans; j++) {
 			int last;
 			sbuffer_segment_t *current = &segments[span[j].id];
@@ -270,6 +271,28 @@ static void draw_flushFrame(draw_t *this)
 				last++)
 			{
 			}
+#else
+		for (j=row->first_span; j!=SPAN_INVALID; j=span[j].next) {
+			int last, next_id;
+			sbuffer_segment_t *current = &segments[span[j].id];
+
+			/* Find last segment to merge */
+			last = j;
+			while (span[j].id==span[last].id) {
+				next_id = span[last].next;
+				if (next_id == SPAN_INVALID) {
+					break;
+				}
+				if (span[j].id!=span[next_id].id) {
+					break;
+				}
+				last = next_id;
+				DEBUG_PRINT(("merge %d to %d\n",j,last));
+			}
+
+			DEBUG_PRINT(("final merge %d to %d (seg %d, %d->%d)\n",j,last, span[j].id, span[j].x1, span[last].x2));
+
+#endif
 
 			assert(span[j].x1 <= span[last].x2);
 
@@ -399,6 +422,7 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 	row->seg_full |= (row->num_segs>=MAX_SEGMENTS);
 }
 
+#if 0
 static void push_data_span(int num_seg, int num_span, sbuffer_row_t *row, int x1, int x2)
 {
 	sbuffer_span_t *new_span;
@@ -435,12 +459,14 @@ static void insert_data_span(int num_seg, int new_span, sbuffer_row_t *row, int 
 		row->span_full |= (row->num_spans>=MAX_SPANS);
 	}
 }
+#endif
 
 static void write_first_span(int num_seg, sbuffer_row_t *row, int x1, int x2)
 {
 	sbuffer_span_t *new_span;
 
 	assert(!(row->span_full));
+	assert(row->num_spans == 0);
 
 	new_span = &(row->span[0]);
 	new_span->id = num_seg;
@@ -489,7 +515,248 @@ static int insert_new_span(int num_seg, sbuffer_row_t *row, int x1, int x2,
 	return 1;
 }
 
+static void overwrite_span(int num_seg, sbuffer_row_t *row, int x1, int x2, int csi /* current span index */)
+{
+	sbuffer_span_t *new_span;
+
+	assert(csi<MAX_SPANS);
+
+	new_span = &(row->span[csi]);
+	new_span->id = num_seg;
+	/*new_span->next = SPAN_INVALID;*/ /* Keep current value */
+	new_span->x1 = x1;
+	new_span->x2 = x2;
+}
+
 static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
+{
+	sbuffer_row_t *row = &sbuffer_rows[y];
+	int nx1,nx2, psi, nsi;
+	int segbase_inserted = 0;
+	int clip_seg, clip_pos;
+
+	/* Still room for common segment data ? */
+	if (row->seg_full || row->span_full) {
+		return 0;
+	}
+
+	nx1 = segment->start.x;
+	nx2 = segment->end.x;
+
+	/* Clip if outside */
+	if ((nx2<0) || (nx1>=video.viewport.w)) {
+		return 0;
+	}
+
+	nx1 = MAX(0, nx1);
+	nx2 = MIN(video.viewport.w-1, nx2);
+
+	assert(nx1<=nx2);
+
+	DEBUG_PRINT(("-------add segment %d,%d (seg %d span %d)\n", nx1,nx2,
+		row->num_segs, row->num_spans));
+
+	/*--- Trivial cases ---*/
+
+	/* Empty row ? */
+	if (row->num_segs == 0) {
+		DEBUG_PRINT(("----empty list\n"));
+		write_first_span(row->num_segs,row, nx1,nx2);
+		return 1;
+	}
+
+	/*--- Need to check against current list ---*/
+	psi = SPAN_INVALID;
+	
+	for (nsi=row->first_span ; (nsi!=SPAN_INVALID) && (nx1<=nx2); psi=nsi, nsi=row->span[nsi].next) {
+		int clip_x1, clip_x2, span_inserted;
+		sbuffer_span_t *current = &(row->span[nsi]);
+		int cx1 = current->x1;
+		int cx2 = current->x2;
+
+		DEBUG_PRINT(("--new %d,%d against %d:%d,%d\n",nx1,nx2, nsi,cx1, cx2));
+
+		/* Start after current? Will process against next one
+		ccccccc
+			nnnnn
+		*/
+		if (nx1>cx2) {
+			DEBUG_PRINT((" P1: new start after current %d\n",nsi));
+			continue;
+		}
+
+		/* Finish before current ? Insert before it
+			ccccc
+		nnnnnn
+		  nnnnnnn
+		*/
+		if (nx2<cx1) {
+			DEBUG_PRINT((" P2: new finishes before current %d\n",nsi));
+			return insert_new_span(row->num_segs,row, nx1,nx2, psi,nsi);
+		}
+
+		/* Start before current, may finish after or in middle of it
+		   Insert only non conflicting left part
+			ccccccccc
+		1 nnnnnnn
+		2 nnnnnnnnnnn
+		3 nnnnnnnnnnnnnnn
+		4 nnnnnnnnnnnnnnnnn
+		remains (to insert)
+		1       n
+		2       nnnnn
+		3       nnnnnnnnn
+		4       nnnnnnnnnnn
+		*/
+		if (nx1<cx1) {
+			DEBUG_PRINT((" P3: new starts before current %d: insert %d,%d, will continue from pos %d\n", nsi, nx1,cx1-1, cx1));
+
+			span_inserted = insert_new_span(row->num_segs,row, nx1,cx1-1, psi,nsi);
+			segbase_inserted |= span_inserted;
+
+			if (row->span_full)
+				return segbase_inserted;
+
+			nx1 = cx1;
+
+			if (span_inserted) {
+				/* Update previous with new inserted */
+				psi = (	psi==SPAN_INVALID ?
+					row->first_span :
+					row->span[psi].next );
+			}
+		}
+
+		/* Z check for multiple pixels
+			ccccccccc
+		1       nnnnn
+		2	   nnnnn
+		3	    nnnnnnnnnn
+		4	        nnnnnn
+		*/
+		clip_x1 = MAX(nx1, cx1);
+		clip_x2 = MIN(nx2, cx2);
+
+		DEBUG_PRINT((" P4: solve conflict between new and current for pos %d to %d\n", clip_x1, clip_x2));
+
+		clip_seg = check_behind(&(row->segment[current->id]),segment, clip_x1,clip_x2, &clip_pos);
+
+		if ((cx1<clip_x1) && (clip_seg!=SEG1_FRONT)) {
+			/* We have something like
+			    ccccccccccccc
+			    111111nnnn222 -> split current between 11111 and nnn222 */
+			DEBUG_PRINT(("  split current %d, from %d to %d\n", ic, cx1, clip_x2-1));
+
+			insert_new_span(current->id,row, nx1,cx1-1, psi,nsi);
+			current->x1 = cx1 = clip_x1;
+
+			if (row->span_full)
+				return segbase_inserted;
+
+			/* Update previous with new inserted */
+			psi = (	psi==SPAN_INVALID ?
+				row->first_span :
+				row->span[psi].next );
+		}
+
+		switch(clip_seg) {
+			case SEG1_FRONT:
+				DEBUG_PRINT(("  P4.0: current %d in front of new\n", ic));
+
+				break;
+			case SEG1_BEHIND:
+				DEBUG_PRINT(("  P4.1: current %d behind new\n", ic));
+
+				/* We have something like
+				    ccccccccccccc	ccccccccccccc
+				    nnnnnnn222222	nnnnnnnnnnnnn */
+
+				if (clip_x2<cx2) {
+					current->x1 = cx1 = clip_x2+1;
+					DEBUG_PRINT(("   current %d reduced, from %d to %d\n", nsi, cx1,cx2));
+
+					DEBUG_PRINT(("   insert common part of new, from %d to %d\n", clip_x1,clip_x2));
+					span_inserted = insert_new_span(row->num_segs,row, clip_x1,clip_x2, psi, nsi);
+
+					if (span_inserted) {
+						/* Update previous with new inserted */
+						psi = (	psi==SPAN_INVALID ?
+							row->first_span :
+							row->span[psi].next );
+					}
+				} else {
+					/* current completely overwritten by new */
+					DEBUG_PRINT(("   replace current %d by new, from %d to %d\n", nsi, clip_x1,clip_x2));
+					overwrite_span(row->num_segs,row, clip_x1,clip_x2, nsi);
+				}
+
+				break;
+			case SEG1_CLIP_LEFT:
+				DEBUG_PRINT(("  P4.3: keep left part of current %d against new till pos %d\n", ic, clip_pos));
+
+				/* We have something like this to do
+				    cccccccc -> cccccccc
+				    nnnnn222	CCnnn222 */
+
+				/* Insert right part of current, after common zone */
+				if (clip_x2<cx2) {
+					DEBUG_PRINT(("  split current %d, from %d to %d\n", ic, clip_x2+1,cx2));
+					/*span_inserted =*/ insert_new_span(current->id,row, clip_x2+1,cx2, nsi, row->span[nsi].next);
+				}
+
+				/* Insert new */
+				DEBUG_PRINT(("  insert new from %d to %d\n", clip_pos,clip_x2));
+				/*span_inserted =*/ insert_new_span(row->num_segs,row, clip_pos,clip_x2, nsi, row->span[nsi].next);
+
+				/* Clip current before clip_pos */
+				DEBUG_PRINT(("  clip current %d from %d to %d\n", nsi, cx1,clip_pos-1));
+				current->x2 = clip_pos-1;
+
+				break;
+			case SEG1_CLIP_RIGHT:
+				DEBUG_PRINT(("  P4.4: keep right of current %d against new from pos %d\n", nsi, clip_pos));
+
+				/* We have something like this to do
+				    cccccccc -> cccccccc
+				    nnnnn222	nnCCC222 */
+
+				DEBUG_PRINT(("  clip current %d from %d to %d\n", nsi, clip_pos+1,cx2));
+				current->x1 = clip_pos+1;
+
+				/* Insert new */
+				DEBUG_PRINT(("  insert new from %d to %d\n", clip_x1,clip_pos));
+				span_inserted = insert_new_span(row->num_segs,row, clip_x1,clip_pos, psi, nsi);
+
+				if (span_inserted) {
+					/* Update previous with new inserted */
+					psi = (	psi==SPAN_INVALID ?
+						row->first_span :
+						row->span[psi].next );
+				}
+
+				break;
+		}
+
+		/* Continue with remaining part */
+		nx1 = clip_x2+1;
+
+		if (clip_seg!=SEG1_FRONT) {
+			segbase_inserted=1;
+		}
+	}
+
+	DEBUG_PRINT(("--remain %d,%d\n",nx1,nx2));
+	if (nx1<=nx2) {
+		/* Insert last */
+		insert_new_span(row->num_segs,row, nx1,nx2, psi, nsi);
+		segbase_inserted=1;
+	}
+
+	return segbase_inserted;
+}
+
+#if 0
+static int gen_seg_spans_old(int y, const sbuffer_segment_t *segment)
 {
 	sbuffer_row_t *row = &sbuffer_rows[y];
 	int nx1,nx2, i;
@@ -699,6 +966,7 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 
 	return segbase_inserted;
 }
+#endif
 
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
