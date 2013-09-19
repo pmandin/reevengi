@@ -453,9 +453,6 @@ static void write_first_span(int num_seg, sbuffer_row_t *row, int x1, int x2)
 {
 	sbuffer_span_t *new_span;
 
-	assert(!(row->span_full));
-	assert(row->num_spans == 0);
-
 	new_span = &(row->span[0]);
 	new_span->id = num_seg;
 	new_span->next = SPAN_INVALID;
@@ -463,8 +460,7 @@ static void write_first_span(int num_seg, sbuffer_row_t *row, int x1, int x2)
 	new_span->x2 = x2;
 
 	row->first_span = 0;
-
-	row->span_full |= ((++row->num_spans)>=MAX_SPANS);
+	row->num_spans = 1;
 }
 
 static int insert_new_span(int num_seg, sbuffer_row_t *row, int x1, int x2,
