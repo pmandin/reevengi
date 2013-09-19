@@ -60,7 +60,6 @@ static void shutdown(void);
 
 static void render_resize(int w, int h, int bpp);
 static void render_startFrame(void);
-static void render_flushFrame(void);
 static void render_endFrame(void);
 
 static void set_viewport(int x, int y, int w, int h);
@@ -118,7 +117,6 @@ void render_soft_init(render_t *this)
 
 	this->resize = render_resize;
 	this->startFrame = render_startFrame;
-	this->flushFrame = render_flushFrame;
 	this->endFrame = render_endFrame;
 
 	this->createTexture = render_texture_soft_create;
@@ -181,11 +179,6 @@ static void render_resize(int w, int h, int bpp)
 static void render_startFrame(void)
 {
 	draw.startFrame(&draw);
-}
-
-static void render_flushFrame(void)
-{
-	draw.flushFrame(&draw);
 }
 
 static void render_endFrame(void)

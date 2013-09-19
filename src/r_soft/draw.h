@@ -40,7 +40,6 @@ struct draw_s {
 
 	void (*resize)(draw_t *this, int w, int h, int bpp);
 	void (*startFrame)(draw_t *this);
-	void (*flushFrame)(draw_t *this);
 	void (*endFrame)(draw_t *this);
 
 	/* Wireframe */

@@ -572,11 +572,10 @@ void view_background_draw(void)
 
 	drawPlayer();
 
-	/* Flush all 3D rendering to screen before drawing 2D stuff */
-	render.flushFrame();
-
 	if (room) {
 		if (room->map_mode != ROOM_MAP_OFF) {
+			render.set_render(RENDER_WIREFRAME);
+
 			room->drawMap(room, render_grid);
 		}
 	}

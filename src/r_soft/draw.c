@@ -46,7 +46,6 @@ static void shutdown(draw_t *this);
 
 static void resize(draw_t *this, int w, int h, int bpp);
 static void startFrame(draw_t *this);
-static void flushFrame(draw_t *this);
 static void endFrame(draw_t *this);
 
 static void line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
@@ -70,7 +69,6 @@ void draw_init(draw_t *this)
 
 	this->resize = resize;
 	this->startFrame = startFrame;
-	this->flushFrame = flushFrame;
 	this->endFrame = endFrame;
 
 	this->line = line;
@@ -96,10 +94,6 @@ static void resize(draw_t *this, int w, int h, int bpp)
 }
 
 static void startFrame(draw_t *this)
-{
-}
-
-static void flushFrame(draw_t *this)
 {
 }
 

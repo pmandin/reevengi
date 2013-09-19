@@ -37,7 +37,6 @@ static void shutdown(void);
 
 static void resize(int w, int h, int bpp);
 static void startFrame(void);
-static void flushFrame(void);
 static void endFrame(void);
 
 static void set_viewport(int x, int y, int w, int h);
@@ -87,7 +86,6 @@ void render_init(render_t *this)
 
 	this->resize = resize;
 	this->startFrame = startFrame;
-	this->flushFrame = flushFrame;
 	this->endFrame = endFrame;
 
 	this->createTexture = render_texture_create;
@@ -149,10 +147,6 @@ static void resize(int w, int h, int bpp)
 }
 
 static void startFrame(void)
-{
-}
-
-static void flushFrame(void)
 {
 }
 
