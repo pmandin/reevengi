@@ -410,45 +410,6 @@ static void add_base_segment(int y, const sbuffer_segment_t *segment)
 	row->seg_full |= (row->num_segs>=MAX_SEGMENTS);
 }
 
-#if 0
-static void push_data_span(int num_seg, int num_span, sbuffer_row_t *row, int x1, int x2)
-{
-	sbuffer_span_t *new_span;
-
-	if (num_span>=MAX_SPANS) {
-		return;
-	}
-
-	assert(x1<=x2);
-
-	/* Write new segment data */
-	new_span = &(row->span[num_span]);
-
-	new_span->id = num_seg;
-	new_span->x1 = x1;
-	new_span->x2 = x2;
-}
-
-static void insert_data_span(int num_seg, int new_span, sbuffer_row_t *row, int x1, int x2)
-{
-	int num_spans = row->num_spans;
-
-	/* Move stuff that starts after this segment */
-	if ((num_spans>0) && (num_spans<MAX_SPANS-1)) {
-		sbuffer_span_t *src = &(row->span[new_span]);
-		sbuffer_span_t *dst = &(row->span[new_span+1]);
-		memmove(dst, src, (num_spans-new_span)*sizeof(sbuffer_span_t));
-	}
-
-	push_data_span(num_seg, new_span, row, x1,x2);
-	if (num_spans<MAX_SPANS) {
-		++row->num_spans;
-
-		row->span_full |= (row->num_spans>=MAX_SPANS);
-	}
-}
-#endif
-
 static void write_first_span(int num_seg, sbuffer_row_t *row, int x1, int x2)
 {
 	sbuffer_span_t *new_span;
@@ -1083,15 +1044,9 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 	segment.start.w = segment.end.w = w;
 	segment.masking = 1;
 
-#if 1
 	if (gen_seg_spans(y, &segment)) {
 		add_base_segment(y, &segment);
 	}
-#else
-	if (draw_add_segment(y, &segment)) {
-		add_base_segment(y, &segment);
-	}
-#endif
 
 	/* Upper layer will update dirty rectangles */
 }
