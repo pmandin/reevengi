@@ -99,10 +99,20 @@ player_t *player_ctor(void)
 	this->turn_right = turn_right;
 
 #ifdef ENABLE_DEBUG_POS
-	this->x = 13148.0f;
+	/*this->x = 13148.0f;
 	this->y = -2466.0f;
 	this->z = 3367.0f;
-	this->a = (157.0f * 4096.0f) / 360.0f;
+	this->a = (157.0f * 4096.0f) / 360.0f;*/
+
+	this->x = 12456.0f;
+	this->y = -355.0f;
+	this->z = -3365.0f;
+	this->a = 1362.0f;
+
+	/*this->x = 12456.0f;
+	this->y = -355.0f;
+	this->z = -3365.0f;
+	this->a = 2613.0f;*/
 #endif
 
 	return this;
