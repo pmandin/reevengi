@@ -129,6 +129,7 @@ game_t *game_re2_ctor(game_t *this)
 	player->a = 3072.0f;
 #endif
 
+#if 0
 	if ((params.stage==1) && (params.room==0) && (params.camera==0)) {
 		/* Game A */
 		player->x = -19025.0f;
@@ -136,6 +137,7 @@ game_t *game_re2_ctor(game_t *this)
 		player->z = -20861.0f;
 		player->a = 337.0f;
 	}
+#endif
 
 	if ((params.stage==1) && (params.room==4) && (params.camera==0)) {
 		/* Game B */
