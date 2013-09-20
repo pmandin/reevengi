@@ -105,6 +105,7 @@ static sbuffer_draw_f draw_render_textured;
 static void draw_shutdown(draw_t *this);
 
 static void clear_sbuffer(void);
+static void dump_sbuffer(void);
 static void flush_sbuffer(draw_t *this);
 
 static void draw_resize(draw_t *this, int w, int h, int bpp);
@@ -210,7 +211,35 @@ static void draw_startFrame(draw_t *this)
 
 static void draw_endFrame(draw_t *this)
 {
+	dump_sbuffer();
 	flush_sbuffer(this);
+}
+
+static void dump_sbuffer(void)
+{
+	int i,j;
+
+	DEBUG_PRINT(("----------dump sbuffer start\n"));
+
+	for (i=0; i<sbuffer_numrows; i++) {
+		sbuffer_row_t *row = &sbuffer_rows[i];
+		if ((row->num_segs==0) && (row->num_spans==0))
+			continue;
+
+		DEBUG_PRINT(("--- first span: %d\n", row->first_span));
+
+		for (j=0; j<row->num_segs; j++) {
+			DEBUG_PRINT(("----- seg %d: %d,%d\n", j,
+				row->segment[j].start.x, row->segment[j].end.x));
+		}
+		for (j=0; j<row->num_spans; j++) {
+			DEBUG_PRINT(("----- span %d (seg %d next %d): %d,%d\n", j,
+				row->span[j].id, row->span[j].next,
+				row->span[j].x1, row->span[j].x2));
+		}
+	}
+
+	DEBUG_PRINT(("----------dump sbuffer end\n"));
 }
 
 static void clear_sbuffer(void)
@@ -269,12 +298,12 @@ static void flush_sbuffer(draw_t *this)
 			last = j;
 			while (span[j].id==span[last].id) {
 				next_id = span[last].next;
-				if (next_id == SPAN_INVALID) {
+				if (next_id == SPAN_INVALID)
 					break;
-				}
-				if (span[j].id!=span[next_id].id) {
+				if (span[next_id].x1-span[last].x2 != 1)
 					break;
-				}
+				if (span[next_id].id!=span[last].id)
+					break;
 				last = next_id;
 			}
 
@@ -368,35 +397,6 @@ static int check_behind(const sbuffer_segment_t *seg1, const sbuffer_segment_t *
 
 	return (s1w1>s2w1 ? SEG1_CLIP_LEFT : SEG1_CLIP_RIGHT);
 }
-
-#if 0
-static void dump_sbuffer(void)
-{
-	int i,j;
-
-	DEBUG_PRINT(("----------dump sbuffer start\n"));
-
-	for (i=0; i<sbuffer_numrows; i++) {
-		sbuffer_row_t *row = &sbuffer_rows[i];
-		if ((row->num_segs==0) && (row->num_spans==0))
-			continue;
-
-		DEBUG_PRINT(("--- first span: %d\n", row->first_span));
-
-		for (j=0; j<row->num_segs; j++) {
-			DEBUG_PRINT(("----- seg %d: %d,%d\n", j,
-				row->segment[j].start.x, row->segment[j].end.x));
-		}
-		for (j=0; j<row->num_spans; j++) {
-			DEBUG_PRINT(("----- span %d (seg %d next %d): %d,%d\n", j,
-				row->span[j].id, row->span[j].next,
-				row->span[j].x1, row->span[j].x2));
-		}
-	}
-
-	DEBUG_PRINT(("----------dump sbuffer end\n"));
-}
-#endif
 
 static void add_base_segment(int y, const sbuffer_segment_t *segment)
 {
@@ -1036,8 +1036,6 @@ static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
 	if ((x1>=video.viewport.w) || (x2<0)) {
 		return;
 	}
-
-	/*printf("mask segment %d: %d,%d\n",y,x1,x2);*/
 
 	segment.start.x = x1;
 	segment.end.x = x2;
