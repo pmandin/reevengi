@@ -280,6 +280,7 @@ static void flush_sbuffer(draw_t *this)
 			continue;
 		}
 
+		DEBUG_PRINT(("row %d: %d segs, %d spans\n",i,row->num_segs,row->num_spans));
 #if 0
 		if (row->seg_full) {
 			fprintf(stderr,"Not enough segments for row %d\n",i);
@@ -388,10 +389,13 @@ static int check_behind(const sbuffer_segment_t *seg1, const sbuffer_segment_t *
 	}
 
 	*cx = x1 + (((s1w1-s2w1)*dx)/(dw2-dw1));
+	/*assert((*cx>=x1) && (*cx<=x2));*/
 
-	if (*cx == x1) {
+	if (*cx <= x1) {
+		*cx = x1;
 		return (s1w2>s2w2 ? SEG1_FRONT : SEG1_BEHIND);
-	} else if (*cx == x2) {
+	} else if (*cx >= x2) {
+		*cx = x2;
 		return (s1w1>s2w1 ? SEG1_FRONT : SEG1_BEHIND);
 	}
 
@@ -719,12 +723,28 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		num_array = 1; /* max */
 
+#if 0
+		printf("filled: vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
+			vtx[p1].pos[0], vtx[p1].pos[1],
+			vtx[p1].pos[2], vtx[p1].pos[3],
+			vtx[p2].pos[0], vtx[p2].pos[1],
+			vtx[p2].pos[2], vtx[p2].pos[3]);
+
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
 		w1 = 1.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
 		w2 = 1.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
+#else
+		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
+		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
+		w1 = vtx[p1].pos[3] / vtx[p1].pos[2];
+		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
+		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
+		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
+#endif
+		assert((w1>0.0f) && (w2>0.0f));
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
@@ -871,12 +891,28 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		num_array = 1; /* max */
 
+		printf("vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
+			vtx[p1].pos[0], vtx[p1].pos[1],
+			vtx[p1].pos[2], vtx[p1].pos[3],
+			vtx[p2].pos[0], vtx[p2].pos[1],
+			vtx[p2].pos[2], vtx[p2].pos[3]);
+
+#if 0
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
 		w1 = 1.0f /*vtx[p1].pos[3]*/ / vtx[p1].pos[2];
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[2];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[2];
 		w2 = 1.0f /*vtx[p2].pos[3]*/ / vtx[p2].pos[2];
+#else
+		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
+		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
+		w1 = vtx[p1].pos[3] / vtx[p1].pos[2];
+		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
+		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
+		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
+#endif
+		assert(w1*w2>0.0f);
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
@@ -899,10 +935,10 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			maxy = y2;
 		}
 
-		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
+		DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
 			v1, vtx[v1].tx[0], vtx[v1].tx[1],
 			v2, vtx[v2].tx[0], vtx[v2].tx[1]
-		));*/
+		));
 
 		dy = y2 - y1;
 		if (dy>0) {
