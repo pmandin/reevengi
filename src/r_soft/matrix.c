@@ -46,7 +46,7 @@ void mtx_print(float m[4][4])
 	int i;
 
 	for (i=0; i<4; i++) {
-		printf("(%8.3f\t%8.3f\t%8.3f\t%8.3f)\n",
+		printf("(%f\t%f\t%f\t%f)\n",
 			m[0][i],m[1][i],m[2][i],m[3][i]);
 	}
 }
