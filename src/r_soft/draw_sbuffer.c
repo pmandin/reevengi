@@ -724,11 +724,11 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		num_array = 1; /* max */
 
 #if 0
-		printf("filled: vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
+		/*printf("filled: vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
 			vtx[p1].pos[0], vtx[p1].pos[1],
 			vtx[p1].pos[2], vtx[p1].pos[3],
 			vtx[p2].pos[0], vtx[p2].pos[1],
-			vtx[p2].pos[2], vtx[p2].pos[3]);
+			vtx[p2].pos[2], vtx[p2].pos[3]);*/
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[2];
@@ -872,6 +872,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 }
 
 /* Specific version for non filled polys */
+/* FIXME: does not process horizontal lines */
 static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
 	int miny = video.viewport.h, maxy = -1;
@@ -891,11 +892,11 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		num_array = 1; /* max */
 
-		printf("vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
+		/*printf("vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
 			vtx[p1].pos[0], vtx[p1].pos[1],
 			vtx[p1].pos[2], vtx[p1].pos[3],
 			vtx[p2].pos[0], vtx[p2].pos[1],
-			vtx[p2].pos[2], vtx[p2].pos[3]);
+			vtx[p2].pos[2], vtx[p2].pos[3]);*/
 
 #if 0
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[2];
