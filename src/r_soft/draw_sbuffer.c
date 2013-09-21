@@ -1016,7 +1016,6 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
-		int add_seg;
 
 		if (pminx>pmaxx) {
 			continue;
@@ -1034,6 +1033,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 				add_base_segment(y, &segment);
 			}
 		} else {
+			int add_seg;
+
 			segment.start = poly_hlines[y].sbp[0];
 			segment.end = poly_hlines[y].sbp[0];
 			if (prevx1<pminx) {
