@@ -744,7 +744,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
 #endif
-		assert((w1>0.0f) && (w2>0.0f));
+		/*assert((w1>0.0f) && (w2>0.0f));*/
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
@@ -917,7 +917,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		w2 = vtx[p2].pos[3] / vtx[p2].pos[2];
 #endif
-		assert(w1*w2>0.0f);
+		/*assert(w1*w2>0.0f);*/
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
@@ -994,63 +994,6 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 					tu1,tv1,du,dv,dy,(du*y)/dy,tu1 + ((du*y)/dy)
 				));*/
 			}
-		} else if ((y1>=0) && (y1<video.viewport.h)) {
-			/* Horizontal line, FIXME */
-
-			int dx = x2 - x1;
-			float r1 = vtx[v1].col[0];
-			float dr = vtx[v2].col[0] - r1;
-			float g1 = vtx[v1].col[1];
-			float dg = vtx[v2].col[1] - g1;
-			float b1 = vtx[v1].col[2];
-			float db = vtx[v2].col[2] - b1;
-			float tu1 = vtx[v1].tx[0];
-			float du = vtx[v2].tx[0] - tu1;
-			float tv1 = vtx[v1].tx[1];
-			float dv = vtx[v2].tx[1] - tv1;
-			float dw = w2 - w1;
-
-			if (draw.correctPerspective>0) {
-				r1 *= w1;
-				dr = vtx[v2].col[0]*w2 - r1;
-				g1 *= w1;
-				dg = vtx[v2].col[1]*w2 - g1;
-				b1 *= w1;
-				db = vtx[v2].col[2]*w2 - b1;
-
-				tu1 *= w1;
-				du = vtx[v2].tx[0]*w2 - tu1;
-				tv1 *= w1;
-				dv = vtx[v2].tx[1]*w2 - tv1;
-			}
-
-			poly_hlines[y1].sbp[0].r = r1;
-			poly_hlines[y1].sbp[0].g = g1;
-			poly_hlines[y1].sbp[0].b = b1;
-			poly_hlines[y1].sbp[0].u = tu1;
-			poly_hlines[y1].sbp[0].v = tv1;
-			poly_hlines[y1].sbp[0].w = w1;
-			poly_hlines[y1].sbp[0].x = x1;
-
-			poly_hlines[y1].sbp[1].r = r1;
-			poly_hlines[y1].sbp[1].g = g1;
-			poly_hlines[y1].sbp[1].b = b1;
-			poly_hlines[y1].sbp[1].u = tu1;
-			poly_hlines[y1].sbp[1].v = tv1;
-			poly_hlines[y1].sbp[1].w = w1;
-			poly_hlines[y1].sbp[1].x = x2;
-
-			if (x1<=x2) {
-				segment.start = poly_hlines[y1].sbp[0];
-				segment.end = poly_hlines[y1].sbp[1];
-			} else {
-				segment.start = poly_hlines[y1].sbp[1];
-				segment.end = poly_hlines[y1].sbp[0];
-			}
-
-			if (gen_seg_spans(y1, &segment)) {
-				add_base_segment(y1, &segment);
-			}
 		}
 
 		p1 = p2;
@@ -1082,27 +1025,37 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
 
-		segment.start = poly_hlines[y].sbp[0];
-		segment.end = poly_hlines[y].sbp[0];
-		if (prevx1<pminx) {
-			segment.start.x = prevx1+1;
-		} else if (prevx1>pminx) {
-			segment.end.x = prevx1-1;
-		}
+		if ((y==miny) || (y==maxy-1)) {
+			/* Draw complete segment for first and last row */
+			segment.start = poly_hlines[y].sbp[0];
+			segment.end = poly_hlines[y].sbp[1];
 
-		add_seg = gen_seg_spans(y, &segment);
+			if (gen_seg_spans(y, &segment)) {
+				add_base_segment(y, &segment);
+			}
+		} else {
+			segment.start = poly_hlines[y].sbp[0];
+			segment.end = poly_hlines[y].sbp[0];
+			if (prevx1<pminx) {
+				segment.start.x = prevx1+1;
+			} else if (prevx1>pminx) {
+				segment.end.x = prevx1-1;
+			}
 
-		segment.start = poly_hlines[y].sbp[1];
-		segment.end = poly_hlines[y].sbp[1];
-		if (prevx2<pmaxx) {
-			segment.start.x = prevx2+1;
-		} else if (prevx2>pmaxx) {
-			segment.end.x = prevx2-1;
-		}
+			add_seg = gen_seg_spans(y, &segment);
 
-		add_seg |= gen_seg_spans(y, &segment);
-		if (add_seg) {
-			add_base_segment(y, &segment);
+			segment.start = poly_hlines[y].sbp[1];
+			segment.end = poly_hlines[y].sbp[1];
+			if (prevx2<pmaxx) {
+				segment.start.x = prevx2+1;
+			} else if (prevx2>pmaxx) {
+				segment.end.x = prevx2-1;
+			}
+
+			add_seg |= gen_seg_spans(y, &segment);
+			if (add_seg) {
+				add_base_segment(y, &segment);
+			}
 		}
 
 		prevx1 = pminx;
