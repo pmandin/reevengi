@@ -52,6 +52,8 @@
 #define MAP_COLOR_OBSTACLE		0x00ffcc00
 #define MAP_COLOR_WALLS			0x00ff00ff
 
+/*#define MAP_TRANSITION 1*/
+
 #define MAP_TRANSITION_TIME	1000
 
 /*--- Variables ---*/
@@ -209,8 +211,13 @@ static void toggleMapModePrev(room_t *this)
 			logMsg(1, "map: ROOM_MAP_OFF\n");
 			break;
 		case ROOM_MAP_3D:
+#ifdef MAP_TRANSITION
 			this->map_mode = ROOM_MAP_3D_TO_2D_INIT;
 			logMsg(1, "map: ROOM_MAP_3D_TO_2D_INIT\n");
+#else
+			this->map_mode = ROOM_MAP_2D;
+			logMsg(1, "map: ROOM_MAP_2D\n");
+#endif
 			break;
 	}
 }
@@ -223,8 +230,13 @@ static void toggleMapModeNext(room_t *this)
 			logMsg(1, "map: ROOM_MAP_2D\n");
 			break;
 		case ROOM_MAP_2D:
+#ifdef MAP_TRANSITION
 			this->map_mode = ROOM_MAP_2D_TO_3D_INIT;
 			logMsg(1, "map: ROOM_MAP_2D_TO_3D_INIT\n");
+#else
+			this->map_mode = ROOM_MAP_3D;
+			logMsg(1, "map: ROOM_MAP_3D\n");
+#endif
 			break;
 		case ROOM_MAP_3D:
 			this->map_mode = ROOM_MAP_OFF;
@@ -246,7 +258,6 @@ static void setProjection2D(room_t *this)
 
 static void setProjection3D(room_t *this)
 {
-	/*player_t *player=game->player;*/
 	room_camera_t room_camera;
 
 	this->getCamera(this, game->num_camera, &room_camera);
@@ -259,7 +270,6 @@ static void setProjection3D(room_t *this)
 		0.0f, -1.0f, 0.0f
 	);
 	render.scale(1.0f, -1.0f, 1.0f);
-	/*render.translate(0.0f, player->y+2000.0f, 0.0f);*/
 }
 
 static void initMatrix(room_t *this, float mtx_proj[4][4], float mtx_model[4][4])
