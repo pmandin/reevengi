@@ -105,7 +105,9 @@ static sbuffer_draw_f draw_render_textured;
 static void draw_shutdown(draw_t *this);
 
 static void clear_sbuffer(void);
+#if 0
 static void dump_sbuffer(void);
+#endif
 static void flush_sbuffer(draw_t *this);
 
 static void draw_resize(draw_t *this, int w, int h, int bpp);
@@ -211,10 +213,11 @@ static void draw_startFrame(draw_t *this)
 
 static void draw_endFrame(draw_t *this)
 {
-	dump_sbuffer();
+	/*dump_sbuffer();*/
 	flush_sbuffer(this);
 }
 
+#if 0
 static void dump_sbuffer(void)
 {
 	int i,j;
@@ -241,6 +244,7 @@ static void dump_sbuffer(void)
 
 	DEBUG_PRINT(("----------dump sbuffer end\n"));
 }
+#endif
 
 static void clear_sbuffer(void)
 {
@@ -731,13 +735,17 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
+		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);*/	/* exact */
+		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p1].pos[2]);	/* match masking */
+
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
-		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
+		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);*/
+		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p2].pos[2]);
 
-		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
-			x1,y1,w1, x2,y2,w2);*/
+		/*printf("%d,%d (%f %f) -> %d,%d (%f %f)\n",
+			x1,y1,w1, 1.0f / vtx[p1].pos[2],
+			x2,y2,w2, 1.0f / vtx[p2].pos[2]);*/
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -870,11 +878,6 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
 
-	segment.render_mode = render.render_mode;
-	segment.tex_num_pal = render.tex_pal;
-	segment.texture = render.texture;
-	segment.masking = render.bitmap.masking;
-
 	/* Fill poly min/max array with segments */
 	p1 = num_vtx-1;
 	for (p2=0; p2<num_vtx; p2++) {
@@ -894,10 +897,13 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
+		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);*/	/* exact */
+		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p1].pos[2]);	/* match masking */
+
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
-		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
+		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);*/
+		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p2].pos[2]);
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
@@ -992,6 +998,11 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 	prevx1 = poly_hlines[miny].sbp[0].x;
 	prevx2 = poly_hlines[miny].sbp[1].x;
+
+	segment.render_mode = render.render_mode;
+	segment.tex_num_pal = render.tex_pal;
+	segment.texture = render.texture;
+	segment.masking = render.bitmap.masking;
 
 	for (y=miny; y<maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
