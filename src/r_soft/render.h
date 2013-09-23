@@ -24,9 +24,13 @@
 /*--- External types ---*/
 
 typedef struct render_s render_t;
+typedef struct vertex_s vertex_t;
+typedef struct vertexf_s vertexf_t;
 
 /*--- Functions ---*/
 
 void render_soft_init(render_t *this);
+
+void project_point(vertex_t *v1, vertexf_t *poly);
 
 #endif /* RENDER_SOFT_H */

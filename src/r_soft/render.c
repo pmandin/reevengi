@@ -523,7 +523,6 @@ static void line(vertex_t *v1, vertex_t *v2)
 
 	draw.line(&draw, &v[0], &v[1]);
 #else
-	/*float segment[4][4], result[4][4];*/
 	vertexf_t tri1[2], poly[16], poly2[16];
 	int clip_result, /*i,*/ num_vtx;
 	Uint32 color = 0xffffffff;
@@ -567,20 +566,6 @@ static void line(vertex_t *v1, vertex_t *v2)
 	if (clip_result == CLIPPING_OUTSIDE) {
 		return;
 	}
-
-	/* Check face visible */
-	/*memset(result, 0, sizeof(float)*4*4);
-	for (i=0; i<3; i++) {
-		result[i][0] = poly[i].pos[0];
-		result[i][1] = poly[i].pos[1];
-		result[i][2] = poly[i].pos[2];
-		result[i][3] = poly[i].pos[3];
-	}
-
-	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}*/
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
@@ -1164,4 +1149,22 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 static void setRenderDepth(int show_depth)
 {
 	render.render_depth = show_depth;
+}
+
+/*
+	Project point (used for masks depth calculation )
+*/
+
+void project_point(vertex_t *v1, vertexf_t *poly)
+{
+	vertexf_t tri1, poly2[16];
+
+	memset(&tri1, 0, sizeof(tri1));
+	tri1.pos[0] = v1->x;
+	tri1.pos[1] = v1->y;
+	tri1.pos[2] = v1->z;
+	tri1.pos[3] = 1.0f;
+
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 1, &tri1, poly);
+	mtx_multMtxVtx(frustum_mtx, 1, poly2, poly);
 }
