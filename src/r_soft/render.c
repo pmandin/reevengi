@@ -491,38 +491,6 @@ static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx)
 
 static void line(vertex_t *v1, vertex_t *v2)
 {
-#if 0
-	float segment[4][4], result[4][4];
-	draw_vertex_t v[2];
-
-	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1->x;
-	segment[0][1] = v1->y;
-	segment[0][2] = v1->z;
-	segment[0][3] = 1.0f;
-	segment[1][0] = v2->x;
-	segment[1][1] = v2->y;
-	segment[1][2] = v2->z;
-	segment[1][3] = 1.0f;
-
-	/* Project in current modelview */
-	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
-
-	/* Clip segment to viewport */
-	if (mtx_clipSegment(result, clip_planes) == CLIPPING_OUTSIDE) {
-		return;
-	}
-
-	/* Project against view frustum */
-	mtx_mult(frustum_mtx, result, segment);
-
-	v[0].x = segment[0][0]/segment[0][2];
-	v[0].y = segment[0][1]/segment[0][2];
-	v[1].x = segment[1][0]/segment[1][2];
-	v[1].y = segment[1][1]/segment[1][2];
-
-	draw.line(&draw, &v[0], &v[1]);
-#else
 	vertexf_t tri1[2], poly[16], poly2[16];
 	int clip_result, /*i,*/ num_vtx;
 	Uint32 color = 0xffffffff;
@@ -572,52 +540,10 @@ static void line(vertex_t *v1, vertex_t *v2)
 
 	/* Draw polygon */
 	draw.polyLine(&draw, poly, num_vtx);
-#endif
 }
 
 static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-#if 0
-	float segment[4][4], result[4][4];
-	draw_vertex_t v[3];
-
-	if (render.texture) {
-		set_color(get_color_from_texture(v1));
-	}
-
-	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1->x;
-	segment[0][1] = v1->y;
-	segment[0][2] = v1->z;
-	segment[0][3] = 1.0f;
-	segment[1][0] = v2->x;
-	segment[1][1] = v2->y;
-	segment[1][2] = v2->z;
-	segment[1][3] = 1.0f;
-	segment[2][0] = v3->x;
-	segment[2][1] = v3->y;
-	segment[2][2] = v3->z;
-	segment[2][3] = 1.0f;
-
-	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
-	if (mtx_clipCheck(result, 3 , clip_planes) == CLIPPING_OUTSIDE) {
-		return;
-	}
-	mtx_mult(frustum_mtx, result, segment);
-
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
-
-	v[0].x = segment[0][0]/segment[0][2];
-	v[0].y = segment[0][1]/segment[0][2];
-	v[1].x = segment[1][0]/segment[1][2];
-	v[1].y = segment[1][1]/segment[1][2];
-	v[2].x = segment[2][0]/segment[2][2];
-	v[2].y = segment[2][1]/segment[2][2];
-
-	draw.triangle(&draw, v);
-#else
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[3], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
@@ -696,58 +622,10 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 	/* Draw polygon */
 	draw.polyLine(&draw, poly, num_vtx);
-#endif
 }
 
 static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 {
-#if 0
-	float segment[4][4], result[4][4];
-	draw_vertex_t v[4];
-
-	if (render.texture) {
-		set_color(get_color_from_texture(v1));
-	}
-
-	memset(segment, 0, sizeof(float)*4*4);
-	segment[0][0] = v1->x;
-	segment[0][1] = v1->y;
-	segment[0][2] = v1->z;
-	segment[0][3] = 1.0f;
-	segment[1][0] = v2->x;
-	segment[1][1] = v2->y;
-	segment[1][2] = v2->z;
-	segment[1][3] = 1.0f;
-	segment[2][0] = v3->x;
-	segment[2][1] = v3->y;
-	segment[2][2] = v3->z;
-	segment[2][3] = 1.0f;
-	segment[3][0] = v4->x;
-	segment[3][1] = v4->y;
-	segment[3][2] = v4->z;
-	segment[3][3] = 1.0f;
-
-	mtx_mult(modelview_mtx[num_modelview_mtx], segment, result);
-	if (mtx_clipCheck(result, 4 , clip_planes) == CLIPPING_OUTSIDE) {
-		return;
-	}
-	mtx_mult(frustum_mtx, result, segment);
-
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
-
-	v[0].x = segment[0][0]/segment[0][2];
-	v[0].y = segment[0][1]/segment[0][2];
-	v[1].x = segment[1][0]/segment[1][2];
-	v[1].y = segment[1][1]/segment[1][2];
-	v[2].x = segment[2][0]/segment[2][2];
-	v[2].y = segment[2][1]/segment[2][2];
-	v[3].x = segment[3][0]/segment[3][2];
-	v[3].y = segment[3][1]/segment[3][2];
-
-	draw.quad(&draw, v);
-#else
 	float segment[4][4], result[4][4];
 	vertexf_t tri1[4], poly[16], poly2[16];
 	int clip_result, i, num_vtx;
@@ -834,7 +712,6 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	/* Draw polygon */
 	draw.polyLine(&draw, poly, num_vtx);
-#endif
 }
 
 /*
@@ -1164,6 +1041,9 @@ void project_point(vertex_t *v1, vertexf_t *poly)
 	tri1.pos[1] = v1->y;
 	tri1.pos[2] = v1->z;
 	tri1.pos[3] = 1.0f;
+
+	mtx_print(modelview_mtx[num_modelview_mtx]);
+	mtx_print(frustum_mtx);
 
 	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 1, &tri1, poly);
 	mtx_multMtxVtx(frustum_mtx, 1, poly2, poly);
