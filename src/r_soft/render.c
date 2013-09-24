@@ -1042,9 +1042,6 @@ void project_point(vertex_t *v1, vertexf_t *poly)
 	tri1.pos[2] = v1->z;
 	tri1.pos[3] = 1.0f;
 
-	mtx_print(modelview_mtx[num_modelview_mtx]);
-	mtx_print(frustum_mtx);
-
-	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 1, &tri1, poly);
+	mtx_multMtxVtx(modelview_mtx[num_modelview_mtx], 1, &tri1, poly2);
 	mtx_multMtxVtx(frustum_mtx, 1, poly2, poly);
 }
