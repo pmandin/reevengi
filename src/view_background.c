@@ -99,7 +99,7 @@ static int refresh_bg = 1;
 static int reload_model = 1;
 
 /*static render_skel_t *player_model = NULL;*/
-static int render_model = RENDER_WIREFRAME;
+static int render_model = RENDER_FILLED /*WIREFRAME*/;
 static int prev_render_model = -1;
 
 static int render_grid = 0;
@@ -543,14 +543,6 @@ void view_background_draw(void)
 	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 
 	if (room) {
-		if (render_masks) {
-			room->drawMasks(room, game->num_camera);
-		}
-
-		/*if (!room->getCamera) {
-			return;
-		}*/
-
 		room->getCamera(room, game->num_camera, &room_camera);
 
 #ifndef ENABLE_DEBUG_POS
@@ -568,6 +560,10 @@ void view_background_draw(void)
 			room_camera.to_x, room_camera.to_y, room_camera.to_z,
 			0.0f, -1.0f, 0.0f
 		);
+
+		if (render_masks) {
+			room->drawMasks(room, game->num_camera);
+		}
 	}
 
 	drawPlayer();
