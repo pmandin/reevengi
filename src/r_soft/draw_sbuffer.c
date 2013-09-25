@@ -710,8 +710,8 @@ static int gen_seg_spans(int y, const sbuffer_segment_t *segment)
 
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
-	int miny = video.viewport.h, maxy = -1;
-	int minx = video.viewport.w, maxx = -1;
+	int miny = video.viewport.h-1, maxy = 0;
+	int minx = video.viewport.w-1, maxx = 0;
 	int y, p1, p2;
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
@@ -758,12 +758,9 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 			v1 = p2;
 			v2 = p1;
 		}
-		if (y1 < miny) {
-			miny = y1;
-		}
-		if (y2 > maxy) {
-			maxy = y2;
-		}
+
+		miny = MIN(y1, miny);
+		maxy = MAX(y2, maxy);
 
 		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
 			v1, vtx[v1].tx[0], vtx[v1].tx[1],
@@ -797,7 +794,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 				tv1 *= w1;
 				dv = vtx[v2].tx[1]*w2 - tv1;
 			}
-			for (y=0; y<dy; y++) {
+			for (y=0; y<=dy; y++) {
 				float coef_dy;
 
 				if ((y1<0) || (y1>=video.viewport.h)) {
@@ -826,7 +823,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 	/* Render horizontal lines */
 	miny=MAX(miny, 0);
-	maxy=MIN(maxy, video.viewport.h);
+	maxy=MIN(maxy, video.viewport.h-1);
 
 	/* Copy to other array for a single segment */
 	if (num_vtx==2) {
@@ -840,7 +837,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	segment.texture = render.texture;
 	segment.masking = render.bitmap.masking;
 
-	for (y=miny; y<maxy; y++) {
+	for (y=miny; y<=maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
 
@@ -860,7 +857,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	minx=MAX(minx, 0);
-	maxx=MIN(maxx, video.viewport.w);
+	maxx=MIN(maxx, video.viewport.w-1);
 
 	/* Mark dirty rectangle */
 	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
@@ -872,8 +869,8 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 /* Specific version for non filled polys */
 static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
-	int miny = video.viewport.h, maxy = -1;
-	int minx = video.viewport.w, maxx = -1;
+	int miny = video.viewport.h-1, maxy = 0;
+	int minx = video.viewport.w-1, maxx = 0;
 	int y, p1, p2, prevx1, prevx2;
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
@@ -884,26 +881,20 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		int v1 = p1;
 		int v2 = p2;
 		int x1,y1, x2,y2;
-		int dy;
+		int dy, dx;
 		float w1, w2;
+		float r1,g1,b1,dr,dg,db;
+		float tu1,du,tv1,dv,dw;
 
 		num_array = 1; /* max */
 
-		/*printf("vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
-			vtx[p1].pos[0], vtx[p1].pos[1],
-			vtx[p1].pos[2], vtx[p1].pos[3],
-			vtx[p2].pos[0], vtx[p2].pos[1],
-			vtx[p2].pos[2], vtx[p2].pos[3]);*/
-
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);	/* exact */
-		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p1].pos[2]);*/	/* match masking */
+		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
 
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
-		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p2].pos[2]);*/
 
 		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
 			x1,y1,w1, x2,y2,w2);*/
@@ -919,46 +910,44 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			v1 = p2;
 			v2 = p1;
 		}
-		if (y1 < miny) {
-			miny = y1;
-		}
-		if (y2 > maxy) {
-			maxy = y2;
-		}
 
-		DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
+		miny = MIN(y1, miny);
+		maxy = MAX(y2, maxy);
+
+		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
 			v1, vtx[v1].tx[0], vtx[v1].tx[1],
 			v2, vtx[v2].tx[0], vtx[v2].tx[1]
-		));
+		));*/
+
+		dx = x2 - x1;
+		r1 = vtx[v1].col[0];
+		dr = vtx[v2].col[0] - r1;
+		g1 = vtx[v1].col[1];
+		dg = vtx[v2].col[1] - g1;
+		b1 = vtx[v1].col[2];
+		db = vtx[v2].col[2] - b1;
+		tu1 = vtx[v1].tx[0];
+		du = vtx[v2].tx[0] - tu1;
+		tv1 = vtx[v1].tx[1];
+		dv = vtx[v2].tx[1] - tv1;
+		dw = w2 - w1;
+		if (draw.correctPerspective>0) {
+			r1 *= w1;
+			dr = vtx[v2].col[0]*w2 - r1;
+			g1 *= w1;
+			dg = vtx[v2].col[1]*w2 - g1;
+			b1 *= w1;
+			db = vtx[v2].col[2]*w2 - b1;
+
+			tu1 *= w1;
+			du = vtx[v2].tx[0]*w2 - tu1;
+			tv1 *= w1;
+			dv = vtx[v2].tx[1]*w2 - tv1;
+		}
 
 		dy = y2 - y1;
 		if (dy>0) {
-			int dx = x2 - x1;
-			float r1 = vtx[v1].col[0];
-			float dr = vtx[v2].col[0] - r1;
-			float g1 = vtx[v1].col[1];
-			float dg = vtx[v2].col[1] - g1;
-			float b1 = vtx[v1].col[2];
-			float db = vtx[v2].col[2] - b1;
-			float tu1 = vtx[v1].tx[0];
-			float du = vtx[v2].tx[0] - tu1;
-			float tv1 = vtx[v1].tx[1];
-			float dv = vtx[v2].tx[1] - tv1;
-			float dw = w2 - w1;
-			if (draw.correctPerspective>0) {
-				r1 *= w1;
-				dr = vtx[v2].col[0]*w2 - r1;
-				g1 *= w1;
-				dg = vtx[v2].col[1]*w2 - g1;
-				b1 *= w1;
-				db = vtx[v2].col[2]*w2 - b1;
-
-				tu1 *= w1;
-				du = vtx[v2].tx[0]*w2 - tu1;
-				tv1 *= w1;
-				dv = vtx[v2].tx[1]*w2 - tv1;
-			}
-			for (y=0; y<dy; y++) {
+			for (y=0; y<=dy; y++) {
 				float coef_dy;
 
 				if ((y1<0) || (y1>=video.viewport.h)) {
@@ -973,12 +962,25 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 				poly_hlines[y1].sbp[num_array].v = tv1 + (dv * coef_dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + (dw * coef_dy);
 				poly_hlines[y1++].sbp[num_array].x = x1 + (dx * coef_dy);
+			}
+		} else {
+			/* Horizontal line */
+			if ((y1>=0) && (y1<video.viewport.h)) {
+				poly_hlines[y1].sbp[num_array].r = r1;
+				poly_hlines[y1].sbp[num_array].g = g1;
+				poly_hlines[y1].sbp[num_array].b = b1;
+				poly_hlines[y1].sbp[num_array].u = tu1;
+				poly_hlines[y1].sbp[num_array].v = tv1;
+				poly_hlines[y1].sbp[num_array].w = w1;
+				poly_hlines[y1].sbp[num_array].x = x1;
 
-				/*DEBUG_PRINT(("line %d, side %d, %.3f,%.3f tu1=%.3f,tv1=%.3f,du=%.3f,dv=%.3f,dy=%d %.3f,%.3f\n",
-					y1-1,num_array,
-					poly_hlines[y1-1].sbp[num_array].u,poly_hlines[y1-1].sbp[num_array].v,
-					tu1,tv1,du,dv,dy,(du*y)/dy,tu1 + ((du*y)/dy)
-				));*/
+				poly_hlines[y1].sbp[num_array ^ 1].r = r1 + dr;
+				poly_hlines[y1].sbp[num_array ^ 1].g = g1 + dg;
+				poly_hlines[y1].sbp[num_array ^ 1].b = b1 + db;
+				poly_hlines[y1].sbp[num_array ^ 1].u = tu1 + du;
+				poly_hlines[y1].sbp[num_array ^ 1].v = tv1 + dv;
+				poly_hlines[y1].sbp[num_array ^ 1].w = w1 + dw;
+				poly_hlines[y1].sbp[num_array ^ 1].x = x2;
 			}
 		}
 
@@ -987,7 +989,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 	/* Render horizontal lines */
 	miny=MAX(miny, 0);
-	maxy=MIN(maxy, video.viewport.h);
+	maxy=MIN(maxy, video.viewport.h-1);
 
 	/* Copy to other array for a single segment */
 	if (num_vtx==2) {
@@ -1004,9 +1006,10 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	segment.texture = render.texture;
 	segment.masking = render.bitmap.masking;
 
-	for (y=miny; y<maxy; y++) {
+	for (y=miny; y<=maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
+		int add_seg;
 
 		if (pminx>pmaxx) {
 			continue;
@@ -1015,39 +1018,27 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
 
-		if ((y==miny) || (y==maxy-1)) {
-			/* Draw complete segment for first and last row */
-			segment.start = poly_hlines[y].sbp[0];
-			segment.end = poly_hlines[y].sbp[1];
+		segment.start = poly_hlines[y].sbp[0];
+		segment.end = poly_hlines[y].sbp[0];
+		if (prevx1<pminx) {
+			segment.start.x = prevx1+1;
+		} else if (prevx1>pminx) {
+			segment.end.x = prevx1-1;
+		}
 
-			if (gen_seg_spans(y, &segment)) {
-				add_base_segment(y, &segment);
-			}
-		} else {
-			int add_seg;
+		add_seg = gen_seg_spans(y, &segment);
 
-			segment.start = poly_hlines[y].sbp[0];
-			segment.end = poly_hlines[y].sbp[0];
-			if (prevx1<pminx) {
-				segment.start.x = prevx1+1;
-			} else if (prevx1>pminx) {
-				segment.end.x = prevx1-1;
-			}
+		segment.start = poly_hlines[y].sbp[1];
+		segment.end = poly_hlines[y].sbp[1];
+		if (prevx2<pmaxx) {
+			segment.start.x = prevx2+1;
+		} else if (prevx2>pmaxx) {
+			segment.end.x = prevx2-1;
+		}
 
-			add_seg = gen_seg_spans(y, &segment);
-
-			segment.start = poly_hlines[y].sbp[1];
-			segment.end = poly_hlines[y].sbp[1];
-			if (prevx2<pmaxx) {
-				segment.start.x = prevx2+1;
-			} else if (prevx2>pmaxx) {
-				segment.end.x = prevx2-1;
-			}
-
-			add_seg |= gen_seg_spans(y, &segment);
-			if (add_seg) {
-				add_base_segment(y, &segment);
-			}
+		add_seg |= gen_seg_spans(y, &segment);
+		if (add_seg) {
+			add_base_segment(y, &segment);
 		}
 
 		prevx1 = pminx;
@@ -1055,7 +1046,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	minx=MAX(minx, 0);
-	maxx=MIN(maxx, video.viewport.w);
+	maxx=MIN(maxx, video.viewport.w-1);
 
 	/* Mark dirty rectangle */
 	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
