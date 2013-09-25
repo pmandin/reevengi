@@ -105,9 +105,7 @@ static sbuffer_draw_f draw_render_textured;
 static void draw_shutdown(draw_t *this);
 
 static void clear_sbuffer(void);
-#if 0
 static void dump_sbuffer(void);
-#endif
 static void flush_sbuffer(draw_t *this);
 
 static void draw_resize(draw_t *this, int w, int h, int bpp);
@@ -217,34 +215,32 @@ static void draw_endFrame(draw_t *this)
 	flush_sbuffer(this);
 }
 
-#if 0
 static void dump_sbuffer(void)
 {
 	int i,j;
 
-	DEBUG_PRINT(("----------dump sbuffer start\n"));
+	printf("----------dump sbuffer start\n");
 
 	for (i=0; i<sbuffer_numrows; i++) {
 		sbuffer_row_t *row = &sbuffer_rows[i];
 		if ((row->num_segs==0) && (row->num_spans==0))
 			continue;
 
-		DEBUG_PRINT(("--- first span: %d\n", row->first_span));
+		printf("--- first span: %d\n", row->first_span);
 
 		for (j=0; j<row->num_segs; j++) {
-			DEBUG_PRINT(("----- seg %d: %d,%d\n", j,
-				row->segment[j].start.x, row->segment[j].end.x));
+			printf("----- seg %d: %d,%d\n", j,
+				row->segment[j].start.x, row->segment[j].end.x);
 		}
 		for (j=0; j<row->num_spans; j++) {
-			DEBUG_PRINT(("----- span %d (seg %d next %d): %d,%d\n", j,
+			printf("----- span %d (seg %d next %d): %d,%d\n", j,
 				row->span[j].id, row->span[j].next,
-				row->span[j].x1, row->span[j].x2));
+				row->span[j].x1, row->span[j].x2);
 		}
 	}
 
-	DEBUG_PRINT(("----------dump sbuffer end\n"));
+	printf("----------dump sbuffer end\n");
 }
-#endif
 
 static void clear_sbuffer(void)
 {
@@ -966,6 +962,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		} else {
 			/* Horizontal line */
 			if ((y1>=0) && (y1<video.viewport.h)) {
+				num_array = (x2<x1);
+
 				poly_hlines[y1].sbp[num_array].r = r1;
 				poly_hlines[y1].sbp[num_array].g = g1;
 				poly_hlines[y1].sbp[num_array].b = b1;
@@ -1009,7 +1007,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	for (y=miny; y<=maxy; y++) {
 		int pminx = poly_hlines[y].sbp[0].x;
 		int pmaxx = poly_hlines[y].sbp[1].x;
-		int add_seg;
+		int add_seg = 0;
 
 		if (pminx>pmaxx) {
 			continue;
@@ -1018,25 +1016,34 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
 
-		segment.start = poly_hlines[y].sbp[0];
-		segment.end = poly_hlines[y].sbp[0];
-		if (prevx1<pminx) {
-			segment.start.x = prevx1+1;
-		} else if (prevx1>pminx) {
-			segment.end.x = prevx1-1;
+		if (miny==maxy) {
+			/* Horizontal segment */
+			segment.start = poly_hlines[y].sbp[0];
+			segment.end = poly_hlines[y].sbp[1];
+
+			add_seg = gen_seg_spans(y, &segment);
+		} else {
+			segment.start = poly_hlines[y].sbp[0];
+			segment.end = poly_hlines[y].sbp[0];
+			if (prevx1<pminx) {
+				segment.start.x = prevx1+1;
+			} else if (prevx1>pminx) {
+				segment.end.x = prevx1-1;
+			}
+
+			add_seg = gen_seg_spans(y, &segment);
+
+			segment.start = poly_hlines[y].sbp[1];
+			segment.end = poly_hlines[y].sbp[1];
+			if (prevx2<pmaxx) {
+				segment.start.x = prevx2+1;
+			} else if (prevx2>pmaxx) {
+				segment.end.x = prevx2-1;
+			}
+
+			add_seg |= gen_seg_spans(y, &segment);
 		}
 
-		add_seg = gen_seg_spans(y, &segment);
-
-		segment.start = poly_hlines[y].sbp[1];
-		segment.end = poly_hlines[y].sbp[1];
-		if (prevx2<pmaxx) {
-			segment.start.x = prevx2+1;
-		} else if (prevx2>pmaxx) {
-			segment.end.x = prevx2-1;
-		}
-
-		add_seg |= gen_seg_spans(y, &segment);
 		if (add_seg) {
 			add_base_segment(y, &segment);
 		}
@@ -1044,6 +1051,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		prevx1 = pminx;
 		prevx2 = pmaxx;
 	}
+
+	/*dump_sbuffer();*/
 
 	minx=MAX(minx, 0);
 	maxx=MIN(maxx, video.viewport.w-1);
