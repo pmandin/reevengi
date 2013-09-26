@@ -977,6 +977,52 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			}
 		} else {
 			/* Mostly horizontal */
+			float coef_dy, coef_dx;
+			int y;
+			int prevx1 = x1;
+
+			sp1 = &segment.start;
+			sp2 = &segment.end;
+
+			for (y=0; y<=dy; y++,y1++) {
+				int x;
+
+				if ((y1<0) || (y1>=video.viewport.h)) {
+					continue;
+				}
+
+				coef_dy = (float) y / dy;
+				coef_dx = 0.0f /*((float) dx) * coef_dy*/;
+				x = x1 + (dx * coef_dy);
+
+				if (prevx1<x) {
+					sp1->x = prevx1+1;
+					sp2->x = x;
+				} else if (prevx1>x) {
+					sp1->x = x;
+					sp2->x = prevx1-1;
+				}
+
+				sp1->r = r1 + (sp1->x-x1) * coef_dx;
+				sp1->g = g1 + (sp1->x-x1) * coef_dx;
+				sp1->b = b1 + (sp1->x-x1) * coef_dx;
+				sp1->u = tu1 + (sp1->x-x1) * coef_dx;
+				sp1->v = tv1 + (sp1->x-x1) * coef_dx;
+				sp1->w = w1 + (sp1->x-x1) * coef_dx;
+
+				sp2->r = r1 + (sp2->x-x1) * coef_dx;
+				sp2->g = g1 + (sp2->x-x1) * coef_dx;
+				sp2->b = b1 + (sp2->x-x1) * coef_dx;
+				sp2->u = tu1 + (sp2->x-x1) * coef_dx;
+				sp2->v = tv1 + (sp2->x-x1) * coef_dx;
+				sp2->w = w1 + (sp2->x-x1) * coef_dx;
+
+				/*if (gen_seg_spans(y1, &segment)) {
+					add_base_segment(y1, &segment);
+				}*/
+
+				prevx1 = x;
+			}
 		}
 
 		p1 = p2;
