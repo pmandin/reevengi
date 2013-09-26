@@ -723,25 +723,13 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		num_array = 1; /* max */
 
-		/*printf("filled: vtx1: %f,%f,%f,%f; vtx2: %f,%f,%f,%f\n",
-			vtx[p1].pos[0], vtx[p1].pos[1],
-			vtx[p1].pos[2], vtx[p1].pos[3],
-			vtx[p2].pos[0], vtx[p2].pos[1],
-			vtx[p2].pos[2], vtx[p2].pos[3]);*/
-
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);	/* exact */
-		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p1].pos[2]);*/	/* match masking */
+		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
 
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
-		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : 1.0f / vtx[p2].pos[2]);*/
-
-		/*printf("%d,%d (%f %f) -> %d,%d (%f %f)\n",
-			x1,y1,w1, 1.0f / vtx[p1].pos[2],
-			x2,y2,w2, 1.0f / vtx[p2].pos[2]);*/
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -757,11 +745,6 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		miny = MIN(y1, miny);
 		maxy = MAX(y2, maxy);
-
-		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
-			v1, vtx[v1].tx[0], vtx[v1].tx[1],
-			v2, vtx[v2].tx[0], vtx[v2].tx[1]
-		));*/
 
 		dy = y2 - y1;
 		if (dy>0) {
@@ -805,12 +788,6 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 				poly_hlines[y1].sbp[num_array].v = tv1 + (dv * coef_dy);
 				poly_hlines[y1].sbp[num_array].w = w1 + (dw * coef_dy);
 				poly_hlines[y1++].sbp[num_array].x = x1 + (dx * coef_dy);
-
-				/*DEBUG_PRINT(("line %d, side %d, %.3f,%.3f tu1=%.3f,tv1=%.3f,du=%.3f,dv=%.3f,dy=%d %.3f,%.3f\n",
-					y1-1,num_array,
-					poly_hlines[y1-1].sbp[num_array].u,poly_hlines[y1-1].sbp[num_array].v,
-					tu1,tv1,du,dv,dy,(du*y)/dy,tu1 + ((du*y)/dy)
-				));*/
 			}
 		}
 
@@ -867,6 +844,147 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
 	int miny = video.viewport.h-1, maxy = 0;
 	int minx = video.viewport.w-1, maxx = 0;
+	int p1,p2;
+	sbuffer_segment_t segment;
+	sbuffer_point_t *sp1, *sp2;
+
+	segment.render_mode = render.render_mode;
+	segment.tex_num_pal = render.tex_pal;
+	segment.texture = render.texture;
+	segment.masking = render.bitmap.masking;
+
+	p1 = num_vtx-1;
+	for (p2=0; p2<num_vtx; p2++) {
+		int v1 = p1;
+		int v2 = p2;
+		int x1,y1, x2,y2;
+		int dy, dx;
+		float w1, w2;
+		float r1,g1,b1,dr,dg,db;
+		float tu1,du,tv1,dv,dw;
+
+		/* Draw each line between vertices p1 and p2 */
+		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
+		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
+		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
+
+		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
+		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
+		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
+
+		/* Swap if p1 lower than p2 */
+		if (y1 > y2) {
+			int tmp;
+			float tmpz;
+
+			tmp = x1; x1 = x2; x2 = tmp;
+			tmp = y1; y1 = y2; y2 = tmp;
+			tmpz = w1; w1 = w2; w2 = tmpz;
+			v1 = p2;
+			v2 = p1;
+		}
+
+		miny = MIN(y1, miny);
+		maxy = MAX(y2, maxy);
+		if (x1<=x2) {
+			minx = MIN(x1, minx);
+			maxx = MAX(x2, maxx);
+		} else {
+			minx = MIN(x2, minx);
+			maxx = MAX(x2, maxx);
+		}
+
+		dy = y2-y1;
+		dx = x2-x1;
+
+		dx = x2 - x1;
+		r1 = vtx[v1].col[0];
+		dr = vtx[v2].col[0] - r1;
+		g1 = vtx[v1].col[1];
+		dg = vtx[v2].col[1] - g1;
+		b1 = vtx[v1].col[2];
+		db = vtx[v2].col[2] - b1;
+		tu1 = vtx[v1].tx[0];
+		du = vtx[v2].tx[0] - tu1;
+		tv1 = vtx[v1].tx[1];
+		dv = vtx[v2].tx[1] - tv1;
+		dw = w2 - w1;
+		if (draw.correctPerspective>0) {
+			r1 *= w1;
+			dr = vtx[v2].col[0]*w2 - r1;
+			g1 *= w1;
+			dg = vtx[v2].col[1]*w2 - g1;
+			b1 *= w1;
+			db = vtx[v2].col[2]*w2 - b1;
+
+			tu1 *= w1;
+			du = vtx[v2].tx[0]*w2 - tu1;
+			tv1 *= w1;
+			dv = vtx[v2].tx[1]*w2 - tv1;
+		}
+
+		if (dy==0) {
+			/* Horizontal line */
+			sp1 = (x1<x2 ? &segment.start : &segment.end);
+			sp2 = (x1<x2 ? &segment.end : &segment.start);
+
+			sp1->r = vtx[v1].col[0];
+			sp1->g = vtx[v1].col[0];
+			sp1->b = vtx[v1].col[0];
+			sp1->u = vtx[v1].tx[0];
+			sp1->v = vtx[v1].tx[1];
+			sp1->w = w1;
+			sp1->x = x1;
+
+			sp2->r = vtx[v2].col[0];
+			sp2->g = vtx[v2].col[1];
+			sp2->b = vtx[v2].col[2];
+			sp2->u = vtx[v2].tx[0];
+			sp2->v = vtx[v2].tx[1];
+			sp2->w = w2;
+			sp2->x = x2;
+
+			if ((y1>=0) && (y1<video.viewport.h)) {
+				if (gen_seg_spans(y1, &segment)) {
+					add_base_segment(y1, &segment);
+				}
+			}
+		} else if (dy>=abs(dx)) {
+			/* Mostly vertical */
+			float coef_dy;
+			int y;
+
+			sp1 = &segment.start;
+			sp2 = &segment.end;
+
+			for (y=0; y<=dy; y++,y1++) {
+				if ((y1<0) || (y1>=video.viewport.h)) {
+					continue;
+				}
+
+				coef_dy = (float) y / dy;
+				sp1->r = sp2->r = r1 + (dr * coef_dy);
+				sp1->g = sp2->g = g1 + (dg * coef_dy);
+				sp1->b = sp2->b = b1 + (db * coef_dy);
+				sp1->u = sp2->u = tu1 + (du * coef_dy);
+				sp1->v = sp2->v = tv1 + (dv * coef_dy);
+				sp1->w = sp2->w = w1 + (dw * coef_dy);
+				sp1->x = sp2->x = x1 + (dx * coef_dy);
+
+				if (gen_seg_spans(y1, &segment)) {
+					add_base_segment(y1, &segment);
+				}
+			}
+		} else {
+			/* Mostly horizontal */
+		}
+
+		p1 = p2;
+	}
+
+#if 0
+	int miny = video.viewport.h-1, maxy = 0;
+	int minx = video.viewport.w-1, maxx = 0;
 	int y, p1, p2, prevx1, prevx2;
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
@@ -909,6 +1027,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		miny = MIN(y1, miny);
 		maxy = MAX(y2, maxy);
+
 
 		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
 			v1, vtx[v1].tx[0], vtx[v1].tx[1],
@@ -1053,6 +1172,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	}
 
 	/*dump_sbuffer();*/
+#endif
 
 	minx=MAX(minx, 0);
 	maxx=MIN(maxx, video.viewport.w-1);
