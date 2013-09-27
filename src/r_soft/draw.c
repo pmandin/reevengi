@@ -47,6 +47,7 @@ static void shutdown(draw_t *this);
 static void resize(draw_t *this, int w, int h, int bpp);
 static void startFrame(draw_t *this);
 static void endFrame(draw_t *this);
+static void set_depth(draw_t *this, int enable);
 
 static void line(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
 static void triangle(draw_t *this, draw_vertex_t v[3]);
@@ -70,6 +71,8 @@ void draw_init(draw_t *this)
 	this->resize = resize;
 	this->startFrame = startFrame;
 	this->endFrame = endFrame;
+
+	this->set_depth = set_depth;
 
 	this->line = line;
 	this->triangle = triangle;
@@ -98,6 +101,10 @@ static void startFrame(draw_t *this)
 }
 
 static void endFrame(draw_t *this)
+{
+}
+
+static void set_depth(draw_t *this, int enable)
 {
 }
 

@@ -42,6 +42,8 @@ struct draw_s {
 	void (*startFrame)(draw_t *this);
 	void (*endFrame)(draw_t *this);
 
+	void (*set_depth)(draw_t *this, int enable);
+
 	/* Wireframe */
 	void (*line)(draw_t *this, draw_vertex_t *v1, draw_vertex_t *v2);
 	void (*triangle)(draw_t *this, draw_vertex_t v[3]);

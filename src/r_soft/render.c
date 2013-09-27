@@ -362,6 +362,8 @@ static void set_dithering(int enable)
 
 static void set_depth(int enable)
 {
+	draw.set_depth(&draw, enable);
+
 	render.depth_test = enable;
 }
 
