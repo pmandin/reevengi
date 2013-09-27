@@ -929,8 +929,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			sp2 = (x1<x2 ? &segment.end : &segment.start);
 
 			sp1->r = vtx[v1].col[0];
-			sp1->g = vtx[v1].col[0];
-			sp1->b = vtx[v1].col[0];
+			sp1->g = vtx[v1].col[1];
+			sp1->b = vtx[v1].col[2];
 			sp1->u = vtx[v1].tx[0];
 			sp1->v = vtx[v1].tx[1];
 			sp1->w = w1;
@@ -977,248 +977,64 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			}
 		} else {
 			/* Mostly horizontal */
-			float coef_dy, coef_dx;
-			int y;
-			int prevx1 = x1;
+			int x, dx1, startx = x1, prevx = x1, adx = abs(dx);
+			int prevy = y1;
 
-			sp1 = &segment.start;
-			sp2 = &segment.end;
+			sp1 = (x1<x2 ? &segment.start : &segment.end);
+			sp2 = (x1<x2 ? &segment.end : &segment.start);
+			dx1 = (x1<x2 ? 1 : -1);
 
-			for (y=0; y<=dy; y++,y1++) {
-				int x;
+			for (x=0; x<=adx; x++,x1+=dx1) {
+				int y, px;
+				float coef_dx;
 
-				if ((y1<0) || (y1>=video.viewport.h)) {
+				coef_dx = (float) x / adx;
+				y = y1 + (dy * coef_dx);
+				if (y==prevy) {
 					continue;
 				}
 
-				coef_dy = (float) y / dy;
-				coef_dx = 0.0f /*((float) dx) * coef_dy*/;
-				x = x1 + (dx * coef_dy);
+				/* Generate segment for row prevy, from prevx to x-1, or x+1 to prevx */
+				px = prevx - startx;
+				coef_dx = abs((float) px / adx);
 
-				if (prevx1<x) {
-					sp1->x = prevx1+1;
-					sp2->x = x;
-				} else if (prevx1>x) {
-					sp1->x = x;
-					sp2->x = prevx1-1;
+				sp1->x = prevx;
+				sp1->r = r1 + dr * coef_dx;
+				sp1->g = g1 + dg * coef_dx;
+				sp1->b = b1 + db * coef_dx;
+				sp1->u = tu1 + du * coef_dx;
+				sp1->v = tv1 + dv * coef_dx;
+				sp1->w = w1 + dw * coef_dx;
+
+				if (dx1>0) {
+					px = x1-1 - startx;
+					sp2->x = x1-1;
+				} else {
+					px = x1+1 - startx;
+					sp2->x = x1+1;
+				}
+				coef_dx = abs((float) px / adx);
+
+				sp2->r = r1 + dr * coef_dx;
+				sp2->g = g1 + dg * coef_dx;
+				sp2->b = b1 + db * coef_dx;
+				sp2->u = tu1 + du * coef_dx;
+				sp2->v = tv1 + dv * coef_dx;
+				sp2->w = w1 + dw * coef_dx;
+
+				if ((y>=0) && (y<video.viewport.h)) {
+					if (gen_seg_spans(y, &segment)) {
+						add_base_segment(y, &segment);
+					}
 				}
 
-				sp1->r = r1 + (sp1->x-x1) * coef_dx;
-				sp1->g = g1 + (sp1->x-x1) * coef_dx;
-				sp1->b = b1 + (sp1->x-x1) * coef_dx;
-				sp1->u = tu1 + (sp1->x-x1) * coef_dx;
-				sp1->v = tv1 + (sp1->x-x1) * coef_dx;
-				sp1->w = w1 + (sp1->x-x1) * coef_dx;
-
-				sp2->r = r1 + (sp2->x-x1) * coef_dx;
-				sp2->g = g1 + (sp2->x-x1) * coef_dx;
-				sp2->b = b1 + (sp2->x-x1) * coef_dx;
-				sp2->u = tu1 + (sp2->x-x1) * coef_dx;
-				sp2->v = tv1 + (sp2->x-x1) * coef_dx;
-				sp2->w = w1 + (sp2->x-x1) * coef_dx;
-
-				/*if (gen_seg_spans(y1, &segment)) {
-					add_base_segment(y1, &segment);
-				}*/
-
-				prevx1 = x;
+				prevx = x1;
+				prevy = y;
 			}
 		}
 
 		p1 = p2;
 	}
-
-#if 0
-	int miny = video.viewport.h-1, maxy = 0;
-	int minx = video.viewport.w-1, maxx = 0;
-	int y, p1, p2, prevx1, prevx2;
-	sbuffer_segment_t segment;
-	int num_array = 1; /* max array */
-
-	/* Fill poly min/max array with segments */
-	p1 = num_vtx-1;
-	for (p2=0; p2<num_vtx; p2++) {
-		int v1 = p1;
-		int v2 = p2;
-		int x1,y1, x2,y2;
-		int dy, dx;
-		float w1, w2;
-		float r1,g1,b1,dr,dg,db;
-		float tu1,du,tv1,dv,dw;
-
-		num_array = 1; /* max */
-
-		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
-		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
-
-		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
-		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
-		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
-
-		/*printf("%d,%d (%.3f) -> %d,%d (%.3f)\n",
-			x1,y1,w1, x2,y2,w2);*/
-
-		/* Swap if p1 lower than p2 */
-		if (y1 > y2) {
-			int tmp;
-			float tmpz;
-			tmp = x1; x1 = x2; x2 = tmp;
-			tmp = y1; y1 = y2; y2 = tmp;
-			tmpz = w1; w1 = w2; w2 = tmpz;
-			num_array = 0;	/* min */
-			v1 = p2;
-			v2 = p1;
-		}
-
-		miny = MIN(y1, miny);
-		maxy = MAX(y2, maxy);
-
-
-		/*DEBUG_PRINT(("from p[%d]: u=%.3f, v=%.3f to p[%d]: u=%.3f,v=%.3f\n",
-			v1, vtx[v1].tx[0], vtx[v1].tx[1],
-			v2, vtx[v2].tx[0], vtx[v2].tx[1]
-		));*/
-
-		dx = x2 - x1;
-		r1 = vtx[v1].col[0];
-		dr = vtx[v2].col[0] - r1;
-		g1 = vtx[v1].col[1];
-		dg = vtx[v2].col[1] - g1;
-		b1 = vtx[v1].col[2];
-		db = vtx[v2].col[2] - b1;
-		tu1 = vtx[v1].tx[0];
-		du = vtx[v2].tx[0] - tu1;
-		tv1 = vtx[v1].tx[1];
-		dv = vtx[v2].tx[1] - tv1;
-		dw = w2 - w1;
-		if (draw.correctPerspective>0) {
-			r1 *= w1;
-			dr = vtx[v2].col[0]*w2 - r1;
-			g1 *= w1;
-			dg = vtx[v2].col[1]*w2 - g1;
-			b1 *= w1;
-			db = vtx[v2].col[2]*w2 - b1;
-
-			tu1 *= w1;
-			du = vtx[v2].tx[0]*w2 - tu1;
-			tv1 *= w1;
-			dv = vtx[v2].tx[1]*w2 - tv1;
-		}
-
-		dy = y2 - y1;
-		if (dy>0) {
-			for (y=0; y<=dy; y++) {
-				float coef_dy;
-
-				if ((y1<0) || (y1>=video.viewport.h)) {
-					continue;
-				}
-
-				coef_dy = (float) y / dy;
-				poly_hlines[y1].sbp[num_array].r = r1 + (dr * coef_dy);
-				poly_hlines[y1].sbp[num_array].g = g1 + (dg * coef_dy);
-				poly_hlines[y1].sbp[num_array].b = b1 + (db * coef_dy);
-				poly_hlines[y1].sbp[num_array].u = tu1 + (du * coef_dy);
-				poly_hlines[y1].sbp[num_array].v = tv1 + (dv * coef_dy);
-				poly_hlines[y1].sbp[num_array].w = w1 + (dw * coef_dy);
-				poly_hlines[y1++].sbp[num_array].x = x1 + (dx * coef_dy);
-			}
-		} else {
-			/* Horizontal line */
-			if ((y1>=0) && (y1<video.viewport.h)) {
-				num_array = (x2<x1);
-
-				poly_hlines[y1].sbp[num_array].r = r1;
-				poly_hlines[y1].sbp[num_array].g = g1;
-				poly_hlines[y1].sbp[num_array].b = b1;
-				poly_hlines[y1].sbp[num_array].u = tu1;
-				poly_hlines[y1].sbp[num_array].v = tv1;
-				poly_hlines[y1].sbp[num_array].w = w1;
-				poly_hlines[y1].sbp[num_array].x = x1;
-
-				poly_hlines[y1].sbp[num_array ^ 1].r = r1 + dr;
-				poly_hlines[y1].sbp[num_array ^ 1].g = g1 + dg;
-				poly_hlines[y1].sbp[num_array ^ 1].b = b1 + db;
-				poly_hlines[y1].sbp[num_array ^ 1].u = tu1 + du;
-				poly_hlines[y1].sbp[num_array ^ 1].v = tv1 + dv;
-				poly_hlines[y1].sbp[num_array ^ 1].w = w1 + dw;
-				poly_hlines[y1].sbp[num_array ^ 1].x = x2;
-			}
-		}
-
-		p1 = p2;
-	}
-
-	/* Render horizontal lines */
-	miny=MAX(miny, 0);
-	maxy=MIN(maxy, video.viewport.h-1);
-
-	/* Copy to other array for a single segment */
-	if (num_vtx==2) {
-		for (y=miny; y<maxy; y++) {
-			poly_hlines[y].sbp[num_array ^ 1] = poly_hlines[y].sbp[num_array];
-		}
-	}
-
-	prevx1 = poly_hlines[miny].sbp[0].x;
-	prevx2 = poly_hlines[miny].sbp[1].x;
-
-	segment.render_mode = render.render_mode;
-	segment.tex_num_pal = render.tex_pal;
-	segment.texture = render.texture;
-	segment.masking = render.bitmap.masking;
-
-	for (y=miny; y<=maxy; y++) {
-		int pminx = poly_hlines[y].sbp[0].x;
-		int pmaxx = poly_hlines[y].sbp[1].x;
-		int add_seg = 0;
-
-		if (pminx>pmaxx) {
-			continue;
-		}
-
-		minx=MIN(minx, pminx);
-		maxx=MAX(maxx, pmaxx);
-
-		if (miny==maxy) {
-			/* Horizontal segment */
-			segment.start = poly_hlines[y].sbp[0];
-			segment.end = poly_hlines[y].sbp[1];
-
-			add_seg = gen_seg_spans(y, &segment);
-		} else {
-			segment.start = poly_hlines[y].sbp[0];
-			segment.end = poly_hlines[y].sbp[0];
-			if (prevx1<pminx) {
-				segment.start.x = prevx1+1;
-			} else if (prevx1>pminx) {
-				segment.end.x = prevx1-1;
-			}
-
-			add_seg = gen_seg_spans(y, &segment);
-
-			segment.start = poly_hlines[y].sbp[1];
-			segment.end = poly_hlines[y].sbp[1];
-			if (prevx2<pmaxx) {
-				segment.start.x = prevx2+1;
-			} else if (prevx2>pmaxx) {
-				segment.end.x = prevx2-1;
-			}
-
-			add_seg |= gen_seg_spans(y, &segment);
-		}
-
-		if (add_seg) {
-			add_base_segment(y, &segment);
-		}
-
-		prevx1 = pminx;
-		prevx2 = pmaxx;
-	}
-
-	/*dump_sbuffer();*/
-#endif
 
 	minx=MAX(minx, 0);
 	maxx=MIN(maxx, video.viewport.w-1);
