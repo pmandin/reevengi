@@ -39,7 +39,7 @@
 
 static void shutdown(render_mask_t *this);
 
-static void addZone(render_mask_t *this,
+static void addZone(render_mask_t *this, int num_camera,
 	int srcX, int srcY, int w,int h,
 	int dstX, int dstY, int depth);
 
@@ -89,7 +89,7 @@ static void shutdown(render_mask_t *this)
 	free(this);
 }
 
-static void addZone(render_mask_t *this,
+static void addZone(render_mask_t *this, int num_camera,
 	int srcX, int srcY, int w,int h,
 	int dstX, int dstY, int depth)
 {

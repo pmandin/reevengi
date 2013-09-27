@@ -39,7 +39,7 @@ struct render_mask_s {
 	void (*shutdown)(render_mask_t *this);
 
 	/* Define a zone with mask in source texture, where to draw on dest */
-	void (*addZone)(render_mask_t *this,
+	void (*addZone)(render_mask_t *this, int num_camera,
 		int srcX, int srcY, int w,int h,
 		int dstX, int dstY, int depth);
 

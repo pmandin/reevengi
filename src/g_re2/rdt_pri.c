@@ -113,7 +113,7 @@ void rdt2_pri_initMasks(room_t *this, int num_camera)
 				offset += sizeof(rdt2_pri_square_t);
 			}
 
-			rdr_mask->addZone(rdr_mask,
+			rdr_mask->addZone(rdr_mask, num_camera,
 				src_x,src_y, width,height,
 				dst_x,dst_y, 32*depth);
 		}
