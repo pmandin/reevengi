@@ -44,7 +44,8 @@ static void addZone(render_mask_t *this, int num_camera,
 	int srcX, int srcY, int w,int h,
 	int dstX, int dstY, int depth);
 
-static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth);
+static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth, int num_camera);
+static float calcDepthW(int depth, int num_camera);
 
 static void finishedZones(render_mask_t *this);
 
@@ -140,7 +141,7 @@ static void addZone(render_mask_t *this, int num_camera,
 			if (!alpha_pal[*src_col++]) {
 				/* Transparent pixel, add previous opaque segment */
 				if (startx>=0) {
-					addMaskSegment(this, dstY+y, startx, dstX+x-1, depth);
+					addMaskSegment(this, dstY+y, startx, dstX+x-1, depth, num_camera);
 					startx = -1;
 				}
 			} else {
@@ -153,14 +154,14 @@ static void addZone(render_mask_t *this, int num_camera,
 
 		/* Add segment till EOL */
 		if (startx>=0) {
-			addMaskSegment(this, dstY+y, startx, dstX+w-1, depth);
+			addMaskSegment(this, dstY+y, startx, dstX+w-1, depth, num_camera);
 		}
 
 		src_line += tex->pitch;
 	}
 }
 
-static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth)
+static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth, int num_camera)
 {
 	render_mask_soft_t *soft_mask;
 	mask_row_t *mask_row;
@@ -177,9 +178,45 @@ static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth
 
 	mask_seg->x1 = x1;
 	mask_seg->x2 = x2;
-	mask_seg->depth = (float) depth;
-	mask_seg->w = 1.0f / ((float) depth);	/* FIXME, depend on projection matrix */
+	mask_seg->w = calcDepthW(depth, num_camera);
+
 	++mask_row->num_segs;
+}
+
+static float calcDepthW(int depth, int num_camera)
+{
+	float va, vb, vc, vd, ve, vf, veclen;
+	room_t *room = game->room;
+	room_camera_t room_camera;
+	float vx,vy,vz, vk;
+	vertex_t v1;
+	vertexf_t poly[16];
+			
+	room->getCamera(room, game->num_camera, &room_camera);
+
+	va=room_camera.to_x-room_camera.from_x;
+	vb=room_camera.from_x;
+	vc=room_camera.to_y-room_camera.from_y;
+	vd=room_camera.from_y;
+	ve=room_camera.to_z-room_camera.from_z;
+	vf=room_camera.from_z;
+
+	veclen = sqrt(va*va + vc*vc + ve*ve);
+
+	vk = sqrt(depth*depth + va*va) / veclen;
+
+	vx = vk*va+vb;
+	vy = vk*vc+vd;
+	vz = vk*ve+vf;
+
+	v1.x = (Sint16) vx;
+	v1.y = (Sint16) vy;
+	v1.z = (Sint16) vz;
+	v1.u = v1.v = 0;
+
+	project_point(&v1, poly);
+
+	return (poly[0].pos[3] / poly[0].pos[2]);
 }
 
 static void finishedZones(render_mask_t *this)
@@ -299,11 +336,6 @@ static void drawMask(render_mask_t *this)
 {
 	render_mask_soft_t *soft_mask;
 	int x,y, dstYstart, dstYend;
-#if 1
-	float va, vb, vc, vd, ve, vf, veclen;
-	room_t *room = game->room;
-	room_camera_t room_camera;
-#endif
 
 	assert(this);
 	soft_mask = (render_mask_soft_t *) this;
@@ -311,35 +343,6 @@ static void drawMask(render_mask_t *this)
 	if ((soft_mask->miny > soft_mask->maxy) || !draw.addMaskSegment) {
 		return;
 	}
-
-#if 1
-	room->getCamera(room, game->num_camera, &room_camera);
-
-	/*printf("camera: from %d,%d,%d to %d,%d,%d\n",
-		room_camera.from_x, room_camera.from_y, room_camera.from_z,
-		room_camera.to_x, room_camera.to_y, room_camera.to_z);*/
-
-	va=room_camera.to_x-room_camera.from_x;
-	vb=room_camera.from_x;
-	vc=room_camera.to_y-room_camera.from_y;
-	vd=room_camera.from_y;
-	ve=room_camera.to_z-room_camera.from_z;
-	vf=room_camera.from_z;
-
-	veclen = sqrt(va*va + vc*vc + ve*ve);
-
-	/*printf("camera: from-to dist: %f\n", veclen);*/
-/*
-	x = (to-from) k + from
-	y = (to-from) k + from
-	z = (to-from) k + from
-
-	k^2 = (depth^2 + va^2) / veclen^2
-
-	calc point between from and to, for depth
-	setup projection
-	calc point projection with its w */
-#endif
 
 	dstYstart = (soft_mask->miny * video.viewport.h) / RENDER_MASK_HEIGHT;
 	dstYend = (soft_mask->maxy * video.viewport.h) / RENDER_MASK_HEIGHT;
@@ -352,52 +355,14 @@ static void drawMask(render_mask_t *this)
 		for (x=0; x<mask_row->num_segs; x++) {
 			int dstXstart = (mask_seg->x1 * video.viewport.w ) / RENDER_MASK_WIDTH;
 			int dstXend = ((mask_seg->x2+1) * video.viewport.w ) / RENDER_MASK_WIDTH;
-#if 1
-			float vx,vy,vz, new_w, vk;
-			vertex_t v1;
-			vertexf_t poly[16];
-			
-			vk = sqrt(mask_seg->depth*mask_seg->depth + va*va) / veclen;
-		
-			/*printf("vk: %f -> %f,%f,%f\n", vk, vk*va+vb, vk*vc+vd, vk*ve+vf);*/
 
-			vx = vk*va+vb;
-			vy = vk*vc+vd;
-			vz = vk*ve+vf;
-
-			v1.x = (Sint16) vx;
-			v1.y = (Sint16) vy;
-			v1.z = (Sint16) vz;
-			v1.u = v1.v = 0;
-
-			project_point(&v1, poly);
-
-			/*printf(">%d,%f 1:% 9.3f,% 9.3f,% 9.3f -> %f,%f,%f %f\n",
-				(int) mask_seg->depth, mask_seg->w,
-				vx,vy,vz,
-				poly[0].pos[0]/poly[0].pos[3],
-				poly[0].pos[1]/poly[0].pos[3],
-				poly[0].pos[2]/poly[0].pos[3],
-				poly[0].pos[3]/poly[0].pos[2]);*/
-
-			/*	calc point projection with its w */
-			new_w = poly[0].pos[3] / poly[0].pos[2];
-
-			draw.addMaskSegment(&draw, y,
-				dstXstart,dstXend-1,
-				new_w);
-#else
 			draw.addMaskSegment(&draw, y,
 				dstXstart,dstXend-1,
 				mask_seg->w);
-#endif
-/*assert(0);*/
 
 			++mask_seg;
 		}
 	}
-
-	/*assert(0);*/
 
 	/* Mark dirty rectangles */
 	for (y=soft_mask->dirty_miny; y<soft_mask->dirty_maxy; y++) {

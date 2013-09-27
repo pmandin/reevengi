@@ -31,7 +31,7 @@ typedef struct render_mask_s render_mask_t;
 
 typedef struct {
 	Uint16 x1, x2;
-	float depth, w;
+	float w;
 } mask_seg_t;
 
 typedef struct {
