@@ -832,9 +832,7 @@ static int gen_seg_spans_noztest(int y, const sbuffer_segment_t *segment)
 
 		DEBUG_PRINT((" P4: solve conflict between new and current for pos %d to %d\n", clip_x1, clip_x2));
 
-		clip_seg = check_behind(&(row->segment[current->id]),segment, clip_x1,clip_x2, &clip_pos);
-
-		if ((cx1<clip_x1) && (clip_seg!=SEG1_FRONT)) {
+		if (cx1<clip_x1) {
 			/* We have something like
 			    ccccccccccccc
 			    111111nnnn222 -> split current between 11111 and nnn222 */
@@ -852,90 +850,35 @@ static int gen_seg_spans_noztest(int y, const sbuffer_segment_t *segment)
 				row->span[psi].next );
 		}
 
-		switch(clip_seg) {
-			case SEG1_FRONT:
-				DEBUG_PRINT(("  P4.0: current %d in front of new\n", nsi));
+		DEBUG_PRINT(("  P4.1: current %d behind new\n", nsi));
 
-				break;
-			case SEG1_BEHIND:
-				DEBUG_PRINT(("  P4.1: current %d behind new\n", nsi));
+		/* We have something like
+		    ccccccccccccc	ccccccccccccc
+		    nnnnnnn222222	nnnnnnnnnnnnn */
 
-				/* We have something like
-				    ccccccccccccc	ccccccccccccc
-				    nnnnnnn222222	nnnnnnnnnnnnn */
+		if (clip_x2<cx2) {
+			current->x1 = cx1 = clip_x2+1;
+			DEBUG_PRINT(("   current %d reduced, from %d to %d\n", nsi, cx1,cx2));
 
-				if (clip_x2<cx2) {
-					current->x1 = cx1 = clip_x2+1;
-					DEBUG_PRINT(("   current %d reduced, from %d to %d\n", nsi, cx1,cx2));
+			DEBUG_PRINT(("   insert common part of new, from %d to %d\n", clip_x1,clip_x2));
+			span_inserted = insert_new_span(row->num_segs,row, clip_x1,clip_x2, psi, nsi);
 
-					DEBUG_PRINT(("   insert common part of new, from %d to %d\n", clip_x1,clip_x2));
-					span_inserted = insert_new_span(row->num_segs,row, clip_x1,clip_x2, psi, nsi);
-
-					if (span_inserted) {
-						/* Update previous with new inserted */
-						psi = (	psi==SPAN_INVALID ?
-							row->first_span :
-							row->span[psi].next );
-					}
-				} else {
-					/* current completely overwritten by new */
-					DEBUG_PRINT(("   replace current %d by new, from %d to %d\n", nsi, clip_x1,clip_x2));
-					overwrite_span(row->num_segs,row, clip_x1,clip_x2, nsi);
-				}
-
-				break;
-			case SEG1_CLIP_LEFT:
-				DEBUG_PRINT(("  P4.3: keep left part of current %d against new till pos %d\n", nsi, clip_pos));
-
-				/* We have something like this to do
-				    cccccccc -> cccccccc
-				    nnnnn222	CCnnn222 */
-
-				/* Insert right part of current, after common zone */
-				if (clip_x2<cx2) {
-					DEBUG_PRINT(("  split current %d, from %d to %d\n", nsi, clip_x2+1,cx2));
-					/*span_inserted =*/ insert_new_span(current->id,row, clip_x2+1,cx2, nsi, row->span[nsi].next);
-				}
-
-				/* Insert new */
-				DEBUG_PRINT(("  insert new from %d to %d\n", clip_pos,clip_x2));
-				/*span_inserted =*/ insert_new_span(row->num_segs,row, clip_pos,clip_x2, nsi, row->span[nsi].next);
-
-				/* Clip current before clip_pos */
-				DEBUG_PRINT(("  clip current %d from %d to %d\n", nsi, cx1,clip_pos-1));
-				current->x2 = clip_pos-1;
-
-				break;
-			case SEG1_CLIP_RIGHT:
-				DEBUG_PRINT(("  P4.4: keep right of current %d against new from pos %d\n", nsi, clip_pos));
-
-				/* We have something like this to do
-				    cccccccc -> cccccccc
-				    nnnnn222	nnCCC222 */
-
-				DEBUG_PRINT(("  clip current %d from %d to %d\n", nsi, clip_pos+1,cx2));
-				current->x1 = clip_pos+1;
-
-				/* Insert new */
-				DEBUG_PRINT(("  insert new from %d to %d\n", clip_x1,clip_pos));
-				span_inserted = insert_new_span(row->num_segs,row, clip_x1,clip_pos, psi, nsi);
-
-				if (span_inserted) {
-					/* Update previous with new inserted */
-					psi = (	psi==SPAN_INVALID ?
-						row->first_span :
-						row->span[psi].next );
-				}
-
-				break;
+			if (span_inserted) {
+				/* Update previous with new inserted */
+				psi = (	psi==SPAN_INVALID ?
+					row->first_span :
+					row->span[psi].next );
+			}
+		} else {
+			/* current completely overwritten by new */
+			DEBUG_PRINT(("   replace current %d by new, from %d to %d\n", nsi, clip_x1,clip_x2));
+			overwrite_span(row->num_segs,row, clip_x1,clip_x2, nsi);
 		}
 
 		/* Continue with remaining part */
 		nx1 = clip_x2+1;
 
-		if (clip_seg!=SEG1_FRONT) {
-			segbase_inserted=1;
-		}
+		segbase_inserted=1;
 	}
 
 	DEBUG_PRINT(("--remain %d,%d\n",nx1,nx2));
