@@ -726,7 +726,6 @@ static int gen_seg_spans_noztest(int y, const sbuffer_segment_t *segment)
 	sbuffer_row_t *row = &sbuffer_rows[y];
 	int nx1,nx2, psi, nsi;
 	int segbase_inserted = 0;
-	int clip_seg, clip_pos;
 
 	/* Still room for common segment data ? */
 	if (row->seg_full || row->span_full) {
