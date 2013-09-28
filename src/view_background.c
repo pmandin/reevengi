@@ -90,7 +90,9 @@
 #endif
 #define KEY_ENTER_DOOR		SDLK_u
 
-/*#define DISABLE_CAM_SWITCH	1*/
+#ifdef ENABLE_DEBUG_POS
+#define DISABLE_CAM_SWITCH	1
+#endif
 
 /*--- Variables ---*/
 
