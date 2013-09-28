@@ -29,7 +29,6 @@
 #include "matrix.h"
 #include "dither.h"
 #include "draw.h"
-#include "draw_simple.h"
 #include "draw_sbuffer.h"
 #include "render_mask.h"
 #include "render_mesh.h"
@@ -159,7 +158,6 @@ void render_soft_init(render_t *this)
 
 	this->setRenderDepth = setRenderDepth;
 
-	/*draw_init_simple(&draw);*/
 	draw_init_sbuffer(&draw);
 
 	gouraud = 0;

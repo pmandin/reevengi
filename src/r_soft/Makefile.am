@@ -10,9 +10,8 @@ AM_CXXFLAGS = $(SDL_CFLAGS)
 
 #INCLUDES = -I$(top_srcdir)/src
 
-EXTRA_DIST = dirty_rects.h dither.h draw.h draw_sbuffer.h draw_simple.h \
+EXTRA_DIST = dirty_rects.h dither.h draw.h draw_sbuffer.h \
 	matrix.h render_mask.h render_bitmap.h render_mesh.h render_texture.h \
 	render.h draw_sbuffer8.h draw_sbuffer16.h draw_sbuffer24.h \
 	draw_sbuffer32.h \
-	draw_simple.c \
 	libr_soft.vcproj
