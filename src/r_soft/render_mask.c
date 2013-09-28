@@ -214,6 +214,13 @@ static float calcDepthW(int depth, int num_camera)
 	v1.z = (Sint16) vz;
 	v1.u = v1.v = 0;
 
+	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
+	render.set_modelview(
+		room_camera.from_x, room_camera.from_y, room_camera.from_z,
+		room_camera.to_x, room_camera.to_y, room_camera.to_z,
+		0.0f, -1.0f, 0.0f
+	);
+
 	project_point(&v1, poly);
 
 	return (poly[0].pos[3] / poly[0].pos[2]);
