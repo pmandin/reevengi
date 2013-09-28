@@ -169,8 +169,6 @@ static void swapBuffers(void)
 {
 	GLenum errCode;
 
-	render.endFrame();
-
 #if 0
 	{
 		GLint viewport[4];
@@ -220,8 +218,6 @@ static void swapBuffers(void)
 	if (errCode != GL_NO_ERROR) {
 		logMsg(1, "OpenGL error %d\n", errCode);
 	}
-
-	video.countFps();
 
 	SDL_GL_SwapBuffers();
 }

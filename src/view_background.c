@@ -510,8 +510,6 @@ void view_background_draw(void)
 	room_t *room = game->room;
 	room_camera_t room_camera;
 
-	render.startFrame();
-
 	if (render_restore && !params.use_opengl) {
 		SDL_FillRect(video.screen, NULL, 0);
 		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
@@ -565,25 +563,9 @@ void view_background_draw(void)
 		if (render_masks) {
 			room->drawMasks(room, game->num_camera);
 		}
-
-#if 0
-		{
-			vertex_t v[2];
-
-			v[0].x = 15000 /*room_camera.from_x*/;
-			v[0].y = room_camera.from_y;
-			v[0].z = room_camera.from_z;
-			v[1].x = room_camera.to_x;
-			v[1].y = room_camera.to_y;
-			v[1].z = room_camera.to_z;
-
-			render.set_texture(0, NULL);
-			render.set_render(RENDER_WIREFRAME);
-			render.set_color(0x00ffffff);
-			render.line(&v[0], &v[1]);
-		}
-#endif
 	}
+
+	drawPlayer();
 
 	if (room) {
 		if (room->map_mode != ROOM_MAP_OFF) {

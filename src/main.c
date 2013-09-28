@@ -284,6 +284,8 @@ static void viewer_update(void)
 		video.setVideoMode(new_width, new_height, video.bpp);
 	}
 
+	render.startFrame();
+
 	switch(params.viewmode) {
 		case VIEWMODE_BACKGROUND:
 			if (switch_mode) {
@@ -300,6 +302,10 @@ static void viewer_update(void)
 	if (disp_menu) {
 		game->menu->draw(game->menu);
 	}
+
+	video.countFps();
+
+	render.endFrame();
 
 	video.swapBuffers();
 	switch_mode = 0;

@@ -265,10 +265,6 @@ static void swapBuffers(void)
 {
 	int i, x, y;
 
-	video.countFps();
-
-	render.endFrame();
-
 	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		video.numfb ^= 1;
 		SDL_Flip(video.screen);
