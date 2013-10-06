@@ -240,6 +240,133 @@ void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4])
 	}
 }
 
+void mtx_inverse(float m[4][4], float result[4][4])
+{
+	float a,b,c,d;
+	int i;
+
+	mtx_setIdentity(result);
+
+	/* Divise first row by a */
+	a = m[0][0];
+	for (i=0; i<4; i++) {
+		result[i][0] = result[i][0] / a;
+		m[i][0] = m[i][0] / a;
+	}
+
+	/* Combine row 2 and row 1, row 3 and row 1, row 4 and row 1 */
+	b=m[0][1];
+	c=m[0][2];
+	d=m[0][3];
+	for (i=0; i<4; i++) {
+		result[i][1] -= b * result[i][0];
+		m[i][1] -= b * m[i][0];
+
+		result[i][2] -= c * result[i][0];
+		m[i][2] -= c * m[i][0];
+
+		result[i][3] -= d * result[i][0];
+		m[i][3] -= d * m[i][0];
+	}
+
+	/* Divide second row by A */
+	a = m[1][1];
+	for (i=0; i<4; i++) {
+		result[i][1] = result[i][1] / a;
+		m[i][1] = m[i][1] / a;
+	}
+
+	/* Combine row 3 and row 2, row 4 and row 2 */
+	b=m[1][2];
+	c=m[1][3];
+	for (i=0; i<4; i++) {
+		result[i][2] -= b * result[i][1];
+		m[i][2] -= b * m[i][1];
+
+		result[i][3] -= c * result[i][1];
+		m[i][3] -= c * m[i][1];
+	}
+
+	/* Divide third row by A */
+	a = m[2][2];
+	for (i=0; i<4; i++) {
+		result[i][2] = result[i][2] / a;
+		m[i][2] = m[i][2] / a;
+	}
+
+	/* Combine row 4 and row 3 */
+	b=m[2][3];
+	for (i=0; i<4; i++) {
+		result[i][3] -= b * result[i][2];
+		m[i][3] -= b * m[i][2];
+	}
+
+	/* Divide fourth row by A */
+	a = m[3][3];
+	for (i=0; i<4; i++) {
+		result[i][3] = result[i][3] / a;
+		m[i][3] = m[i][3] / a;
+	}
+
+	/*printf("m1\n");	mtx_print(m);
+	printf("m2\n");	mtx_print(result);*/
+/*
+	m1		m2
+	1 a b c		g 0 0 0
+	0 1 d e		h i 0 0
+	0 0 1 f		j k l 0
+	0 0 0 1		m n o p
+*/
+	/* Row3 -= f*Row4, Row2 -= e*Row4, Row1 -= c*Row4 */
+	b=m[3][0];
+	c=m[3][1];
+	d=m[3][2];
+	for (i=0; i<4; i++) {
+		result[i][0] -= b*result[i][3];
+		m[i][0] -= b*m[i][3];
+
+		result[i][1] -= c*result[i][3];
+		m[i][1] -= c*m[i][3];
+
+		result[i][2] -= d*result[i][3];
+		m[i][2] -= d*m[i][3];
+	}
+
+	/*printf("m1\n");	mtx_print(m);
+	printf("m2\n");	mtx_print(result);*/
+
+	/* Row2 -= d*Row3, Row1 -= b*Row3 */
+	b=m[2][0];
+	c=m[2][1];
+	for (i=0; i<4; i++) {
+		result[i][0] -= b*result[i][2];
+		m[i][0] -= b*m[i][2];
+
+		result[i][1] -= c*result[i][2];
+		m[i][1] -= c*m[i][2];
+	}
+
+	/*printf("m1\n");	mtx_print(m);
+	printf("m2\n");	mtx_print(result);*/
+
+	/* Row1 -= a*Row2 */
+	b=m[1][0];
+	for (i=0; i<4; i++) {
+		result[i][0] -= b*result[i][1];
+		m[i][0] -= b*m[i][1];
+	}
+
+	/*printf("m\n");	mtx_print(m);
+	printf("result\n");	mtx_print(result);*/
+/*
+	m1		m2
+	1 0 0 0 	g q r s
+	0 1 0 0		h i t u
+	0 0 1 0		j k l v
+	0 0 0 1		m n o p
+*/
+}
+
 void mtx_multMtxVtx(float m1[4][4], int num_vtx, vertexf_t *vtx, vertexf_t *result)
 {
 	int row,col;
