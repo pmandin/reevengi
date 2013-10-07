@@ -367,6 +367,71 @@ void mtx_inverse(float m[4][4], float result[4][4])
 */
 }
 
+void mtx_picking(int x, int y, int width, int height,
+	float angle, float aspect, float z_near,
+	float x_from, float y_from, float z_from,
+	float x_to, float y_to, float z_to,
+	float x_up, float y_up, float z_up,
+	float picker[3])
+{
+	float forward[4], side[4], up[3];
+	float fovy, vlen, hlen;
+	float mx, my;
+
+	forward[0] = x_to - x_from;
+	forward[1] = y_to - y_from;
+	forward[2] = z_to - z_from;
+
+	up[0] = x_up;
+	up[1] = y_up;
+	up[2] = z_up;
+
+	normalize(forward);
+
+	/*printf("forward: %f %f %f\n", forward[0],forward[1],forward[2]);*/
+
+	/* Side = forward x up */
+	cross(forward, up, side);
+	normalize(side);
+
+	/*printf("side: %f %f %f\n", side[0],side[1],side[2]);*/
+
+	/* Recompute up as: up = side x forward */
+	cross(side, forward, up);
+
+	/*printf("up: %f %f %f\n", up[0],up[1],up[2]);*/
+
+	fovy = angle / 2.0f * M_PI / 180.0f;
+	vlen = tan(fovy / 2.0f) * z_near;
+	hlen = vlen * aspect;
+	/*printf("hlen:%f vlen:%f\n", hlen, vlen);*/
+
+	side[0] *= hlen;
+	side[1] *= hlen;
+	side[2] *= hlen;
+
+	up[0] *= vlen;
+	up[1] *= vlen;
+	up[2] *= vlen;
+
+	mx = (float) (x - (width>>1));
+	my = (float) (y - (height>>1));
+	mx /= (float) (width>>1);
+	my /= (float) (height>>1);
+
+	/*printf("mx:%f, my:%f\n", mx,my);
+
+	printf("z_near*forward: %f %f %f\n", z_near*forward[0], z_near*forward[1], z_near*forward[2]);
+	printf("side*mx: %f %f %f\n", side[0]*mx,side[1]*mx,side[2]*mx);
+	printf("up*my: %f %f %f\n", up[0]*my,up[1]*my,up[2]*my);*/
+
+	picker[0] = z_near*forward[0] + side[0]*mx + up[0]*my;
+	picker[1] = z_near*forward[1] + side[1]*mx + up[1]*my;
+	picker[2] = z_near*forward[2] + side[2]*mx + up[2]*my;
+
+	/*printf("picker: %f %f %f\n", picker[0],picker[1],picker[2]);*/
+}
+
 void mtx_multMtxVtx(float m1[4][4], int num_vtx, vertexf_t *vtx, vertexf_t *result)
 {
 	int row,col;

@@ -57,6 +57,13 @@ void mtx_setRotation(float m[4][4], float angle,
 void mtx_mult(float m1[4][4],float m2[4][4], float result[4][4]);
 void mtx_inverse(float m[4][4], float result[4][4]);
 
+void mtx_picking(int x, int y, int width, int height,
+	float angle, float aspect, float z_near,
+	float x_from, float y_from, float z_from,
+	float x_to, float y_to, float z_to,
+	float x_up, float y_up, float z_up,
+	float picker[3]);
+
 void mtx_multMtxVtx(float m1[4][4], int num_vtx, vertexf_t *vtx, vertexf_t *result);
 
 /* Calculate if face visible using dot product */
