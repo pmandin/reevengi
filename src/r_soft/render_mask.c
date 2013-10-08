@@ -37,6 +37,7 @@
 #include "draw.h"
 #include "render_mask.h"
 #include "render.h"
+#include "matrix.h"
 
 /*--- Functions prototypes ---*/
 
@@ -45,7 +46,8 @@ static void addZone(render_mask_t *this, int num_camera,
 	int dstX, int dstY, int depth);
 
 static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth, int num_camera);
-static float calcDepthW(int depth, int num_camera);
+
+static float calcDepthW4(int x, int y, int z, int num_camera);
 
 static void finishedZones(render_mask_t *this);
 
@@ -178,41 +180,46 @@ static void addMaskSegment(render_mask_t *this, int y, int x1, int x2, int depth
 
 	mask_seg->x1 = x1;
 	mask_seg->x2 = x2;
-	mask_seg->w = calcDepthW(depth, num_camera);
+	/*mask_seg->w = 1.0f / depth;*/
+	mask_seg->w = calcDepthW4(x1,y,depth, num_camera);
 
 	++mask_row->num_segs;
 }
 
-static float calcDepthW(int depth, int num_camera)
+static float calcDepthW4(int x, int y, int z, int num_camera)
 {
-	float va, vb, vc, vd, ve, vf, veclen;
 	room_t *room = game->room;
 	room_camera_t room_camera;
-	float vx,vy,vz, vk;
+	float picker[3], k;
 	vertex_t v1;
 	vertexf_t poly[16];
-			
+
 	room->getCamera(room, game->num_camera, &room_camera);
 
-	va=room_camera.to_x-room_camera.from_x;
-	vb=room_camera.from_x;
-	vc=room_camera.to_y-room_camera.from_y;
-	vd=room_camera.from_y;
-	ve=room_camera.to_z-room_camera.from_z;
-	vf=room_camera.from_z;
+	mtx_picking(x,y, video.viewport.w, video.viewport.h,
+		60.0f, 4.0f/3.0f, RENDER_Z_NEAR,
+		room_camera.from_x, room_camera.from_y, room_camera.from_z,
+		room_camera.to_x, room_camera.to_y, room_camera.to_z,
+		0.0f, -1.0f, 0.0f,
+		picker
+	);
+/*
+	Sphere for all points distant for a given distance from camera
+	P1: (x-xc)^2+(y-yc)^2+(z-zc)^2 = dist^2
+	(p - pc) . (p - pc) - r2 = 0
 
-	veclen = sqrt(va*va + vc*vc + ve*ve);
+	Ray from camera to each pixel screen
+	P2: x=Vx.k+xc, y=Vy.k+yc, z=Vz.k+zc
 
-	vk = sqrt(depth*depth + va*va) / veclen;
+	x=picker[0].k+xc
+	y=picker[1].k+yc
+	z=picker[2].k+zc
 
-	vx = vk*va+vb;
-	vy = vk*vc+vd;
-	vz = vk*ve+vf;
+	k^2 (picker[0]^2 + picker[1]^2 + picker[2]^2) = dist^2
 
-	v1.x = (Sint16) vx;
-	v1.y = (Sint16) vy;
-	v1.z = (Sint16) vz;
-	v1.u = v1.v = 0;
+	k = sqrt ( dist^2 / (picker[0]^2 + picker[1]^2 + picker[2]^2))
+*/
+	k = sqrt(z*z / (picker[0]*picker[0] + picker[1]*picker[1] + picker[2]*picker[2]));
 
 	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
 	render.set_modelview(
@@ -220,6 +227,11 @@ static float calcDepthW(int depth, int num_camera)
 		room_camera.to_x, room_camera.to_y, room_camera.to_z,
 		0.0f, -1.0f, 0.0f
 	);
+
+	v1.x = picker[0]*k + room_camera.from_x;
+	v1.y = picker[1]*k + room_camera.from_y;
+	v1.z = picker[2]*k + room_camera.from_z;
+	v1.u = v1.v = 0;
 
 	project_point(&v1, poly);
 
