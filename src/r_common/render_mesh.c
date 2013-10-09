@@ -198,6 +198,7 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 
 	new_tri = &(new_tris[this->num_tris]);
 	memcpy(new_tri, tri, sizeof(render_mesh_tri_t));
+	new_tri->has_alpha = 0;
 
 	this->num_tris++;
 	this->triangles = new_tris;
@@ -219,6 +220,7 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 
 	new_quad = &(new_quads[this->num_quads]);
 	memcpy(new_quad, quad, sizeof(render_mesh_quad_t));
+	new_quad->has_alpha = 0;
 
 	this->num_quads++;
 	this->quads = new_quads;

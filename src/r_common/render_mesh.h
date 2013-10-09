@@ -55,6 +55,7 @@ typedef struct {
 	Uint16 n[3];
 	Uint16 tx[3];
 	Uint16 txpal;
+	Uint16 has_alpha;
 } render_mesh_tri_t;
 
 typedef struct {
@@ -62,6 +63,7 @@ typedef struct {
 	Uint16 n[4];
 	Uint16 tx[4];
 	Uint16 txpal;
+	Uint16 has_alpha;
 } render_mesh_quad_t;
 
 typedef struct render_mesh_s render_mesh_t;
