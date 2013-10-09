@@ -42,7 +42,9 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri);
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad);
 
-static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count);
+/*static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count);*/
+
+static int checkHasAlpha(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count);
 
 static void draw(render_mesh_t *this);
 
@@ -198,12 +200,10 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 
 	new_tri = &(new_tris[this->num_tris]);
 	memcpy(new_tri, tri, sizeof(render_mesh_tri_t));
-	new_tri->has_alpha = 0;
+	new_tri->has_alpha = checkHasAlpha(this, new_tri->txpal, new_tri->tx, 3);
 
 	this->num_tris++;
 	this->triangles = new_tris;
-
-	markTrans(this, new_tri->txpal, new_tri->tx, 3);
 
 	/* TODO: sort per texture palette index */
 }
@@ -220,16 +220,15 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 
 	new_quad = &(new_quads[this->num_quads]);
 	memcpy(new_quad, quad, sizeof(render_mesh_quad_t));
-	new_quad->has_alpha = 0;
+	new_quad->has_alpha = checkHasAlpha(this, new_quad->txpal, new_quad->tx, 4);
 
 	this->num_quads++;
 	this->quads = new_quads;
 
-	markTrans(this, new_quad->txpal, new_quad->tx, 4);
-
 	/* TODO: sort per texture palette index */
 }
 
+#if 0
 static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count)
 {
 	int j, u,v, minx,maxx,miny,maxy;
@@ -271,6 +270,115 @@ static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Ui
 	}
 
 	this->texture->mark_trans(this->texture, num_pal, minx,miny, maxx,maxy);
+}
+#endif
+
+/* Check if a portion of texture has any transparent zone */
+static int checkHasAlpha(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count)
+{
+	int has_alpha = 0, y;
+	int p1,p2, /*minx,maxx,*/ miny,maxy;
+	int *poly_x1, *poly_x2;	/* min and max for each texture line */
+	render_texture_t *tex;
+	Uint8 *alpha_pal, *src_line;
+
+	if (params.use_opengl) {
+		return 1;
+	}
+	
+	if (!this->texcoord.data || !this->texture) {
+		return 0;
+	}
+
+	/*minx = this->texture->w-1;
+	maxx = 0;*/
+	miny = this->texture->h-1;
+	maxy = 0;
+
+	poly_x1 = calloc(this->texture->h * 2, sizeof(int));
+	if (!poly_x1) {
+		return 0;
+	}
+	poly_x2 = &poly_x1[this->texture->h];
+
+	p1 = count-1;
+	for(p2=0; p2<count; p2++) {
+		int u1=0,v1=0, u2=0,v2=0, dv, du;
+
+		switch(this->texcoord.type) {
+			case RENDER_ARRAY_BYTE:
+				{
+					Uint8 *src = (Uint8 *) this->texcoord.data;
+					u1 = src[(start_idx[p1]*this->texcoord.stride)+0];
+					v1 = src[(start_idx[p1]*this->texcoord.stride)+1];
+					u2 = src[(start_idx[p2]*this->texcoord.stride)+0];
+					v2 = src[(start_idx[p2]*this->texcoord.stride)+1];
+				}
+				break;
+			case RENDER_ARRAY_SHORT:
+				{
+					Sint16 *src = (Sint16 *) this->texcoord.data;
+					u1 = src[(start_idx[p1]*this->texcoord.stride>>1)+0];
+					v1 = src[(start_idx[p1]*this->texcoord.stride>>1)+1];
+					u2 = src[(start_idx[p2]*(this->texcoord.stride>>1))+0];
+					v2 = src[(start_idx[p2]*(this->texcoord.stride>>1))+1];
+				}
+				break;
+		}
+
+		if (v1>v2) {
+			int tmp;
+
+			tmp=u1; u1=u2; u2=tmp;
+			tmp=v1; v1=v2; v2=tmp;
+		}
+
+		miny = MIN(v1, miny);
+		maxy = MAX(v2, maxy);
+
+		dv=v2-v1;
+		du=u2-u1;
+
+		if (dv==0) {
+			/* Horizontal line */
+			poly_x1[v1] = MIN(u1,u2);
+			poly_x2[v1] = MAX(u1,u2);
+		} else {
+			int *poly_x;
+
+			poly_x = (du<0 ? poly_x1 : poly_x2);
+			for(y=0; y<=dv; y++) {
+				poly_x[v1++] = u1 + (du*y) / dv;
+			}
+		}
+
+		p1=p2;
+	}
+
+	/* Check alpha for each poly_x1[y]..poly_x2[y] segment */
+	tex = this->texture;
+	src_line = tex->pixels;
+	src_line += miny * tex->pitch;
+
+	alpha_pal = tex->alpha_palettes[num_pal];
+
+	for (y=miny; (y<=maxy) && !has_alpha; y++) {
+		int x;
+		Uint8 *src_col = &src_line[poly_x1[y]];
+
+		for (x=poly_x1[y]; x<=poly_x2[y]; x++) {
+			if (!alpha_pal[*src_col++]) {
+				/* Transparent pixel */
+				has_alpha=1;
+				break;
+			}
+		}
+
+		src_line += tex->pitch;
+	}
+
+	free(poly_x1);
+	return has_alpha;
 }
 
 static void draw(render_mesh_t *this)
