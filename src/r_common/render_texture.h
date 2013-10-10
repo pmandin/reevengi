@@ -49,7 +49,7 @@ struct render_texture_s {
 	void (*load_from_surf)(render_texture_t *this, SDL_Surface *surf);
 
 	/* Mark a zone transparent for a specific palette */
-	void (*mark_trans)(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);
+	/*void (*mark_trans)(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);*/
 
 	int w, h;		/* Dimension of image zone */
 	int bpp, pitch;		/* Bytes per pixel, Line length */

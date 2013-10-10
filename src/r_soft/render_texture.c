@@ -32,7 +32,7 @@
 
 /*--- Functions prototypes ---*/
 
-static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);
+/*static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);*/
 
 /*--- Functions ---*/
 
@@ -45,7 +45,7 @@ render_texture_t *render_texture_soft_create(int flags)
 		return NULL;
 	}
 
-	tex->mark_trans = mark_trans;
+/*	tex->mark_trans = mark_trans;*/
 
 	tex->must_pot = flags & RENDER_TEXTURE_MUST_POT;
 	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
@@ -60,6 +60,7 @@ render_texture_t *render_texture_soft_create(int flags)
 	return tex;
 }
 
+/*
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
 {
 	Uint8 *src_line;
@@ -102,3 +103,4 @@ static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x
 		src_line += this->pitch;
 	}
 }
+*/

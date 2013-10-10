@@ -47,7 +47,7 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf);
 
 static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a);
 
-static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);
+/*static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);*/
 
 /*--- Functions ---*/
 
@@ -68,7 +68,7 @@ render_texture_t *render_texture_create(int flags)
 	tex->resize = resize;
 	tex->load_from_tim = load_from_tim;
 	tex->load_from_surf = load_from_surf;
-	tex->mark_trans = mark_trans;
+/*	tex->mark_trans = mark_trans;*/
 
 	tex->must_pot = flags & RENDER_TEXTURE_MUST_POT;
 	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
@@ -594,6 +594,8 @@ static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
 	*a = a1;
 }
 
+/*
 static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
 {
 }
+*/
