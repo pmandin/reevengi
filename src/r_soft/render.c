@@ -108,8 +108,6 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4);
 
-static void setRenderDepth(int show_depth);
-
 /*--- Functions ---*/
 
 void render_soft_init(render_t *this)
@@ -160,8 +158,6 @@ void render_soft_init(render_t *this)
 	mtx_setIdentity(viewport_mtx);
 	mtx_setIdentity(camera_mtx);
 	mtx_setIdentity(frustum_mtx);
-
-	this->setRenderDepth = setRenderDepth;
 
 	draw_init_sbuffer(&draw);
 
@@ -1026,11 +1022,6 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 
 	/* Draw polygon */
 	draw.polyTexture(&draw, poly, num_vtx);
-}
-
-static void setRenderDepth(int show_depth)
-{
-	render.render_depth = show_depth;
 }
 
 /*

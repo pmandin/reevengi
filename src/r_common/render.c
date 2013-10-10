@@ -261,6 +261,7 @@ static void set_texture(int num_pal, render_texture_t *render_tex)
 
 static void setRenderDepth(int show_depth)
 {
+	render.render_depth = show_depth;
 }
 
 static void copyDepthToColor(void)
