@@ -42,8 +42,6 @@ static void setArray(render_mesh_t *this, int array_type, int components, int ty
 static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri);
 static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad);
 
-/*static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count);*/
-
 static int checkHasAlpha(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count);
 
 static void draw(render_mesh_t *this);
@@ -205,6 +203,8 @@ static void addTriangle(render_mesh_t *this, render_mesh_tri_t *tri)
 	this->num_tris++;
 	this->triangles = new_tris;
 
+	logMsg(3, "render_mesh: triangle %d alpha %d\n", num_tris-1, new_tri->has_alpha);
+
 	/* TODO: sort per texture palette index */
 }
 
@@ -225,53 +225,10 @@ static void addQuad(render_mesh_t *this, render_mesh_quad_t *quad)
 	this->num_quads++;
 	this->quads = new_quads;
 
+	logMsg(3, "render_mesh: quad %d alpha %d\n", num_quads-1, new_quad->has_alpha);
+
 	/* TODO: sort per texture palette index */
 }
-
-#if 0
-static void markTrans(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count)
-{
-	int j, u,v, minx,maxx,miny,maxy;
-
-	if (params.use_opengl || !this->texcoord.data || !this->texture) {
-		return;
-	}
-
-	minx = miny = 32768;
-	maxx = maxy = 0;
-
-	switch(this->texcoord.type) {
-		case RENDER_ARRAY_BYTE:
-			{
-				Uint8 *src = (Uint8 *) this->texcoord.data;
-				for (j=0; j<count; j++) {
-					u = src[(start_idx[j]*this->texcoord.stride)+0];
-					v = src[(start_idx[j]*this->texcoord.stride)+1];
-					minx = MIN(minx, u);
-					maxx = MAX(maxx, u);
-					miny = MIN(miny, v);
-					maxy = MAX(maxy, v);
-				}
-			}
-			break;
-		case RENDER_ARRAY_SHORT:
-			{
-				Sint16 *src = (Sint16 *) this->texcoord.data;
-				for (j=0; j<count; j++) {
-					u = src[(start_idx[j]*(this->texcoord.stride>>1))+0];
-					v = src[(start_idx[j]*(this->texcoord.stride>>1))+1];
-					minx = MIN(minx, u);
-					maxx = MAX(maxx, u);
-					miny = MIN(miny, v);
-					maxy = MAX(maxy, v);
-				}
-			}
-			break;
-	}
-
-	this->texture->mark_trans(this->texture, num_pal, minx,miny, maxx,maxy);
-}
-#endif
 
 /* Check if a portion of texture has any transparent zone */
 static int checkHasAlpha(render_mesh_t *this, Uint16 num_pal, Uint16 *start_idx, Uint16 count)
