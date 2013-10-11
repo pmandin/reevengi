@@ -5,6 +5,7 @@ v 0.18
 - Moved each renderer in separate directories.
 - Better case-insensitive filenames management.
 - Remove gamma setting
+- Map: 2D and 3D display
 
 v 0.17
 
