@@ -512,6 +512,10 @@ void view_background_draw(void)
 	room_t *room = game->room;
 	room_camera_t room_camera;
 
+	if (!room) {
+		return;
+	}
+
 	if (render_restore && !params.use_opengl) {
 		SDL_FillRect(video.screen, NULL, 0);
 		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
@@ -519,7 +523,7 @@ void view_background_draw(void)
 	}
 
 	/* Draw background, dithered if needed */
-	if (room && room->background) {
+	if (room->background) {
 		render_texture_t *room_bg = room->background;
 
 		render.set_dithering(params.dithering);
@@ -543,38 +547,33 @@ void view_background_draw(void)
 	/* Background completely restored, clear dirty rectangles list */
 	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
 
-	if (room) {
-		room->getCamera(room, game->num_camera, &room_camera);
+	if (render_masks) {
+		room->drawMasks(room, game->num_camera);
+	}
+
+	room->getCamera(room, game->num_camera, &room_camera);
 
 #ifndef ENABLE_DEBUG_POS
-		if (refresh_player_pos) {
-			player->x = room_camera.to_x;
-			player->y = 0 /*room_camera.to_y*/;
-			player->z = room_camera.to_z;
-			refresh_player_pos = 0;
-		}
+	if (refresh_player_pos) {
+		player->x = room_camera.to_x;
+		player->y = 0 /*room_camera.to_y*/;
+		player->z = room_camera.to_z;
+		refresh_player_pos = 0;
+	}
 #endif
 
-		render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
-		render.set_modelview(
-			room_camera.from_x, room_camera.from_y, room_camera.from_z,
-			room_camera.to_x, room_camera.to_y, room_camera.to_z,
-			0.0f, -1.0f, 0.0f
-		);
-
-		if (render_masks) {
-			room->drawMasks(room, game->num_camera);
-		}
-	}
+	render.set_projection(60.0f, 4.0f/3.0f, RENDER_Z_NEAR, RENDER_Z_FAR);
+	render.set_modelview(
+		room_camera.from_x, room_camera.from_y, room_camera.from_z,
+		room_camera.to_x, room_camera.to_y, room_camera.to_z,
+		0.0f, -1.0f, 0.0f
+	);
 
 	drawPlayer();
 
-	if (room) {
-		if (room->map_mode != ROOM_MAP_OFF) {
-			render.set_render(RENDER_WIREFRAME);
-
-			room->drawMap(room, render_grid);
-		}
+	if (room->map_mode != ROOM_MAP_OFF) {
+		render.set_render(RENDER_WIREFRAME);
+		room->drawMap(room, render_grid);
 	}
 }
 
@@ -627,26 +626,54 @@ static void drawPlayer(void)
 			render.set_color(0x0000ff00);
 			player->model->drawBones(player->model, 0);
 		}
+
+	}
+
+	render.pop_matrix();
+
 #if 0
-	} else {
+	{
+		vertex_t v[2];
+
+		render.push_matrix();
+
 		render.translate(0.0f, 2000.0f, 0.0f);
 
 		render.set_texture(0, NULL);
 		render.scale(2500.0, 2500.0, 2500.0);
 
-		render.line(0.2,0.0,0.0, -0.2,0.0,0.0);	/* head */
-		render.line(-0.2,0.0,0.0, -0.2,-0.4,0.0);
-		render.line(-0.2,-0.4,0.0, 0.2,-0.4,0.0);
-		render.line(0.2,-0.4,0.0, 0.2,0.0,0.0);
-		render.line(0.0,0.0,0.0, 0.0,1.0,0.0);	/* body */
-		render.line(0.0,0.0,0.0, 0.5,0.5,0.0);	/* right arm */
-		render.line(0.0,0.0,0.0, -0.5,0.5,0.0);	/* left arm */
-		render.line(0.0,1.0,0.0, 0.5,1.5,0.0);	/* right leg */
-		render.line(0.0,1.0,0.0, -0.5,1.5,0.0);	/* left leg */
-#endif
-	}
+		v[0].x = v[0].y = v[0].z = 0.0f;
+		v[1].x = v[1].y = v[1].z = 0.0f;
 
-	render.pop_matrix();
+		v[0].x = 0.2f;
+		v[1].x = -0.2f;
+		render.line(&v[0], &v[1]);	/* head */
+		v[0].x = -0.2f;	v[0].y = -0.4f;
+		render.line(&v[1], &v[0]);
+		v[1].x = 0.2f;	v[1].y = -0.4f;
+		render.line(&v[0], &v[1]);
+		v[0].x = 0.2f;	v[0].y = 0.0f;
+		render.line(&v[1], &v[0]);
+
+		v[0].x = v[0].y = 0.0f;
+		v[1].x = v[1].y = 0.0f;
+
+		v[1].y = 1.0f;
+		render.line(&v[0], &v[1]);	/* body */
+		v[1].x = v[1].y = 0.5f;
+		render.line(&v[0], &v[1]);	/* right arm */
+		v[1].x = v[1].y = -0.5f;
+		render.line(&v[0], &v[1]);	/* left arm */
+
+		v[0].y = 1.0f;
+		v[1].x = 0.5f;	v[1].y = 1.5f;
+		render.line(&v[0], &v[1]);	/* right leg */
+		v[1].x = -0.5f;	v[1].y = 1.5f;
+		render.line(&v[0], &v[1]);	/* left leg */
+
+		render.pop_matrix();
+	}
+#endif
 
 	render.set_render(RENDER_TEXTURED);
 }
