@@ -22,8 +22,12 @@
 #ifndef MODEL_EMD2
 #define MODEL_EMD2 1
 
+/*--- External types ---*/
+
+struct render_skel_s;
+
 /*--- Functions ---*/
 
-render_skel_t *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_length);
+struct render_skel_s *model_emd2_load(void *emd, void *tim, Uint32 emd_length, Uint32 tim_length);
 
 #endif /* MODEL_EMD2 */

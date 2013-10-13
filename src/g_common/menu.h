@@ -23,8 +23,8 @@
 
 /*--- External types ---*/
 
-typedef struct player_s player_t;
-typedef struct game_s game_t;
+struct player_s;
+struct game_s;
 
 /*--- Types ---*/
 
@@ -33,7 +33,7 @@ typedef struct menu_s menu_t;
 struct menu_s {
 	void (*dtor)(menu_t *this);
 
-	void (*init)(menu_t *this, game_t *game, player_t *player);
+	void (*init)(menu_t *this, struct game_s *game, struct player_s *player);
 
 	void (*draw)(menu_t *this);
 };

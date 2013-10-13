@@ -24,6 +24,7 @@
 #include <SDL.h>
 
 #include "../g_common/game.h"
+#include "../g_common/room.h"
 
 #include "game_re2.h"
 #include "ems.h"

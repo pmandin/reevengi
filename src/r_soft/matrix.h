@@ -23,7 +23,7 @@
 
 /*--- External types ---*/
 
-typedef struct vertexf_s vertexf_t;
+struct vertexf_s;
 
 /*--- Defines ---*/
 
@@ -64,7 +64,7 @@ void mtx_picking(int x, int y, int width, int height,
 	float x_up, float y_up, float z_up,
 	float picker[3]);
 
-void mtx_multMtxVtx(float m1[4][4], int num_vtx, vertexf_t *vtx, vertexf_t *result);
+void mtx_multMtxVtx(float m1[4][4], int num_vtx, struct vertexf_s *vtx, struct vertexf_s *result);
 
 /* Calculate if face visible using dot product */
 float mtx_faceVisible(float points[4][4]);
@@ -79,6 +79,6 @@ int mtx_clipCheck(float points[][4], int num_points, float clip[6][4]);
 int mtx_clipSegment(float points[4][4], float clip[6][4]);
 
 /* Clip a list of triangles */
-int mtx_clipTriangle(vertexf_t tri1[3], int *num_vtx, vertexf_t poly[16], float clip[6][4]);
+int mtx_clipTriangle(struct vertexf_s tri1[3], int *num_vtx, struct vertexf_s poly[16], float clip[6][4]);
 
 #endif /* MATRIX_H */

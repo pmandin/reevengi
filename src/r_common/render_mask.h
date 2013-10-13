@@ -29,7 +29,7 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
+struct render_texture_s;
 
 /*--- Types ---*/
 
@@ -49,13 +49,13 @@ struct render_mask_s {
 	/* Draw mask */
 	void (*drawMask)(render_mask_t *this);
 
-	render_texture_t *texture;
+	struct render_texture_s *texture;
 };
 
 /*--- Functions ---*/
 
-render_mask_t *render_mask_create(render_texture_t *texture);
+render_mask_t *render_mask_create(struct render_texture_s *texture);
 
-void render_mask_init(render_mask_t *this, render_texture_t *texture);
+void render_mask_init(render_mask_t *this, struct render_texture_s *texture);
 
 #endif /* RENDER_MASK_H */

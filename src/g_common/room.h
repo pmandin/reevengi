@@ -28,15 +28,15 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
-typedef struct render_mask_s render_mask_t;
+struct render_texture_s;
+struct render_mask_s;
 
-typedef struct room_camswitch_s room_camswitch_t;
-typedef struct room_door_s room_door_t;
-typedef struct room_item_s room_item_t;
-typedef struct room_collision_s room_collision_t;
+struct room_camswitch_s;
+struct room_door_s;
+struct room_item_s;
+struct room_collision_s;
 
-typedef struct game_s game_t;
+struct game_s;
 
 /*--- Types ---*/
 
@@ -75,29 +75,29 @@ struct room_s {
 	void (*setCamera)(room_t *this, int camera);
 
 	/* Background image for current camera */
-	render_texture_t *background;
+	struct render_texture_s *background;
 
 	/*--- Camera positions ---*/
 	int num_cameras;
 
 	int (*getNumCameras)(room_t *this);
-	void (*getCamera)(room_t *this, int num_camera, room_camera_t *room_camera);
+	void (*getCamera)(room_t *this, int num_camera, struct room_camera_s *room_camera);
 
 	/*--- Camera switches ---*/
 	int (*getNumCamSwitches)(room_t *this);
-	void (*getCamSwitch)(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+	void (*getCamSwitch)(room_t *this, int num_camswitch, struct room_camswitch_s *room_camswitch);
 	int (*checkCamSwitch)(room_t *this, int num_camera, float x, float y);
 	void (*drawCamSwitches)(room_t *this);
 
 	/*--- Boundaries ---*/
 	int (*getNumBoundaries)(room_t *this);
-	void (*getBoundary)(room_t *this, int num_boundary, room_camswitch_t *room_boundary);
+	void (*getBoundary)(room_t *this, int num_boundary, struct room_camswitch_s *room_boundary);
 	int (*checkBoundary)(room_t *this, int num_camera, float x, float y);
 	void (*drawBoundaries)(room_t *this);
 
 	/*--- Background masking ---*/
-	render_texture_t *bg_mask;
-	render_mask_t *rdr_mask;
+	struct render_texture_s *bg_mask;
+	struct render_mask_s *rdr_mask;
 
 	void (*initMasks)(room_t *this, int num_camera);
 	void (*drawMasks)(room_t *this, int num_camera);
@@ -119,18 +119,18 @@ struct room_s {
 
 	/*--- Doors ---*/
 	int num_doors;
-	room_door_t *doors;
+	struct room_door_s *doors;
 
-	void (*addDoor)(room_t *this, room_door_t *door);
+	void (*addDoor)(room_t *this, struct room_door_s *door);
 
 	/* Return door entered, of NULL if none entered */
-	room_door_t *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
+	struct room_door_s *(*enterDoor)(room_t *this, Sint16 x, Sint16 y);
 
 	/*--- Items ---*/
 	int num_items;
-	room_item_t *items;
+	struct room_item_s *items;
 
-	void (*addItem)(room_t *this, room_item_t *door);
+	void (*addItem)(room_t *this, struct room_item_s *door);
 
 	/*--- Collision objects ---*/
 	int (*getNumCollisions)(room_t *this);
@@ -150,6 +150,6 @@ struct room_s {
 
 /*--- Functions ---*/
 
-room_t *room_ctor(game_t *game, int num_stage, int num_room);
+room_t *room_ctor(struct game_s *game, int num_stage, int num_room);
 
 #endif /* ROOM_H */

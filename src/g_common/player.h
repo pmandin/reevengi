@@ -27,13 +27,13 @@
 
 /*--- External types ---*/
 
-typedef struct render_skel_s render_skel_t;
+struct render_skel_s;
 
 /*--- Types ---*/
 
 typedef struct {
 	int num_model;
-	render_skel_t	*model;
+	struct render_skel_s	*model;
 } model_item_t;
 
 typedef struct player_s player_t;
@@ -42,11 +42,11 @@ struct player_s {
 	void (*dtor)(player_t *this);
 
 	/* Game specific functions */
-	render_skel_t *(*load_model)(player_t *this, int num_model);
+	struct render_skel_s *(*load_model)(player_t *this, int num_model);
 	void (*get_model_name)(player_t *this, char name[32]);
 
 	float x,y,z,a;
-	render_skel_t *model;
+	struct render_skel_s *model;
 
 	/*--- 3D model ---*/
 	int num_model;

@@ -36,7 +36,7 @@ enum {
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
+struct render_texture_s;
 
 /*--- Types ---*/
 
@@ -92,12 +92,12 @@ struct render_mesh_s {
 	int num_quads;
 	render_mesh_quad_t *quads;
 
-	render_texture_t *texture;
+	struct render_texture_s *texture;
 };
 
 /*--- Functions prototypes ---*/
 
 /* Create a mesh */
-render_mesh_t *render_mesh_create(render_texture_t *texture);
+render_mesh_t *render_mesh_create(struct render_texture_s *texture);
 
 #endif /* RENDER_MESH_H */

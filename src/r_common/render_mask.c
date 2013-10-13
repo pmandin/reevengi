@@ -26,6 +26,7 @@
 #include <SDL.h>
 
 #include "render_mask.h"
+#include "render_texture.h"
 
 /*--- Functions prototypes ---*/
 

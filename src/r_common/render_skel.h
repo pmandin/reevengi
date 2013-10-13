@@ -23,7 +23,7 @@
 
 /*--- External types ---*/
 
-typedef struct render_mesh_s render_mesh_t;
+struct render_mesh_s;
 
 /*--- Types ---*/
 
@@ -31,7 +31,7 @@ typedef struct render_skel_mesh_s render_skel_mesh_t;
 
 struct render_skel_mesh_s {
 	Sint16 x,y,z;	/* Relative mesh position */
-	render_mesh_t *mesh;
+	struct render_mesh_s *mesh;
 };
 
 typedef struct render_skel_s render_skel_t;
@@ -46,7 +46,7 @@ struct render_skel_s {
 	void (*upload)(render_skel_t *this);
 	void (*download)(render_skel_t *this);
 
-	void (*addMesh)(render_skel_t *this, render_mesh_t *mesh,
+	void (*addMesh)(render_skel_t *this, struct render_mesh_s *mesh,
 		Sint16 x, Sint16 y, Sint16 z);
 
 	void (*draw)(render_skel_t *this, int num_parent);
@@ -55,7 +55,7 @@ struct render_skel_s {
 	int num_meshes;
 	render_skel_mesh_t *meshes;
 
-	render_texture_t *texture;
+	struct render_texture_s *texture;
 
 	/*--- Hierarchy ---*/
 
@@ -79,6 +79,6 @@ struct render_skel_s {
 /*--- Functions prototypes ---*/
 
 /* Create a skeleton */
-render_skel_t *render_skel_create(void *emd_file, Uint32 emd_length, render_texture_t *texture);
+render_skel_t *render_skel_create(void *emd_file, Uint32 emd_length, struct render_texture_s *texture);
 
 #endif /* RENDER_SKEL_H */

@@ -32,10 +32,10 @@ typedef enum {
 
 /*--- External types ---*/
 
-typedef struct room_s room_t;
-typedef struct player_s player_t;
-typedef struct menu_s menu_t;
-typedef struct render_texture_s render_texture_t;
+struct room_s;
+struct player_s;
+struct menu_s;
+struct render_texture_s;
 
 /*--- Types ---*/
 
@@ -53,9 +53,9 @@ struct game_s {
 	int num_room;	/* Room of stage */
 	int num_camera;	/* Camera in room */
 
-	room_t *room;	/* room */
-	player_t *player;	/* player */
-	menu_t *menu;	/* menu */
+	struct room_s *room;	/* room */
+	struct player_s *player;	/* player */
+	struct menu_s *menu;	/* menu */
 
 	void (*prev_stage)(game_t *this);
 	void (*next_stage)(game_t *this);
@@ -71,7 +71,7 @@ struct game_s {
 
 	/*--- Room ---*/
 	void (*setRoom)(game_t *this, int num_stage, int num_room);
-	room_t *(*room_ctor)(game_t *this, int num_stage, int num_room);
+	struct room_s *(*room_ctor)(game_t *this, int num_stage, int num_room);
 
 	/*--- Movies ---*/
 
@@ -86,7 +86,7 @@ struct game_s {
 	void (*switch_movie)(game_t *this);
 
 	/*--- Font for ASCII text ---*/
-	render_texture_t *font;
+	struct render_texture_s *font;
 
 	void (*load_font)(game_t *this);
 	void (*get_char)(game_t *this, int ascii, int *x, int *y, int *w, int *h);

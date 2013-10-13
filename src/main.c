@@ -27,6 +27,7 @@
 
 #include "g_common/game.h"
 #include "g_common/menu.h"
+#include "g_common/room.h"
 
 #include "g_re1/game_re1.h"
 #include "g_re2/game_re2.h"

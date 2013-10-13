@@ -34,6 +34,8 @@
 #include "../g_common/room.h"
 #include "../g_common/game.h"
 
+#include "../r_common/render_skel.h"
+
 #include "game_re2.h"
 #include "emd.h"
 #include "ems.h"

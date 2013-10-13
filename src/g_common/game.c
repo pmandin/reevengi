@@ -28,10 +28,15 @@
 
 #include "room.h"
 #include "room_map.h"
+#include "room_camswitch.h"
+#include "room_door.h"
 #include "player.h"
 #include "menu.h"
 #include "game.h"
 #include "fs_ignorecase.h"
+
+#include "../r_common/render_skel.h"
+#include "../r_common/render_texture.h"
 
 /*--- Types ---*/
 

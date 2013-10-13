@@ -33,19 +33,19 @@ enum {
 
 /*--- External types ---*/
 
-typedef struct room_s room_t;
-typedef struct game_s game_t;
+struct room_s;
+struct game_s;
 
 /*--- Functions ---*/
 
-void game_re1_detect(game_t *this);
+void game_re1_detect(struct game_s *this);
 
-game_t *game_re1_ctor(game_t *this);
+game_t *game_re1_ctor(struct game_s *this);
 
-game_t *game_re1pc_ctor(game_t *this);
-void room_re1pc_init(room_t *this);
+game_t *game_re1pc_ctor(struct game_s *this);
+void room_re1pc_init(struct room_s *this);
 
-game_t *game_re1ps1_ctor(game_t *this);
-void room_re1ps1_init(room_t *this);
+game_t *game_re1ps1_ctor(struct game_s *this);
+void room_re1ps1_init(struct room_s *this);
 
 #endif /* GAME_RE1_H */
