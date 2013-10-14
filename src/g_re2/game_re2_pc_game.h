@@ -25,7 +25,7 @@
 
 /*--- External types ---*/
 
-typedef struct game_s game_t;
+struct game_s;
 
 /*--- Types ---*/
 
@@ -34,7 +34,7 @@ typedef struct game_re2pcgame_s game_re2pcgame_t;
 struct game_re2pcgame_s {
 	game_t game;
 
-	void (*base_dtor)(game_t *this);
+	void (*base_dtor)(struct game_s *this);
 };
 
 #endif /* GAME_RE2PCGAME_H */

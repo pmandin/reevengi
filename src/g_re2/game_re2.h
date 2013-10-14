@@ -34,19 +34,24 @@ enum {
 	GAME_RE2_PC_GAME_CLAIRE
 };
 
+/*--- External types ---*/
+
+struct game_s;
+struct room_s;
+
 /*--- Functions ---*/
 
-void game_re2_detect(game_t *this);
+void game_re2_detect(struct game_s *this);
 
-game_t *game_re2_ctor(game_t *this);
+struct game_s *game_re2_ctor(struct game_s *this);
 
-game_t *game_re2pcdemo_ctor(game_t *this);
-void room_re2pcdemo_init(room_t *this);
+struct game_s *game_re2pcdemo_ctor(struct game_s *this);
+void room_re2pcdemo_init(struct room_s *this);
 
-game_t *game_re2pcgame_ctor(game_t *this);
-void room_re2pcgame_init(room_t *this);
+struct game_s *game_re2pcgame_ctor(struct game_s *this);
+void room_re2pcgame_init(struct room_s *this);
 
-game_t *game_re2ps1_ctor(game_t *this);
-void room_re2ps1_init(room_t *this);
+struct game_s *game_re2ps1_ctor(struct game_s *this);
+void room_re2ps1_init(struct room_s *this);
 
 #endif /* GAME_RE2_H */

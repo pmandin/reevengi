@@ -24,8 +24,8 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
-typedef struct render_mask_s render_mask_t;
+struct render_texture_s;
+struct render_mask_s;
 
 /*--- Types ---*/
 
@@ -51,7 +51,7 @@ typedef struct {
 typedef struct render_mask_soft_s render_mask_soft_t;
 
 struct render_mask_soft_s {
-	render_mask_t	render_mask;
+	struct render_mask_s	render_mask;
 
 	/* Sbuffer like structure for masking segments */
 	int miny, maxy;
@@ -64,6 +64,6 @@ struct render_mask_soft_s {
 
 /*--- Functions ---*/
 
-render_mask_t *render_mask_soft_create(render_texture_t *texture);
+render_mask_t *render_mask_soft_create(struct render_texture_s *texture);
 
 #endif /* RENDER_MASK_SOFT_H */

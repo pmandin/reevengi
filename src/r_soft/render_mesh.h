@@ -23,12 +23,12 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
-typedef struct render_mesh_s render_mesh_t;
+struct render_texture_s;
+struct render_mesh_s;
 
 /*--- Functions prototypes ---*/
 
 /* Create a mesh */
-render_mesh_t *render_mesh_soft_create(render_texture_t *texture);
+struct render_mesh_s *render_mesh_soft_create(struct render_texture_s *texture);
 
 #endif /* RENDER_MESH_SOFT_H */

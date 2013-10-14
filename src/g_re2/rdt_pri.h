@@ -19,12 +19,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_PRI_H
-#define RDT_PRI_H 1
+#ifndef RDT2_PRI_H
+#define RDT2_PRI_H 1
 
 /*--- Defines ---*/
 
 /*--- External types ---*/
+
+struct room_s;
 
 /*--- Types ---*/
 
@@ -54,7 +56,7 @@ typedef struct {
 
 /*--- Functions ---*/
 
-void rdt2_pri_initMasks(room_t *this, int num_camera);
-void rdt2_pri_drawMasks(room_t *this, int num_camera);
+void rdt2_pri_initMasks(struct room_s *this, int num_camera);
+void rdt2_pri_drawMasks(struct room_s *this, int num_camera);
 
-#endif /* RDT_PRI_H */
+#endif /* RDT2_PRI_H */

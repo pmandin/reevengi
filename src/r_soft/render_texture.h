@@ -23,11 +23,11 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
+struct render_texture_s;
 
 /*--- Functions prototypes ---*/
 
 /* Create a texture */
-render_texture_t *render_texture_soft_create(int flags);
+struct render_texture_s *render_texture_soft_create(int flags);
 
 #endif /* RENDER_TEXTURE_SOFT_H */

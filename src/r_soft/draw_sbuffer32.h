@@ -24,12 +24,12 @@
 
 /*--- External types ---*/
 
-typedef struct sbuffer_segment_s sbuffer_segment_t;
+struct sbuffer_segment_s;
 
 /*--- Functions ---*/
 
-void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
-void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
-void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2);
+void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_gouraud32(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured32(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
 
 #endif /* DRAW_SBUFFER32_H */

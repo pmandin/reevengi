@@ -21,19 +21,17 @@
 #ifndef RENDER_SKEL_LIST_H
 #define RENDER_SKEL_LIST_H 1
 
-/*#include "render_skel.h"*/
-
 /*--- External types ---*/
 
-typedef struct render_skel_s render_skel_t;
+struct render_skel_s;
 
 /*--- Functions prototypes ---*/
 
 /* Add a skel to the list */
-void list_render_skel_add(render_skel_t *skel);
+void list_render_skel_add(struct render_skel_s *skel);
 
 /* Remove skel from list */
-void list_render_skel_remove(render_skel_t *skel);
+void list_render_skel_remove(struct render_skel_s *skel);
 
 /* Download all skels for video hardware */
 void list_render_skel_download(void);

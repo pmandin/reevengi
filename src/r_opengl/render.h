@@ -23,10 +23,10 @@
 
 /*--- External types ---*/
 
-typedef struct render_s render_t;
+struct render_s;
 
 /*--- Functions ---*/
 
-void render_opengl_init(render_t *this);
+void render_opengl_init(struct render_s *this);
 
 #endif /* RENDER_OPENGL_H */

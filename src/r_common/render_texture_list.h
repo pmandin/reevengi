@@ -21,19 +21,17 @@
 #ifndef RENDER_TEXTURE_LIST_H
 #define RENDER_TEXTURE_LIST_H 1
 
-/*#include "render_texture.h"*/
-
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
+struct render_texture_s;
 
 /*--- Functions prototypes ---*/
 
 /* Add a texture to the list */
-void list_render_texture_add(render_texture_t *texture);
+void list_render_texture_add(struct render_texture_s *texture);
 
 /* Remove texture from list */
-void list_render_texture_remove(render_texture_t *texture);
+void list_render_texture_remove(struct render_texture_s *texture);
 
 /* Download all textures for video hardware */
 void list_render_texture_download(void);

@@ -24,8 +24,8 @@
 
 /*--- External types ---*/
 
-typedef struct draw_s draw_t;
-typedef struct render_texture_s render_texture_t;
+struct draw_s;
+struct render_texture_s;
 
 /*--- Types ---*/
 
@@ -51,6 +51,6 @@ struct sbuffer_segment_s {
 
 /*--- Functions prototypes ---*/
 
-void draw_init_sbuffer(draw_t *draw);
+void draw_init_sbuffer(struct draw_s *draw);
 
 #endif /* DRAW_SBUFFER_H */

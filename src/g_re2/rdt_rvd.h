@@ -19,15 +19,15 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_RVD_H
-#define RDT_RVD_H 1
+#ifndef RDT2_RVD_H
+#define RDT2_RVD_H 1
 
 /*--- Defines ---*/
 
 /*--- External types ---*/
 
-typedef struct room_s room_t;
-typedef struct room_camswitch_s room_camswitch_t;
+struct room_s;
+struct room_camswitch_s;
 
 /*--- Types ---*/
 
@@ -42,10 +42,10 @@ typedef struct {
 
 /*--- Functions ---*/
 
-int rdt2_rvd_getNumCamSwitches(room_t *this);
-void rdt2_rvd_getCamSwitch(room_t *this, int num_camswitch, room_camswitch_t *room_camswitch);
+int rdt2_rvd_getNumCamSwitches(struct room_s *this);
+void rdt2_rvd_getCamSwitch(struct room_s *this, int num_camswitch, struct room_camswitch_s *room_camswitch);
 
-int rdt2_rvd_getNumBoundaries(room_t *this);
-void rdt2_rvd_getBoundary(room_t *this, int num_boundary, room_camswitch_t *room_boundary);
+int rdt2_rvd_getNumBoundaries(struct room_s *this);
+void rdt2_rvd_getBoundary(struct room_s *this, int num_boundary, struct room_camswitch_s *room_boundary);
 
-#endif /* RDT_RVD_H */
+#endif /* RDT2_RVD_H */

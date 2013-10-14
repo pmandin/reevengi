@@ -30,12 +30,12 @@ typedef struct {
 
 /*--- External types ---*/
 
-typedef struct game_s game_t;
+struct game_s;
 
 /*--- Functions prototypes ---*/
 
 /* filename is allocated, must be freed by caller */
-void ems_getModel(game_t *this, int num_model, char **filename,
+void ems_getModel(struct game_s *this, int num_model, char **filename,
 	const re2ps1_ems_t **ems_array, int *emd_pos, int *tim_pos);
 
 #endif /* RE2_EMS_H */
