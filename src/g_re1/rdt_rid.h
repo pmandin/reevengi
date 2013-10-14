@@ -19,14 +19,15 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_RID_H
-#define RDT_RID_H 1
+#ifndef RDT1_RID_H
+#define RDT1_RID_H 1
 
 /*--- Defines ---*/
 
 /*--- External types ---*/
 
-typedef struct room_camera_s room_camera_t;
+struct room_s;
+struct room_camera_s;
 
 /*--- Types ---*/
 
@@ -44,7 +45,7 @@ typedef struct {
 
 /*--- Functions ---*/
 
-int rdt1_rid_getNumCameras(room_t *this);
-void rdt1_rid_getCamera(room_t *this, int num_camera, room_camera_t *room_camera);
+int rdt1_rid_getNumCameras(struct room_s *this);
+void rdt1_rid_getCamera(struct room_s *this, int num_camera, struct room_camera_s *room_camera);
 
-#endif /* RDT_RID_H */
+#endif /* RDT1_RID_H */

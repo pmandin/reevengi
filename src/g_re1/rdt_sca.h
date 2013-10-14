@@ -22,11 +22,15 @@
 #ifndef RDT1_SCA_H
 #define RDT1_SCA_H 1
 
+/*--- External types ---*/
+
+struct room_s;
+
 /*--- Functions ---*/
 
-void rdt1_sca_init(room_t *this);
+void rdt1_sca_init(struct room_s *this);
 
-int rdt1_sca_getNumCollisions(room_t *this);
-void rdt1_sca_drawMapCollision(room_t *this, int num_collision);
+int rdt1_sca_getNumCollisions(struct room_s *this);
+void rdt1_sca_drawMapCollision(struct room_s *this, int num_collision);
 
 #endif /* RDT1_SCA_H */

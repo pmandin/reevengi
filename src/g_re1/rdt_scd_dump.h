@@ -22,8 +22,12 @@
 #ifndef RDT_SCD_DUMP_H
 #define RDT_SCD_DUMP_H 1
 
+/*--- External types ---*/
+
+struct room_s;
+
 /*--- Functions ---*/
 
-void rdt1_scd_scriptDump(room_t *this, int num_script);
+void rdt1_scd_scriptDump(struct room_s *this, int num_script);
 
 #endif /* RDT_SCD_DUMP_H */

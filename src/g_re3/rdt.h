@@ -19,8 +19,8 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_H
-#define RDT_H 1
+#ifndef RDT3_H
+#define RDT3_H 1
 
 /*--- Defines ---*/
 
@@ -35,8 +35,8 @@
 
 /*--- External types ---*/
 
-typedef struct room_s room_t;
-typedef struct game_s game_t;
+struct room_s;
+struct game_s;
 
 /*--- Types ---*/
 
@@ -49,8 +49,8 @@ typedef struct {
 
 /*--- Functions ---*/
 
-room_t *rdt3_room_ctor(game_t *this, int num_stage, int num_room);
+struct room_s *rdt3_room_ctor(struct game_s *this, int num_stage, int num_room);
 
-void rdt3_init(room_t *this);
+void rdt3_init(struct room_s *this);
 
-#endif /* RDT_H */
+#endif /* RDT3_H */

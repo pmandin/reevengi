@@ -19,15 +19,19 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT_SCD_H
-#define RDT_SCD_H 1
+#ifndef RDT1_SCD_H
+#define RDT1_SCD_H 1
+
+/*--- External types ---*/
+
+struct room_s;
 
 /*--- Functions ---*/
 
-Uint8 *rdt1_scd_scriptInit(room_t *this, int num_script);
-int rdt1_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr);
-void rdt1_scd_scriptExecInst(room_t *this);
+Uint8 *rdt1_scd_scriptInit(struct room_s *this, int num_script);
+int rdt1_scd_scriptGetInstLen(struct room_s *this, Uint8 *curInstPtr);
+void rdt1_scd_scriptExecInst(struct room_s *this);
 
-void rdt1_scd_scriptExec(room_t *this, int num_script);
+void rdt1_scd_scriptExec(struct room_s *this, int num_script);
 
-#endif /* RDT_SCD_H */
+#endif /* RDT1_SCD_H */
