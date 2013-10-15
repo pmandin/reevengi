@@ -1,8 +1,8 @@
 /*
-	RE2 ESP
-	Effect sprites
+	RE2 LIT
+	Lights
 
-	Copyright (C) 2009-2013	Patrice Mandin
+	Copyright (C) 2013	Patrice Mandin
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,42 +19,25 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef RDT2_ESP_H
-#define RDT2_ESP_H 1
+#ifndef RDT2_LIT_H
+#define RDT2_LIT_H 1
 
 /*--- Types ---*/
 
 typedef struct {
-	Uint8 id[8];
-} rdt_anim_list_t;
+	Uint8 r,g,b;
+} rdt_light_color_t;
 
 typedef struct {
-	Uint16 num_frames;
-	Uint16 num_sprites;
-	Uint8 w,h;
-	Uint16 unknown;
-} rdt_anim_header_t;
+	Sint16 x,y,z;
+} rdt_light_pos_t;
 
 typedef struct {
-	Uint8 sprite;
-	Uint8 unknown[7];
-} rdt_anim_step_t;
+	Uint16 type[2];
+	rdt_light_color_t col[3];
+	rdt_light_color_t ambient;
+	rdt_light_pos_t pos[3];
+	Uint16 brightness[3];
+} rdt_light_t;
 
-typedef struct {
-	Uint8 x,y;
-	Sint8 offset_x,offset_y;
-} rdt_anim_sprite_t;
-
-typedef struct {
-	Uint16 offsets[8];
-} rdt_anim_unknown0_t;
-
-typedef struct {
-	Uint8 unknown[0x38];
-} rdt_anim_unknown1_t;
-
-typedef struct {
-	Uint32 length;
-} rdt_anim_end_t;
-
-#endif /* RDT2_ESP_H */
+#endif /* RDT2_LIT_H */
