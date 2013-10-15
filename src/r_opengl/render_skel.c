@@ -34,10 +34,11 @@
 #include "../video.h"
 #include "../log.h"
 
-#include "../r_common/render.h"
-#include "../r_common/render_mesh.h"
-#include "../r_common/render_skel_list.h"
 #include "../r_common/render_texture.h"
+#include "../r_common/render_mesh.h"
+#include "../r_common/render_skel.h"
+#include "../r_common/render_skel_list.h"
+#include "../r_common/render.h"
 
 #include "dyngl.h"
 #include "render_texture.h"
@@ -49,7 +50,7 @@ static void draw(render_skel_t *this, int num_parent);
 
 /*--- Functions ---*/
 
-render_skel_t *render_skel_gl_create(void *emd_file, Uint32 emd_length, render_texture_t *texture)
+render_skel_t *render_skel_gl_create(void *emd_file, Uint32 emd_length, struct render_texture_s *texture)
 {
 	render_skel_t *skel;
 	render_skel_gl_t *gl_skel;

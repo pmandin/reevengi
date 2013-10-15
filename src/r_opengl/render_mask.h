@@ -23,8 +23,8 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
-typedef struct render_mask_s render_mask_t;
+struct render_texture_s;
+struct render_mask_s;
 
 /*--- Types ---*/
 
@@ -38,7 +38,7 @@ typedef struct {
 typedef struct render_mask_gl_s render_mask_gl_t;
 
 struct render_mask_gl_s {
-	render_mask_t	render_mask;
+	struct render_mask_s	render_mask;
 
 	int num_zones;
 	render_mask_gl_zone_t	*zones;
@@ -46,6 +46,6 @@ struct render_mask_gl_s {
 
 /*--- Functions ---*/
 
-render_mask_t *render_mask_opengl_create(render_texture_t *texture);
+struct render_mask_s *render_mask_opengl_create(struct render_texture_s *texture);
 
 #endif /* RENDER_MASK_OPENGL_H */

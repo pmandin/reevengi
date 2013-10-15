@@ -22,18 +22,17 @@
 #ifndef RENDER_MESH_OPENGL_H
 #define RENDER_MESH_OPENGL_H 1
 
-/*#include "render_mesh.h"*/
-
 /*--- External types ---*/
 
-typedef struct render_mesh_s render_mesh_t;
+struct render_texture_s;
+struct render_mesh_s;
 
 /*--- Types ---*/
 
 typedef struct render_mesh_gl_s render_mesh_gl_t;
 
 struct render_mesh_gl_s {
-	render_mesh_t render_mesh;
+	struct render_mesh_s render_mesh;
 
 	GLuint	num_list;
 };
@@ -41,6 +40,6 @@ struct render_mesh_gl_s {
 /*--- Functions prototypes ---*/
 
 /* Create a mesh */
-render_mesh_t *render_mesh_gl_create(render_texture_t *texture);
+struct render_mesh_s *render_mesh_gl_create(struct render_texture_s *texture);
 
 #endif /* RENDER_MESH_OPENGL_H */

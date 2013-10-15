@@ -24,21 +24,22 @@
 
 /*--- External types ---*/
 
-typedef struct render_skel_s render_skel_t;
+struct render_skel_s;
+struct render_rexture_s;
 
 /*--- Types ---*/
 
 typedef struct render_skel_gl_s render_skel_gl_t;
 
 struct render_skel_gl_s {
-	render_skel_t render_skel;
+	struct render_skel_s render_skel;
 
-	void (*softDraw)(render_skel_t *this, int num_parent);
+	void (*softDraw)(struct render_skel_s *this, int num_parent);
 };
 
 /*--- Functions prototypes ---*/
 
 /* Create a skeleton */
-render_skel_t *render_skel_gl_create(void *emd_file, Uint32 emd_length, render_texture_t *texture);
+render_skel_t *render_skel_gl_create(void *emd_file, Uint32 emd_length, struct render_texture_s *texture);
 
 #endif /* RENDER_SKEL_OPENGL_H */

@@ -24,14 +24,14 @@
 
 /*--- External types ---*/
 
-typedef struct render_texture_s render_texture_t;
+struct render_texture_s;
 
 /*--- Types ---*/
 
 typedef struct render_texture_gl_s render_texture_gl_t;
 
 struct render_texture_gl_s {
-	render_texture_t render_texture;
+	struct render_texture_s render_texture;
 
 	GLenum textureTarget;
 	GLuint texture_id[MAX_TEX_PALETTE];
@@ -40,6 +40,6 @@ struct render_texture_gl_s {
 /*--- Functions prototypes ---*/
 
 /* Create a texture */
-render_texture_t *render_texture_gl_create(int flags);
+struct render_texture_s *render_texture_gl_create(int flags);
 
 #endif /* RENDER_TEXTURE_OPENGL_H */

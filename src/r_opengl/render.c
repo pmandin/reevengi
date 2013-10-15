@@ -32,10 +32,10 @@
 
 #include "../video.h"
 
-#include "../r_common/render.h"
+#include "../r_common/render_texture.h"
 #include "../r_common/render_texture_list.h"
 #include "../r_common/render_skel_list.h"
-#include "../r_common/render_texture.h"
+#include "../r_common/render.h"
 
 #include "../r_soft/matrix.h"
 
