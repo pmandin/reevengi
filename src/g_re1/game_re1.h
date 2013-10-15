@@ -28,7 +28,7 @@ enum {
 	GAME_RE1_PS1_GAME,
 	GAME_RE1_PS1_SHOCK,
 	GAME_RE1_PC_DEMO,
-	GAME_RE1_PC_GAME,
+	GAME_RE1_PC_GAME
 };
 
 /*--- External types ---*/
