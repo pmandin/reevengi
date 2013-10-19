@@ -183,6 +183,14 @@ __asm__ __volatile__ (
 );						
 		} else {
 			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+
+			for (i=0; i<dx; i++) {
+				*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
+				u += du;
+				v += dv;
+			}
+#if 0
+			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
 			Uint32 vm = (0xffffffff>>vshift) & 0xffff0000;
 			int rshift = 16-ushift;
 
@@ -193,6 +201,7 @@ __asm__ __volatile__ (
 				*dst_col++ = tex_pixels[uv];
 				vi += vd;
 			}
+#endif
 		}
 	} else
 #endif
