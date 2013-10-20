@@ -614,12 +614,12 @@ static void triangle(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	}
 
 	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+	if (mtx_faceVisibleVtx(poly)<0.0f) {
+		return;
+	}
 
 	/* Draw polygon */
 	draw.polyLine(&draw, poly, num_vtx);
@@ -704,12 +704,12 @@ static void quad(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	}
 
 	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+	if (mtx_faceVisibleVtx(poly)<0.0f) {
+		return;
+	}
 
 	/* Draw polygon */
 	draw.polyLine(&draw, poly, num_vtx);
@@ -788,12 +788,12 @@ static void triangle_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	}
 
 	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+	if (mtx_faceVisibleVtx(poly)<0.0f) {
+		return;
+	}
 
 	/* Draw polygon */
 	if (gouraud) {
@@ -886,12 +886,12 @@ static void quad_fill(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	}
 
 	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+	if (mtx_faceVisibleVtx(poly)<0.0f) {
+		return;
+	}
 
 	/* Draw polygon */
 	if (gouraud) {
@@ -950,12 +950,12 @@ static void triangle_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 	}
 
 	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+	if (mtx_faceVisibleVtx(poly)<0.0f) {
+		return;
+	}
 
 	/* Draw polygon */
 	draw.polyTexture(&draw, poly, num_vtx);
@@ -1013,12 +1013,12 @@ static void quad_tex(vertex_t *v1, vertex_t *v2, vertex_t *v3, vertex_t *v4)
 	}
 
 	mtx_mult(frustum_mtx, result, segment);
-	if (mtx_faceVisible(segment)<0.0f) {
-		return;
-	}
 
 	/* Project poly in frustum */
 	mtx_multMtxVtx(frustum_mtx, num_vtx, poly2, poly);
+	if (mtx_faceVisibleVtx(poly)<0.0f) {
+		return;
+	}
 
 	/* Draw polygon */
 	draw.polyTexture(&draw, poly, num_vtx);

@@ -69,6 +69,9 @@ void mtx_multMtxVtx(float m1[4][4], int num_vtx, struct vertexf_s *vtx, struct v
 /* Calculate if face visible using dot product */
 float mtx_faceVisible(float points[4][4]);
 
+/* Calculate if face visible using dot product */
+float mtx_faceVisibleVtx(struct vertexf_s *points);
+
 /* Calculate clip planes for view frustum */
 void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4]);
 

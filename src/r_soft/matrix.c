@@ -473,6 +473,19 @@ float mtx_faceVisible(float points[4][4])
 	return (dx1*dy2-dx2*dy1);
 }
 
+/* Calc dot product against vector (0,0,1) to see if face visible */
+float mtx_faceVisibleVtx(vertexf_t *points)
+{
+	float dx1,dy1,dx2,dy2;
+
+	dx1 = (points[1].pos[0]/points[1].pos[3]) - (points[0].pos[0]/points[0].pos[3]);
+	dy1 = (points[1].pos[1]/points[1].pos[3]) - (points[0].pos[1]/points[0].pos[3]);
+	dx2 = (points[2].pos[0]/points[2].pos[3]) - (points[1].pos[0]/points[1].pos[3]);
+	dy2 = (points[2].pos[1]/points[2].pos[3]) - (points[1].pos[1]/points[1].pos[3]);
+
+	return (dx1*dy2-dx2*dy1);
+}
+
 void mtx_calcFrustumClip(float frustum[4][4], float clip[6][4])
 {
 	/* right */
