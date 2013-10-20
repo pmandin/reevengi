@@ -46,6 +46,12 @@ void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *s
 	int g = segment->start.g;
 	int b = segment->start.b;
 
+	if (draw.correctPerspective>0) {
+		r = segment->start.r / segment->start.w;
+		g = segment->start.g / segment->start.w;
+		b = segment->start.b / segment->start.w;
+	}
+
 	Uint32 *dst_col =  (Uint32 *) dst_line;
 	color = SDL_MapRGB(surf->format, r,g,b);
 
