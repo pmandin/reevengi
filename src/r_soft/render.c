@@ -93,6 +93,7 @@ static void set_render(int num_render);
 static void set_dithering(int enable);
 static void set_depth(int enable);
 static void set_useDirtyRects(int enable);
+static void set_pers_corr(int perscorr);
 
 static Uint32 get_color_from_texture(vertex_t *v1);
 
@@ -147,6 +148,7 @@ void render_soft_init(render_t *this)
 	this->set_dithering = set_dithering;
 	this->set_depth = set_depth;
 	this->set_useDirtyRects = set_useDirtyRects;
+	this->set_pers_corr = set_pers_corr;
 
 	this->sortBackToFront = sortBackToFront;
 
@@ -369,6 +371,11 @@ static void set_depth(int enable)
 static void set_useDirtyRects(int enable)
 {
 	render.useDirtyRects = enable;
+}
+
+static void set_pers_corr(int perscorr)
+{
+	draw.correctPerspective = perscorr;
 }
 
 static void set_render(int num_render)

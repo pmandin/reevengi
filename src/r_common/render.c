@@ -66,6 +66,7 @@ static void set_blending(int enable);
 static void set_dithering(int enable);
 static void set_depth(int enable);
 static void set_useDirtyRects(int enable);
+static void set_pers_corr(int perscorr);
 
 static void sortBackToFront(int num_vtx, int *num_idx, vertex_t *vtx);
 
@@ -116,6 +117,7 @@ void render_init(render_t *this)
 	this->set_dithering = set_dithering;
 	this->set_depth = set_depth;
 	this->set_useDirtyRects = set_useDirtyRects;
+	this->set_pers_corr = set_pers_corr;
 
 	this->depth_test = 1;
 
@@ -230,6 +232,10 @@ static void set_depth(int enable)
 }
 
 static void set_useDirtyRects(int enable)
+{
+}
+
+static void set_pers_corr(int perscorr)
 {
 }
 

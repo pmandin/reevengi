@@ -36,6 +36,13 @@ enum {
 	RENDER_TEXTURED
 };
 
+enum {
+	NO_PERSCORR=0,		/* No perspective correction */
+	PERSCORR_LINE=1,	/* Perspective correction per line */
+	PERSCORR_P16=2,		/* Perspective correction per 16-pixels group */
+	PERSCORR_PIX=3		/* Perspective correction per pixel */
+};
+
 #define TRI_LIST_SIZE 16
 
 #define RENDER_Z_NEAR	16.0f
@@ -99,6 +106,7 @@ struct render_s {
 	void (*set_dithering)(int enable);
 	void (*set_depth)(int enable);
 	void (*set_useDirtyRects)(int enable);
+	void (*set_pers_corr)(int perscorr);
 
 	int render_mode;
 	int dithering;
