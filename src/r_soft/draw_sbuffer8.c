@@ -41,19 +41,19 @@
 void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	Uint32 color;
-	int r = segment->start.r;
-	int g = segment->start.g;
-	int b = segment->start.b;
+	Uint8 *dst_col = dst_line;
+	float r,g,b;
 
+	r = segment->start.r;
+	g = segment->start.g;
+	b = segment->start.b;
 	if (draw.correctPerspective>0) {
 		r /= segment->start.w;
 		g /= segment->start.w;
 		b /= segment->start.w;
 	}
 
-	Uint8 *dst_col = dst_line;
 	color = dither_nearest_index(r,g,b);
-
 	memset(dst_col, color, x2 - x1 + 1);
 }
 
@@ -359,12 +359,14 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	v = v1 + dv * (x1-segment->start.x);
 
 	for (i=x1; i<=x2; i++) {
-		Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+		Uint8 c;
 
+		c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
 		}
 		dst_col++;
+
 		u += du;
 		v += dv;
 	}
@@ -401,12 +403,14 @@ void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	v = v1 + dv * (x1-segment->start.x);
 
 	for (i=x1; i<=x2; i++) {
-		Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+		Uint8 c;
 
+		c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
 		}
 		dst_col++;
+
 		u += du;
 		v += dv;
 	}
