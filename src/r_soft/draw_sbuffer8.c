@@ -46,9 +46,9 @@ void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *se
 	int b = segment->start.b;
 
 	if (draw.correctPerspective>0) {
-		r = segment->start.r / segment->start.w;
-		g = segment->start.g / segment->start.w;
-		b = segment->start.b / segment->start.w;
+		r /= segment->start.w;
+		g /= segment->start.w;
+		b /= segment->start.w;
 	}
 
 	Uint8 *dst_col = dst_line;
@@ -94,6 +94,113 @@ void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t 
 		r += dr;
 		g += dg;
 		b += db;
+	}
+}
+
+void draw_render_gouraud8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	int dxtotal, i;
+	Uint8 *dst_col = dst_line;
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	r1 = segment->start.r;
+	g1 = segment->start.g;
+	b1 = segment->start.b;
+	r2 = segment->end.r;
+	g2 = segment->end.g;
+	b2 = segment->end.b;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+
+	for (i=x1; i<=x2; i++) {
+		*dst_col++ = dither_nearest_index(r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
+	}
+}
+
+void draw_render_gouraud8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db, invw;
+	int dxtotal, i;
+	Uint8 *dst_col = dst_line;
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	invw = 1.0f / segment->start.w;
+	r1 = segment->start.r * invw;
+	g1 = segment->start.g * invw;
+	b1 = segment->start.b * invw;
+	invw = 1.0f / segment->end.w;
+	r2 = segment->end.r * invw;
+	g2 = segment->end.g * invw;
+	b2 = segment->end.b * invw;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+
+	for (i=x1; i<=x2; i++) {
+		*dst_col++ = dither_nearest_index(r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
+	}
+}
+
+void draw_render_gouraud8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	float w1, w2, w, dw, invw;
+	int dxtotal, i;
+	Uint8 *dst_col = dst_line;
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	r1 = segment->start.r;
+	g1 = segment->start.g;
+	b1 = segment->start.b;
+	w1 = segment->start.w;
+	r2 = segment->end.r;
+	g2 = segment->end.g;
+	b2 = segment->end.b;
+	w2 = segment->start.w;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+	dw = (w2-w1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+	w = w1 + dw * (x1-segment->start.x);
+
+	for (i=x1; i<=x2; i++) {
+		int rr,gg,bb;
+
+		invw = 1.0f / w;
+		rr = (int) (r * invw);
+		gg = (int) (g * invw);
+		bb = (int) (b * invw);
+		*dst_col++ = dither_nearest_index(r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
+		w += dw;
 	}
 }
 

@@ -29,7 +29,12 @@ struct sbuffer_segment_s;
 /*--- Functions ---*/
 
 void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+
 void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_gouraud8_pc0(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_gouraud8_pc1(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_gouraud8_pc3(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+
 void draw_render_textured8(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
 
 #endif /* DRAW_SBUFFER8_H */
