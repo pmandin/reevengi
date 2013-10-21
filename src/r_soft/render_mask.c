@@ -235,7 +235,8 @@ static float calcDepthW4(int x, int y, int z, int num_camera)
 
 	project_point(&v1, poly);
 
-	return (poly[0].pos[3] / poly[0].pos[2]);
+	return (1.0f / poly[0].pos[3]);
+/*	return (poly[0].pos[3] / poly[0].pos[2]);*/
 }
 
 static void finishedZones(render_mask_t *this)

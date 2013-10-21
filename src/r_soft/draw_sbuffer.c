@@ -911,13 +911,13 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
-		/*w1 = 1.0f / vtx[p1].pos[3];*/
+		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);*/
+		w1 = 1.0f / vtx[p1].pos[3];
 
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
-		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
-		/*w2 = 1.0f / vtx[p2].pos[3];*/
+		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);*/
+		w2 = 1.0f / vtx[p2].pos[3];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -1056,13 +1056,13 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		/* Draw each line between vertices p1 and p2 */
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
-		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
-		/*w1 = 1.0f / vtx[p1].pos[3];*/
+		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);*/
+		w1 = 1.0f / vtx[p1].pos[3];
 
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
-		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
-		/*w2 = 1.0f / vtx[p2].pos[3];*/
+		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);*/
+		w2 = 1.0f / vtx[p2].pos[3];
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
