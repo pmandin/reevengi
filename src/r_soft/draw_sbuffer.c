@@ -186,8 +186,11 @@ static void draw_resize(draw_t *this, int w, int h, int bpp)
 		fprintf(stderr, "Not enough memory for poly rendering\n");
 		return;
 	}
+}
 
-	switch(bpp) {
+static void draw_startFrame(draw_t *this)
+{
+	switch(video.bpp) {
 		case 15:
 		case 16:
 			draw_render_fill = draw_render_fill16;
@@ -211,10 +214,7 @@ static void draw_resize(draw_t *this, int w, int h, int bpp)
 			draw_render_textured = draw_render_textured8;
 			break;
 	}
-}
 
-static void draw_startFrame(draw_t *this)
-{
 	clear_sbuffer();
 }
 
