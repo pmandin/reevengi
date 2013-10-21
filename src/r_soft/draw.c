@@ -85,7 +85,7 @@ void draw_init(draw_t *this)
 
 	this->addMaskSegment = add_mask_segment;
 
-	this->correctPerspective = 0;
+	this->correctPerspective = NO_PERSCORR;
 }
 
 static void shutdown(draw_t *this)

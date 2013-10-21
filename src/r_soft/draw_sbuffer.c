@@ -912,10 +912,12 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
 		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
+		/*w1 = 1.0f / vtx[p1].pos[3];*/
 
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
+		/*w2 = 1.0f / vtx[p2].pos[3];*/
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -934,31 +936,33 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		dy = y2 - y1;
 		if (dy>0) {
-			int dx = x2 - x1;
-			float r1 = vtx[v1].col[0];
-			float dr = vtx[v2].col[0] - r1;
-			float g1 = vtx[v1].col[1];
-			float dg = vtx[v2].col[1] - g1;
-			float b1 = vtx[v1].col[2];
-			float db = vtx[v2].col[2] - b1;
-			float tu1 = vtx[v1].tx[0];
-			float du = vtx[v2].tx[0] - tu1;
-			float tv1 = vtx[v1].tx[1];
-			float dv = vtx[v2].tx[1] - tv1;
-			float dw = w2 - w1;
-			if (draw.correctPerspective>0) {
-				r1 *= w1;
-				dr = vtx[v2].col[0]*w2 - r1;
-				g1 *= w1;
-				dg = vtx[v2].col[1]*w2 - g1;
-				b1 *= w1;
-				db = vtx[v2].col[2]*w2 - b1;
+			int dx;
+			float r1,g1,b1, r2,g2,b2, dr,dg,db;
+			float tu1,tv1, tu2,tv2, du,dv;
+			float dw;
+		
+			r1 = vtx[v1].col[0];	r2 = vtx[v2].col[0];
+			g1 = vtx[v1].col[1];	g2 = vtx[v2].col[1];
+			b1 = vtx[v1].col[2];	b2 = vtx[v2].col[2];
+			tu1 = vtx[v1].tx[0];	tu2 = vtx[v2].tx[0];
+			tv1 = vtx[v1].tx[1];	tv2 = vtx[v2].tx[1];
 
-				tu1 *= w1;
-				du = vtx[v2].tx[0]*w2 - tu1;
-				tv1 *= w1;
-				dv = vtx[v2].tx[1]*w2 - tv1;
+			if (draw.correctPerspective>0) {
+				r1 *= w1;	r2 *= w2;
+				g1 *= w1;	g2 *= w2;
+				b1 *= w1;	b2 *= w2;
+				tu1 *= w1;	tu2 *= w2;
+				tv1 *= w1;	tv2 *= w2;
 			}
+
+			dx = x2-x1;
+			dr = r2-r1;
+			dg = g2-g1;
+			db = b2-b1;
+			du = tu2-tu1;
+			dv = tv2-tv1;
+			dw = w2-w1;
+
 			for (y=0; y<=dy; y++) {
 				float coef_dy;
 
@@ -1045,18 +1049,20 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		int v2 = p2;
 		int x1,y1, x2,y2;
 		int dy, dx;
-		float w1, w2;
-		float r1,g1,b1,dr,dg,db;
-		float tu1,du,tv1,dv,dw;
+		float w1, w2, dw;
+		float r1,g1,b1, r2,g2,b2, dr,dg,db;
+		float tu1,tv1, tu2,tv2, du,dv;
 
 		/* Draw each line between vertices p1 and p2 */
 		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
 		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
 		w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);
+		/*w1 = 1.0f / vtx[p1].pos[3];*/
 
 		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
 		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);
+		/*w2 = 1.0f / vtx[p2].pos[3];*/
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
@@ -1080,53 +1086,47 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			maxx = MAX(x2, maxx);
 		}
 
+		r1 = vtx[v1].col[0];	r2 = vtx[v2].col[0];
+		g1 = vtx[v1].col[1];	g2 = vtx[v2].col[1];
+		b1 = vtx[v1].col[2];	b2 = vtx[v2].col[2];
+		tu1 = vtx[v1].tx[0];	tu2 = vtx[v2].tx[0];
+		tv1 = vtx[v1].tx[1];	tv2 = vtx[v2].tx[1];
+
+		if (draw.correctPerspective>0) {
+			r1 *= w1;	r2 *= w2;
+			g1 *= w1;	g2 *= w2;
+			b1 *= w1;	b2 *= w2;
+			tu1 *= w1;	tu2 *= w2;
+			tv1 *= w1;	tv2 *= w2;
+		}
+
 		dy = y2-y1;
 		dx = x2-x1;
-
-		dx = x2 - x1;
-		r1 = vtx[v1].col[0];
-		dr = vtx[v2].col[0] - r1;
-		g1 = vtx[v1].col[1];
-		dg = vtx[v2].col[1] - g1;
-		b1 = vtx[v1].col[2];
-		db = vtx[v2].col[2] - b1;
-		tu1 = vtx[v1].tx[0];
-		du = vtx[v2].tx[0] - tu1;
-		tv1 = vtx[v1].tx[1];
-		dv = vtx[v2].tx[1] - tv1;
-		dw = w2 - w1;
-		if (draw.correctPerspective>0) {
-			r1 *= w1;
-			dr = vtx[v2].col[0]*w2 - r1;
-			g1 *= w1;
-			dg = vtx[v2].col[1]*w2 - g1;
-			b1 *= w1;
-			db = vtx[v2].col[2]*w2 - b1;
-
-			tu1 *= w1;
-			du = vtx[v2].tx[0]*w2 - tu1;
-			tv1 *= w1;
-			dv = vtx[v2].tx[1]*w2 - tv1;
-		}
+		dr = r2-r1;
+		dg = g2-g1;
+		db = b2-b1;
+		du = tu2-tu1;
+		dv = tv2-tv1;
+		dw = w2-w1;
 
 		if (dy==0) {
 			/* Horizontal line */
 			sp1 = (x1<x2 ? &segment.start : &segment.end);
 			sp2 = (x1<x2 ? &segment.end : &segment.start);
 
-			sp1->r = vtx[v1].col[0];
-			sp1->g = vtx[v1].col[1];
-			sp1->b = vtx[v1].col[2];
-			sp1->u = vtx[v1].tx[0];
-			sp1->v = vtx[v1].tx[1];
+			sp1->r = r1;
+			sp1->g = g1;
+			sp1->b = b1;
+			sp1->u = tu1;
+			sp1->v = tv1;
 			sp1->w = w1;
 			sp1->x = x1;
 
-			sp2->r = vtx[v2].col[0];
-			sp2->g = vtx[v2].col[1];
-			sp2->b = vtx[v2].col[2];
-			sp2->u = vtx[v2].tx[0];
-			sp2->v = vtx[v2].tx[1];
+			sp2->r = r2;
+			sp2->g = g2;
+			sp2->b = b2;
+			sp2->u = tu2;
+			sp2->v = tv2;
 			sp2->w = w2;
 			sp2->x = x2;
 
