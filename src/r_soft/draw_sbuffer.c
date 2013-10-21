@@ -142,8 +142,8 @@ void draw_init_sbuffer(draw_t *this)
 	this->addMaskSegment = draw_mask_segment;
 
 	draw_render_fill = draw_render_fill8;
-	draw_render_gouraud = draw_render_gouraud8;
-	draw_render_textured = draw_render_textured8;
+	draw_render_gouraud = draw_render_gouraud8_pc0;
+	draw_render_textured = draw_render_textured8_pc0;
 
 	gen_seg_spans = gen_seg_spans_ztest;
 
@@ -210,8 +210,22 @@ static void draw_startFrame(draw_t *this)
 		default:
 		case 8:
 			draw_render_fill = draw_render_fill8;
-			draw_render_gouraud = draw_render_gouraud8;
-			draw_render_textured = draw_render_textured8;
+			switch (draw.correctPerspective) {
+				case PERSCORR_LINE:
+				case PERSCORR_P16:
+					draw_render_gouraud = draw_render_gouraud8_pc1;
+					draw_render_textured = draw_render_textured8_pc1;
+					break;
+				case PERSCORR_PIX:
+					draw_render_gouraud = draw_render_gouraud8_pc3;
+					draw_render_textured = draw_render_textured8_pc3;
+					break;
+				case NO_PERSCORR:
+				default:
+					draw_render_gouraud = draw_render_gouraud8_pc0;
+					draw_render_textured = draw_render_textured8_pc0;
+					break;
+			}
 			break;
 	}
 
