@@ -43,10 +43,13 @@
 
 /*--- Defines ---*/
 
-#define KEY_RENDER_WIREFRAME	SDLK_F2
+#define KEY_TOGGLE_RENDERING	SDLK_F2
+#define KEY_TOGGLE_PERSCORR	SDLK_F3
+
+/*#define KEY_RENDER_WIREFRAME	SDLK_F2
 #define KEY_RENDER_FILLED	SDLK_F3
 #define KEY_RENDER_GOURAUD	SDLK_F4
-#define KEY_RENDER_TEXTURED	SDLK_F5
+#define KEY_RENDER_TEXTURED	SDLK_F5*/
 #define KEY_RENDER_DEPTH	SDLK_F6
 
 #define KEY_STAGE_DOWN		SDLK_z
@@ -128,6 +131,8 @@ static Sint16 anim_x=0,anim_y=0,anim_z=0;	/* base position for anim */
 /*--- Functions prototypes ---*/
 
 static void toggle_map_mode(void);
+static void toggle_render_mode(void);
+static void toggle_pers_corr(void);
 
 static void processPlayerMovement(void);
 static void processEnterDoor(void);
@@ -258,17 +263,11 @@ void view_background_input(SDL_Event *event)
 			case KEY_ENTER_DOOR:
 				processEnterDoor();
 				break;
-			case KEY_RENDER_WIREFRAME:
-				render_model = RENDER_WIREFRAME;
+			case KEY_TOGGLE_RENDERING:
+				toggle_render_mode();
 				break;
-			case KEY_RENDER_FILLED:
-				render_model = RENDER_FILLED;
-				break;
-			case KEY_RENDER_GOURAUD:
-				render_model = RENDER_GOURAUD;
-				break;
-			case KEY_RENDER_TEXTURED:
-				render_model = RENDER_TEXTURED;
+			case KEY_TOGGLE_PERSCORR:
+				toggle_pers_corr();
 				break;
 			case KEY_RENDER_DEPTH:
 				render_depth ^= 1;
@@ -336,6 +335,40 @@ static void toggle_map_mode(void)
 	} else {
 		room->toggleMapModeNext(room);
 	}
+}
+
+static void toggle_render_mode(void)
+{
+	switch(render_model)
+	{
+		case RENDER_WIREFRAME:
+			render_model=RENDER_FILLED;
+			break;
+		case RENDER_FILLED:
+			render_model=RENDER_GOURAUD;
+			break;
+		case RENDER_GOURAUD:
+			render_model=RENDER_TEXTURED;
+			break;
+		case RENDER_TEXTURED:
+			render_model=RENDER_WIREFRAME;
+			break;
+		default:
+			break;
+	}
+}
+
+static void toggle_pers_corr(void)
+{
+	static int perscorr = NO_PERSCORR;
+
+	if (params.use_opengl) {
+		return;
+	}
+
+	++perscorr;
+	perscorr &= 3;
+	render.set_pers_corr(perscorr);
 }
 
 void view_background_refresh(void)
