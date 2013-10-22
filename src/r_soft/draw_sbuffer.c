@@ -958,8 +958,8 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 			r1 = vtx[v1].col[0];	r2 = vtx[v2].col[0];
 			g1 = vtx[v1].col[1];	g2 = vtx[v2].col[1];
 			b1 = vtx[v1].col[2];	b2 = vtx[v2].col[2];
-			tu1 = vtx[v1].tx[0];	tu2 = vtx[v2].tx[0];
-			tv1 = vtx[v1].tx[1];	tv2 = vtx[v2].tx[1];
+			tu1 = vtx[v1].tx[0]+0.5f;	tu2 = vtx[v2].tx[0]+0.5f;
+			tv1 = vtx[v1].tx[1]+0.5f;	tv2 = vtx[v2].tx[1]+0.5f;
 
 			if (draw.correctPerspective>0) {
 				r1 *= w1;	r2 *= w2;
@@ -1103,8 +1103,8 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		r1 = vtx[v1].col[0];	r2 = vtx[v2].col[0];
 		g1 = vtx[v1].col[1];	g2 = vtx[v2].col[1];
 		b1 = vtx[v1].col[2];	b2 = vtx[v2].col[2];
-		tu1 = vtx[v1].tx[0];	tu2 = vtx[v2].tx[0];
-		tv1 = vtx[v1].tx[1];	tv2 = vtx[v2].tx[1];
+		tu1 = vtx[v1].tx[0]+0.5f;	tu2 = vtx[v2].tx[0]+0.5f;
+		tv1 = vtx[v1].tx[1]+0.5f;	tv2 = vtx[v2].tx[1]+0.5f;
 
 		if (draw.correctPerspective>0) {
 			r1 *= w1;	r2 *= w2;
