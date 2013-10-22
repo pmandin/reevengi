@@ -177,7 +177,7 @@ void draw_render_gouraud8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segmen
 	r2 = segment->end.r;
 	g2 = segment->end.g;
 	b2 = segment->end.b;
-	w2 = segment->start.w;
+	w2 = segment->end.w;
 
 	dr = (r2-r1)/dxtotal;
 	dg = (g2-g1)/dxtotal;
@@ -453,7 +453,7 @@ void draw_render_textured8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 		Uint8 c;
 		int uu,vv;
 
-		invw = 1.0f / invw;
+		invw = 1.0f / w;
 		uu = (int) (u * invw);
 		vv = (int) (v * invw);
 
