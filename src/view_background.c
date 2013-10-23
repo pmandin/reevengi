@@ -343,15 +343,19 @@ static void toggle_render_mode(void)
 	{
 		case RENDER_WIREFRAME:
 			render_model=RENDER_FILLED;
+			logMsg(1, "rendering mode: filled\n");
 			break;
 		case RENDER_FILLED:
 			render_model=RENDER_GOURAUD;
+			logMsg(1, "rendering mode: gouraud\n");
 			break;
 		case RENDER_GOURAUD:
 			render_model=RENDER_TEXTURED;
+			logMsg(1, "rendering mode: textured\n");
 			break;
 		case RENDER_TEXTURED:
 			render_model=RENDER_WIREFRAME;
+			logMsg(1, "rendering mode: wireframe\n");
 			break;
 		default:
 			break;
@@ -369,6 +373,19 @@ static void toggle_pers_corr(void)
 	++perscorr;
 	perscorr &= 3;
 	render.set_pers_corr(perscorr);
+
+	switch(perscorr) {
+		case 1:
+			logMsg(1, "perspective correction: per line\n");
+		case 2:
+			logMsg(1, "perspective correction: per 16 pixels\n");
+		case 3:
+			logMsg(1, "perspective correction: per pixel\n");
+		case 0:
+		default:
+			logMsg(1, "perspective correction: off\n");
+			break;
+	}
 }
 
 void view_background_refresh(void)
