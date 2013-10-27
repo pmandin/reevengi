@@ -332,9 +332,11 @@ __asm__ __volatile__ (
 
 void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float u1,v1, u2,v2, du,dv, u,v;
+	float u1,v1, u2,v2;
 	int dxtotal, i;
 	render_texture_t *tex = segment->texture;
+	Uint32 u,v,du,dv;
+	Uint32 ubits, umask, vbits, vmask;
 	Uint8 *dst_col = dst_line;
 	Uint32 *palette;
 	Uint8 *alpha_pal;
@@ -347,10 +349,10 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 
 	dxtotal = segment->end.x - segment->start.x + 1;
 
-	u1 = segment->start.u;
-	v1 = segment->start.v;
-	u2 = segment->end.u;
-	v2 = segment->end.v;
+	u1 = segment->start.u * 65536.0f;
+	v1 = segment->start.v * 65536.0f;
+	u2 = segment->end.u * 65536.0f;
+	v2 = segment->end.v * 65536.0f;
 
 	du = (u2-u1)/dxtotal;
 	dv = (v2-v1)/dxtotal;
@@ -358,10 +360,22 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	u = u1 + du * (x1-segment->start.x);
 	v = v1 + dv * (x1-segment->start.x);
 
+	ubits = logbase2(tex->pitchw);
+	umask = (1<<ubits)-1;
+	vbits = logbase2(tex->pitchh);
+	vmask = (1<<vbits)-1;
+	vmask <<= ubits;
+
 	for (i=x1; i<=x2; i++) {
 		Uint8 c;
+		Uint32 pu,pv;
 
-		c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+		pu = u>>16;		/* 0000XXXX */
+		pu &= umask;		/* 0000---X */
+		pv = v>>(16-ubits);	/* 000YYYYy */
+		pv &= vmask;		/* 000YYYY- */
+
+		c = tex->pixels[pv|pu];
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
 		}
@@ -374,9 +388,11 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 
 void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float u1,v1, u2,v2, du,dv, u,v, invw;
+	float u1,v1, u2,v2, invw;
 	int dxtotal, i;
 	render_texture_t *tex = segment->texture;
+	Uint32 u,v,du,dv;
+	Uint32 ubits, umask, vbits, vmask;
 	Uint8 *dst_col = dst_line;
 	Uint32 *palette;
 	Uint8 *alpha_pal;
@@ -389,10 +405,10 @@ void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 
 	dxtotal = segment->end.x - segment->start.x + 1;
 
-	invw = 1.0f / segment->start.w;
+	invw = 65536.0f / segment->start.w;
 	u1 = segment->start.u * invw;
 	v1 = segment->start.v * invw;
-	invw = 1.0f / segment->end.w;
+	invw = 65536.0f / segment->end.w;
 	u2 = segment->end.u * invw;
 	v2 = segment->end.v * invw;
 
@@ -402,10 +418,23 @@ void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	u = u1 + du * (x1-segment->start.x);
 	v = v1 + dv * (x1-segment->start.x);
 
+	ubits = logbase2(tex->pitchw);
+	umask = (1<<ubits)-1;
+	vbits = logbase2(tex->pitchh);
+	vmask = (1<<vbits)-1;
+	vmask <<= ubits;
+
 	for (i=x1; i<=x2; i++) {
 		Uint8 c;
+		Uint32 pu,pv;
 
-		c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
+		pu = u>>16;		/* 0000XXXX */
+		pu &= umask;		/* 0000---X */
+		pv = v>>(16-ubits);	/* 000YYYYy */
+		pv &= vmask;		/* 000YYYY- */
+
+/*		c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];*/
+		c = tex->pixels[pv|pu];
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
 		}
