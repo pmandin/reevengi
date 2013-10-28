@@ -197,19 +197,22 @@ static void draw_startFrame(draw_t *this)
 			switch (draw.correctPerspective) {
 				case PERSCORR_LINE:
 					draw_render_gouraud = draw_render_gouraud16_pc1;
+					draw_render_textured = draw_render_textured16_pc3;
 					break;
 				case PERSCORR_P16:
 					draw_render_gouraud = draw_render_gouraud16_pc1;
+					draw_render_textured = draw_render_textured16_pc2;
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud16_pc3;
+					draw_render_textured = draw_render_textured16_pc3;
 					break;
 				case NO_PERSCORR:
 				default:
 					draw_render_gouraud = draw_render_gouraud16_pc0;
+					draw_render_textured = draw_render_textured16_pc0;
 					break;
 			}
-			draw_render_textured = draw_render_textured16;
 			break;
 		case 24:
 			draw_render_fill = draw_render_fill24;
