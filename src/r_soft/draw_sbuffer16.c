@@ -367,7 +367,7 @@ void draw_render_textured16_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-			*dst_col++ = tex->pixels[pv|pu];
+			*dst_col++ = tex_pixels[pv|pu];
 
 			u += du;
 			v += dv;
@@ -428,6 +428,8 @@ void draw_render_textured16_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			v += dv;
 		}
 	} else {
+		Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+
 		for (i=x1; i<=x2; i++) {
 			Uint32 pu,pv;
 
@@ -436,7 +438,7 @@ void draw_render_textured16_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-			*dst_col++ = tex->pixels[pv|pu];
+			*dst_col++ = tex_pixels[pv|pu];
 
 			u += du;
 			v += dv;
@@ -528,6 +530,8 @@ void draw_render_textured16_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			w1 = w2;
 		}
 	} else {
+		Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+
 		for (i=x1; i<=x2; i+=16) {
 			int j;
 			Uint32 dui, dvi, uu, vv, uu2,vv2;
@@ -554,7 +558,7 @@ void draw_render_textured16_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 				pv = vv>>(16-ubits);	/* 000YYYYy */
 				pv &= vmask;		/* 000YYYY- */
 
-				*dst_col++ = tex->pixels[pv|pu];
+				*dst_col++ = tex_pixels[pv|pu];
 
 				uu += dui;
 				vv += dvi;
@@ -628,6 +632,8 @@ void draw_render_textured16_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			w += dw;
 		}
 	} else {
+		Uint16 *tex_pixels = (Uint16 *) tex->pixels;
+
 		for (i=x1; i<=x2; i++) {
 			Uint32 uu,vv;
 			float invw;
@@ -641,7 +647,7 @@ void draw_render_textured16_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			vv >>= 16-ubits;	/* 000YYYYy */
 			vv &= vmask;		/* 000YYYY- */
 
-			*dst_col++ = tex->pixels[vv|uu];
+			*dst_col++ = tex_pixels[vv|uu];
 
 			u += du;
 			v += dv;
