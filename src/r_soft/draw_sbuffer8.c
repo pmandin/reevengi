@@ -41,8 +41,8 @@
 void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	Uint32 color;
-	Uint8 *dst_col = dst_line;
 	float r,g,b;
+	Uint8 *dst_col = dst_line;
 
 	r = segment->start.r;
 	g = segment->start.g;
@@ -55,46 +55,6 @@ void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *se
 
 	color = dither_nearest_index(r,g,b);
 	memset(dst_col, color, x2 - x1 + 1);
-}
-
-void draw_render_gouraud8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
-{
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	int dxtotal, i;
-	Uint8 *dst_col = dst_line;
-
-	r1 = segment->start.r;
-	g1 = segment->start.g;
-	b1 = segment->start.b;
-	r2 = segment->end.r;
-	g2 = segment->end.g;
-	b2 = segment->end.b;
-
-	if (draw.correctPerspective>0) {
-		r1 = segment->start.r / segment->start.w;
-		g1 = segment->start.g / segment->start.w;
-		b1 = segment->start.b / segment->start.w;
-		r2 = segment->end.r / segment->end.w;
-		g2 = segment->end.g / segment->end.w;
-		b2 = segment->end.b / segment->end.w;
-	}
-
-	dxtotal = segment->end.x - segment->start.x + 1;
-
-	dr = (r2-r1)/dxtotal;
-	dg = (g2-g1)/dxtotal;
-	db = (b2-b1)/dxtotal;
-
-	r = r1 + dr * (x1-segment->start.x);
-	g = g1 + dg * (x1-segment->start.x);
-	b = b1 + db * (x1-segment->start.x);
-
-	for (i=x1; i<=x2; i++) {
-		*dst_col++ = dither_nearest_index(r,g,b);
-		r += dr;
-		g += dg;
-		b += db;
-	}
 }
 
 void draw_render_gouraud8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
@@ -193,9 +153,9 @@ void draw_render_gouraud8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segmen
 		int rr,gg,bb;
 
 		invw = 1.0f / w;
-		rr = (int) (r * invw);
-		gg = (int) (g * invw);
-		bb = (int) (b * invw);
+		rr = r * invw;
+		gg = g * invw;
+		bb = b * invw;
 		*dst_col++ = dither_nearest_index(rr,gg,bb);
 		r += dr;
 		g += dg;
@@ -433,7 +393,6 @@ void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 		pv = v>>(16-ubits);	/* 000YYYYy */
 		pv &= vmask;		/* 000YYYY- */
 
-/*		c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];*/
 		c = tex->pixels[pv|pu];
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
@@ -589,7 +548,6 @@ void draw_render_textured8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 		vv &= vmask;		/* 000YYYY- */
 
 		c = tex->pixels[vv|uu];
-
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
 		}

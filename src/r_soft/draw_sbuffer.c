@@ -194,7 +194,21 @@ static void draw_startFrame(draw_t *this)
 		case 15:
 		case 16:
 			draw_render_fill = draw_render_fill16;
-			draw_render_gouraud = draw_render_gouraud16;
+			switch (draw.correctPerspective) {
+				case PERSCORR_LINE:
+					draw_render_gouraud = draw_render_gouraud16_pc1;
+					break;
+				case PERSCORR_P16:
+					draw_render_gouraud = draw_render_gouraud16_pc1;
+					break;
+				case PERSCORR_PIX:
+					draw_render_gouraud = draw_render_gouraud16_pc3;
+					break;
+				case NO_PERSCORR:
+				default:
+					draw_render_gouraud = draw_render_gouraud16_pc0;
+					break;
+			}
 			draw_render_textured = draw_render_textured16;
 			break;
 		case 24:

@@ -41,18 +41,19 @@
 void draw_render_fill16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	Uint32 color;
+	float r,g,b;
+	Uint16 *dst_col = (Uint16 *) dst_line;
 	int i;
-	int r = segment->start.r;
-	int g = segment->start.g;
-	int b = segment->start.b;
 
+	r = segment->start.r;
+	g = segment->start.g;
+	b = segment->start.b;
 	if (draw.correctPerspective>0) {
-		r = segment->start.r / segment->start.w;
-		g = segment->start.g / segment->start.w;
-		b = segment->start.b / segment->start.w;
+		r /= segment->start.w;
+		g /= segment->start.w;
+		b /= segment->start.w;
 	}
 
-	Uint16 *dst_col = (Uint16 *) dst_line;
 	color = SDL_MapRGB(surf->format, r,g,b);
 
 	for (i=x1; i<=x2; i++) {
@@ -60,11 +61,13 @@ void draw_render_fill16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *s
 	}
 }
 
-void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void draw_render_gouraud16_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 	int dxtotal, i;
 	Uint16 *dst_col = (Uint16 *) dst_line;
+
+	dxtotal = segment->end.x - segment->start.x + 1;
 
 	r1 = segment->start.r;
 	g1 = segment->start.g;
@@ -72,17 +75,6 @@ void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t
 	r2 = segment->end.r;
 	g2 = segment->end.g;
 	b2 = segment->end.b;
-
-	if (draw.correctPerspective>0) {
-		r1 = segment->start.r / segment->start.w;
-		g1 = segment->start.g / segment->start.w;
-		b1 = segment->start.b / segment->start.w;
-		r2 = segment->end.r / segment->end.w;
-		g2 = segment->end.g / segment->end.w;
-		b2 = segment->end.b / segment->end.w;
-	}
-
-	dxtotal = segment->end.x - segment->start.x + 1;
 
 	dr = (r2-r1)/dxtotal;
 	dg = (g2-g1)/dxtotal;
@@ -97,6 +89,82 @@ void draw_render_gouraud16(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t
 		r += dr;
 		g += dg;
 		b += db;
+	}
+}
+
+void draw_render_gouraud16_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db, invw;
+	int dxtotal, i;
+	Uint16 *dst_col = (Uint16 *) dst_line;
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	invw = 1.0f / segment->start.w;
+	r1 = segment->start.r * invw;
+	g1 = segment->start.g * invw;
+	b1 = segment->start.b * invw;
+	invw = 1.0f / segment->end.w;
+	r2 = segment->end.r * invw;
+	g2 = segment->end.g * invw;
+	b2 = segment->end.b * invw;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+
+	for (i=x1; i<=x2; i++) {
+		*dst_col++ = SDL_MapRGB(surf->format, r,g,b);
+		r += dr;
+		g += dg;
+		b += db;
+	}
+}
+
+void draw_render_gouraud16_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+{
+	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
+	float w1, w2, w, dw, invw;
+	int dxtotal, i;
+	Uint16 *dst_col = (Uint16 *) dst_line;
+
+	dxtotal = segment->end.x - segment->start.x + 1;
+
+	r1 = segment->start.r;
+	g1 = segment->start.g;
+	b1 = segment->start.b;
+	w1 = segment->start.w;
+	r2 = segment->end.r;
+	g2 = segment->end.g;
+	b2 = segment->end.b;
+	w2 = segment->end.w;
+
+	dr = (r2-r1)/dxtotal;
+	dg = (g2-g1)/dxtotal;
+	db = (b2-b1)/dxtotal;
+	dw = (w2-w1)/dxtotal;
+
+	r = r1 + dr * (x1-segment->start.x);
+	g = g1 + dg * (x1-segment->start.x);
+	b = b1 + db * (x1-segment->start.x);
+	w = w1 + dw * (x1-segment->start.x);
+
+	for (i=x1; i<=x2; i++) {
+		int rr,gg,bb;
+
+		invw = 1.0f / w;
+		rr = r * invw;
+		gg = g * invw;
+		bb = b * invw;
+		*dst_col++ = SDL_MapRGB(surf->format, rr,gg,bb);
+		r += dr;
+		g += dg;
+		b += db;
+		w += dw;
 	}
 }
 
