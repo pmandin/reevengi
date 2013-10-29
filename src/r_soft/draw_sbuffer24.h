@@ -29,7 +29,14 @@ struct sbuffer_segment_s;
 /*--- Functions ---*/
 
 void draw_render_fill24(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
-void draw_render_gouraud24(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
-void draw_render_textured24(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+
+void draw_render_gouraud24_pc0(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_gouraud24_pc1(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_gouraud24_pc3(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+
+void draw_render_textured24_pc0(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured24_pc1(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured24_pc2(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured24_pc3(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
 
 #endif /* DRAW_SBUFFER24_H */

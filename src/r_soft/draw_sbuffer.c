@@ -216,8 +216,25 @@ static void draw_startFrame(draw_t *this)
 			break;
 		case 24:
 			draw_render_fill = draw_render_fill24;
-			draw_render_gouraud = draw_render_gouraud24;
-			draw_render_textured = draw_render_textured24;
+			switch (draw.correctPerspective) {
+				case PERSCORR_LINE:
+					draw_render_gouraud = draw_render_gouraud24_pc1;
+					draw_render_textured = draw_render_textured24_pc3;
+					break;
+				case PERSCORR_P16:
+					draw_render_gouraud = draw_render_gouraud24_pc1;
+					draw_render_textured = draw_render_textured24_pc2;
+					break;
+				case PERSCORR_PIX:
+					draw_render_gouraud = draw_render_gouraud24_pc3;
+					draw_render_textured = draw_render_textured24_pc3;
+					break;
+				case NO_PERSCORR:
+				default:
+					draw_render_gouraud = draw_render_gouraud24_pc0;
+					draw_render_textured = draw_render_textured24_pc0;
+					break;
+			}
 			break;
 		case 32:
 			draw_render_fill = draw_render_fill32;
