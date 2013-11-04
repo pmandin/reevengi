@@ -39,15 +39,10 @@ static const int map_color[6] = {
 
 /*--- Variables ---*/
 
-static int inited = 0;
 static Uint8 approxR1[256], approxG1[256], approxB1[256];
 static Uint8 approxR2[216], approxG2[216], approxB2[216];
 static Sint16 fact1[512], fact2[512], fact3[512], fact4[512];
 static Uint8 sat[768];
-
-/*--- Functions prototypes ---*/
-
-static void dither_init(void);
 
 /*--- Functions ---*/
 
@@ -90,11 +85,6 @@ void dither(SDL_Surface *src, SDL_Surface *dest)
 	}
 	if ((src->format->BytesPerPixel==1) || (dest->format->BytesPerPixel!=1) || (src->h<2)) {
 		return;
-	}
-
-	if (!inited) {
-		dither_init();
-		inited = 1;
 	}
 
 	errbuffer = calloc(2, (dest->w+2) * sizeof(Uint32)*2);
@@ -296,7 +286,7 @@ void dither(SDL_Surface *src, SDL_Surface *dest)
 	free(errbuffer);
 }
 
-static void dither_init(void)
+void dither_init(void)
 {
 	int r,g,b,i,j;
 
@@ -344,11 +334,6 @@ void dither_copy(SDL_Surface *src, SDL_Surface *dest)
 	}
 	if ((src->format->BytesPerPixel==1) || (dest->format->BytesPerPixel!=1)) {
 		return;
-	}
-
-	if (!inited) {
-		dither_init();
-		inited = 1;
 	}
 
 	dst_line = dest->pixels;

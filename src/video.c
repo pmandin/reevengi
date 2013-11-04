@@ -74,6 +74,8 @@ void video_soft_init(video_t *this)
 		this->dirty_rects[i] = dirty_rects_create(this->width, this->height);
 		this->upload_rects[i] = dirty_rects_create(this->width, this->height);
 	}
+
+	dither_init();
 }
 
 static void shutDown(void)

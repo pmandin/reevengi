@@ -23,6 +23,9 @@
 
 /*--- Functions prototypes ---*/
 
+/* Init dithering */
+void dither_init(void);
+
 /* Set 216 color palette */
 void dither_setpalette(SDL_Surface *src);
 
