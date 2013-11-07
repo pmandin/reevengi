@@ -81,7 +81,7 @@ render_texture_t *render_texture_create(int flags)
 	list_render_texture_add(tex);
 
 	/* Dummy texture */
-	tex->bpp = 1;
+	tex->bpp = 2;
 	tex->resize(tex, 16,16);
 
 	return tex;
