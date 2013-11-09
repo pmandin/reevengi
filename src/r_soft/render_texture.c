@@ -23,7 +23,6 @@
 #include "../video.h"
 #include "../parameters.h"
 #include "../log.h"
-#include "../background_tim.h"
 
 #include "../r_common/render.h"
 #include "../r_common/render_texture.h"
@@ -46,16 +45,6 @@ render_texture_t *render_texture_soft_create(int flags)
 	}
 
 /*	tex->mark_trans = mark_trans;*/
-
-	tex->must_pot = flags & RENDER_TEXTURE_MUST_POT;
-	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
-
-	tex->bpp = video.screen->format->BytesPerPixel;
-	/* FIXME: copy palette from format elsewhere */
-	memcpy(&(tex->format), video.screen->format, sizeof(SDL_PixelFormat));
-	tex->format.palette = NULL;
-
-	list_render_texture_add(tex);
 
 	return tex;
 }
