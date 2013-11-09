@@ -62,7 +62,7 @@ struct render_texture_s {
 
 	Uint8 alpha_palettes[MAX_TEX_PALETTE][256];	/* Original alpha component of palettes */
 
-	SDL_PixelFormat format;
+	SDL_PixelFormat format;	/* Format of pixels, used by OpenGL */
 
 	/* Cache for rescaled version */
 	SDL_Surface *scaled;

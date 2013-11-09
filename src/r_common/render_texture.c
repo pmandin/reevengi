@@ -43,11 +43,17 @@ static void prepare_resize(render_texture_t *this, int *w, int *h);
 static void resize(render_texture_t *this, int w, int h);
 
 static void load_from_tim(render_texture_t *this, void *tim_ptr);
-static void load_from_surf(render_texture_t *this, SDL_Surface *surf);
-
 static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a);
 
-/*static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2);*/
+static void load_from_surf(render_texture_t *this, SDL_Surface *surf);
+
+/* Keep texture in surface format */
+static void copy_tex_palette(render_texture_t *this, SDL_Surface *surf);
+static void copy_surf_to_tex(render_texture_t *this, SDL_Surface *surf);
+
+/* Convert texture from surface to video format */
+static void convert_tex_palette(render_texture_t *this, SDL_Surface *surf);
+static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf);
 
 /*--- Functions ---*/
 
@@ -77,6 +83,8 @@ render_texture_t *render_texture_create(int flags)
 	/* FIXME: copy palette from format elsewhere */
 	memcpy(&(tex->format), video.screen->format, sizeof(SDL_PixelFormat));
 	tex->format.palette = NULL;
+
+	memset(tex->palettes, 0, sizeof(tex->palettes));
 
 	list_render_texture_add(tex);
 
@@ -194,6 +202,7 @@ static void resize(render_texture_t *this, int w, int h)
 
 static void load_from_tim(render_texture_t *this, void *tim_ptr)
 {
+#ifdef MAGIC_TIM
 	tim_header_t *tim_header;
 	Uint16 *pal_header;
 	int num_colors, num_palettes, i,j, paletted, img_offset;
@@ -395,57 +404,233 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	}*/
 
 	this->download(this);
+#endif
+}
+
+static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
+{
+	int r1,g1,b1,a1;
+
+	r1 = color & 31;
+	r1 = (r1<<3)|(r1>>2);
+
+	g1 = (color>>5) & 31;
+	g1 = (g1<<3)|(g1>>2);
+
+	b1 = (color>>10) & 31;
+	b1 = (b1<<3)|(b1>>2);
+
+	a1 = (color>>15) & 1;
+	if (r1+g1+b1 == 0) {
+		a1 = (a1 ? 0xff : 0);
+	} else {
+		a1 = 0xff;
+	}
+
+	*r = r1;
+	*g = g1;
+	*b = b1;
+	*a = a1;
 }
 
 static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 {
-	SDL_Surface *tmp_surf = NULL;
-	int free_tmp_surf = 1, y;
-
 	if (!this || !surf) {
 		return;
 	}
 
-	/* Init palette */
-	this->num_palettes = this->paletted = 0;
-
-	if ((surf->format->BitsPerPixel==8) && surf->format->palette) {
-		int i;
-		SDL_Palette *surf_palette = surf->format->palette;
-
-		this->num_palettes = this->paletted = 1;
-
-		for (i=0; i<surf->format->palette->ncolors; i++) {
-			int r,g,b,a;
-
-			r = surf_palette->colors[i].r;
-			g = surf_palette->colors[i].g;
-			b = surf_palette->colors[i].b;
-			a = 0xff;
-
-			if (params.use_opengl) {
-				this->palettes[0][i] = (a<<24)|(r<<16)|(g<<8)|b;
-			} else {
-				this->palettes[0][i] = SDL_MapRGBA(surf->format, r,g,b,a);
-			}
-			this->alpha_palettes[0][i] = a;
-		}
+	if (this->cacheable) {
+		copy_tex_palette(this, surf);
+		copy_surf_to_tex(this, surf);
+	} else {
+		convert_tex_palette(this, surf);
+		convert_surf_to_tex(this, surf);
 	}
 
-	/* Copy data */
-	if (this->cacheable) {
-		tmp_surf = surf;
-		free_tmp_surf = 0;
-		logMsg(2, "texture: keep texture in original format\n");
-	} else {
-		if (video.bpp == 8) {
+	this->download(this);
+}
+
+/* Copy surface data to texture in original format */
+
+static void copy_tex_palette(render_texture_t *this, SDL_Surface *surf)
+{
+	int i, r,g,b,a;
+	SDL_Palette *surf_palette;
+
+	this->num_palettes = this->paletted = ((surf->format->BitsPerPixel==8) && surf->format->palette);
+
+	if (!this->paletted)
+		return;
+
+	surf_palette = surf->format->palette;
+
+	for (i=0; i<surf->format->palette->ncolors; i++) {
+		SDL_Color *color = &(surf_palette->colors[i]);
+
+		r = color->r;
+		g = color->g;
+		b = color->b;
+		a = 0xff;
+
+		if (params.use_opengl) {
+			this->palettes[0][i] = (a<<24)|(r<<16)|(g<<8)|b;
+		} else {
+			this->palettes[0][i] = SDL_MapRGBA(surf->format, r,g,b,a);
+		}
+		this->alpha_palettes[0][i] = a;
+	}
+}
+
+static void copy_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
+{
+	Uint8 *src, *dst;
+	int y;
+
+	/* Set bpp from texture, before resize */
+	this->bpp = surf->format->BytesPerPixel;
+	this->resize(this, surf->w,surf->h);
+
+	src = surf->pixels;
+	dst = this->pixels;
+	for (y=0; y<this->h; y++) {
+		memcpy(dst, src, this->w * this->bpp);
+		src += surf->pitch;
+		dst += this->pitch;
+	}
+}
+
+/* Convert surface data to texture in video format
+	video		surf		operation
+	paletted	paletted	convert color indexes
+	non paletted	paletted	convert palette, done
+	paletted	non paletted	convert to dithered surface
+	non paletted	non paletted	convert surface */
+
+static void convert_tex_palette(render_texture_t *this, SDL_Surface *surf)
+{
+	int i, r,g,b,a;
+	SDL_Palette *surf_palette;
+	SDL_PixelFormat *fmt = video.screen->format;
+
+	this->num_palettes = this->paletted = ((surf->format->BitsPerPixel==8) && surf->format->palette);
+
+	if (!this->paletted)
+		return;
+
+	surf_palette = surf->format->palette;
+
+	for (i=0; i<surf->format->palette->ncolors; i++) {
+		SDL_Color *color = &(surf_palette->colors[i]);
+
+		r = color->r;
+		g = color->g;
+		b = color->b;
+		a = 0xff;
+
+		if (params.use_opengl) {
+			this->palettes[0][i] = (a<<24)|(r<<16)|(g<<8)|b;
+		} else {
+			this->palettes[0][i] = SDL_MapRGBA(fmt, r,g,b,a);
+		}
+		this->alpha_palettes[0][i] = a;
+	}
+}
+
+static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
+{
+	SDL_PixelFormat *fmt = video.screen->format;
+	SDL_Surface *tmp_surf;
+	int i,j, y;
+
+	/* Set bpp from texture, before resize */
+	this->bpp = surf->format->BytesPerPixel;
+	if (this->bpp>1) { 
+		this->bpp = (fmt->BytesPerPixel==3 ? 4 : fmt->BytesPerPixel);
+	}
+	this->resize(this, surf->w,surf->h);
+
+	if (video.bpp==8) {
+		if (surf->format->BytesPerPixel==1) {
+			/* Convert color indexes */
+			SDL_Palette *surf_palette = surf->format->palette;
+			Uint8 *src_pixels = surf->pixels;
+			Uint8 *tex_pixels = this->pixels;
+
+			logMsg(2, "texture: convert color indices\n");
+
+			for (i=0; i<this->h; i++) {
+				Uint8 *src_line = src_pixels;
+				Uint8 *tex_line = tex_pixels;
+
+				for (j=0; j<this->w; j++) {
+					int r,g,b;
+					Uint8 color;
+
+					color= *src_line++;
+
+					r = surf_palette->colors[color].r;
+					g = surf_palette->colors[color].g;
+					b = surf_palette->colors[color].b;
+
+					*tex_line++ = dither_nearest_index(r,g,b);
+				}
+
+				src_pixels += surf->pitch;
+				tex_pixels += this->pitch;
+			}
+		} else {
+			/* Convert to dithered surface */
+			Uint8 *src, *dst;
+
 			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
 			if (tmp_surf) {
 				dither_setpalette(tmp_surf);
-				dither_copy(surf, tmp_surf);
+				if (render.dithering) {
+					dither(surf, tmp_surf);
+				} else {
+					dither_copy(surf, tmp_surf);
+				}
+
+				logMsg(2, "texture: converted to 8bits dither palette\n");
+
+				src = tmp_surf->pixels;
+				dst = this->pixels;
+				for (y=0; y<this->h; y++) {
+					memcpy(dst, src, this->w);
+
+					src += tmp_surf->pitch;
+					dst += this->pitch;
+				}
+
+				convert_tex_palette(this, tmp_surf);
+
+				SDL_FreeSurface(tmp_surf);
 			}
-			logMsg(2, "texture: converted to 8bits dither palette\n");
+		}
+	} else {
+		if (surf->format->BytesPerPixel==1) {
+			Uint8 *src = (Uint8 *) surf->pixels;
+			Uint8 *dst = (Uint8 *) this->pixels;
+			SDL_Color *surf_color = surf->format->palette->colors;
+
+			logMsg(2, "texture: keep as paletted texture, screen format, palette %p\n", &this->palettes[0]);
+
+			for (y=0; y<this->h; y++) {
+				memcpy(dst, src, this->w);
+
+				src += surf->pitch;
+				dst += this->pitch;
+			}
 		} else {
+			SDL_PixelFormat tmpFmt;
+
+			memcpy(&tmpFmt, fmt, sizeof(SDL_PixelFormat));
+			if (tmpFmt.BytesPerPixel == 3) {
+				/* Convert textures to 32bits, for 24bits video mode */
+				tmpFmt.BytesPerPixel = 4;
+				tmpFmt.BitsPerPixel = 32;
+			}
+
 			if (params.use_opengl) {
 				/* Convert to some compatible OpenGL texture format */
 				Uint32 rmask=0, gmask=0, bmask=0, amask=0;
@@ -481,125 +666,45 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 						break;
 				}
 
-				tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,surf->format->BitsPerPixel,
-					rmask,gmask,bmask,amask);
-				if (tmp_surf) {
-					SDL_BlitSurface(surf,NULL,tmp_surf,NULL);
-				}
-				logMsg(2, "texture: convert to OpenGL texture format\n");
-			} else {
-				/* Convert to video format */
-				tmp_surf = SDL_DisplayFormat(surf);
-				logMsg(2, "texture: convert to screen format\n");
+				tmpFmt.Rmask = rmask;
+				tmpFmt.Gmask = gmask;
+				tmpFmt.Bmask = bmask;
+				tmpFmt.Amask = amask;
 			}
+
+			tmp_surf = SDL_ConvertSurface(surf, &tmpFmt, SDL_SWSURFACE);
+			logMsg(2, "texture: converted to video format\n");
+
+			switch(tmp_surf->format->BytesPerPixel) {
+				case 2:
+					{
+						Uint16 *src = (Uint16 *) tmp_surf->pixels;
+						Uint16 *dst = (Uint16 *) this->pixels;
+
+						for (y=0; y<this->h; y++) {
+							memcpy(dst, src, this->w<<1);
+
+							src += tmp_surf->pitch>>1;
+							dst += this->pitch>>1;
+						}
+					}
+					break;
+				case 4:
+					{
+						Uint32 *src = (Uint32 *) tmp_surf->pixels;
+						Uint32 *dst = (Uint32 *) this->pixels;
+
+						for (y=0; y<this->h; y++) {
+							memcpy(dst, src, this->w<<2);
+
+							src += tmp_surf->pitch>>2;
+							dst += this->pitch>>2;
+						}
+					}			
+					break;
+			}
+
+			SDL_FreeSurface(tmp_surf);
 		}
 	}
-
-	if (!tmp_surf) {
-		fprintf(stderr, "texture: no data uploaded\n");
-		return;
-	}
-
-	this->bpp = tmp_surf->format->BytesPerPixel;
-	memcpy(&(this->format), tmp_surf->format, sizeof(SDL_PixelFormat));
-	this->format.palette = NULL;
-
-	this->resize(this, tmp_surf->w,tmp_surf->h);
-
-	logMsg(2, "texture: %dx%d, %d bpp, %d palettes\n",
-		this->w,this->h, tmp_surf->format->BitsPerPixel, this->num_palettes);
-
-	logMsg(2, "texture: R=0x%08x, G=0x%08x, B=0x%08x, A=0x%08x\n",
-		this->format.Rmask, this->format.Gmask,
-		this->format.Bmask, this->format.Amask);
-
-	switch(this->bpp) {
-		case 1:
-			{
-				Uint8 *src = tmp_surf->pixels;
-				Uint8 *dst = this->pixels;
-				for (y=0; y<this->h; y++) {
-					memcpy(dst, src, this->w);
-					src += tmp_surf->pitch;
-					dst += this->pitch;
-				}
-			}
-			break;
-		case 2:
-			{
-				Uint16 *src = (Uint16 *) tmp_surf->pixels;
-				Uint16 *dst = (Uint16 *) this->pixels;
-				for (y=0; y<this->h; y++) {
-					memcpy(dst, src, this->w<<1);
-					src += tmp_surf->pitch>>1;
-					dst += this->pitch>>1;
-				}
-			}
-			break;
-		case 3:
-			{
-				Uint8 *src = tmp_surf->pixels;
-				Uint8 *dst = this->pixels;
-				for (y=0; y<this->h; y++) {
-					memcpy(dst, src, this->w *3);
-					src += tmp_surf->pitch;
-					dst += this->pitch;
-				}
-			}
-			break;
-		case 4:
-			{
-				Uint32 *src = (Uint32 *) tmp_surf->pixels;
-				Uint32 *dst = (Uint32 *) this->pixels;
-				for (y=0; y<this->h; y++) {
-					memcpy(dst, src, this->w<<2);
-					src += tmp_surf->pitch>>2;
-					dst += this->pitch>>2;
-				}
-			}
-			break;
-	}
-
-	if (free_tmp_surf) {
-		SDL_FreeSurface(tmp_surf);	
-	}
-
-	this->download(this);
 }
-
-static void read_rgba(Uint16 color, int *r, int *g, int *b, int *a)
-{
-	int r1,g1,b1,a1;
-
-	r1 = color & 31;
-	r1 = (r1<<3)|(r1>>2);
-
-	g1 = (color>>5) & 31;
-	g1 = (g1<<3)|(g1>>2);
-
-	b1 = (color>>10) & 31;
-	b1 = (b1<<3)|(b1>>2);
-
-	a1 = (color>>15) & 1;
-	if (r1+g1+b1 == 0) {
-		a1 = (a1 ? 0xff : 0);
-	} else {
-		a1 = 0xff;
-	}
-
-	/*if (!a1) {
-		r1 = b1 = 0xff;
-		g1 = 0;
-	}*/
-
-	*r = r1;
-	*g = g1;
-	*b = b1;
-	*a = a1;
-}
-
-/*
-static void mark_trans(render_texture_t *this, int num_pal, int x1,int y1, int x2,int y2)
-{
-}
-*/
