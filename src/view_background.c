@@ -377,10 +377,13 @@ static void toggle_pers_corr(void)
 	switch(perscorr) {
 		case 1:
 			logMsg(1, "perspective correction: per line\n");
+			break;
 		case 2:
 			logMsg(1, "perspective correction: per 16 pixels\n");
+			break;
 		case 3:
 			logMsg(1, "perspective correction: per pixel\n");
+			break;
 		case 0:
 		default:
 			logMsg(1, "perspective correction: off\n");
