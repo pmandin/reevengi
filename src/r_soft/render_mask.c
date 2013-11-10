@@ -41,6 +41,7 @@
 
 /*--- Functions prototypes ---*/
 
+#ifdef ROOM_H
 static void addZone(render_mask_t *this, int num_camera,
 	int srcX, int srcY, int w,int h,
 	int dstX, int dstY, int depth);
@@ -52,11 +53,13 @@ static float calcDepthW4(int x, int y, int z, int num_camera);
 static void finishedZones(render_mask_t *this);
 
 static void drawMask(render_mask_t *this);
+#endif
 
 /*--- Functions ---*/
 
 render_mask_t *render_mask_soft_create(render_texture_t *texture)
 {
+#ifdef ROOM_H
 	render_mask_soft_t *soft_mask;
 	render_mask_t *mask;
 	int y;
@@ -86,8 +89,12 @@ render_mask_t *render_mask_soft_create(render_texture_t *texture)
 	}
 
 	return mask;
+#else
+	return NULL;
+#endif
 }
 
+#ifdef ROOM_H
 static void addZone(render_mask_t *this, int num_camera,
 	int srcX, int srcY, int w,int h,
 	int dstX, int dstY, int depth)
@@ -404,3 +411,4 @@ static void drawMask(render_mask_t *this)
 		}
 	}
 }
+#endif
