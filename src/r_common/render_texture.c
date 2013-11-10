@@ -55,6 +55,8 @@ static void copy_surf_to_tex(render_texture_t *this, SDL_Surface *surf);
 static void convert_tex_palette(render_texture_t *this, SDL_Surface *surf);
 static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf);
 
+static void copy_pixels(render_texture_t *this, SDL_Surface *surf);
+
 /*--- Functions ---*/
 
 render_texture_t *render_texture_create(int flags)
@@ -156,6 +158,9 @@ static void resize(render_texture_t *this, int w, int h)
 	if ((w <= this->pitchw) && (h <= this->pitchh)) {
 		this->w = w;
 		this->h = h;
+
+		/* Update pitch */
+		this->pitch = this->w * this->bpp;
 		return;
 	}
 
@@ -439,10 +444,14 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		return;
 	}
 
+	memcpy(&(this->format), surf->format, sizeof(SDL_PixelFormat));
+
 	if (this->cacheable) {
+		logMsg(2, "keep texture in original format\n");
 		copy_tex_palette(this, surf);
 		copy_surf_to_tex(this, surf);
 	} else {
+		logMsg(2, "convert texture to video format\n");
 		convert_tex_palette(this, surf);
 		convert_surf_to_tex(this, surf);
 	}
@@ -483,20 +492,11 @@ static void copy_tex_palette(render_texture_t *this, SDL_Surface *surf)
 
 static void copy_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 {
-	Uint8 *src, *dst;
-	int y;
-
 	/* Set bpp from texture, before resize */
 	this->bpp = surf->format->BytesPerPixel;
 	this->resize(this, surf->w,surf->h);
 
-	src = surf->pixels;
-	dst = this->pixels;
-	for (y=0; y<this->h; y++) {
-		memcpy(dst, src, this->w * this->bpp);
-		src += surf->pitch;
-		dst += this->pitch;
-	}
+	copy_pixels(this, surf);
 }
 
 /* Convert surface data to texture in video format
@@ -540,7 +540,7 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 {
 	SDL_PixelFormat *fmt = video.screen->format;
 	SDL_Surface *tmp_surf;
-	int i,j, y;
+	int i,j;
 
 	/* Set bpp from texture, before resize */
 	this->bpp = surf->format->BytesPerPixel;
@@ -580,8 +580,6 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 			}
 		} else {
 			/* Convert to dithered surface */
-			Uint8 *src, *dst;
-
 			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
 			if (tmp_surf) {
 				dither_setpalette(tmp_surf);
@@ -593,14 +591,11 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 
 				logMsg(2, "texture: converted to 8bits dither palette\n");
 
-				src = tmp_surf->pixels;
-				dst = this->pixels;
-				for (y=0; y<this->h; y++) {
-					memcpy(dst, src, this->w);
+				this->format.BitsPerPixel = 8;
+				this->bpp = 1;
+				this->resize(this, tmp_surf->w,tmp_surf->h);	/* recalc pitch */
 
-					src += tmp_surf->pitch;
-					dst += this->pitch;
-				}
+				copy_pixels(this, tmp_surf);
 
 				convert_tex_palette(this, tmp_surf);
 
@@ -609,18 +604,9 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 		}
 	} else {
 		if (surf->format->BytesPerPixel==1) {
-			Uint8 *src = (Uint8 *) surf->pixels;
-			Uint8 *dst = (Uint8 *) this->pixels;
-			SDL_Color *surf_color = surf->format->palette->colors;
+			logMsg(2, "texture: keep as paletted texture, screen format\n");
 
-			logMsg(2, "texture: keep as paletted texture, screen format, palette %p\n", &this->palettes[0]);
-
-			for (y=0; y<this->h; y++) {
-				memcpy(dst, src, this->w);
-
-				src += surf->pitch;
-				dst += this->pitch;
-			}
+			copy_pixels(this, surf);
 		} else {
 			SDL_PixelFormat tmpFmt;
 
@@ -634,6 +620,7 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 			if (params.use_opengl) {
 				/* Convert to some compatible OpenGL texture format */
 				Uint32 rmask=0, gmask=0, bmask=0, amask=0;
+				int bpp=2;
 
 				switch(surf->format->BitsPerPixel) {
 					case 15:
@@ -657,54 +644,49 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 						gmask = 255<<8;
 						bmask = 255;
 #endif
+						bpp=3;
 						break;
 					case 32:
 						rmask = 255;
 						gmask = 255<<8;
 						bmask = 255<<16;
 						amask = 255<<24;
+						bpp=4;
 						break;
 				}
 
-				tmpFmt.Rmask = rmask;
-				tmpFmt.Gmask = gmask;
-				tmpFmt.Bmask = bmask;
-				tmpFmt.Amask = amask;
+				this->format.Rmask = tmpFmt.Rmask = rmask;
+				this->format.Gmask = tmpFmt.Gmask = gmask;
+				this->format.Bmask = tmpFmt.Bmask = bmask;
+				this->format.Amask = tmpFmt.Amask = amask;
+				this->format.BitsPerPixel = tmpFmt.BitsPerPixel = surf->format->BitsPerPixel;
+				this->bpp = tmpFmt.BytesPerPixel = this->format.BytesPerPixel = bpp;
 			}
 
 			tmp_surf = SDL_ConvertSurface(surf, &tmpFmt, SDL_SWSURFACE);
 			logMsg(2, "texture: converted to video format\n");
 
-			switch(tmp_surf->format->BytesPerPixel) {
-				case 2:
-					{
-						Uint16 *src = (Uint16 *) tmp_surf->pixels;
-						Uint16 *dst = (Uint16 *) this->pixels;
+			this->resize(this, tmp_surf->w,tmp_surf->h);	/* recalc pitch */
 
-						for (y=0; y<this->h; y++) {
-							memcpy(dst, src, this->w<<1);
-
-							src += tmp_surf->pitch>>1;
-							dst += this->pitch>>1;
-						}
-					}
-					break;
-				case 4:
-					{
-						Uint32 *src = (Uint32 *) tmp_surf->pixels;
-						Uint32 *dst = (Uint32 *) this->pixels;
-
-						for (y=0; y<this->h; y++) {
-							memcpy(dst, src, this->w<<2);
-
-							src += tmp_surf->pitch>>2;
-							dst += this->pitch>>2;
-						}
-					}			
-					break;
-			}
+			copy_pixels(this, tmp_surf);
 
 			SDL_FreeSurface(tmp_surf);
 		}
+	}
+}
+
+static void copy_pixels(render_texture_t *this, SDL_Surface *surf)
+{
+	Uint8 *src, *dst;
+	int y;
+
+	src = (Uint8 *) surf->pixels;
+	dst = (Uint8 *) this->pixels;
+
+	for (y=0; y<this->h; y++) {
+		memcpy(dst, src, this->w * this->bpp);
+
+		src += surf->pitch;
+		dst += this->pitch;
 	}
 }
