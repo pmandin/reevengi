@@ -33,6 +33,10 @@
 #include "r_soft/dirty_rects.h"
 #include "r_soft/dither.h"
 
+/*--- Defines ---*/
+
+/*#undef DIRTY_RECTS*/
+
 /*--- Function prototypes ---*/
 
 static void shutDown(void);
@@ -274,6 +278,7 @@ static void swapBuffers(void)
 		return;
 	}
 
+#ifdef DIRTY_RECTS
 	/* Update background from rectangle list */
 	i = upload_rects[video.numfb]->width * upload_rects[video.numfb]->height;
 	if (i>video.num_list_rects) {
@@ -329,6 +334,9 @@ static void swapBuffers(void)
 
 	SDL_UpdateRects(video.screen, i, video.list_rects);
 	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
+#else
+	SDL_UpdateRect(video.screen, 0,0,0,0);
+#endif
 }
 
 static void screenShot(void)
