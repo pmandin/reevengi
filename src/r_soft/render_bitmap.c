@@ -342,13 +342,13 @@ static void bitmapScaledScDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect)
 
 			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
-			if (video.dirty_rects[video.numfb]->markers[dy*video.dirty_rects[video.numfb]->width + dx] == 0) {
+			if (dirty_rects[video.numfb]->markers[dy*dirty_rects[video.numfb]->width + dx] == 0) {
 				continue;
 			}
 
 			SDL_BlitSurface(render.texture->scaled, &blt_src_rect, video.screen, &blt_dst_rect);
 
-			video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+			upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 				blt_dst_rect.x,blt_dst_rect.y,
 				blt_dst_rect.w,blt_dst_rect.h);
 		}
@@ -380,7 +380,7 @@ static void bitmapScaledRtDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect)
 
 			blt_src_rect.w = blt_dst_rect.w = num_cols;
 
-			if (video.dirty_rects[video.numfb]->markers[dy*video.dirty_rects[video.numfb]->width + dx] == 0) {
+			if (dirty_rects[video.numfb]->markers[dy*dirty_rects[video.numfb]->width + dx] == 0) {
 				continue;
 			}
 
@@ -456,7 +456,7 @@ static void bitmapScaledRtDirty(SDL_Rect *src_rect, SDL_Rect *dst_rect)
 					break;
 			}
 
-			video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+			upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 				blt_dst_rect.x,blt_dst_rect.y,
 				blt_dst_rect.w,blt_dst_rect.h);
 		}

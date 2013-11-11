@@ -64,6 +64,6 @@ void render_text(const char *str, int x, int y)
 		dh = sh;
 	}
 
-	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+	dirty_rects[video.numfb]->setDirty(dirty_rects[video.numfb],
 		dx,dy,dw,dh);
 }

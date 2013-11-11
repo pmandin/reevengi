@@ -423,8 +423,8 @@ void view_background_update(void)
 			refresh_bg = 1;
 		}
 		if (refresh_bg) {
-			video.dirty_rects[0]->setDirty(video.dirty_rects[0], 0,0, video.width, video.height);
-			video.dirty_rects[1]->setDirty(video.dirty_rects[1], 0,0, video.width, video.height);
+			dirty_rects[0]->setDirty(dirty_rects[0], 0,0, video.width, video.height);
+			dirty_rects[1]->setDirty(dirty_rects[1], 0,0, video.width, video.height);
 
 			refresh_bg = 0;
 		}
@@ -574,7 +574,7 @@ void view_background_draw(void)
 
 	if (render_restore && !params.use_opengl) {
 		SDL_FillRect(video.screen, NULL, 0);
-		video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+		upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 			0,0, video.width, video.height);
 	}
 
@@ -601,7 +601,7 @@ void view_background_draw(void)
 	}
 
 	/* Background completely restored, clear dirty rectangles list */
-	video.dirty_rects[video.numfb]->clear(video.dirty_rects[video.numfb]);
+	dirty_rects[video.numfb]->clear(dirty_rects[video.numfb]);
 
 	if (render_masks) {
 		room->drawMasks(room, game->num_camera);

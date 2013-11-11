@@ -72,8 +72,8 @@ void video_soft_init(video_t *this)
 	}
 
 	for (i=0; i<2; i++) {
-		this->dirty_rects[i] = dirty_rects_create(this->width, this->height);
-		this->upload_rects[i] = dirty_rects_create(this->width, this->height);
+		dirty_rects[i] = dirty_rects_create(this->width, this->height);
+		upload_rects[i] = dirty_rects_create(this->width, this->height);
 	}
 
 	dither_init();
@@ -84,13 +84,13 @@ static void shutDown(void)
 	int i;
 
 	for (i=0; i<2; i++) {
-		if (video.dirty_rects[i]) {
-			dirty_rects_destroy(video.dirty_rects[i]);
-			video.dirty_rects[i] = NULL;
+		if (dirty_rects[i]) {
+			dirty_rects_destroy(dirty_rects[i]);
+			dirty_rects[i] = NULL;
 		}
-		if (video.upload_rects[i]) {
-			dirty_rects_destroy(video.upload_rects[i]);
-			video.upload_rects[i] = NULL;
+		if (upload_rects[i]) {
+			dirty_rects_destroy(upload_rects[i]);
+			upload_rects[i] = NULL;
 		}
 	}
 
@@ -232,8 +232,8 @@ static void setVideoMode(int width, int height, int bpp)
 	}
 
 	for (i=0; i<2; i++) {
-		video.dirty_rects[i]->resize(video.dirty_rects[i], video.width, video.height);
-		video.upload_rects[i]->resize(video.upload_rects[i], video.width, video.height);
+		dirty_rects[i]->resize(dirty_rects[i], video.width, video.height);
+		upload_rects[i]->resize(upload_rects[i], video.width, video.height);
 	}
 
 	logMsg(1, "video: switched to %dx%d\n", video.width, video.height);
@@ -275,14 +275,14 @@ static void swapBuffers(void)
 	}
 
 	/* Update background from rectangle list */
-	i = video.upload_rects[video.numfb]->width * video.upload_rects[video.numfb]->height;
+	i = upload_rects[video.numfb]->width * upload_rects[video.numfb]->height;
 	if (i>video.num_list_rects) {
 		video.list_rects = (SDL_Rect *) realloc(video.list_rects, i * sizeof(SDL_Rect));
 		video.num_list_rects = i;
 	}
 
 	i = 0;
-	for (y=0; y<video.upload_rects[video.numfb]->height; y++) {
+	for (y=0; y<upload_rects[video.numfb]->height; y++) {
 		int block_w = 0;
 		int block_x = 0;
 		int num_rows = 16;
@@ -291,16 +291,16 @@ static void swapBuffers(void)
 			num_rows = video.height - (y<<4);
 		}
 
-		for (x=0; x<video.upload_rects[video.numfb]->width; x++) {
+		for (x=0; x<upload_rects[video.numfb]->width; x++) {
 			/* Force update on last column */
-			int block_update = (x==video.upload_rects[video.numfb]->width-1);
+			int block_update = (x==upload_rects[video.numfb]->width-1);
 			int num_cols = 16;
 
 			if (((x+1)<<4) > video.width) {
 				num_cols = video.width - (x<<4);
 			}
 
-			if (video.upload_rects[video.numfb]->markers[y*video.upload_rects[video.numfb]->width + x]) {
+			if (upload_rects[video.numfb]->markers[y*upload_rects[video.numfb]->width + x]) {
 				/* Dirty */
 				if (block_w==0) {
 					/* First dirty block, mark x pos */
@@ -328,7 +328,7 @@ static void swapBuffers(void)
 	}
 
 	SDL_UpdateRects(video.screen, i, video.list_rects);
-	video.upload_rects[video.numfb]->clear(video.upload_rects[video.numfb]);
+	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
 }
 
 static void screenShot(void)

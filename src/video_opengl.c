@@ -78,7 +78,7 @@ void video_opengl_init(video_t *this)
 		video_detect_aspect();
 	}*/
 
-	this->dirty_rects[this->numfb]->resize(this->dirty_rects[this->numfb], this->width, this->height);
+	dirty_rects[this->numfb]->resize(dirty_rects[this->numfb], this->width, this->height);
 }
 
 static void setVideoMode(int width, int height, int bpp)
@@ -126,7 +126,7 @@ static void setVideoMode(int width, int height, int bpp)
 	video.bpp = video.screen->format->BitsPerPixel;
 	video.flags = video.screen->flags;
 
-	video.dirty_rects[video.numfb]->resize(video.dirty_rects[video.numfb], video.width, video.height);
+	dirty_rects[video.numfb]->resize(dirty_rects[video.numfb], video.width, video.height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
 
 	dyngl_initfuncs();

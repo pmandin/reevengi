@@ -405,9 +405,9 @@ static void drawMask(render_mask_t *this)
 			rectx = ((rectx<<4) * video.viewport.w ) / RENDER_MASK_WIDTH;
 			rectw = ((rectw<<4) * video.viewport.w ) / RENDER_MASK_WIDTH;
 
-			video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+			dirty_rects[video.numfb]->setDirty(dirty_rects[video.numfb],
 				video.viewport.x+rectx, video.viewport.y+recty, rectw,recth);
-			video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+			upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 				video.viewport.x+rectx, video.viewport.y+recty, rectw,recth);
 		}
 	}

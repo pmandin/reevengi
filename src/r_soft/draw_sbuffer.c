@@ -1092,9 +1092,9 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 	maxx=MIN(maxx, video.viewport.w-1);
 
 	/* Mark dirty rectangle */
-	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+	dirty_rects[video.numfb]->setDirty(dirty_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
-	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+	upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
 
@@ -1295,9 +1295,9 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 	maxx=MIN(maxx, video.viewport.w-1);
 
 	/* Mark dirty rectangle */
-	video.dirty_rects[video.numfb]->setDirty(video.dirty_rects[video.numfb],
+	dirty_rects[video.numfb]->setDirty(dirty_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
-	video.upload_rects[video.numfb]->setDirty(video.upload_rects[video.numfb],
+	upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 }
 

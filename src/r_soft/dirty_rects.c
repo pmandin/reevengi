@@ -25,6 +25,11 @@
 
 #include "dirty_rects.h"
 
+/*--- Variables ---*/
+
+dirty_rects_t *dirty_rects[2];
+dirty_rects_t *upload_rects[2];
+
 /*--- Functions prototypes ---*/
 
 static void resize(dirty_rects_t *this, int w, int h);

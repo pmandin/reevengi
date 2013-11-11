@@ -21,6 +21,8 @@
 #ifndef DIRTY_RECTS
 #define DIRTY_RECTS 1
 
+/*--- Types ---*/
+
 typedef struct dirty_rects_s dirty_rects_t;
 
 struct dirty_rects_s {
@@ -31,6 +33,13 @@ struct dirty_rects_s {
 	void (*setDirty)(dirty_rects_t *this, int x, int y, int w, int h);
 	void (*clear)(dirty_rects_t *this);
 };
+
+/*--- Global variables ---*/
+
+extern dirty_rects_t *dirty_rects[2];	/* zones dirtied, where everything must be redraw */
+extern dirty_rects_t *upload_rects[2];	/* zones to reupload to vram */
+
+/*--- Function prototypes ---*/
 
 dirty_rects_t *dirty_rects_create(int w, int h);
 
