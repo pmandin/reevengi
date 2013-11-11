@@ -40,6 +40,7 @@
 #include "g_common/player.h"
 
 #include "r_common/render.h"
+#include "r_soft/dirty_rects.h"
 
 /*--- Defines ---*/
 

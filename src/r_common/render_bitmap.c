@@ -23,6 +23,8 @@
 
 #include "../video.h"
 
+#include "../r_soft/dirty_rects.h"
+
 #include "render.h"
 #include "render_bitmap.h"
 

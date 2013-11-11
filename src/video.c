@@ -30,6 +30,7 @@
 
 #include "r_common/render.h"
 #include "r_common/render_text.h"
+#include "r_soft/dirty_rects.h"
 #include "r_soft/dither.h"
 
 /*--- Function prototypes ---*/

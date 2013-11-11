@@ -29,6 +29,7 @@
 #include "../r_common/r_misc.h"
 #include "../r_common/render.h"
 
+#include "dirty_rects.h"
 #include "dither.h"
 #include "draw.h"
 

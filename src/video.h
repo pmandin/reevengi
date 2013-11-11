@@ -21,7 +21,9 @@
 #ifndef VIDEO_H
 #define VIDEO_H 1
 
-#include "r_soft/dirty_rects.h"
+/*--- External types ---*/
+
+struct dirty_rects_s;
 
 /*--- Types ---*/
 
@@ -32,8 +34,8 @@ struct video_s {
 	int fps, start_tick;
 	SDL_Surface *screen;
 	int num_screenshot;
-	dirty_rects_t *dirty_rects[2];	/* zones dirtied, where everything must be redraw */
-	dirty_rects_t *upload_rects[2];	/* zones to be reupload to vram */
+	struct dirty_rects_s *dirty_rects[2];	/* zones dirtied, where everything must be redraw */
+	struct dirty_rects_s *upload_rects[2];	/* zones to be reupload to vram */
 
 	SDL_Rect viewport;
 

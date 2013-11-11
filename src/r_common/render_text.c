@@ -24,6 +24,8 @@
 
 #include "../g_common/game.h"
 
+#include "../r_soft/dirty_rects.h"
+
 #include "render.h"
 #include "render_texture.h"
 

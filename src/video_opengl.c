@@ -33,6 +33,7 @@
 #include "log.h"
 
 #include "r_common/render.h"
+#include "r_soft/dirty_rects.h"
 
 #include "r_opengl/dyngl.h"
 

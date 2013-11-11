@@ -34,6 +34,7 @@
 
 #include "../r_common/render.h"
 
+#include "dirty_rects.h"
 #include "draw.h"
 #include "render_mask.h"
 #include "render.h"
