@@ -199,6 +199,7 @@ void draw_render_textured32_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 	if (tex->paletted) {
 		Uint32 *palette = tex->palettes[segment->tex_num_pal];
 		Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
+		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
 			Uint8 c;
@@ -209,7 +210,7 @@ void draw_render_textured32_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-			c = tex->pixels[pv|pu];
+			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				*dst_col = palette[c];
 			}
@@ -270,6 +271,7 @@ void draw_render_textured32_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 	if (tex->paletted) {
 		Uint32 *palette = tex->palettes[segment->tex_num_pal];
 		Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
+		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
 			Uint8 c;
@@ -280,7 +282,7 @@ void draw_render_textured32_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-			c = tex->pixels[pv|pu];
+			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				*dst_col = palette[c];
 			}
@@ -349,6 +351,7 @@ void draw_render_textured32_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 	if (tex->paletted) {
 		Uint32 *palette = tex->palettes[segment->tex_num_pal];
 		Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
+		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i+=16) {
 			int j;
@@ -377,7 +380,7 @@ void draw_render_textured32_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 				pv = vv>>(16-ubits);	/* 000YYYYy */
 				pv &= vmask;		/* 000YYYY- */
 
-				c = tex->pixels[pv|pu];
+				c = tex_pixels[pv|pu];
 				if (alpha_pal[c]) {
 					*dst_col = palette[c];
 				}
@@ -468,6 +471,7 @@ void draw_render_textured32_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 	if (tex->paletted) {
 		Uint32 *palette = tex->palettes[segment->tex_num_pal];
 		Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
+		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
 			Uint8 c;
@@ -483,7 +487,7 @@ void draw_render_textured32_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			vv >>= 16-ubits;	/* 000YYYYy */
 			vv &= vmask;		/* 000YYYY- */
 
-			c = tex->pixels[vv|uu];
+			c = tex_pixels[vv|uu];
 			if (alpha_pal[c]) {
 				*dst_col = palette[c];
 			}
