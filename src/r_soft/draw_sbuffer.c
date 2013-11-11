@@ -962,7 +962,9 @@ static int gen_seg_spans_noztest(int y, const sbuffer_segment_t *segment)
 static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
 	int miny = video.viewport.h-1, maxy = 0;
+#ifdef DIRTY_RECTS
 	int minx = video.viewport.w-1, maxx = 0;
+#endif
 	int y, p1, p2;
 	sbuffer_segment_t segment;
 	int num_array = 1; /* max array */
@@ -1077,8 +1079,10 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 			continue;
 		}
 
+#ifdef DIRTY_RECTS
 		minx=MIN(minx, pminx);
 		maxx=MAX(maxx, pmaxx);
+#endif
 
 		segment.start = poly_hlines[y].sbp[0];
 		segment.end = poly_hlines[y].sbp[1];
@@ -1088,6 +1092,7 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		}
 	}
 
+#ifdef DIRTY_RECTS
 	minx=MAX(minx, 0);
 	maxx=MIN(maxx, video.viewport.w-1);
 
@@ -1096,13 +1101,16 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 	upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
+#endif
 }
 
 /* Specific version for non filled polys */
 static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 {
 	int miny = video.viewport.h-1, maxy = 0;
+#ifdef DIRTY_RECTS
 	int minx = video.viewport.w-1, maxx = 0;
+#endif
 	int p1,p2;
 	sbuffer_segment_t segment;
 	sbuffer_point_t *sp1, *sp2;
@@ -1147,6 +1155,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		miny = MIN(y1, miny);
 		maxy = MAX(y2, maxy);
+#ifdef DIRTY_RECTS
 		if (x1<=x2) {
 			minx = MIN(x1, minx);
 			maxx = MAX(x2, maxx);
@@ -1154,6 +1163,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 			minx = MIN(x2, minx);
 			maxx = MAX(x2, maxx);
 		}
+#endif
 
 		r1 = vtx[v1].col[0];	r2 = vtx[v2].col[0];
 		g1 = vtx[v1].col[1];	g2 = vtx[v2].col[1];
@@ -1291,6 +1301,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		p1 = p2;
 	}
 
+#ifdef DIRTY_RECTS
 	minx=MAX(minx, 0);
 	maxx=MIN(maxx, video.viewport.w-1);
 
@@ -1299,6 +1310,7 @@ static void draw_poly_sbuffer_line(draw_t *this, vertexf_t *vtx, int num_vtx)
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
 	upload_rects[video.numfb]->setDirty(upload_rects[video.numfb],
 		minx+video.viewport.x, miny+video.viewport.y, maxx-minx+1, maxy-miny+1);
+#endif
 }
 
 static void draw_mask_segment(draw_t *this, int y, int x1, int x2, float w)
