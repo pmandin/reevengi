@@ -36,6 +36,10 @@
 #include "draw.h"
 #include "draw_sbuffer.h"
 
+/*--- Defines ---*/
+
+/*#define FORCE_OPAQUE 1*/
+
 /*--- Functions ---*/
 
 void draw_render_fill32(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
@@ -213,11 +217,15 @@ void draw_render_textured32_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
+#ifdef FORCE_OPAQUE
+			*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
 			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				*dst_col = palette[c];
 			}
 			dst_col++;
+#endif
 
 			u += du;
 			v += dv;
@@ -288,11 +296,15 @@ void draw_render_textured32_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
+#ifdef FORCE_OPAQUE
+			*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
 			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				*dst_col = palette[c];
 			}
 			dst_col++;
+#endif
 
 			u += du;
 			v += dv;
@@ -386,11 +398,15 @@ void draw_render_textured32_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 				pv = vv>>(16-ubits);	/* 000YYYYy */
 				pv &= vmask;		/* 000YYYY- */
 
+#ifdef FORCE_OPAQUE
+				*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
 				c = tex_pixels[pv|pu];
 				if (alpha_pal[c]) {
 					*dst_col = palette[c];
 				}
 				dst_col++;
+#endif
 
 				uu += dui;
 				vv += dvi;
@@ -481,23 +497,27 @@ void draw_render_textured32_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 
 		for (i=x1; i<=x2; i++) {
 			Uint8 c;
-			Uint32 uu,vv;
+			Uint32 pu,pv;
 			float invw;
 
 			invw = 65536.0f / w;
-			uu = u * invw;	/* XXXXxxxx */
-			vv = v * invw;	/* YYYYyyyy */
+			pu = u * invw;	/* XXXXxxxx */
+			pv = v * invw;	/* YYYYyyyy */
 
-			uu >>= 16;		/* 0000XXXX */
-			uu &= umask;		/* 0000---X */
-			vv >>= 16-ubits;	/* 000YYYYy */
-			vv &= vmask;		/* 000YYYY- */
+			pu >>= 16;		/* 0000XXXX */
+			pu &= umask;		/* 0000---X */
+			pv >>= 16-ubits;	/* 000YYYYy */
+			pv &= vmask;		/* 000YYYY- */
 
-			c = tex_pixels[vv|uu];
+#ifdef FORCE_OPAQUE
+			*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
+			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				*dst_col = palette[c];
 			}
 			dst_col++;
+#endif
 
 			u += du;
 			v += dv;
@@ -507,19 +527,19 @@ void draw_render_textured32_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
-			Uint32 uu,vv;
+			Uint32 pu,pv;
 			float invw;
 
 			invw = 65536.0f / w;
-			uu = u * invw;	/* XXXXxxxx */
-			vv = v * invw;	/* YYYYyyyy */
+			pu = u * invw;	/* XXXXxxxx */
+			pv = v * invw;	/* YYYYyyyy */
 
-			uu >>= 16;		/* 0000XXXX */
-			uu &= umask;		/* 0000---X */
-			vv >>= 16-ubits;	/* 000YYYYy */
-			vv &= vmask;		/* 000YYYY- */
+			pu >>= 16;		/* 0000XXXX */
+			pu &= umask;		/* 0000---X */
+			pv >>= 16-ubits;	/* 000YYYYy */
+			pv &= vmask;		/* 000YYYY- */
 
-			*dst_col++ = tex_pixels[vv|uu];
+			*dst_col++ = tex_pixels[pv|pu];
 
 			u += du;
 			v += dv;

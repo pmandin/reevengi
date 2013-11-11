@@ -38,6 +38,8 @@
 
 /*--- Defines ---*/
 
+/*#define FORCE_OPAQUE 1*/
+
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 # define WRITE_PIXEL_PP(output, color) \
 		*output++ = color>>16;	\
@@ -247,6 +249,10 @@ void draw_render_textured24_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
+#ifdef FORCE_OPAQUE
+			color = palette[tex_pixels[pv|pu]];
+			WRITE_PIXEL_PP(dst_col, color);
+#else
 			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				color = palette[c];
@@ -254,6 +260,7 @@ void draw_render_textured24_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 				WRITE_PIXEL_AR(dst_col, color);
 			}
 			dst_col += 3;
+#endif
 
 			u += du;
 			v += dv;
@@ -326,6 +333,10 @@ void draw_render_textured24_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
+#ifdef FORCE_OPAQUE
+			color = palette[tex_pixels[pv|pu]];
+			WRITE_PIXEL_PP(dst_col, color);
+#else
 			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				color = palette[c];
@@ -333,6 +344,7 @@ void draw_render_textured24_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 				WRITE_PIXEL_AR(dst_col, color);
 			}
 			dst_col += 3;
+#endif
 
 			u += du;
 			v += dv;
@@ -428,6 +440,10 @@ void draw_render_textured24_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 				pv = vv>>(16-ubits);	/* 000YYYYy */
 				pv &= vmask;		/* 000YYYY- */
 
+#ifdef FORCE_OPAQUE
+				color = palette[tex_pixels[pv|pu]];
+				WRITE_PIXEL_PP(dst_col, color);
+#else
 				c = tex_pixels[pv|pu];
 				if (alpha_pal[c]) {
 					color = palette[c];
@@ -435,6 +451,7 @@ void draw_render_textured24_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 					WRITE_PIXEL_AR(dst_col, color);
 				}
 				dst_col += 3;
+#endif
 
 				uu += dui;
 				vv += dvi;
@@ -527,25 +544,30 @@ void draw_render_textured24_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 
 		for (i=x1; i<=x2; i++) {
 			Uint8 c;
-			Uint32 uu,vv;
+			Uint32 pu,pv;
 			float invw;
 
 			invw = 65536.0f / w;
-			uu = u * invw;	/* XXXXxxxx */
-			vv = v * invw;	/* YYYYyyyy */
+			pu = u * invw;	/* XXXXxxxx */
+			pv = v * invw;	/* YYYYyyyy */
 
-			uu >>= 16;		/* 0000XXXX */
-			uu &= umask;		/* 0000---X */
-			vv >>= 16-ubits;	/* 000YYYYy */
-			vv &= vmask;		/* 000YYYY- */
+			pu >>= 16;		/* 0000XXXX */
+			pu &= umask;		/* 0000---X */
+			pv >>= 16-ubits;	/* 000YYYYy */
+			pv &= vmask;		/* 000YYYY- */
 
-			c = tex_pixels[vv|uu];
+#ifdef FORCE_OPAQUE
+			color = palette[tex_pixels[pv|pu]];
+			WRITE_PIXEL_PP(dst_col, color);
+#else
+			c = tex_pixels[pv|pu];
 			if (alpha_pal[c]) {
 				color = palette[c];
 
 				WRITE_PIXEL_AR(dst_col, color);
 			}
 			dst_col += 3;
+#endif
 
 			u += du;
 			v += dv;
@@ -555,19 +577,19 @@ void draw_render_textured24_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segm
 		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
-			Uint32 uu,vv;
+			Uint32 pu,pv;
 			float invw;
 
 			invw = 65536.0f / w;
-			uu = u * invw;	/* XXXXxxxx */
-			vv = v * invw;	/* YYYYyyyy */
+			pu = u * invw;	/* XXXXxxxx */
+			pv = v * invw;	/* YYYYyyyy */
 
-			uu >>= 16;		/* 0000XXXX */
-			uu &= umask;		/* 0000---X */
-			vv >>= 16-ubits;	/* 000YYYYy */
-			vv &= vmask;		/* 000YYYY- */
+			pu >>= 16;		/* 0000XXXX */
+			pu &= umask;		/* 0000---X */
+			pv >>= 16-ubits;	/* 000YYYYy */
+			pv &= vmask;		/* 000YYYY- */
 
-			color = tex_pixels[vv|uu];
+			color = tex_pixels[pv|pu];
 			WRITE_PIXEL_PP(dst_col, color);
 
 			u += du;
