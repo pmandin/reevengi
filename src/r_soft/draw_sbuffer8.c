@@ -335,6 +335,102 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	vmask = (1<<vbits)-1;
 	vmask <<= ubits;
 
+#if defined(__GNUC__) && defined(__m68k__)
+/*	XXxxYYyy	uv, duv
+	XXxx--YY	lsr.w
+	xx--YYXX	rol.l	*/
+
+	dx = x2 - x1;
+
+	/* Write first single pixel */
+	if (dx & 1) {
+		Uint8 c;
+		Uint32 pu,pv;
+
+		pu = u>>16;		/* 0000XXXX */
+		pu &= umask;		/* 0000---X */
+		pv = v>>(16-ubits);	/* 000YYYYy */
+		pv &= vmask;		/* 000YYYY- */
+
+#ifdef FORCE_OPAQUE
+		*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
+		c = tex_pixels[pv|pu];
+		if (alpha_pal[c]) {
+			*dst_col = palette[c];
+		}
+		dst_col++;
+#endif
+
+		u += du;
+		v += dv;
+
+		--dx;
+	}
+
+	if (dx) {
+		Uint32 uv, duv;
+
+		uv = (u<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+		uv |= (v>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
+		duv = (du<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+		duv |= (dv>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
+
+		/* for signed d0:w addressing */
+		if (ubits+vbits>15) {
+			tex_pixels += 32768;
+			uv ^= 0x8000;
+		}
+
+		vbits = 16-vbits;
+
+		dx >>= 1;
+
+__asm__ __volatile__ (
+	"movel	%5,d4\n\t"
+	"lsrw	%7,d4\n\t"
+	"roll	%6,d4\n\t"
+	"moveql	#0,d5\n\t"
+	"moveql	#0,d1\n"
+
+"R_DrawSpan8_loop_pc0:\n\t"
+	"moveb	%1@(0,d4:w),d5\n\t"
+	"movel	%5,d0\n\t"
+
+	"moveb	%2@(3,d5:w*4),d4\n\t"
+	"lsrw	%7,d0\n\t"
+
+	"moveb	d4,%3@+\n\t"
+	"roll	%6,d0\n\t"
+
+	"addal	%4,%5\n\t"
+	"moveb	%1@(0,d0:w),d1\n\t"
+
+	"movel	%5,d4\n\t"
+	"moveb	%2@(3,d1:w*4),d0\n\t"
+
+	"lsrw	%7,d4\n\t"
+	"moveb	d0,%3@+\n\t"
+
+	"roll	%6,d4\n\t"
+	"orw	d5,d5\n\t"
+
+	"subqw	#1,%0\n\t"
+	"addal	%4,%5\n\t"
+
+	"bpls	R_DrawSpan8_loop_pc0\n"
+
+	: /* no return value */
+	: /* input */
+		"d"(dx) /*%0*/, "a"(tex_pixels) /*%1*/, "a"(palette) /*%2*/, "a"(dst_col) /*%3*/,
+		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits) /*%7*/
+	: /* clobbered registers */
+		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
+);
+	}
+
+#else
+
 	for (i=x1; i<=x2; i++) {
 		Uint8 c;
 		Uint32 pu,pv;
@@ -357,6 +453,7 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 		u += du;
 		v += dv;
 	}
+#endif
 }
 
 void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
