@@ -42,9 +42,12 @@
 #define FNDEF2(name,bpp)	CONCAT2(name,bpp)
 #define CONCAT3(x,y,z)	x ## y ## z
 #define FNDEF3(name,bpp,perscorr)	CONCAT3(name,bpp,perscorr)
+#define CONCAT4(x,y,z,w)	x ## y ## z ## w
+#define FNDEF4(name,bpp,perscorr,alphatest)	CONCAT4(name,bpp,perscorr,alphatest)
 
 #define BPP 32
 #define PIXEL_TYPE	Uint32
+#define TEXTURE_PIXEL_TYPE	Uint32
 #define WRITE_PIXEL(output, color) \
 		*output = color;
 #define WRITE_PIXEL_GONEXT(output, color) \
@@ -54,13 +57,34 @@
 #define PIXEL_FROM_RGB(color, r,g,b) \
 	color = SDL_MapRGB(surf->format, r,g,b);
 
-
-/*#define FORCE_OPAQUE 1*/
-
 /*--- Functions ---*/
 
 #include "span_fill.inc.c"
 
 #include "span_gouraud.inc.c"
+
+#undef FUNC_SUFFIX
+#undef WRITE_ALPHATESTED_PIXEL
+
+#define FUNC_SUFFIX opaque
+#define WRITE_ALPHATESTED_PIXEL \
+	color = palette[tex_pixels[pv|pu]];	\
+	WRITE_PIXEL_GONEXT(dst_col, color)
+
+#include "span_textured.inc.c"
+
+#undef FUNC_SUFFIX
+#undef WRITE_ALPHATESTED_PIXEL
+
+#define FUNC_SUFFIX trans
+#define WRITE_ALPHATESTED_PIXEL \
+	{	\
+		Uint8 c = tex_pixels[pv|pu];	\
+		if (alpha_pal[c]) {	\
+			color = palette[c];	\
+			WRITE_PIXEL(dst_col, color)	\
+		}	\
+		PIXEL_GONEXT(dst_col)	\
+	}
 
 #include "span_textured.inc.c"

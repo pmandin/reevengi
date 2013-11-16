@@ -144,7 +144,7 @@ void draw_init_sbuffer(draw_t *this)
 
 	draw_render_fill = draw_render_fill8;
 	draw_render_gouraud = draw_render_gouraud8_pc0;
-	draw_render_textured = draw_render_textured8_pc0;
+	draw_render_textured = draw_render_textured8_pc0trans;
 
 	gen_seg_spans = gen_seg_spans_ztest;
 
@@ -198,20 +198,20 @@ static void draw_startFrame(draw_t *this)
 			switch (draw.correctPerspective) {
 				case PERSCORR_LINE:
 					draw_render_gouraud = draw_render_gouraud16_pc1;
-					draw_render_textured = draw_render_textured16_pc3;
+					draw_render_textured = draw_render_textured16_pc3trans;
 					break;
 				case PERSCORR_P16:
 					draw_render_gouraud = draw_render_gouraud16_pc1;
-					draw_render_textured = draw_render_textured16_pc2;
+					draw_render_textured = draw_render_textured16_pc2trans;
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud16_pc3;
-					draw_render_textured = draw_render_textured16_pc3;
+					draw_render_textured = draw_render_textured16_pc3trans;
 					break;
 				case NO_PERSCORR:
 				default:
 					draw_render_gouraud = draw_render_gouraud16_pc0;
-					draw_render_textured = draw_render_textured16_pc0;
+					draw_render_textured = draw_render_textured16_pc0trans;
 					break;
 			}
 			break;
@@ -220,20 +220,20 @@ static void draw_startFrame(draw_t *this)
 			switch (draw.correctPerspective) {
 				case PERSCORR_LINE:
 					draw_render_gouraud = draw_render_gouraud24_pc1;
-					draw_render_textured = draw_render_textured24_pc3;
+					draw_render_textured = draw_render_textured24_pc3trans;
 					break;
 				case PERSCORR_P16:
 					draw_render_gouraud = draw_render_gouraud24_pc1;
-					draw_render_textured = draw_render_textured24_pc2;
+					draw_render_textured = draw_render_textured24_pc2trans;
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud24_pc3;
-					draw_render_textured = draw_render_textured24_pc3;
+					draw_render_textured = draw_render_textured24_pc3trans;
 					break;
 				case NO_PERSCORR:
 				default:
 					draw_render_gouraud = draw_render_gouraud24_pc0;
-					draw_render_textured = draw_render_textured24_pc0;
+					draw_render_textured = draw_render_textured24_pc0trans;
 					break;
 			}
 			break;
@@ -242,20 +242,20 @@ static void draw_startFrame(draw_t *this)
 			switch (draw.correctPerspective) {
 				case PERSCORR_LINE:
 					draw_render_gouraud = draw_render_gouraud32_pc1;
-					draw_render_textured = draw_render_textured32_pc3;
+					draw_render_textured = draw_render_textured32_pc3trans;
 					break;
 				case PERSCORR_P16:
 					draw_render_gouraud = draw_render_gouraud32_pc1;
-					draw_render_textured = draw_render_textured32_pc2;
+					draw_render_textured = draw_render_textured32_pc2trans;
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud32_pc3;
-					draw_render_textured = draw_render_textured32_pc3;
+					draw_render_textured = draw_render_textured32_pc3trans;
 					break;
 				case NO_PERSCORR:
 				default:
 					draw_render_gouraud = draw_render_gouraud32_pc0;
-					draw_render_textured = draw_render_textured32_pc0;
+					draw_render_textured = draw_render_textured32_pc0trans;
 					break;
 			}
 			break;
@@ -265,20 +265,36 @@ static void draw_startFrame(draw_t *this)
 			switch (draw.correctPerspective) {
 				case PERSCORR_LINE:
 					draw_render_gouraud = draw_render_gouraud8_pc1;
-					draw_render_textured = draw_render_textured8_pc1;
+#if defined(__GNUC__) && defined(__m68k__)
+					draw_render_textured = draw_render_textured8_pc1opaquem68k;
+#else
+					draw_render_textured = draw_render_textured8_pc1trans;
+#endif
 					break;
 				case PERSCORR_P16:
 					draw_render_gouraud = draw_render_gouraud8_pc1;
-					draw_render_textured = draw_render_textured8_pc2;
+#if defined(__GNUC__) && defined(__m68k__)
+					draw_render_textured = draw_render_textured8_pc2opaquem68k;
+#else
+					draw_render_textured = draw_render_textured8_pc2trans;
+#endif
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud8_pc3;
-					draw_render_textured = draw_render_textured8_pc3;
+#if defined(__GNUC__) && defined(__m68k__)
+					draw_render_textured = draw_render_textured8_pc3opaquem68k;
+#else
+					draw_render_textured = draw_render_textured8_pc3trans;
+#endif
 					break;
 				case NO_PERSCORR:
 				default:
 					draw_render_gouraud = draw_render_gouraud8_pc0;
-					draw_render_textured = draw_render_textured8_pc0;
+#if defined(__GNUC__) && defined(__m68k__)
+					draw_render_textured = draw_render_textured8_pc0opaquem68k;
+#else
+					draw_render_textured = draw_render_textured8_pc0trans;
+#endif
 					break;
 			}
 			break;

@@ -2,6 +2,8 @@
 #define FNDEF2(name,bpp)	CONCAT2(name,bpp)
 #define CONCAT3(x,y,z)	x ## y ## z
 #define FNDEF3(name,bpp,perscorr)	CONCAT3(name,bpp,perscorr)
+#define CONCAT4(x,y,z,w)	x ## y ## z ## w
+#define FNDEF4(name,bpp,perscorr,alphatest)	CONCAT4(name,bpp,perscorr,alphatest)
 
 #define BPP 32
 #define PIXEL_TYPE	Uint32
@@ -15,7 +17,7 @@
 	color = SDL_MapRGB(surf->format, r,g,b);
 */
 
-void FNDEF3(draw_render_textured, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void FNDEF4(draw_render_textured, BPP, _pc0, FUNC_SUFFIX) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, duf,dvf;
 	int dxtotal, dx, i;
@@ -53,7 +55,6 @@ void FNDEF3(draw_render_textured, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line
 		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
-			Uint8 c;
 			Uint32 pu,pv;
 
 			pu = u>>16;		/* 0000XXXX */
@@ -61,23 +62,13 @@ void FNDEF3(draw_render_textured, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-#ifdef FORCE_OPAQUE
-			color = palette[tex_pixels[pv|pu]];
-			WRITE_PIXEL_GONEXT(dst_col, color)
-#else
-			c = tex_pixels[pv|pu];
-			if (alpha_pal[c]) {
-				color = palette[c];
-				WRITE_PIXEL(dst_col, color)
-			}
-			PIXEL_GONEXT(dst_col)
-#endif
+			WRITE_ALPHATESTED_PIXEL
 
 			u += du;
 			v += dv;
 		}
 	} else {
-		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+		TEXTURE_PIXEL_TYPE *tex_pixels = (TEXTURE_PIXEL_TYPE *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
 			Uint32 pu,pv;
@@ -96,7 +87,7 @@ void FNDEF3(draw_render_textured, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line
 	}
 }
 
-void FNDEF3(draw_render_textured, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void FNDEF4(draw_render_textured, BPP, _pc1, FUNC_SUFFIX) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, invw, duf,dvf;
 	int dxtotal, dx, i;
@@ -136,7 +127,6 @@ void FNDEF3(draw_render_textured, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line
 		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
-			Uint8 c;
 			Uint32 pu,pv;
 
 			pu = u>>16;		/* 0000XXXX */
@@ -144,23 +134,13 @@ void FNDEF3(draw_render_textured, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line
 			pv = v>>(16-ubits);	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-#ifdef FORCE_OPAQUE
-			color = palette[tex_pixels[pv|pu]];
-			WRITE_PIXEL_GONEXT(dst_col, color)
-#else
-			c = tex_pixels[pv|pu];
-			if (alpha_pal[c]) {
-				color = palette[c];
-				WRITE_PIXEL(dst_col, color)
-			}
-			PIXEL_GONEXT(dst_col)
-#endif
+			WRITE_ALPHATESTED_PIXEL
 
 			u += du;
 			v += dv;
 		}
 	} else {
-		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+		TEXTURE_PIXEL_TYPE *tex_pixels = (TEXTURE_PIXEL_TYPE *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
 			Uint32 pu,pv;
@@ -179,18 +159,19 @@ void FNDEF3(draw_render_textured, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line
 	}
 }
 
-void FNDEF3(draw_render_textured, BPP, _pc2) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float u1,v1, u2,v2, du,dv, u,v;
-	float w1, w2, w, dw, invw;
+	float u1,v1, u2,v2, du,dv;
+	float w1, w2, dw, invw;
 	float du16,dv16,dw16;
-	int dxtotal, i;
+	int dxtotal, dx, i;
 	Uint32 ubits, umask, vbits, vmask;
 	render_texture_t *tex = segment->texture;
 	PIXEL_TYPE *dst_col = (PIXEL_TYPE *) dst_line;
 	Uint32 color;
 
 	dxtotal = segment->end.x - segment->start.x + 1;
+	dx = x1-segment->start.x;
 
 	u1 = segment->start.u;
 	v1 = segment->start.v;
@@ -204,9 +185,9 @@ void FNDEF3(draw_render_textured, BPP, _pc2) (SDL_Surface *surf, Uint8 *dst_line
 	dv = (v2-v1)/dxtotal;
 	dw = (w2-w1)/dxtotal;
 
-	u1 += du * (x1-segment->start.x);
-	v1 += dv * (x1-segment->start.x);
-	w1 += dw * (x1-segment->start.x);
+	u1 += du * dx;
+	v1 += dv * dx;
+	w1 += dw * dx;
 
 	du16 = du * 16.0f;
 	dv16 = dv * 16.0f;
@@ -242,7 +223,6 @@ void FNDEF3(draw_render_textured, BPP, _pc2) (SDL_Surface *surf, Uint8 *dst_line
 			dvi = (vv2-vv)/16.0f;
 
 			for (j=0; j<MIN(x2-i+1,16); j++) {
-				Uint8 c;
 				Uint32 pu,pv;
 
 				pu = uu>>16;		/* 0000XXXX */
@@ -250,17 +230,7 @@ void FNDEF3(draw_render_textured, BPP, _pc2) (SDL_Surface *surf, Uint8 *dst_line
 				pv = vv>>(16-ubits);	/* 000YYYYy */
 				pv &= vmask;		/* 000YYYY- */
 
-#ifdef FORCE_OPAQUE
-				color = palette[tex_pixels[pv|pu]];
-				WRITE_PIXEL_GONEXT(dst_col, color)
-#else
-				c = tex_pixels[pv|pu];
-				if (alpha_pal[c]) {
-					color = palette[c];
-					WRITE_PIXEL(dst_col, color)
-				}
-				PIXEL_GONEXT(dst_col)
-#endif
+				WRITE_ALPHATESTED_PIXEL
 
 				uu += dui;
 				vv += dvi;
@@ -271,7 +241,7 @@ void FNDEF3(draw_render_textured, BPP, _pc2) (SDL_Surface *surf, Uint8 *dst_line
 			w1 = w2;
 		}
 	} else {
-		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+		TEXTURE_PIXEL_TYPE *tex_pixels = (TEXTURE_PIXEL_TYPE *) tex->pixels;
 
 		for (i=x1; i<=x2; i+=16) {
 			int j;
@@ -313,7 +283,7 @@ void FNDEF3(draw_render_textured, BPP, _pc2) (SDL_Surface *surf, Uint8 *dst_line
 	}
 }
 
-void FNDEF3(draw_render_textured, BPP, _pc3) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void FNDEF4(draw_render_textured, BPP, _pc3, FUNC_SUFFIX) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, du,dv, u,v;
 	float w1, w2, w, dw;
@@ -352,7 +322,6 @@ void FNDEF3(draw_render_textured, BPP, _pc3) (SDL_Surface *surf, Uint8 *dst_line
 		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
-			Uint8 c;
 			Uint32 pu,pv;
 			float invw;
 
@@ -365,24 +334,14 @@ void FNDEF3(draw_render_textured, BPP, _pc3) (SDL_Surface *surf, Uint8 *dst_line
 			pv >>= 16-ubits;	/* 000YYYYy */
 			pv &= vmask;		/* 000YYYY- */
 
-#ifdef FORCE_OPAQUE
-			color = palette[tex_pixels[pv|pu]];
-			WRITE_PIXEL_GONEXT(dst_col, color)
-#else
-			c = tex_pixels[pv|pu];
-			if (alpha_pal[c]) {
-				color = palette[c];
-				WRITE_PIXEL(dst_col, color)
-			}
-			PIXEL_GONEXT(dst_col)
-#endif
+			WRITE_ALPHATESTED_PIXEL
 
 			u += du;
 			v += dv;
 			w += dw;
 		}
 	} else {
-		Uint32 *tex_pixels = (Uint32 *) tex->pixels;
+		TEXTURE_PIXEL_TYPE *tex_pixels = (TEXTURE_PIXEL_TYPE *) tex->pixels;
 
 		for (i=x1; i<=x2; i++) {
 			Uint32 pu,pv;

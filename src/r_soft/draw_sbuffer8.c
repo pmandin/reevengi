@@ -38,263 +38,62 @@
 
 /*--- Defines ---*/
 
-/*#define FORCE_OPAQUE 1*/
+#define CONCAT2(x,y)	x ## y
+#define FNDEF2(name,bpp)	CONCAT2(name,bpp)
+#define CONCAT3(x,y,z)	x ## y ## z
+#define FNDEF3(name,bpp,perscorr)	CONCAT3(name,bpp,perscorr)
+#define CONCAT4(x,y,z,w)	x ## y ## z ## w
+#define FNDEF4(name,bpp,perscorr,alphatest)	CONCAT4(name,bpp,perscorr,alphatest)
+
+#define BPP 8
+#define PIXEL_TYPE	Uint8
+#define TEXTURE_PIXEL_TYPE	Uint8
+#define WRITE_PIXEL(output, color) \
+		*output = color;
+#define WRITE_PIXEL_GONEXT(output, color) \
+		*output++ = color;
+#define PIXEL_GONEXT(output) \
+	output++;
+#define PIXEL_FROM_RGB(color, r,g,b) \
+	color = dither_nearest_index(r,g,b);
+
+#define FORCE_OPAQUE 1
 
 /*--- Functions ---*/
 
-void draw_render_fill8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
-{
-	Uint32 color;
-	float r,g,b;
-	Uint8 *dst_col = dst_line;
+#include "span_fill.inc.c"
 
-	r = segment->start.r;
-	g = segment->start.g;
-	b = segment->start.b;
-	if (draw.correctPerspective>0) {
-		r /= segment->start.w;
-		g /= segment->start.w;
-		b /= segment->start.w;
+#include "span_gouraud.inc.c"
+
+#undef FUNC_SUFFIX
+#undef WRITE_ALPHATESTED_PIXEL
+
+#define FUNC_SUFFIX opaque
+#define WRITE_ALPHATESTED_PIXEL \
+	color = palette[tex_pixels[pv|pu]];	\
+	WRITE_PIXEL_GONEXT(dst_col, color)
+
+#include "span_textured.inc.c"
+
+#undef FUNC_SUFFIX
+#undef WRITE_ALPHATESTED_PIXEL
+
+#define FUNC_SUFFIX trans
+#define WRITE_ALPHATESTED_PIXEL \
+	{	\
+		Uint8 c = tex_pixels[pv|pu];	\
+		if (alpha_pal[c]) {	\
+			color = palette[c];	\
+			WRITE_PIXEL(dst_col, color)	\
+		}	\
+		PIXEL_GONEXT(dst_col)	\
 	}
 
-	color = dither_nearest_index(r,g,b);
-	memset(dst_col, color, x2 - x1 + 1);
-}
-
-void draw_render_gouraud8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
-{
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	int dxtotal, i;
-	Uint8 *dst_col = dst_line;
-
-	dxtotal = segment->end.x - segment->start.x + 1;
-
-	r1 = segment->start.r;
-	g1 = segment->start.g;
-	b1 = segment->start.b;
-	r2 = segment->end.r;
-	g2 = segment->end.g;
-	b2 = segment->end.b;
-
-	dr = (r2-r1)/dxtotal;
-	dg = (g2-g1)/dxtotal;
-	db = (b2-b1)/dxtotal;
-
-	r = r1 + dr * (x1-segment->start.x);
-	g = g1 + dg * (x1-segment->start.x);
-	b = b1 + db * (x1-segment->start.x);
-
-	for (i=x1; i<=x2; i++) {
-		*dst_col++ = dither_nearest_index(r,g,b);
-		r += dr;
-		g += dg;
-		b += db;
-	}
-}
-
-void draw_render_gouraud8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
-{
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db, invw;
-	int dxtotal, i;
-	Uint8 *dst_col = dst_line;
-
-	dxtotal = segment->end.x - segment->start.x + 1;
-
-	invw = 1.0f / segment->start.w;
-	r1 = segment->start.r * invw;
-	g1 = segment->start.g * invw;
-	b1 = segment->start.b * invw;
-	invw = 1.0f / segment->end.w;
-	r2 = segment->end.r * invw;
-	g2 = segment->end.g * invw;
-	b2 = segment->end.b * invw;
-
-	dr = (r2-r1)/dxtotal;
-	dg = (g2-g1)/dxtotal;
-	db = (b2-b1)/dxtotal;
-
-	r = r1 + dr * (x1-segment->start.x);
-	g = g1 + dg * (x1-segment->start.x);
-	b = b1 + db * (x1-segment->start.x);
-
-	for (i=x1; i<=x2; i++) {
-		*dst_col++ = dither_nearest_index(r,g,b);
-		r += dr;
-		g += dg;
-		b += db;
-	}
-}
-
-void draw_render_gouraud8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
-{
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	float w1, w2, w, dw, invw;
-	int dxtotal, i;
-	Uint8 *dst_col = dst_line;
-
-	dxtotal = segment->end.x - segment->start.x + 1;
-
-	r1 = segment->start.r;
-	g1 = segment->start.g;
-	b1 = segment->start.b;
-	w1 = segment->start.w;
-	r2 = segment->end.r;
-	g2 = segment->end.g;
-	b2 = segment->end.b;
-	w2 = segment->end.w;
-
-	dr = (r2-r1)/dxtotal;
-	dg = (g2-g1)/dxtotal;
-	db = (b2-b1)/dxtotal;
-	dw = (w2-w1)/dxtotal;
-
-	r = r1 + dr * (x1-segment->start.x);
-	g = g1 + dg * (x1-segment->start.x);
-	b = b1 + db * (x1-segment->start.x);
-	w = w1 + dw * (x1-segment->start.x);
-
-	for (i=x1; i<=x2; i++) {
-		int rr,gg,bb;
-
-		invw = 1.0f / w;
-		rr = r * invw;
-		gg = g * invw;
-		bb = b * invw;
-		*dst_col++ = dither_nearest_index(rr,gg,bb);
-		r += dr;
-		g += dg;
-		b += db;
-		w += dw;
-	}
-}
-
-void draw_render_textured8(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
-{
-	float u1,v1, u2,v2, du,dv, u,v;
-	int dx, dxtotal, i;
-	render_texture_t *tex = segment->texture;
-	Uint8 *dst_col = dst_line;
-
-	u1 = segment->start.u;
-	v1 = segment->start.v;
-	u2 = segment->end.u;
-	v2 = segment->end.v;
-
-	if (draw.correctPerspective>0) {
-		u1 = segment->start.u / segment->start.w;
-		v1 = segment->start.v / segment->start.w;
-		u2 = segment->end.u / segment->end.w;
-		v2 = segment->end.v / segment->end.w;
-	}
-
-	dxtotal = segment->end.x - segment->start.x + 1;
-
-	du = (u2-u1)/dxtotal;
-	dv = (v2-v1)/dxtotal;
-
-	u = u1 + du * (x1-segment->start.x);
-	v = v1 + dv * (x1-segment->start.x);
-
-	dx = x2 - x1 + 1;
+#include "span_textured.inc.c"
 
 #if defined(__GNUC__) && defined(__m68k__)
-/*
-	XXxxYYyy	uv/uvd
-	XXxx--YY	lsr.w
-	xx--YYXX	rol.l
-*/
-	if ((tex->pitchw<=256) && (tex->pitchh<=256)) {
-		/* Integer calculations */
-		Sint32 vi = v * 65536.0f;
-		Sint32 vd = dv * 65536.0f;
-		Sint32 ui = u * 65536.0f;
-		Sint32 ud = du * 65536.0f;
-		int ushift = 16-logbase2(tex->pitchw);
-		int vshift = logbase2(tex->pitchh);
-		Uint32 uv = (vi>>vshift) & 0x0000ffff;
-		Uint32 uvd = (vd>>vshift) & 0x0000ffff;
-		uv |= (ui<<ushift) & 0xffff0000;
-		uvd |= (ud<<ushift) & 0xffff0000;
 
-		ushift = 16-ushift;
-		vshift = 16-vshift;
-
-		if (tex->paletted) {
-			Uint32 *palette = tex->palettes[segment->tex_num_pal];
-			Uint8 *tex_pixels = (Uint8 *) tex->pixels;
-
-			/* for signed d0:w addressing */
-			if (tex->pitchh*tex->pitchw>32768) {
-				tex_pixels += 32768;
-				uv ^= 0x8000;
-			}
-
-			--dx;
-__asm__ __volatile__ (
-	"movel	%5,d0\n\t"
-	"moveql	#0,d1\n"
-
-"R_DrawSpan8_loop:\n\t"
-
-	"lsrw	%7,d0\n\t"
-	"roll	%6,d0\n\t"
-	"moveb	%1@(0,d0:w),d1\n\t"
-	"addl	%2,%5\n\t"
-	"moveb	%3@(3,d1:w*4),d1\n\t"
-	"movel	%5,d0\n\t"
-	"moveb	d1,%4@+\n\t"
-
-	"subqw	#1,%0\n\t"
-	"bpls	R_DrawSpan8_loop\n"
-
-	: /* no return value */
-	: /* input */
-		"d"(dx), "a"(tex_pixels), "r"(uvd), "a"(palette),
-		"a"(dst_col), "r"(uv), "d"(ushift), "d"(vshift)
-	: /* clobbered registers */
-		"d0", "d1", "cc", "memory" 
-);						
-		}/* else {
-			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
-
-			for (k=dx-1; k>=0; k--) {
-				Uint32 uv = (vi & vm) | (ui & 0xffff);
-				uv >>= rshift;
-				ui += ud;
-				*dst_col++ = tex_pixels[uv];
-				vi += vd;
-			}
-		}*/
-	} else
-#endif
-	{
-		/* Float calculations */
-		if (tex->paletted) {
-			Uint32 *palette = tex->palettes[segment->tex_num_pal];
-			Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
-			for (i=0; i<dx; i++) {
-				Uint8 c = tex->pixels[((int) v)*tex->pitchw + ((int) u)];
-
-				if (alpha_pal[c]) {
-					*dst_col = palette[c];
-				}
-				dst_col++;
-				u += du;
-				v += dv;
-			}
-		}/* else {
-			Uint16 *tex_pixels = (Uint16 *) tex->pixels;
-	
-			for (k=0; k<dx; k++) {
-				*dst_col++ = tex_pixels[((int) v)*tex->pitchw + ((int) u)];
-				u += du;
-				v += dv;
-			}
-		}*/
-	}
-}
-
-void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void draw_render_textured8_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, duf,dvf;
 	int dxtotal, dx, i;
@@ -308,6 +107,17 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 
 	if (!tex->paletted)
 		return;
+
+	ubits = logbase2(tex->pitchw);
+	umask = (1<<ubits)-1;
+	vbits = logbase2(tex->pitchh);
+	vmask = (1<<vbits)-1;
+	vmask <<= ubits;
+
+	if (ubits+vbits>16) {
+		draw_render_textured8_pc0opaque(surf, dst_line, segment, x1, x2);
+		return;
+	}
 
 	palette = tex->palettes[segment->tex_num_pal];
 	alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
@@ -329,13 +139,6 @@ void draw_render_textured8_pc0(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	du = duf;
 	dv = dvf;
 
-	ubits = logbase2(tex->pitchw);
-	umask = (1<<ubits)-1;
-	vbits = logbase2(tex->pitchh);
-	vmask = (1<<vbits)-1;
-	vmask <<= ubits;
-
-#if defined(__GNUC__) && defined(__m68k__)
 /*	XXxxYYyy	uv, duv
 	XXxx--YY	lsr.w
 	xx--YYXX	rol.l	*/
@@ -393,70 +196,45 @@ __asm__ __volatile__ (
 	"moveql	#0,d5\n\t"
 	"moveql	#0,d1\n"
 
-"R_DrawSpan8_loop_pc0:\n\t"
-	"moveb	%1@(0,d4:w),d5\n\t"
+"0:\n\t"
+	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
-	"moveb	%2@(3,d5:w*4),d4\n\t"
+	"moveb	%3@(3,d5:w*4),d4\n\t"
 	"lsrw	%7,d0\n\t"
 
-	"moveb	d4,%3@+\n\t"
+	"moveb	d4,%0@+\n\t"
 	"roll	%6,d0\n\t"
 
 	"addal	%4,%5\n\t"
-	"moveb	%1@(0,d0:w),d1\n\t"
+	"moveb	%2@(0,d0:w),d1\n\t"
 
 	"movel	%5,d4\n\t"
-	"moveb	%2@(3,d1:w*4),d0\n\t"
+	"moveb	%3@(3,d1:w*4),d0\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"moveb	d0,%3@+\n\t"
+	"moveb	d0,%0@+\n\t"
 
 	"roll	%6,d4\n\t"
 	"orw	d5,d5\n\t"
 
-	"subqw	#1,%0\n\t"
+	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
 
-	"bpls	R_DrawSpan8_loop_pc0\n"
+	"bpls	0b\n"
 
-	: /* no return value */
+	: /* output */
+		"+a"(dst_col) /*%0*/
 	: /* input */
-		"d"(dx) /*%0*/, "a"(tex_pixels) /*%1*/, "a"(palette) /*%2*/, "a"(dst_col) /*%3*/,
+		"d"(dx) /*%1*/, "a"(tex_pixels) /*%2*/, "a"(palette) /*%3*/,
 		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits) /*%7*/
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
 	}
-
-#else
-
-	for (i=x1; i<=x2; i++) {
-		Uint8 c;
-		Uint32 pu,pv;
-
-		pu = u>>16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
-		pv = v>>(16-ubits);	/* 000YYYYy */
-		pv &= vmask;		/* 000YYYY- */
-
-#ifdef FORCE_OPAQUE
-		*dst_col++ = palette[tex_pixels[pv|pu]];
-#else
-		c = tex_pixels[pv|pu];
-		if (alpha_pal[c]) {
-			*dst_col = palette[c];
-		}
-		dst_col++;
-#endif
-
-		u += du;
-		v += dv;
-	}
-#endif
 }
 
-void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void draw_render_textured8_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, invw, duf,dvf;
 	int dxtotal, dx, i;
@@ -470,6 +248,17 @@ void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 
 	if (!tex->paletted)
 		return;
+
+	ubits = logbase2(tex->pitchw);
+	umask = (1<<ubits)-1;
+	vbits = logbase2(tex->pitchh);
+	vmask = (1<<vbits)-1;
+	vmask <<= ubits;
+
+	if (ubits+vbits>16) {
+		draw_render_textured8_pc1opaque(surf, dst_line, segment, x1, x2);
+		return;
+	}
 
 	palette = tex->palettes[segment->tex_num_pal];
 	alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
@@ -493,13 +282,6 @@ void draw_render_textured8_pc1(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	du = duf;
 	dv = dvf;
 
-	ubits = logbase2(tex->pitchw);
-	umask = (1<<ubits)-1;
-	vbits = logbase2(tex->pitchh);
-	vmask = (1<<vbits)-1;
-	vmask <<= ubits;
-
-#if defined(__GNUC__) && defined(__m68k__)
 /*	XXxxYYyy	uv, duv
 	XXxx--YY	lsr.w
 	xx--YYXX	rol.l	*/
@@ -557,70 +339,45 @@ __asm__ __volatile__ (
 	"moveql	#0,d5\n\t"
 	"moveql	#0,d1\n"
 
-"R_DrawSpan8_loop_pc1:\n\t"
-	"moveb	%1@(0,d4:w),d5\n\t"
+"0:\n\t"
+	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
-	"moveb	%2@(3,d5:w*4),d4\n\t"
+	"moveb	%3@(3,d5:w*4),d4\n\t"
 	"lsrw	%7,d0\n\t"
 
-	"moveb	d4,%3@+\n\t"
+	"moveb	d4,%0@+\n\t"
 	"roll	%6,d0\n\t"
 
 	"addal	%4,%5\n\t"
-	"moveb	%1@(0,d0:w),d1\n\t"
+	"moveb	%2@(0,d0:w),d1\n\t"
 
 	"movel	%5,d4\n\t"
-	"moveb	%2@(3,d1:w*4),d0\n\t"
+	"moveb	%3@(3,d1:w*4),d0\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"moveb	d0,%3@+\n\t"
+	"moveb	d0,%0@+\n\t"
 
 	"roll	%6,d4\n\t"
 	"orw	d5,d5\n\t"
 
-	"subqw	#1,%0\n\t"
+	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
 
-	"bpls	R_DrawSpan8_loop_pc1\n"
+	"bpls	0b\n"
 
-	: /* no return value */
+	: /* output */
+		"+a"(dst_col) /*%0*/
 	: /* input */
-		"d"(dx) /*%0*/, "a"(tex_pixels) /*%1*/, "a"(palette) /*%2*/, "a"(dst_col) /*%3*/,
+		"d"(dx) /*%1*/, "a"(tex_pixels) /*%2*/, "a"(palette) /*%3*/,
 		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits) /*%7*/
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
 	}
-
-#else
-
-	for (i=x1; i<=x2; i++) {
-		Uint8 c;
-		Uint32 pu,pv;
-
-		pu = u>>16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
-		pv = v>>(16-ubits);	/* 000YYYYy */
-		pv &= vmask;		/* 000YYYY- */
-
-#ifdef FORCE_OPAQUE
-		*dst_col++ = palette[tex_pixels[pv|pu]];
-#else
-		c = tex_pixels[pv|pu];
-		if (alpha_pal[c]) {
-			*dst_col = palette[c];
-		}
-		dst_col++;
-#endif
-
-		u += du;
-		v += dv;
-	}
-#endif
 }
 
-void draw_render_textured8_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void draw_render_textured8_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, du,dv, u,v;
 	float w1, w2, w, dw, invw;
@@ -632,9 +389,24 @@ void draw_render_textured8_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	Uint32 *palette;
 	Uint8 *alpha_pal;
 	Uint8 *tex_pixels;
+#if defined(__GNUC__) && defined(__m68k__)
+	int vbits1;
+	Uint8 *tex_pixels1;
+#endif
 
 	if (!tex->paletted)
 		return;
+
+	ubits = logbase2(tex->pitchw);
+	umask = (1<<ubits)-1;
+	vbits = logbase2(tex->pitchh);
+	vmask = (1<<vbits)-1;
+	vmask <<= ubits;
+
+	if (ubits+vbits>16) {
+		draw_render_textured8_pc2opaque(surf, dst_line, segment, x1, x2);
+		return;
+	}
 
 	palette = tex->palettes[segment->tex_num_pal];
 	alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
@@ -663,31 +435,54 @@ void draw_render_textured8_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	dv16 = dv * 16.0f;
 	dw16 = dw * 16.0f;
 
-	ubits = logbase2(tex->pitchw);
-	umask = (1<<ubits)-1;
-	vbits = logbase2(tex->pitchh);
-	vmask = (1<<vbits)-1;
-	vmask <<= ubits;
+	/* for signed d0:w addressing */
+	tex_pixels1 = tex_pixels;
+	if (ubits+vbits>15) {
+		tex_pixels1 += 32768;
+	}
+
+	vbits1 = 16-vbits;
 
 	for (i=x1; i<=x2; i+=16) {
 		int j;
-		Uint32 dui, dvi, uu, vv, uu2,vv2;
+		float uuf, vvf, uu2f, vv2f;
+		Uint32 dui, dvi, uu, vv;
 
-		u2 = u1 + du16;
-		v2 = v1 + dv16;
-		w2 = w1 + dw16;
+		dx = MIN(x2-i+1,16);
+		/*if (dx==16) {*/
+			u2 = u1 + du16;
+			v2 = v1 + dv16;
+			w2 = w1 + dw16;
+		/*} else {
+			u2 = u1 + du * dx;
+			v2 = v1 + dv * dx;
+			w2 = w1 + dw * dx;
+		}*/
 
 		invw = 65536.0f / w1;
-		uu = u1 * invw;
-		vv = v1 * invw;
+		uuf = u1 * invw;
+		vvf = v1 * invw;
 		invw = 65536.0f / w2;
-		uu2 = u2 * invw;
-		vv2 = v2 * invw;
+		uu2f = u2 * invw;
+		vv2f = v2 * invw;
 
-		dui = (uu2-uu)/16.0f;
-		dvi = (vv2-vv)/16.0f;
+		/*if (dx==16) {*/
+			dui = (uu2f-uuf)/16.0f;
+			dvi = (vv2f-vvf)/16.0f;
+		/*} else {
+			dui = (uu2f-uuf)/dx;
+			dvi = (vv2f-vvf)/dx;
+		}*/
 
-		for (j=0; j<MIN(x2-i+1,16); j++) {
+		uu = uuf;
+		vv = vvf;
+
+/*	XXxxYYyy	uv, duv
+	XXxx--YY	lsr.w
+	xx--YYXX	rol.l	*/
+
+		/* Write first single pixel */
+		if (dx & 1) {
 			Uint8 c;
 			Uint32 pu,pv;
 
@@ -705,18 +500,74 @@ void draw_render_textured8_pc2(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 			}
 			dst_col++;
 #endif
-
 			uu += dui;
 			vv += dvi;
+
+			--dx;
 		}
 
-		u1 = u2;
-		v1 = v2;
-		w1 = w2;
+		if (dx) {
+			Uint32 uv, duv;
+
+			uv = (uu<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+			uv |= (vv>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
+			duv = (dui<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+			duv |= (dvi>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
+
+			/* for signed d0:w addressing */
+			if (ubits+vbits>15) {
+				uv ^= 0x8000;
+			}
+
+			dx >>= 1;
+
+__asm__ __volatile__ (
+	"movel	%5,d4\n\t"
+	"lsrw	%7,d4\n\t"
+	"roll	%6,d4\n\t"
+	"moveql	#0,d5\n\t"
+	"moveql	#0,d1\n"
+
+"0:\n\t"
+	"moveb	%2@(0,d4:w),d5\n\t"
+	"movel	%5,d0\n\t"
+
+	"moveb	%3@(3,d5:w*4),d4\n\t"
+	"lsrw	%7,d0\n\t"
+
+	"moveb	d4,%0@+\n\t"
+	"roll	%6,d0\n\t"
+
+	"addal	%4,%5\n\t"
+	"moveb	%2@(0,d0:w),d1\n\t"
+
+	"movel	%5,d4\n\t"
+	"moveb	%3@(3,d1:w*4),d0\n\t"
+
+	"lsrw	%7,d4\n\t"
+	"moveb	d0,%0@+\n\t"
+
+	"roll	%6,d4\n\t"
+	"orw	d5,d5\n\t"
+
+	"subqw	#1,%1\n\t"
+	"addal	%4,%5\n\t"
+
+	"bpls	0b\n"
+
+	: /* output */
+		"+a"(dst_col) /*%0*/
+	: /* input */
+		"d"(dx) /*%1*/, "a"(tex_pixels1) /*%2*/, "a"(palette) /*%3*/,
+		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/
+	: /* clobbered registers */
+		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
+);
+		}
 	}
 }
 
-void draw_render_textured8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
+void draw_render_textured8_pc3opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, du,dv, u,v;
 	float w1, w2, w, dw;
@@ -730,6 +581,17 @@ void draw_render_textured8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 
 	if (!tex->paletted)
 		return;
+
+	ubits = logbase2(tex->pitchw);
+	umask = (1<<ubits)-1;
+	vbits = logbase2(tex->pitchh);
+	vmask = (1<<vbits)-1;
+	vmask <<= ubits;
+
+	if (ubits+vbits>16) {
+		draw_render_textured8_pc3opaque(surf, dst_line, segment, x1, x2);
+		return;
+	}
 
 	palette = tex->palettes[segment->tex_num_pal];
 	alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
@@ -753,12 +615,6 @@ void draw_render_textured8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 	v = v1 + dv * dx;
 	w = w1 + dw * dx;
 
-	ubits = logbase2(tex->pitchw);
-	umask = (1<<ubits)-1;
-	vbits = logbase2(tex->pitchh);
-	vmask = (1<<vbits)-1;
-	vmask <<= ubits;
-
 	for (i=x1; i<=x2; i++) {
 		Uint8 c;
 		Uint32 pu,pv;
@@ -769,22 +625,24 @@ void draw_render_textured8_pc3(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segme
 		pv = v * invw;	/* YYYYyyyy */
 
 		pu >>= 16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
 		pv >>= 16-ubits;	/* 000YYYYy */
+		pu &= umask;		/* 0000---X */
 		pv &= vmask;		/* 000YYYY- */
 
-#ifdef FORCE_OPAQUE
-		*dst_col++ = palette[tex_pixels[pv|pu]];
-#else
 		c = tex_pixels[pv|pu];
+
+#ifdef FORCE_OPAQUE
+		*dst_col++ = palette[c];
+#else
 		if (alpha_pal[c]) {
 			*dst_col = palette[c];
 		}
 		dst_col++;
 #endif
-
 		u += du;
 		v += dv;
 		w += dw;
 	}
 }
+
+#endif
