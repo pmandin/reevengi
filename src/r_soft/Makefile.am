@@ -12,4 +12,5 @@ EXTRA_DIST = dirty_rects.h dither.h draw.h draw_sbuffer.h \
 	matrix.h render_mask.h render_bitmap.h render_mesh.h render_texture.h \
 	render.h draw_sbuffer8.h draw_sbuffer16.h draw_sbuffer24.h \
 	draw_sbuffer32.h \
+	span_fill.inc.c span_gouraud.inc.c span_textured.inc.c \
 	libr_soft.vcproj
