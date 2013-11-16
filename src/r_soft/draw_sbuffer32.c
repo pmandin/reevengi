@@ -51,6 +51,8 @@
 		*output++ = color;
 #define PIXEL_GONEXT(output) \
 	output++;
+#define PIXEL_FROM_RGB(color, r,g,b) \
+	color = SDL_MapRGB(surf->format, r,g,b);
 
 
 /*#define FORCE_OPAQUE 1*/

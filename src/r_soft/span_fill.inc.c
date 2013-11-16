@@ -9,6 +9,8 @@
 		*output = color;
 #define WRITE_PIXEL_GONEXT(output, color)
 		*output++ = color;
+#define PIXEL_FROM_RGB(color, r,g,b) \
+	color = SDL_MapRGB(surf->format, r,g,b);
 */
 
 void FNDEF2(draw_render_fill, BPP) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
@@ -27,7 +29,7 @@ void FNDEF2(draw_render_fill, BPP) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_
 		b /= segment->start.w;
 	}
 
-	color = SDL_MapRGB(surf->format, r,g,b);
+	PIXEL_FROM_RGB(color, r,g,b)
 
 	for (i=x1; i<=x2; i++) {
 		WRITE_PIXEL_GONEXT(dst_col, color)

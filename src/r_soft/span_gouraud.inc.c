@@ -11,6 +11,8 @@
 		*output++ = color;
 #define PIXEL_GONEXT(output) \
 	output++;
+#define PIXEL_FROM_RGB(color, r,g,b) \
+	color = SDL_MapRGB(surf->format, r,g,b);
 */
 
 void FNDEF3(draw_render_gouraud, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
@@ -38,8 +40,9 @@ void FNDEF3(draw_render_gouraud, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line,
 	b = b1 + db * dx;
 
 	for (i=x1; i<=x2; i++) {
-		Uint32 color = SDL_MapRGB(surf->format, r,g,b);
+		Uint32 color;
 
+		PIXEL_FROM_RGB(color, r,g,b)
 		WRITE_PIXEL_GONEXT(dst_col, color)
 
 		r += dr;
@@ -75,8 +78,9 @@ void FNDEF3(draw_render_gouraud, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line,
 	b = b1 + db * dx;
 
 	for (i=x1; i<=x2; i++) {
-		Uint32 color = SDL_MapRGB(surf->format, r,g,b);
+		Uint32 color;
 
+		PIXEL_FROM_RGB(color, r,g,b)
 		WRITE_PIXEL_GONEXT(dst_col, color)
 
 		r += dr;
@@ -123,8 +127,7 @@ void FNDEF3(draw_render_gouraud, BPP, _pc3) (SDL_Surface *surf, Uint8 *dst_line,
 		gg = g * invw;
 		bb = b * invw;
 
-		color = SDL_MapRGB(surf->format, rr,gg,bb);
-
+		PIXEL_FROM_RGB(color, rr,gg,bb)
 		WRITE_PIXEL_GONEXT(dst_col, color)
 
 		r += dr;

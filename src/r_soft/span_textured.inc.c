@@ -11,6 +11,8 @@
 		*output++ = color;
 #define PIXEL_GONEXT(output) \
 	output++;
+#define PIXEL_FROM_RGB(color, r,g,b) \
+	color = SDL_MapRGB(surf->format, r,g,b);
 */
 
 void FNDEF3(draw_render_textured, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
