@@ -15,6 +15,23 @@
 	output++;
 #define PIXEL_FROM_RGB(color, r,g,b) \
 	color = SDL_MapRGB(surf->format, r,g,b);
+
+#define FUNC_SUFFIX opaque
+#define WRITE_ALPHATESTED_PIXEL \
+	color = palette[tex_pixels[pv|pu]];	\
+	WRITE_PIXEL_GONEXT(dst_col, color)
+
+#define FUNC_SUFFIX trans
+#define WRITE_ALPHATESTED_PIXEL \
+	{	\
+		Uint8 c = tex_pixels[pv|pu];	\
+		if (alpha_pal[c]) {	\
+			color = palette[c];	\
+			WRITE_PIXEL(dst_col, color)	\
+		}	\
+		PIXEL_GONEXT(dst_col)	\
+	}
+
 */
 
 void FNDEF4(draw_render_textured, BPP, _pc0, FUNC_SUFFIX) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
@@ -161,14 +178,16 @@ void FNDEF4(draw_render_textured, BPP, _pc1, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 
 void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float u1,v1, u2,v2, du,dv;
-	float w1, w2, dw, invw;
+	float u1,v1, u2,v2, du,dv, u,v;
+	float w1, w2, dw, w, invw;
 	float du16,dv16,dw16;
 	int dxtotal, dx, i;
 	Uint32 ubits, umask, vbits, vmask;
 	render_texture_t *tex = segment->texture;
 	PIXEL_TYPE *dst_col = (PIXEL_TYPE *) dst_line;
 	Uint32 color;
+	Uint32 dui, dvi, uu, vv;
+	float uuf, vvf, uu2f, vv2f;
 
 	dxtotal = segment->end.x - segment->start.x + 1;
 	dx = x1-segment->start.x;
@@ -204,25 +223,27 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 		Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
-		for (i=x1; i<=x2; i+=16) {
+		i=x1;
+		while (x2-i>16) {
 			int j;
-			Uint32 dui, dvi, uu, vv, uu2,vv2;
 
 			u2 = u1 + du16;
 			v2 = v1 + dv16;
 			w2 = w1 + dw16;
 
 			invw = 65536.0f / w1;
-			uu = u1 * invw;
-			vv = v1 * invw;
+			uuf = u1 * invw;
+			vvf = v1 * invw;
 			invw = 65536.0f / w2;
-			uu2 = u2 * invw;
-			vv2 = v2 * invw;
+			uu2f = u2 * invw;
+			vv2f = v2 * invw;
 
-			dui = (uu2-uu)/16.0f;
-			dvi = (vv2-vv)/16.0f;
+			dui = (uu2f-uuf)/16.0f;
+			dvi = (vv2f-vvf)/16.0f;
+			uu = uuf;
+			vv = vvf;
 
-			for (j=0; j<MIN(x2-i+1,16); j++) {
+			for (j=0; j<16; j++) {
 				Uint32 pu,pv;
 
 				pu = uu>>16;		/* 0000XXXX */
@@ -239,29 +260,64 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 			u1 = u2;
 			v1 = v2;
 			w1 = w2;
+
+			i+=16;
+		}
+
+		/* Remaining part */
+		u2 = u1 + du16;
+		v2 = v1 + dv16;
+		w2 = w1 + dw16;
+
+		invw = 65536.0f / w1;
+		uuf = u1 * invw;
+		vvf = v1 * invw;
+		invw = 65536.0f / w2;
+		uu2f = u2 * invw;
+		vv2f = v2 * invw;
+
+		dui = (uu2f-uuf)/16.0f;
+		dvi = (vv2f-vvf)/16.0f;
+		uu = uuf;
+		vv = vvf;
+
+		for ( ; i<=x2; i++) {
+			Uint32 pu,pv;
+
+			pu = uu>>16;		/* 0000XXXX */
+			pu &= umask;		/* 0000---X */
+			pv = vv>>(16-ubits);	/* 000YYYYy */
+			pv &= vmask;		/* 000YYYY- */
+
+			WRITE_ALPHATESTED_PIXEL
+
+			uu += dui;
+			vv += dvi;
 		}
 	} else {
 		TEXTURE_PIXEL_TYPE *tex_pixels = (TEXTURE_PIXEL_TYPE *) tex->pixels;
 
-		for (i=x1; i<=x2; i+=16) {
+		i=x1;
+		while (x2-i>16) {
 			int j;
-			Uint32 dui, dvi, uu, vv, uu2,vv2;
 
 			u2 = u1 + du16;
 			v2 = v1 + dv16;
 			w2 = w1 + dw16;
 
 			invw = 65536.0f / w1;
-			uu = u1 * invw;
-			vv = v1 * invw;
+			uuf = u1 * invw;
+			vvf = v1 * invw;
 			invw = 65536.0f / w2;
-			uu2 = u2 * invw;
-			vv2 = v2 * invw;
+			uu2f = u2 * invw;
+			vv2f = v2 * invw;
 
-			dui = (uu2-uu)/16.0f;
-			dvi = (vv2-vv)/16.0f;
+			dui = (uu2f-uuf)/16.0f;
+			dvi = (vv2f-vvf)/16.0f;
+			uu = uuf;
+			vv = vvf;
 
-			for (j=0; j<MIN(x2-i+1,16); j++) {
+			for (j=0; j<16; j++) {
 				Uint32 pu,pv;
 
 				pu = uu>>16;		/* 0000XXXX */
@@ -279,6 +335,40 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 			u1 = u2;
 			v1 = v2;
 			w1 = w2;
+
+			i+=16;
+		}
+
+		/* Remaining part */
+		u2 = u1 + du16;
+		v2 = v1 + dv16;
+		w2 = w1 + dw16;
+
+		invw = 65536.0f / w1;
+		uuf = u1 * invw;
+		vvf = v1 * invw;
+		invw = 65536.0f / w2;
+		uu2f = u2 * invw;
+		vv2f = v2 * invw;
+
+		dui = (uu2f-uuf)/16.0f;
+		dvi = (vv2f-vvf)/16.0f;
+		uu = uuf;
+		vv = vvf;
+
+		for ( ; i<=x2; i++) {
+			Uint32 pu,pv;
+
+			pu = uu>>16;		/* 0000XXXX */
+			pu &= umask;		/* 0000---X */
+			pv = vv>>(16-ubits);	/* 000YYYYy */
+			pv &= vmask;		/* 000YYYY- */
+
+			color = tex_pixels[pv|pu];
+			WRITE_PIXEL_GONEXT(dst_col, color)
+
+			uu += dui;
+			vv += dvi;
 		}
 	}
 }
