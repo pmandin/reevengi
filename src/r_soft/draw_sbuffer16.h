@@ -44,4 +44,11 @@ void draw_render_textured16_pc1trans(SDL_Surface *surf, Uint8 *dst_line, struct 
 void draw_render_textured16_pc2trans(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
 void draw_render_textured16_pc3trans(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
 
+#if defined(__GNUC__) && defined(__m68k__)
+void draw_render_textured16_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured16_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured16_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+void draw_render_textured16_pc3opaquem68k(SDL_Surface *surf, Uint8 *dst_line, struct sbuffer_segment_s *segment, int x1,int x2);
+#endif
+
 #endif /* DRAW_SBUFFER16_H */
