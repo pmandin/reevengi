@@ -46,6 +46,7 @@ static void swapBuffers(void);
 static void countFps(void);
 static void screenShot(void);
 static void initViewport(void);
+static void setPalette(SDL_Surface *surf);
 
 /*--- Functions ---*/
 
@@ -70,6 +71,7 @@ void video_soft_init(video_t *this)
 	this->countFps = countFps;
 
 	this->initViewport = initViewport;
+	this->setPalette = setPalette;
 
 	if (!params.aspect_user) {
 		video_detect_aspect();
@@ -407,4 +409,17 @@ static void initViewport(void)
 
 	render.set_viewport(video.viewport.x, video.viewport.y,
 		video.viewport.w, video.viewport.h);
+}
+
+static void setPalette(SDL_Surface *surf)
+{
+	SDL_Palette *surf_palette;
+
+	if (video.bpp>8)
+		return;
+	
+	surf_palette = surf->format->palette;
+
+	/*SDL_SetColors(video.screen, &(surf_palette->colors[0]), 0, surf_palette->ncolors);*/
+	SDL_SetPalette(video.screen, SDL_LOGPAL|SDL_PHYSPAL, &(surf_palette->colors[0]), 0, surf_palette->ncolors);
 }

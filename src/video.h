@@ -41,6 +41,7 @@ struct video_s {
 	void (*countFps)(void);
 
 	void (*initViewport)(void);
+	void (*setPalette)(SDL_Surface *surf);
 
 	/* Rect list of final update */
 	int num_list_rects;

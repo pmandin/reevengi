@@ -47,6 +47,8 @@ static void setVideoMode(int width, int height, int bpp);
 static void swapBuffers(void);
 static void screenShot(void);
 
+static void setPalette(SDL_Surface *surf);
+
 extern int render_masks;
 
 /*--- Functions ---*/
@@ -73,6 +75,8 @@ void video_opengl_init(video_t *this)
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;
 	this->screenShot = screenShot;
+
+	this->setPalette = setPalette;
 
 	/*if (!aspect_user) {
 		video_detect_aspect();
@@ -226,6 +230,10 @@ static void swapBuffers(void)
 static void screenShot(void)
 {
 	fprintf(stderr, "Screenshot not available in OpenGL mode\n");
+}
+
+static void setPalette(SDL_Surface *surf)
+{
 }
 
 #else /* ENABLE_OPENGL */
