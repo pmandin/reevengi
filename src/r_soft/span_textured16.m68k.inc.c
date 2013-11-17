@@ -47,7 +47,7 @@ void draw_render_textured16_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 	XXxx--YY	lsr.w
 	xx--YYXX	rol.l	*/
 
-	dx = x2 - x1;
+	dx = x2 - x1 + 1;
 
 	/* Write first single pixel */
 	if (dx & 1) {
@@ -91,7 +91,7 @@ void draw_render_textured16_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 
 		vbits = 16-vbits;
 
-		dx >>= 1;
+		dx = (dx>>1)-1;
 
 __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
@@ -187,7 +187,7 @@ void draw_render_textured16_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 	XXxx--YY	lsr.w
 	xx--YYXX	rol.l	*/
 
-	dx = x2 - x1;
+	dx = x2 - x1 + 1;
 
 	/* Write first single pixel */
 	if (dx & 1) {
@@ -231,7 +231,7 @@ void draw_render_textured16_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 
 		vbits = 16-vbits;
 
-		dx >>= 1;
+		dx = (dx>>1)-1;
 
 __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
