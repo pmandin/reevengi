@@ -223,8 +223,7 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 		Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
 		Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
-		i=x1;
-		while (x2-i>16) {
+		for (i=x1; x2-i>=16; i+=16) {
 			int j;
 
 			u2 = u1 + du16;
@@ -260,8 +259,6 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 			u1 = u2;
 			v1 = v2;
 			w1 = w2;
-
-			i+=16;
 		}
 
 		/* Remaining part */
@@ -297,8 +294,7 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 	} else {
 		TEXTURE_PIXEL_TYPE *tex_pixels = (TEXTURE_PIXEL_TYPE *) tex->pixels;
 
-		i=x1;
-		while (x2-i>16) {
+		for (i=x1; x2-i>=16; i+=16) {
 			int j;
 
 			u2 = u1 + du16;
@@ -335,8 +331,6 @@ void FNDEF4(draw_render_textured, BPP, _pc2, FUNC_SUFFIX) (SDL_Surface *surf, Ui
 			u1 = u2;
 			v1 = v2;
 			w1 = w2;
-
-			i+=16;
 		}
 
 		/* Remaining part */
