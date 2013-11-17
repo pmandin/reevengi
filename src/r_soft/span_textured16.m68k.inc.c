@@ -281,19 +281,20 @@ __asm__ __volatile__ (
 void draw_render_textured16_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
 	float u1,v1, u2,v2, du,dv, u,v;
-	float w1, w2, w, dw, invw;
+	float w1, w2, dw, w, invw;
 	float du16,dv16,dw16;
 	int dxtotal, dx, i;
 	Uint32 ubits, umask, vbits, vmask;
 	render_texture_t *tex = segment->texture;
 	Uint16 *dst_col = (Uint16 *) dst_line;
-	Uint32 *palette;
-	Uint8 *alpha_pal;
-	Uint8 *tex_pixels;
-#if defined(__GNUC__) && defined(__m68k__)
+	Uint32 color;
+	Uint32 dui, dvi, uu, vv;
+	float uuf, vvf, uu2f, vv2f;
 	int vbits1;
 	Uint8 *tex_pixels1;
-#endif
+	Uint32 *palette = tex->palettes[segment->tex_num_pal];
+	Uint8 *alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
+	Uint8 *tex_pixels = (Uint8 *) tex->pixels;
 
 	ubits = logbase2(tex->pitchw);
 	umask = (1<<ubits)-1;
@@ -305,10 +306,6 @@ void draw_render_textured16_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 		draw_render_textured16_pc2opaque(surf, dst_line, segment, x1, x2);
 		return;
 	}
-
-	palette = tex->palettes[segment->tex_num_pal];
-	alpha_pal = tex->alpha_palettes[segment->tex_num_pal];
-	tex_pixels = tex->pixels;
 
 	dxtotal = segment->end.x - segment->start.x + 1;
 	dx = x1-segment->start.x;
@@ -333,29 +330,21 @@ void draw_render_textured16_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 	dv16 = dv * 16.0f;
 	dw16 = dw * 16.0f;
 
+	vbits1 = 16-vbits;
+
 	/* for signed d0:w addressing */
 	tex_pixels1 = tex_pixels;
 	if (ubits+vbits>15) {
 		tex_pixels1 += 32768;
 	}
 
-	vbits1 = 16-vbits;
-
-	for (i=x1; i<=x2; i+=16) {
+	for (i=x1; x2-i>=16; i+=16) {
 		int j;
-		float uuf, vvf, uu2f, vv2f;
-		Uint32 dui, dvi, uu, vv;
+		Uint32 uv, duv;
 
-		dx = MIN(x2-i+1,16);
-		/*if (dx==16) {*/
-			u2 = u1 + du16;
-			v2 = v1 + dv16;
-			w2 = w1 + dw16;
-		/*} else {
-			u2 = u1 + du * dx;
-			v2 = v1 + dv * dx;
-			w2 = w1 + dw * dx;
-		}*/
+		u2 = u1 + du16;
+		v2 = v1 + dv16;
+		w2 = w1 + dw16;
 
 		invw = 65536.0f / w1;
 		uuf = u1 * invw;
@@ -364,60 +353,22 @@ void draw_render_textured16_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sb
 		uu2f = u2 * invw;
 		vv2f = v2 * invw;
 
-		/*if (dx==16) {*/
-			dui = (uu2f-uuf)/16.0f;
-			dvi = (vv2f-vvf)/16.0f;
-		/*} else {
-			dui = (uu2f-uuf)/dx;
-			dvi = (vv2f-vvf)/dx;
-		}*/
-
+		dui = (uu2f-uuf)/16.0f;
+		dvi = (vv2f-vvf)/16.0f;
 		uu = uuf;
 		vv = vvf;
 
-/*	XXxxYYyy	uv, duv
-	XXxx--YY	lsr.w
-	xx--YYXX	rol.l	*/
+		uv = (uu<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+		uv |= (vv>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
+		duv = (dui<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+		duv |= (dvi>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
 
-		/* Write first single pixel */
-		if (dx & 1) {
-			Uint8 c;
-			Uint32 pu,pv;
-
-			pu = uu>>16;		/* 0000XXXX */
-			pu &= umask;		/* 0000---X */
-			pv = vv>>(16-ubits);	/* 000YYYYy */
-			pv &= vmask;		/* 000YYYY- */
-
-#ifdef FORCE_OPAQUE
-			*dst_col++ = palette[tex_pixels[pv|pu]];
-#else
-			c = tex_pixels[pv|pu];
-			if (alpha_pal[c]) {
-				*dst_col = palette[c];
-			}
-			dst_col++;
-#endif
-			uu += dui;
-			vv += dvi;
-
-			--dx;
+		/* for signed d0:w addressing */
+		if (ubits+vbits>15) {
+			uv ^= 0x8000;
 		}
 
-		if (dx) {
-			Uint32 uv, duv;
-
-			uv = (uu<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
-			uv |= (vv>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
-			duv = (dui<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
-			duv |= (dvi>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
-
-			/* for signed d0:w addressing */
-			if (ubits+vbits>15) {
-				uv ^= 0x8000;
-			}
-
-			dx >>= 1;
+		dx = 7;
 
 __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
@@ -461,11 +412,49 @@ __asm__ __volatile__ (
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
-		}
 
 		u1 = u2;
 		v1 = v2;
 		w1 = w2;
+	}
+
+	/* Remaining part */
+	u2 = u1 + du16;
+	v2 = v1 + dv16;
+	w2 = w1 + dw16;
+
+	invw = 65536.0f / w1;
+	uuf = u1 * invw;
+	vvf = v1 * invw;
+	invw = 65536.0f / w2;
+	uu2f = u2 * invw;
+	vv2f = v2 * invw;
+
+	dui = (uu2f-uuf)/16.0f;
+	dvi = (vv2f-vvf)/16.0f;
+	uu = uuf;
+	vv = vvf;
+
+	for ( ; i<=x2; i++) {
+		Uint32 pu,pv;
+
+		pu = uu>>16;		/* 0000XXXX */
+		pu &= umask;		/* 0000---X */
+		pv = vv>>(16-ubits);	/* 000YYYYy */
+		pv &= vmask;		/* 000YYYY- */
+
+#ifdef FORCE_OPAQUE
+		*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
+		c = tex_pixels[pv|pu];
+		if (alpha_pal[c]) {
+			*dst_col = palette[c];
+		}
+		dst_col++;
+#endif
+
+		uu += dui;
+		vv += dvi;
 	}
 }
 
