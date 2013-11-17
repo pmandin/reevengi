@@ -31,6 +31,9 @@
 /* Texture may use a cached version for rescale/dithering */
 #define RENDER_TEXTURE_CACHEABLE (1<<1)
 
+/* Don't remap texture palette to video palette, keep as is */
+#define RENDER_TEXTURE_KEEPPALETTE (1<<2)
+
 /*--- Types ---*/
 
 typedef struct render_texture_s render_texture_t;
@@ -55,7 +58,7 @@ struct render_texture_s {
 	int bpp, pitch;		/* Bytes per pixel, Line length */
 	int pitchw, pitchh;	/* Dimension of bounding zone */
 	Uint8 num_palettes, paletted;
-	Uint8 must_pot, cacheable;
+	Uint8 must_pot, cacheable, keep_palette;
 	
 	Uint32 palettes[MAX_TEX_PALETTE][256];	/* N palettes max per texture, in screen format */
 	Uint8 *pixels;			/* Textures are paletted, so 8 bits */

@@ -80,6 +80,7 @@ render_texture_t *render_texture_create(int flags)
 
 	tex->must_pot = flags & RENDER_TEXTURE_MUST_POT;
 	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
+	tex->keep_palette = flags & RENDER_TEXTURE_KEEPPALETTE;
 
 	tex->bpp = video.screen->format->BytesPerPixel;
 	/* FIXME: copy palette from format elsewhere */
@@ -452,7 +453,11 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		copy_surf_to_tex(this, surf);
 	} else {
 		logMsg(2, "convert texture to video format\n");
-		convert_tex_palette(this, surf);
+		if (this->keep_palette) {
+			copy_tex_palette(this, surf);
+		} else {
+			convert_tex_palette(this, surf);
+		}
 		convert_surf_to_tex(this, surf);
 	}
 
@@ -551,32 +556,39 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 
 	if (video.bpp==8) {
 		if (surf->format->BytesPerPixel==1) {
-			/* Convert color indexes */
-			SDL_Palette *surf_palette = surf->format->palette;
-			Uint8 *src_pixels = surf->pixels;
-			Uint8 *tex_pixels = this->pixels;
+			if (this->keep_palette) {
+				/* Keep texture palette index as is */
+				logMsg(2, "texture: do not convert color indices\n");
 
-			logMsg(2, "texture: convert color indices\n");
+				copy_pixels(this, surf);
+			} else {
+				/* Convert color indexes */
+				SDL_Palette *surf_palette = surf->format->palette;
+				Uint8 *src_pixels = surf->pixels;
+				Uint8 *tex_pixels = this->pixels;
 
-			for (i=0; i<this->h; i++) {
-				Uint8 *src_line = src_pixels;
-				Uint8 *tex_line = tex_pixels;
+				logMsg(2, "texture: convert color indices\n");
 
-				for (j=0; j<this->w; j++) {
-					int r,g,b;
-					Uint8 color;
+				for (i=0; i<this->h; i++) {
+					Uint8 *src_line = src_pixels;
+					Uint8 *tex_line = tex_pixels;
 
-					color= *src_line++;
+					for (j=0; j<this->w; j++) {
+						int r,g,b;
+						Uint8 color;
 
-					r = surf_palette->colors[color].r;
-					g = surf_palette->colors[color].g;
-					b = surf_palette->colors[color].b;
+						color= *src_line++;
 
-					*tex_line++ = dither_nearest_index(r,g,b);
+						r = surf_palette->colors[color].r;
+						g = surf_palette->colors[color].g;
+						b = surf_palette->colors[color].b;
+
+						*tex_line++ = dither_nearest_index(r,g,b);
+					}
+
+					src_pixels += surf->pitch;
+					tex_pixels += this->pitch;
 				}
-
-				src_pixels += surf->pitch;
-				tex_pixels += this->pitch;
 			}
 		} else {
 			/* Convert to dithered surface */
