@@ -453,7 +453,7 @@ static void load_from_surf(render_texture_t *this, SDL_Surface *surf)
 		copy_surf_to_tex(this, surf);
 	} else {
 		logMsg(2, "convert texture to video format\n");
-		if (this->keep_palette) {
+		if ((video.bpp==8) && this->keep_palette) {
 			copy_tex_palette(this, surf);
 		} else {
 			convert_tex_palette(this, surf);
