@@ -52,8 +52,8 @@ void draw_render_textured8_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 	dx = x2 - x1 + 1;
 
-	/* Write first single pixel */
-	if (dx & 1) {
+	/* Align on even address */
+	if (((Uint32) dst_col) & 1) {
 		Uint8 c;
 		Uint32 pu,pv;
 
@@ -78,8 +78,10 @@ void draw_render_textured8_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 		--dx;
 	}
 
-	if (dx) {
+	if (dx>1) {
 		Uint32 uv, duv;
+		int dx1, vbits1;
+		Uint8 *tex_pixels1 = tex_pixels;
 
 		uv = (u<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
 		uv |= (v>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
@@ -88,13 +90,13 @@ void draw_render_textured8_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 		/* for signed d0:w addressing */
 		if (ubits+vbits>15) {
-			tex_pixels += 32768;
+			tex_pixels1 += 32768;
 			uv ^= 0x8000;
 		}
 
-		vbits = 16-vbits;
+		vbits1 = 16-vbits;
 
-		dx = (dx>>1)-1;
+		dx1 = (dx>>1)-1;
 
 __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
@@ -107,20 +109,20 @@ __asm__ __volatile__ (
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
-	"moveb	%3@(3,d5:w*4),d4\n\t"
+	"moveb	%3@(3,d5:w*4),d2\n\t"
 	"lsrw	%7,d0\n\t"
 
-	"moveb	d4,%0@+\n\t"
+	"lslw	#8,d2\n\t"
 	"roll	%6,d0\n\t"
 
 	"addal	%4,%5\n\t"
 	"moveb	%2@(0,d0:w),d1\n\t"
 
 	"movel	%5,d4\n\t"
-	"moveb	%3@(3,d1:w*4),d0\n\t"
+	"moveb	%3@(3,d1:w*4),d2\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"moveb	d0,%0@+\n\t"
+	"move	d2,%0@+\n\t"
 
 	"roll	%6,d4\n\t"
 	"orw	d5,d5\n\t"
@@ -133,11 +135,40 @@ __asm__ __volatile__ (
 	: /* output */
 		"+a"(dst_col) /*%0*/
 	: /* input */
-		"d"(dx) /*%1*/, "a"(tex_pixels) /*%2*/, "a"(palette) /*%3*/,
-		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits) /*%7*/
+		"d"(dx1) /*%1*/, "a"(tex_pixels1) /*%2*/, "a"(palette) /*%3*/,
+		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
+	}
+
+	/* Write remaining pixel */
+	if (dx & 1) {
+		Uint8 c;
+		Uint32 pu,pv;
+
+		u += du * (dx & -2);
+		v += dv * (dx & -2);
+
+		pu = u>>16;		/* 0000XXXX */
+		pu &= umask;		/* 0000---X */
+		pv = v>>(16-ubits);	/* 000YYYYy */
+		pv &= vmask;		/* 000YYYY- */
+
+#ifdef FORCE_OPAQUE
+		*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
+		c = tex_pixels[pv|pu];
+		if (alpha_pal[c]) {
+			*dst_col = palette[c];
+		}
+		dst_col++;
+#endif
+
+		u += du;
+		v += dv;
+
+		--dx;
 	}
 }
 
@@ -195,8 +226,8 @@ void draw_render_textured8_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 	dx = x2 - x1 + 1;
 
-	/* Write first single pixel */
-	if (dx & 1) {
+	/* Align on even address */
+	if (((Uint32) dst_col) & 1) {
 		Uint8 c;
 		Uint32 pu,pv;
 
@@ -221,8 +252,10 @@ void draw_render_textured8_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 		--dx;
 	}
 
-	if (dx) {
+	if (dx>1) {
 		Uint32 uv, duv;
+		int dx1, vbits1;
+		Uint8 *tex_pixels1 = tex_pixels;
 
 		uv = (u<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
 		uv |= (v>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
@@ -231,13 +264,13 @@ void draw_render_textured8_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 		/* for signed d0:w addressing */
 		if (ubits+vbits>15) {
-			tex_pixels += 32768;
+			tex_pixels1 += 32768;
 			uv ^= 0x8000;
 		}
 
-		vbits = 16-vbits;
+		vbits1 = 16-vbits;
 
-		dx = (dx>>1)-1;
+		dx1 = (dx>>1)-1;
 
 __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
@@ -250,20 +283,20 @@ __asm__ __volatile__ (
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
-	"moveb	%3@(3,d5:w*4),d4\n\t"
+	"moveb	%3@(3,d5:w*4),d2\n\t"
 	"lsrw	%7,d0\n\t"
 
-	"moveb	d4,%0@+\n\t"
+	"lslw	#8,d2\n\t"
 	"roll	%6,d0\n\t"
 
 	"addal	%4,%5\n\t"
 	"moveb	%2@(0,d0:w),d1\n\t"
 
 	"movel	%5,d4\n\t"
-	"moveb	%3@(3,d1:w*4),d0\n\t"
+	"moveb	%3@(3,d1:w*4),d2\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"moveb	d0,%0@+\n\t"
+	"move	d2,%0@+\n\t"
 
 	"roll	%6,d4\n\t"
 	"orw	d5,d5\n\t"
@@ -276,11 +309,40 @@ __asm__ __volatile__ (
 	: /* output */
 		"+a"(dst_col) /*%0*/
 	: /* input */
-		"d"(dx) /*%1*/, "a"(tex_pixels) /*%2*/, "a"(palette) /*%3*/,
-		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits) /*%7*/
+		"d"(dx1) /*%1*/, "a"(tex_pixels1) /*%2*/, "a"(palette) /*%3*/,
+		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
+	}
+
+	/* Write remaining pixel */
+	if (dx & 1) {
+		Uint8 c;
+		Uint32 pu,pv;
+
+		u += du * (dx & -2);
+		v += dv * (dx & -2);
+
+		pu = u>>16;		/* 0000XXXX */
+		pu &= umask;		/* 0000---X */
+		pv = v>>(16-ubits);	/* 000YYYYy */
+		pv &= vmask;		/* 000YYYY- */
+
+#ifdef FORCE_OPAQUE
+		*dst_col++ = palette[tex_pixels[pv|pu]];
+#else
+		c = tex_pixels[pv|pu];
+		if (alpha_pal[c]) {
+			*dst_col = palette[c];
+		}
+		dst_col++;
+#endif
+
+		u += du;
+		v += dv;
+
+		--dx;
 	}
 }
 
