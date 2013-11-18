@@ -214,7 +214,7 @@ static void draw_startFrame(draw_t *this)
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud16_pc3;
-#if defined(__GNUC__) && defined(__m68k__)
+#if 0 /*defined(__GNUC__) && defined(__m68k__)*/
 					draw_render_textured = draw_render_textured16_pc3opaquem68k;
 #else
 					draw_render_textured = draw_render_textured16_pc3trans;
@@ -297,7 +297,7 @@ static void draw_startFrame(draw_t *this)
 					break;
 				case PERSCORR_PIX:
 					draw_render_gouraud = draw_render_gouraud8_pc3;
-#if defined(__GNUC__) && defined(__m68k__)
+#if 0 /*defined(__GNUC__) && defined(__m68k__)*/
 					draw_render_textured = draw_render_textured8_pc3opaquem68k;
 #else
 					draw_render_textured = draw_render_textured8_pc3trans;
