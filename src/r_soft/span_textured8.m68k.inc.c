@@ -115,17 +115,17 @@ __asm__ __volatile__ (
 	"lslw	#8,d2\n\t"
 	"roll	%6,d0\n\t"
 
-	"addal	%4,%5\n\t"
-	"moveb	%2@(0,d0:w),d1\n\t"
-
-	"movel	%5,d4\n\t"
-	"moveb	%3@(3,d1:w*4),d2\n\t"
-
-	"lsrw	%7,d4\n\t"
 	"orw	d5,d5\n\t"
+	"addal	%4,%5\n\t"
 
-	"roll	%6,d4\n\t"
+	"moveb	%2@(0,d0:w),d1\n\t"
+	"movel	%5,d4\n\t"
+
+	"moveb	%3@(3,d1:w*4),d2\n\t"
+	"lsrw	%7,d4\n\t"
+
 	"move	d2,%0@+\n\t"
+	"roll	%6,d4\n\t"
 
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
@@ -289,17 +289,17 @@ __asm__ __volatile__ (
 	"lslw	#8,d2\n\t"
 	"roll	%6,d0\n\t"
 
-	"addal	%4,%5\n\t"
-	"moveb	%2@(0,d0:w),d1\n\t"
-
-	"movel	%5,d4\n\t"
-	"moveb	%3@(3,d1:w*4),d2\n\t"
-
-	"lsrw	%7,d4\n\t"
 	"orw	d5,d5\n\t"
+	"addal	%4,%5\n\t"
 
-	"roll	%6,d4\n\t"
+	"moveb	%2@(0,d0:w),d1\n\t"
+	"movel	%5,d4\n\t"
+
+	"moveb	%3@(3,d1:w*4),d2\n\t"
+	"lsrw	%7,d4\n\t"
+
 	"move	d2,%0@+\n\t"
+	"roll	%6,d4\n\t"
 
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
@@ -494,17 +494,17 @@ __asm__ __volatile__ (
 	"lslw	#8,d2\n\t"
 	"roll	%6,d0\n\t"
 
-	"addal	%4,%5\n\t"
-	"moveb	%2@(0,d0:w),d1\n\t"
-
-	"movel	%5,d4\n\t"
-	"moveb	%3@(3,d1:w*4),d2\n\t"
-
-	"lsrw	%7,d4\n\t"
 	"orw	d5,d5\n\t"
+	"addal	%4,%5\n\t"
 
-	"roll	%6,d4\n\t"
+	"moveb	%2@(0,d0:w),d1\n\t"
+	"movel	%5,d4\n\t"
+
+	"moveb	%3@(3,d1:w*4),d2\n\t"
+	"lsrw	%7,d4\n\t"
+
 	"move	d2,%0@+\n\t"
+	"roll	%6,d4\n\t"
 
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
