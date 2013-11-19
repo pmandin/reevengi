@@ -14,4 +14,4 @@ EXTRA_DIST = dirty_rects.h dither.h draw.h draw_sbuffer.h \
 	draw_sbuffer32.h \
 	span_fill.inc.c span_gouraud.inc.c span_textured.inc.c \
 	span_textured8.m68k.inc.c span_textured16.m68k.inc.c \
-	libr_soft.vcproj
+	span_textured8nopal.m68k.inc.c libr_soft.vcproj
