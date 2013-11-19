@@ -122,10 +122,10 @@ __asm__ __volatile__ (
 	"moveb	%3@(3,d1:w*4),d2\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"move	d2,%0@+\n\t"
+	"orw	d5,d5\n\t"
 
 	"roll	%6,d4\n\t"
-	"orw	d5,d5\n\t"
+	"move	d2,%0@+\n\t"
 
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
@@ -296,10 +296,10 @@ __asm__ __volatile__ (
 	"moveb	%3@(3,d1:w*4),d2\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"move	d2,%0@+\n\t"
+	"orw	d5,d5\n\t"
 
 	"roll	%6,d4\n\t"
-	"orw	d5,d5\n\t"
+	"move	d2,%0@+\n\t"
 
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
@@ -413,6 +413,38 @@ void draw_render_textured8_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 		tex_pixels1 += 32768;
 	}
 
+	/* Align on even address */
+	if (((Uint32) dst_col) & 1) {
+		Uint8 c;
+		Uint32 pu,pv;
+		float invw;
+
+		invw = 65536.0f / w1;
+		pu = u1 * invw;	/* XXXXxxxx */
+		pv = v1 * invw;	/* YYYYyyyy */
+
+		pu >>= 16;		/* 0000XXXX */
+		pv >>= 16-ubits;	/* 000YYYYy */
+		pu &= umask;		/* 0000---X */
+		pv &= vmask;		/* 000YYYY- */
+
+		c = tex_pixels[pv|pu];
+
+#ifdef FORCE_OPAQUE
+		*dst_col++ = palette[c];
+#else
+		if (alpha_pal[c]) {
+			*dst_col = palette[c];
+		}
+		dst_col++;
+#endif
+		u1 += du;
+		v1 += dv;
+		w1 += dw;
+
+		++x1;
+	}
+
 	for (i=x1; x2-i>=16; i+=16) {
 		int j;
 		Uint32 uv, duv;
@@ -456,23 +488,23 @@ __asm__ __volatile__ (
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
-	"moveb	%3@(3,d5:w*4),d4\n\t"
+	"moveb	%3@(3,d5:w*4),d2\n\t"
 	"lsrw	%7,d0\n\t"
 
-	"moveb	d4,%0@+\n\t"
+	"lslw	#8,d2\n\t"
 	"roll	%6,d0\n\t"
 
 	"addal	%4,%5\n\t"
 	"moveb	%2@(0,d0:w),d1\n\t"
 
 	"movel	%5,d4\n\t"
-	"moveb	%3@(3,d1:w*4),d0\n\t"
+	"moveb	%3@(3,d1:w*4),d2\n\t"
 
 	"lsrw	%7,d4\n\t"
-	"moveb	d0,%0@+\n\t"
+	"orw	d5,d5\n\t"
 
 	"roll	%6,d4\n\t"
-	"orw	d5,d5\n\t"
+	"move	d2,%0@+\n\t"
 
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
