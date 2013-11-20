@@ -106,6 +106,7 @@ __asm__ __volatile__ (
 	"moveql	#0,d1\n"
 
 "0:\n\t"
+#if 1
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
@@ -131,6 +132,30 @@ __asm__ __volatile__ (
 	"addal	%4,%5\n\t"
 
 	"bpls	0b\n"
+#else
+	"moveb	%2@(0,d4:w),d5\n\t"
+	"movel	%5,d0\n\t"
+
+	"moveb	%3@(3,d5:w*4),d2\n\t"
+	"lsrw	%7,d0\n\t"
+
+	"addal	%4,%5\n\t"
+	"roll	%6,d0\n\t"
+
+	"lslw	#8,d2\n\t"
+	"movel	%5,d4\n\t"
+
+	"moveb	%2@(0,d0:w),d1\n\t"
+	"lsrw	%7,d4\n\t"
+
+	"moveb	%3@(3,d1:w*4),d2\n\t"
+	"roll	%6,d4\n\t"
+
+	"move	d2,%0@+\n\t"
+	"addal	%4,%5\n\t"
+
+	"dbra	%1,0b\n"
+#endif
 
 	: /* output */
 		"+a"(dst_col) /*%0*/
@@ -280,6 +305,7 @@ __asm__ __volatile__ (
 	"moveql	#0,d1\n"
 
 "0:\n\t"
+#if 1
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
@@ -305,6 +331,30 @@ __asm__ __volatile__ (
 	"addal	%4,%5\n\t"
 
 	"bpls	0b\n"
+#else
+	"moveb	%2@(0,d4:w),d5\n\t"
+	"movel	%5,d0\n\t"
+
+	"moveb	%3@(3,d5:w*4),d2\n\t"
+	"lsrw	%7,d0\n\t"
+
+	"addal	%4,%5\n\t"
+	"roll	%6,d0\n\t"
+
+	"lslw	#8,d2\n\t"
+	"movel	%5,d4\n\t"
+
+	"moveb	%2@(0,d0:w),d1\n\t"
+	"lsrw	%7,d4\n\t"
+
+	"moveb	%3@(3,d1:w*4),d2\n\t"
+	"roll	%6,d4\n\t"
+
+	"move	d2,%0@+\n\t"
+	"addal	%4,%5\n\t"
+
+	"dbra	%1,0b\n"
+#endif
 
 	: /* output */
 		"+a"(dst_col) /*%0*/
@@ -485,6 +535,7 @@ __asm__ __volatile__ (
 	"moveql	#0,d1\n"
 
 "0:\n\t"
+#if 1
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
@@ -510,7 +561,30 @@ __asm__ __volatile__ (
 	"addal	%4,%5\n\t"
 
 	"bpls	0b\n"
+#else
+	"moveb	%2@(0,d4:w),d5\n\t"
+	"movel	%5,d0\n\t"
 
+	"moveb	%3@(3,d5:w*4),d2\n\t"
+	"lsrw	%7,d0\n\t"
+
+	"addal	%4,%5\n\t"
+	"roll	%6,d0\n\t"
+
+	"lslw	#8,d2\n\t"
+	"movel	%5,d4\n\t"
+
+	"moveb	%2@(0,d0:w),d1\n\t"
+	"lsrw	%7,d4\n\t"
+
+	"moveb	%3@(3,d1:w*4),d2\n\t"
+	"roll	%6,d4\n\t"
+
+	"move	d2,%0@+\n\t"
+	"addal	%4,%5\n\t"
+
+	"dbra	%1,0b\n"
+#endif
 	: /* output */
 		"+a"(dst_col) /*%0*/
 	: /* input */
