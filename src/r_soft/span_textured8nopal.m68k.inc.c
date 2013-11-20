@@ -127,45 +127,30 @@ __asm__ __volatile__ (
 	"subqw	#1,%1\n\t"
 	"addal	%4,%5\n\t"
 
-	"bpls	0b\n"
+	"bpls	0b\n\t"
+
+	/* Remaining pixel, if any */
+"\n\t"
+	"movel	%8,d0\n\t"
+	"btst	#0,d0\n\t"
+	"beqs	1f\n\t"
+
+	"movel	%5,d0\n\t"
+	"lsrw	%7,d0\n\t"
+	"roll	%6,d0\n\t"
+	"moveb	%2@(0,d0:w),%0@+\n"
+
+"1:\n"
 
 	: /* output */
 		"+a"(dst_col) /*%0*/
 	: /* input */
 		"d"(dx1) /*%1*/, "a"(tex_pixels1) /*%2*/, "a"(palette) /*%3*/,
-		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/
+		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/,
+		"g"(dx) /*%8 */
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
-	}
-
-	/* Write remaining pixel */
-	if (dx & 1) {
-		Uint8 c;
-		Uint32 pu,pv;
-
-		u += du * (dx & -2);
-		v += dv * (dx & -2);
-
-		pu = u>>16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
-		pv = v>>(16-ubits);	/* 000YYYYy */
-		pv &= vmask;		/* 000YYYY- */
-
-		c = tex_pixels[pv|pu];
-#ifdef FORCE_OPAQUE
-		*dst_col++ = c;
-#else
-		if (alpha_pal[c]) {
-			*dst_col = c;
-		}
-		dst_col++;
-#endif
-
-		u += du;
-		v += dv;
-
-		--dx;
 	}
 }
 
@@ -300,43 +285,28 @@ __asm__ __volatile__ (
 
 	"bpls	0b\n"
 
+	/* Remaining pixel, if any */
+"\n\t"
+	"movel	%8,d0\n\t"
+	"btst	#0,d0\n\t"
+	"beqs	1f\n\t"
+
+	"movel	%5,d0\n\t"
+	"lsrw	%7,d0\n\t"
+	"roll	%6,d0\n\t"
+	"moveb	%2@(0,d0:w),%0@+\n"
+
+"1:\n"
+
 	: /* output */
 		"+a"(dst_col) /*%0*/
 	: /* input */
 		"d"(dx1) /*%1*/, "a"(tex_pixels1) /*%2*/, "a"(palette) /*%3*/,
-		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/
+		"a"(duv) /*%4*/, "a"(uv) /*%5*/, "d"(ubits) /*%6*/, "d"(vbits1) /*%7*/,
+		"g"(dx) /*%8*/
 	: /* clobbered registers */
 		"d0", "d1", "d2", "d4", "d5", "cc", "memory" 
 );
-	}
-
-	/* Write remaining pixel */
-	if (dx & 1) {
-		Uint8 c;
-		Uint32 pu,pv;
-
-		u += du * (dx & -2);
-		v += dv * (dx & -2);
-
-		pu = u>>16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
-		pv = v>>(16-ubits);	/* 000YYYYy */
-		pv &= vmask;		/* 000YYYY- */
-
-		c = tex_pixels[pv|pu];
-#ifdef FORCE_OPAQUE
-		*dst_col++ = c;
-#else
-		if (alpha_pal[c]) {
-			*dst_col = c;
-		}
-		dst_col++;
-#endif
-
-		u += du;
-		v += dv;
-
-		--dx;
 	}
 }
 
