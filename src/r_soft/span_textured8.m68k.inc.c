@@ -52,33 +52,7 @@ void draw_render_textured8_pc0opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 	dx = x2 - x1 + 1;
 
-	/* Align on even address */
-	if (((Uint32) dst_col) & 1) {
-		Uint8 c;
-		Uint32 pu,pv;
-
-		pu = u>>16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
-		pv = v>>(16-ubits);	/* 000YYYYy */
-		pv &= vmask;		/* 000YYYY- */
-
-#ifdef FORCE_OPAQUE
-		*dst_col++ = palette[tex_pixels[pv|pu]];
-#else
-		c = tex_pixels[pv|pu];
-		if (alpha_pal[c]) {
-			*dst_col = palette[c];
-		}
-		dst_col++;
-#endif
-
-		u += du;
-		v += dv;
-
-		--dx;
-	}
-
-	if (dx>1) {
+	{
 		Uint32 uv, duv;
 		int dx1, vbits1;
 		Uint8 *tex_pixels1 = tex_pixels;
@@ -102,37 +76,37 @@ __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
 	"lsrw	%7,d4\n\t"
 	"roll	%6,d4\n\t"
+
 	"moveql	#0,d5\n\t"
-	"moveql	#0,d1\n"
+	"moveql	#0,d1\n\t"
 
+	"movel	%8,d2\n\t"	/* read dx */
+
+	/* Align on even address */
+	"movel	%0,d0\n\t"
+	"btst	#0,d0\n\t"	/* if dst_col & 1 */
+	"beqs	2f\n\t"		/* ==0, even adress, jump */
+
+	"addal	%4,%5\n\t"	/* else draw pixel */
+	"moveb	%2@(0,d4:w),d1\n\t"
+	"movel	%5,d4\n\t"
+	"moveb	%3@(3,d1:w*4),%0@+\n\t"
+	"lsrw	%7,d4\n\t"
+	"roll	%6,d4\n\t"
+
+	"subql	#1,d2\n\t"	/* --dx */
+	"beqs	1f\n\t"		/* if dx==0 stop */
+	"movel	d2,%8\n"
+"2:\n\t"
+	"cmpl	#2,d2\n\t"	/* if dx<2 draw remaining pixel */
+	"bmis	4f\n\t"
+
+	"lsrl	#1,d2\n\t"
+	"subq	#1,d2\n\t"
+	"movel	d2,%1\n"	/* dx1=(dx>>1)-1 */
+
+	/* Loop */
 "0:\n\t"
-#if 1
-	"moveb	%2@(0,d4:w),d5\n\t"
-	"movel	%5,d0\n\t"
-
-	"moveb	%3@(3,d5:w*4),d2\n\t"
-	"lsrw	%7,d0\n\t"
-
-	"lslw	#8,d2\n\t"
-	"roll	%6,d0\n\t"
-
-	"orw	d5,d5\n\t"
-	"addal	%4,%5\n\t"
-
-	"moveb	%2@(0,d0:w),d1\n\t"
-	"movel	%5,d4\n\t"
-
-	"moveb	%3@(3,d1:w*4),d2\n\t"
-	"lsrw	%7,d4\n\t"
-
-	"move	d2,%0@+\n\t"
-	"roll	%6,d4\n\t"
-
-	"subqw	#1,%1\n\t"
-	"addal	%4,%5\n\t"
-
-	"bpls	0b\n"
-#else
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
@@ -154,21 +128,18 @@ __asm__ __volatile__ (
 	"move	d2,%0@+\n\t"
 	"addal	%4,%5\n\t"
 
-	"dbra	%1,0b\n"
-#endif
+	"dbra	%1,0b\n\t"
 
 	/* Remaining pixel, if any */
-"\n\t"
 	"movel	%8,d0\n\t"
 	"btst	#0,d0\n\t"
-	"beqs	1f\n\t"
-
+	"beqs	1f\n"
+"4:\n\t"
 	"movel	%5,d0\n\t"
 	"lsrw	%7,d0\n\t"
 	"roll	%6,d0\n\t"
 	"moveb	%2@(0,d0:w),d1\n\t"
 	"moveb	%3@(3,d1:w*4),%0@+\n"
-
 "1:\n"
 
 	: /* output */
@@ -237,33 +208,7 @@ void draw_render_textured8_pc1opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 	dx = x2 - x1 + 1;
 
-	/* Align on even address */
-	if (((Uint32) dst_col) & 1) {
-		Uint8 c;
-		Uint32 pu,pv;
-
-		pu = u>>16;		/* 0000XXXX */
-		pu &= umask;		/* 0000---X */
-		pv = v>>(16-ubits);	/* 000YYYYy */
-		pv &= vmask;		/* 000YYYY- */
-
-#ifdef FORCE_OPAQUE
-		*dst_col++ = palette[tex_pixels[pv|pu]];
-#else
-		c = tex_pixels[pv|pu];
-		if (alpha_pal[c]) {
-			*dst_col = palette[c];
-		}
-		dst_col++;
-#endif
-
-		u += du;
-		v += dv;
-
-		--dx;
-	}
-
-	if (dx>1) {
+	{
 		Uint32 uv, duv;
 		int dx1, vbits1;
 		Uint8 *tex_pixels1 = tex_pixels;
@@ -287,37 +232,37 @@ __asm__ __volatile__ (
 	"movel	%5,d4\n\t"
 	"lsrw	%7,d4\n\t"
 	"roll	%6,d4\n\t"
+
 	"moveql	#0,d5\n\t"
-	"moveql	#0,d1\n"
+	"moveql	#0,d1\n\t"
 
+	"movel	%8,d2\n\t"	/* read dx */
+
+	/* Align on even address */
+	"movel	%0,d0\n\t"
+	"btst	#0,d0\n\t"	/* if dst_col & 1 */
+	"beqs	2f\n\t"		/* ==0, even adress, jump */
+
+	"addal	%4,%5\n\t"	/* else draw pixel */
+	"moveb	%2@(0,d4:w),d1\n\t"
+	"movel	%5,d4\n\t"
+	"moveb	%3@(3,d1:w*4),%0@+\n\t"
+	"lsrw	%7,d4\n\t"
+	"roll	%6,d4\n\t"
+
+	"subql	#1,d2\n\t"	/* --dx */
+	"beqs	1f\n\t"		/* if dx==0 stop */
+	"movel	d2,%8\n"
+"2:\n\t"
+	"cmpl	#2,d2\n\t"	/* if dx<2 draw remaining pixel */
+	"bmis	4f\n\t"
+
+	"lsrl	#1,d2\n\t"
+	"subq	#1,d2\n\t"
+	"movel	d2,%1\n"	/* dx1=(dx>>1)-1 */
+
+	/* Loop */
 "0:\n\t"
-#if 1
-	"moveb	%2@(0,d4:w),d5\n\t"
-	"movel	%5,d0\n\t"
-
-	"moveb	%3@(3,d5:w*4),d2\n\t"
-	"lsrw	%7,d0\n\t"
-
-	"lslw	#8,d2\n\t"
-	"roll	%6,d0\n\t"
-
-	"orw	d5,d5\n\t"
-	"addal	%4,%5\n\t"
-
-	"moveb	%2@(0,d0:w),d1\n\t"
-	"movel	%5,d4\n\t"
-
-	"moveb	%3@(3,d1:w*4),d2\n\t"
-	"lsrw	%7,d4\n\t"
-
-	"move	d2,%0@+\n\t"
-	"roll	%6,d4\n\t"
-
-	"subqw	#1,%1\n\t"
-	"addal	%4,%5\n\t"
-
-	"bpls	0b\n"
-#else
 	"moveb	%2@(0,d4:w),d5\n\t"
 	"movel	%5,d0\n\t"
 
@@ -339,21 +284,18 @@ __asm__ __volatile__ (
 	"move	d2,%0@+\n\t"
 	"addal	%4,%5\n\t"
 
-	"dbra	%1,0b\n"
-#endif
+	"dbra	%1,0b\n\t"
 
 	/* Remaining pixel, if any */
-"\n\t"
 	"movel	%8,d0\n\t"
 	"btst	#0,d0\n\t"
-	"beqs	1f\n\t"
-
+	"beqs	1f\n"
+"4:\n\t"
 	"movel	%5,d0\n\t"
 	"lsrw	%7,d0\n\t"
 	"roll	%6,d0\n\t"
 	"moveb	%2@(0,d0:w),d1\n\t"
 	"moveb	%3@(3,d1:w*4),%0@+\n"
-
 "1:\n"
 
 	: /* output */
