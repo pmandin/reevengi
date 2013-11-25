@@ -602,32 +602,75 @@ void draw_render_textured8_pc3opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 	v = v1 + dv * dx;
 	w = w1 + dw * dx;
 
-	for (i=x1; i<=x2; i++) {
-		Uint8 c;
-		Uint32 pu,pv;
-		float invw;
+	{
+		int vbits1, ubits1;
+		Uint8 *tex_pixels1 = tex_pixels;
+		Uint32 uvoffset=0;
 
-		invw = 65536.0f / w;
-		pu = u * invw;	/* XXXXxxxx */
-		pv = v * invw;	/* YYYYyyyy */
+		vbits1 = 16-vbits;
+		ubits1 = 16-ubits;
 
-		pu >>= 16;		/* 0000XXXX */
-		pv >>= 16-ubits;	/* 000YYYYy */
-		pu &= umask;		/* 0000---X */
-		pv &= vmask;		/* 000YYYY- */
-
-		c = tex_pixels[pv|pu];
-
-#ifdef FORCE_OPAQUE
-		*dst_col++ = palette[c];
-#else
-		if (alpha_pal[c]) {
-			*dst_col = palette[c];
+		/* for signed d0:w addressing */
+		if (ubits+vbits>15) {
+			tex_pixels1 += 32768;
+			uvoffset = 0x8000;
 		}
-		dst_col++;
-#endif
-		u += du;
-		v += dv;
-		w += dw;
+
+		dx = x2-x1;
+
+__asm__ __volatile__(
+	"fmove.s	%8,fp1\n\t"	/* u */
+	"fmove.s	%9,fp2\n\t"	/* du */
+	"fmove.s	%10,fp3\n\t"	/* v */
+	"fmove.s	%11,fp4\n\t"	/* dv */
+	"fmove.s	%12,fp5\n\t"	/* w */
+	"fmove.s	%13,fp6\n\t"	/* dw */
+	"moveql	#0,d2\n"
+
+"0:\n\t"
+	"fmove.s &0f65536,fp0\n\t"
+	"fsgldiv.x fp5,fp0\n\t"		/* fp0 = 65536.0 / w */
+
+	"fmove.x	fp1,fp7\n\t"
+	"fsglmul.x	fp0,fp7\n\t"
+	"fmove.l	fp7,d1\n\t"	/* pu = (int) (u * invw), UUUUuuuu */
+
+	"fmove.x	fp3,fp7\n\t"
+	"fsglmul.x	fp0,fp7\n\t"
+	"fmove.l	fp7,d0\n\t"	/* pv = (int) (v * invw), VVVVvvvv */
+
+	"lsll	%4,d1\n\t"
+	"lsll	%6,d0\n\t"
+
+	"swap	d0\n\t"		/* vvvvVVVV */		/* 0x46005049 */
+	"move	d0,d1\n\t"	/* UUUUVVVV */		/* 0xa4c65049 */
+	"lsrw	%6,d1\n\t"	/* UUUU00VV */		/* 0xa4c60050 */
+	"roll	%5,d1\n\t"	/* UU00VVUU */		/* 0xc60050a4 */
+
+	"fadd.x	fp2,fp1\n\t"
+	"addw	%7,d1\n\t"
+
+	"fadd.x	fp4,fp3\n\t"
+	"moveb	%2@(0,d1:w),d2\n\t"
+
+	"fadd.x	fp6,fp5\n\t"
+	"moveb	%3@(3,d2:w*4),%0@+\n\t"
+
+	"dbra	%1,0b\n"
+
+	: /* output */
+		"+a"(dst_col) /*%0*/
+	: /* input */
+		"d"(dx) /*%1*/, "a"(tex_pixels1) /*%2*/, "a"(palette) /*%3*/,
+		"d"(ubits1) /*%4*/, "d"(ubits) /*%5*/, "d"(vbits1) /*%6*/,
+		"r"(uvoffset) /*%7*/,
+		"m"(u) /*%8*/, "m"(du) /*%9*/, "m"(v) /*%10*/, "m"(dv) /*%11*/,
+		"m"(w) /*%12*/, "m"(dw) /*%13*/
+	: /* clobbered registers */
+		"fp0", "fp1", "fp2", "fp3", "fp4", "fp5", "fp6", "fp7",
+		"d0", "d1", "d2",
+		"cc", "memory"
+);
+
 	}
 }
