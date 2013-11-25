@@ -72,6 +72,16 @@
 #define PIXEL_FROM_RGB(color, r,g,b) \
 	color = SDL_MapRGB(surf->format, r,g,b);
 
+/*--- Variables ---*/
+
+static Uint32 color;
+static float r,g,b, dr,dg,db;
+static float r1,g1,b1, r2,g2,b2;
+static float u,v, du,dv;
+static float u1,v1, u2,v2;
+static float w, dw;
+static float w1, w2;
+
 /*--- Functions ---*/
 
 #include "span_fill.inc.c"

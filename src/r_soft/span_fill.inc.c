@@ -15,8 +15,8 @@
 
 void FNDEF2(draw_render_fill, BPP) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	Uint32 color;
-	float r,g,b;
+/*	Uint32 color;
+	float r,g,b;*/
 	PIXEL_TYPE *dst_col = (PIXEL_TYPE *) dst_line;
 	int i;
 

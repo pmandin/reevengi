@@ -17,7 +17,6 @@
 
 void FNDEF3(draw_render_gouraud, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
 	int dxtotal, dx, i;
 	PIXEL_TYPE *dst_col = (PIXEL_TYPE *) dst_line;
 
@@ -40,8 +39,6 @@ void FNDEF3(draw_render_gouraud, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line,
 	b = b1 + db * dx;
 
 	for (i=x1; i<=x2; i++) {
-		Uint32 color;
-
 		PIXEL_FROM_RGB(color, r,g,b)
 		WRITE_PIXEL_GONEXT(dst_col, color)
 
@@ -53,7 +50,7 @@ void FNDEF3(draw_render_gouraud, BPP, _pc0) (SDL_Surface *surf, Uint8 *dst_line,
 
 void FNDEF3(draw_render_gouraud, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db, invw;
+	float invw;
 	int dxtotal, dx, i;
 	PIXEL_TYPE *dst_col = (PIXEL_TYPE *) dst_line;
 
@@ -78,8 +75,6 @@ void FNDEF3(draw_render_gouraud, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line,
 	b = b1 + db * dx;
 
 	for (i=x1; i<=x2; i++) {
-		Uint32 color;
-
 		PIXEL_FROM_RGB(color, r,g,b)
 		WRITE_PIXEL_GONEXT(dst_col, color)
 
@@ -91,8 +86,6 @@ void FNDEF3(draw_render_gouraud, BPP, _pc1) (SDL_Surface *surf, Uint8 *dst_line,
 
 void FNDEF3(draw_render_gouraud, BPP, _pc3) (SDL_Surface *surf, Uint8 *dst_line, sbuffer_segment_t *segment, int x1,int x2)
 {
-	float r1,g1,b1, r2,g2,b2, r,g,b, dr,dg,db;
-	float w1, w2, w, dw, invw;
 	int dxtotal, dx, i;
 	PIXEL_TYPE *dst_col = (PIXEL_TYPE *) dst_line;
 
@@ -120,7 +113,7 @@ void FNDEF3(draw_render_gouraud, BPP, _pc3) (SDL_Surface *surf, Uint8 *dst_line,
 
 	for (i=x1; i<=x2; i++) {
 		int rr,gg,bb;
-		Uint32 color;
+		float invw;
 
 		invw = 1.0f / w;
 		rr = r * invw;
