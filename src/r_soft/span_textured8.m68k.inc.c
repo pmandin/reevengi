@@ -625,10 +625,8 @@ __asm__ __volatile__(
 	"fmove.s	%11,fp4\n\t"	/* dv */
 	"fmove.s	%12,fp5\n\t"	/* w */
 	"fmove.s	%13,fp6\n\t"	/* dw */
-	"moveql	#0,d2\n"
 
-"0:\n\t"
-	"fmove.s &0f65536,fp0\n\t"
+	"fmove.s	&0f65536,fp0\n\t"
 	"fsgldiv.x fp5,fp0\n\t"		/* fp0 = 65536.0 / w */
 
 	"fmove.x	fp1,fp7\n\t"
@@ -636,26 +634,48 @@ __asm__ __volatile__(
 	"fmove.l	fp7,d1\n\t"	/* pu = (int) (u * invw), UUUUuuuu */
 
 	"fmove.x	fp3,fp7\n\t"
+
+	"moveql	#0,d2\n"
+
+"0:\n\t"
+	/*"fmove.s &0f65536,fp0\n\t"*/
+	/*"fsgldiv.x fp5,fp0\n\t"*/		/* fp0 = 65536.0 / w */
+
+	/*"fmove.x	fp1,fp7\n\t"*/
+	/*"fsglmul.x	fp0,fp7\n\t"*/
+	/*"fmove.l	fp7,d1\n\t"*/	/* pu = (int) (u * invw), UUUUuuuu */
+
+	/*"fmove.x	fp3,fp7\n\t"*/
 	"fsglmul.x	fp0,fp7\n\t"
+
 	"fmove.l	fp7,d0\n\t"	/* pv = (int) (v * invw), VVVVvvvv */
-
 	"lsll	%4,d1\n\t"
-	"lsll	%6,d0\n\t"
-
-	"swap	d0\n\t"		/* vvvvVVVV */		/* 0x46005049 */
-	"move	d0,d1\n\t"	/* UUUUVVVV */		/* 0xa4c65049 */
-	"lsrw	%6,d1\n\t"	/* UUUU00VV */		/* 0xa4c60050 */
-	"roll	%5,d1\n\t"	/* UU00VVUU */		/* 0xc60050a4 */
 
 	"fadd.x	fp2,fp1\n\t"
-	"addw	%7,d1\n\t"
+	"lsll	%6,d0\n\t"
 
 	"fadd.x	fp4,fp3\n\t"
-	"moveb	%2@(0,d1:w),d2\n\t"
+	"swap	d0\n\t"		/* vvvvVVVV */
 
 	"fadd.x	fp6,fp5\n\t"
+	"move	d0,d1\n\t"	/* UUUUVVVV */
+
+	"fmove.s	&0f65536,fp0\n\t"
+	"lsrw	%6,d1\n\t"	/* UUUU00VV */
+
+	"fsgldiv.x fp5,fp0\n\t"		/* fp0 = 65536.0 / w */
+	"roll	%5,d1\n\t"	/* UU00VVUU */
+
+	"fmove.x	fp1,fp7\n\t"
+	"addw	%7,d1\n\t"
+
+	"fsglmul.x	fp0,fp7\n\t"
+	"moveb	%2@(0,d1:w),d2\n\t"
+
+	"fmove.l	fp7,d1\n\t"	/* pu = (int) (u * invw), UUUUuuuu */
 	"moveb	%3@(3,d2:w*4),%0@+\n\t"
 
+	"fmove.x	fp3,fp7\n\t"
 	"dbra	%1,0b\n"
 
 	: /* output */
