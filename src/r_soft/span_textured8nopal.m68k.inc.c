@@ -103,6 +103,7 @@ __asm__ __volatile__ (
 	"lsrw	%7,d4\n\t"
 	"roll	%6,d4\n\t"
 	"moveql	#0,d5\n\t"
+	"addal	%4,%5\n\t"
 	"moveql	#0,d1\n"
 
 "0:\n\t"
@@ -259,6 +260,7 @@ __asm__ __volatile__ (
 	"lsrw	%7,d4\n\t"
 	"roll	%6,d4\n\t"
 	"moveql	#0,d5\n\t"
+	"addal	%4,%5\n\t"
 	"moveql	#0,d1\n"
 
 "0:\n\t"
@@ -446,6 +448,7 @@ __asm__ __volatile__ (
 	"lsrw	%7,d4\n\t"
 	"roll	%6,d4\n\t"
 	"moveql	#0,d5\n\t"
+	"addal	%4,%5\n\t"
 	"moveql	#0,d1\n"
 
 "0:\n\t"
