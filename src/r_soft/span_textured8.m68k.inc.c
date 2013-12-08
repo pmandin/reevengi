@@ -453,68 +453,83 @@ void draw_render_textured8_pc2opaquem68k(SDL_Surface *surf, Uint8 *dst_line, sbu
 
 __asm__ __volatile__ (
 	"fmove.s	&0f65536,fp0\n\t"
-	"fsgldiv.x %4,fp0\n\t"	/* invw1 = 65536.0 / w1 */
+	"fsgldiv.x %6,fp0\n\t"	/* invw1 = 65536.0 / w1 */
 
-	"fsglmul.x fp0,%2\n\t"
-	"fmove.s %2,%0\n\t"	/* uuf = u1 * invw1 */
+	"fsglmul.x fp0,%4\n\t"
+	"fmove.s %4,%0\n\t"	/* uuf = u1 * invw1 */
 
-	"fsglmul.x fp0,%3\n\t"
-	"fmove.s %3,%1\n\t"	/* vvf = v1 * invw1 */
+	"fmove.l %4,%2\n\t"	/* ui = (int) uuf */
+
+	"fsglmul.x fp0,%5\n\t"
+	"fmove.s %5,%1\n\t"	/* vvf = v1 * invw1 */
+
+	"fmove.l %5,%3\n"	/* vi = (int) vvf */
 
 	: /* output */
-		"=m"(uuf) /*%0*/, "=m"(vvf) /*%1*/
+		"=m"(uuf) /*%0*/, "=m"(vvf) /*%1*/,
+		"=m"(ui) /*%2*/, "=m"(vi) /*%3*/
 	: /* input */
-		"f"(u1) /*%2*/, "f"(v1) /*%3*/, "f"(w1) /*%4*/
+		"f"(u1) /*%4*/, "f"(v1) /*%5*/, "f"(w1) /*%6*/
 	: /* clobbered registers */
 		"fp0", "cc", "memory" 
 );
 
-	/* Align on even address */
-	if (((Uint32) dst_col) & 1) {
-
-__asm__ __volatile__ (
-		"fmove.l %2,%0\n\t"
-		"fmove.l %3,%1\n"
-
-		: /* output */
-			"=m"(ui) /*%0*/, "=m"(vi) /*%1*/
-		: /* input */
-			"f"(uuf) /*%2*/, "f"(vvf) /*%3*/
-		: /* clobbered registers */
-			"cc", "memory" 
-);
+	/* Align dest on multiple of 4 */
+	if (((Uint32) dst_col) & 3) {
+		int num_pix, numpix_max;
 
 		uv = (ui<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
 		uv |= (vi>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
+		duv = (dui<<(16-ubits)) & 0xffff0000UL;	/* Xxxx0000 */
+		duv |= (dvi>>vbits) & 0x0000ffffUL;	/* XxxxYYYy */
 
 		/* for signed d0:w addressing */
 		if (ubits+vbits>15) {
 			uv ^= 0x8000;
 		}
 
+		num_pix = 4-(((Uint32) dst_col) & 3);
+		numpix_max = x2-x1+1;
+		if (num_pix>numpix_max) {
+			num_pix = numpix_max;
+		}
+
 __asm__ __volatile__ (
 	"movel	%3,d4\n\t"
+	"movel	%6,d7\n\t"
 	"lsrw	%5,d4\n\t"
 	"roll	%4,d4\n\t"
-	"moveql	#0,d5\n\t"
+	"subql	#1,d7\n\t"
+	"moveql	#0,d5\n"
 
+"0:\n\t"
 	"moveb	%1@(0,d4:w),d5\n\t"
-	"moveb	%2@(3,d5:w*4),%0@+\n"
+	"addal	%7,%3\n\t"
+
+	"moveb	%2@(3,d5:w*4),%0@+\n\t"
+	"movel	%3,d4\n\t"
+
+	"lsrw	%5,d4\n\t"
+
+	"roll	%4,d4\n\t"
+
+	"dbra	d7,0b\n"
 
 	: /* output */
 		"+a"(dst_col) /*%0*/
 	: /* input */
 		"a"(tex_pixels1) /*%1*/, "a"(palette) /*%2*/,
-		"a"(uv) /*%3*/, "d"(ubits) /*%4*/, "d"(vbits1) /*%5*/
+		"a"(uv) /*%3*/, "d"(ubits) /*%4*/, "d"(vbits1) /*%5*/,
+		"d"(num_pix) /*%6*/, "a"(duv) /*%7*/
 	: /* clobbered registers */
-		"d4", "d5", "cc", "memory" 
+		"d4", "d5", "d7", "cc", "memory" 
 );
 
-		u1 += du;
-		v1 += dv;
-		w1 += dw;
+		u1 += du * num_pix;
+		v1 += dv * num_pix;
+		w1 += dw * num_pix;
 
-		++x1;
+		x1 += num_pix;
 
 __asm__ __volatile__ (
 	"fmove.s	&0f65536,fp0\n\t"
@@ -641,7 +656,7 @@ __asm__ __volatile__ (
 	"addal	" ASM_duv "," ASM_uv "\n\t"
 	"roll	" ASM_ubits ",d0\n\t"
 
-	"lslw	#8,d2\n\t"
+	"lsll	#8,d2\n\t"
 	"movel	" ASM_uv ",d4\n\t"
 
 	"fmove.s	fp1," ASM_v1 "\n\t"	/* v1 = v2, 2 cycles */
@@ -653,7 +668,7 @@ __asm__ __volatile__ (
 	"roll	" ASM_ubits ",d4\n\t"
 
 	"fmove.s	fp2," ASM_w1 "\n\t"	/* w1 = w2, 2 cycles */
-	"move	d2," ASM_dst_col "@+\n\t"
+	"lsll	#8,d2\n\t"
 	"addal	" ASM_duv "," ASM_uv "\n\t"
 
 	/* Pixels 2,3 */
@@ -668,7 +683,7 @@ __asm__ __volatile__ (
 	"addal	" ASM_duv "," ASM_uv "\n\t"
 	"roll	" ASM_ubits ",d0\n\t"
 
-	"lslw	#8,d2\n\t"
+	"lsll	#8,d2\n\t"
 	"movel	" ASM_uv ",d4\n\t"
 
 	"fadd.x	" ASM_dv16 ",fp1\n\t"		/* fp1 += dv16, 3 cycles */
@@ -679,7 +694,7 @@ __asm__ __volatile__ (
 	"roll	" ASM_ubits ",d4\n\t"
 
 	"fmove.s	fp1," ASM_v2 "\n\t"	/* v2 = v1+dv16, 2 cycles */
-	"move	d2," ASM_dst_col "@+\n\t"
+	"movel	d2," ASM_dst_col "@+\n\t"
 	"addal	" ASM_duv "," ASM_uv "\n\t"
 
 	"move.l	" ASM_uu2f "," ASM_uuf "\n\t"	/* uuf = uu2f */
@@ -761,7 +776,7 @@ __asm__ __volatile__ (
 __asm__ __volatile__ (
 
 	/* Pixels 6,7 8,9, 10,11, 12,13 */
-	"moveq	#3,d7\n"
+	"moveq	#1,d7\n"
 "0:\n\t"
 	"moveb	" ASM_texpixels1 "@(0,d4:w),d5\n\t"
 	"movel	" ASM_uv ",d0\n\t"
@@ -772,7 +787,7 @@ __asm__ __volatile__ (
 	"addal	" ASM_duv "," ASM_uv "\n\t"
 	"roll	" ASM_ubits ",d0\n\t"
 
-	"lslw	#8,d2\n\t"
+	"lsll	#8,d2\n\t"
 	"movel	" ASM_uv ",d4\n\t"
 
 	"moveb	" ASM_texpixels1 "@(0,d0:w),d1\n\t"
@@ -781,7 +796,28 @@ __asm__ __volatile__ (
 	"moveb	" ASM_palette "@(3,d1:w*4),d2\n\t"
 	"roll	" ASM_ubits ",d4\n\t"
 
-	"move	d2," ASM_dst_col "@+\n\t"
+	"lsll	#8,d2\n\t"
+	"addal	" ASM_duv "," ASM_uv "\n\t"
+
+	"moveb	" ASM_texpixels1 "@(0,d4:w),d5\n\t"
+	"movel	" ASM_uv ",d0\n\t"
+
+	"moveb	" ASM_palette "@(3,d5:w*4),d2\n\t"
+	"lsrw	" ASM_vbits1 ",d0\n\t"
+
+	"addal	" ASM_duv "," ASM_uv "\n\t"
+	"roll	" ASM_ubits ",d0\n\t"
+
+	"lsll	#8,d2\n\t"
+	"movel	" ASM_uv ",d4\n\t"
+
+	"moveb	" ASM_texpixels1 "@(0,d0:w),d1\n\t"
+	"lsrw	" ASM_vbits1 ",d4\n\t"
+
+	"moveb	" ASM_palette "@(3,d1:w*4),d2\n\t"
+	"roll	" ASM_ubits ",d4\n\t"
+
+	"movel	d2," ASM_dst_col "@+\n\t"
 	"addal	" ASM_duv "," ASM_uv "\n\t"
 
 	"dbra	d7,0b\n\t"
