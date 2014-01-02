@@ -124,7 +124,16 @@ CFLAGS=$TMP_CFLAGS
 AC_ARG_ENABLE(opengl,
 	[  --enable-opengl         Enable OpenGL (default=yes)],
 	[WANT_OPENGL=$withval], [WANT_OPENGL=yes])
-GLU_LIBS=
+
+# Glew
+
+#if test "x$WANT_OPENGL" = "xyes"; then
+#	PKG_CHECK_MODULES([GLEW], [glew],
+#		[AC_DEFINE(HAVE_GLEW, 1, [Define to use Glew])],
+#		[WANT_OPENGL="no"]
+#	)
+#fi
+
 if test "x$WANT_OPENGL" = "xyes"; then
 	AC_DEFINE(ENABLE_OPENGL, 1, [Define if you want OpenGL renderer])
 fi
