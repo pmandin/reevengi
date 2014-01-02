@@ -61,15 +61,20 @@
 
 #define STR_MAGIC 0x60010180
 
+/*#define USE_OLD_AVIO_API 1*/
+
 /*--- Variables ---*/
 
 static int restart_movie = 1;
-static int first_time = 1;
 
 #ifdef ENABLE_MOVIES
 static AVInputFormat input_fmt;
 static AVFormatContext *fmt_ctx = NULL;
+# ifdef USE_OLD_AVIO_API
 static ByteIOContext bio_ctx;
+# else
+static AVIOContext *avio_ctx;
+# endif
 #endif
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
@@ -126,6 +131,8 @@ int view_movie_input(SDL_Event *event)
 int view_movie_update(SDL_Surface *screen)
 {
 #ifdef ENABLE_MOVIES
+	static int first_time = 1;
+
 	/* Init ffmpeg ? */
 	if (first_time) {
 		first_time = 0;
@@ -220,10 +227,6 @@ static int movie_init(const char *filename)
 
 	printf("movie: %s\n", input_fmt.long_name);
 
-	if (!tmpbuf) {
-		tmpbuf = (char *)malloc(BUFSIZE);
-	}
-
 	movie_src = FS_makeRWops(filename);
 	if (!movie_src) {
 		fprintf(stderr, "Can not open movie %s\n", filename);
@@ -232,19 +235,48 @@ static int movie_init(const char *filename)
 	}
 
 	emul_cd_pos = 0;
-	init_put_byte(&bio_ctx, tmpbuf, BUFSIZE, 0, movie_src,
-		movie_ioread, NULL, movie_ioseek);
+
+# ifdef USE_OLD_AVIO_API
+	if (!tmpbuf) {
+		tmpbuf = (char *) malloc(BUFSIZE);
+	}
+
+	init_put_byte(&bio_ctx,
+		tmpbuf, BUFSIZE, 0, movie_src,
+		movie_ioread, NULL, movie_ioseek
+	);
 
 	input_fmt.flags |= AVFMT_NOFILE;
 
 	err = avformat_open_input(&fmt_ctx, &bio_ctx, filename, &input_fmt, NULL);
+# else
+	if (!tmpbuf) {
+		tmpbuf = (char *) av_malloc(BUFSIZE);
+	}
+
+	avio_ctx = avio_alloc_context(
+		tmpbuf, BUFSIZE, 0, movie_src,
+		movie_ioread, NULL, movie_ioseek
+	);
+
+	fmt_ctx = avformat_alloc_context();
+	fmt_ctx->pb = avio_ctx;
+
+	err = avformat_open_input(&fmt_ctx, filename, &input_fmt, NULL);
+# endif
+
 	if (err<0) {
 		fprintf(stderr,"Can not open stream: %d\n", err);
 		movie_shutdown();
 		return 1;
 	}
 
+
+# ifdef USE_OLD_AVIO_API
 	err = av_find_stream_info(fmt_ctx);
+# else
+	err = avformat_find_stream_info(fmt_ctx, NULL);
+# endif
 	if (err<0) {
 		fprintf(stderr,"Can not find stream info: %d\n", err);
 		movie_shutdown();
@@ -262,7 +294,11 @@ static int movie_init(const char *filename)
 			continue;
 		}
 
+# ifdef USE_OLD_AVIO_API
 		err = avcodec_open(cc, codec);
+# else
+		err = avcodec_open2(cc, codec, NULL);
+# endif
 		if (err<0) {
 			fprintf(stderr, "Can not open codec for stream %d\n", i);
 			continue;
@@ -308,15 +344,24 @@ void movie_shutdown(void)
 	}
 
 	if (fmt_ctx) {
-		avformat_close_input( fmt_ctx );
+# ifdef USE_OLD_AVIO_API
+		avformat_close_input(fmt_ctx);
+# else
+		avformat_free_context(fmt_ctx);
+# endif
 		fmt_ctx = NULL;
+	}
+
+	if (tmpbuf) {
+# ifdef USE_OLD_AVIO_API
+		free(tmpbuf);
+# else
+		av_free(tmpbuf);
+# endif
+		tmpbuf=NULL;
 	}
 #endif
 
-	if (tmpbuf) {
-		free(tmpbuf);
-		tmpbuf=NULL;
-	}
 	if (movie_src) {
 		SDL_RWclose(movie_src);
 		movie_src = NULL;
@@ -526,11 +571,19 @@ static int movie_decode_video(SDL_Surface *screen)
 		}
 
 		/* Decode video packet */
+# ifdef USE_OLD_AVIO_API
 		err = avcodec_decode_video(
 			fmt_ctx->streams[vidstream]->codec,
 			decoded_frame,
 			&got_pic,
 			pkt->data, pkt->size);
+# else
+		err = avcodec_decode_video2(
+			fmt_ctx->streams[vidstream]->codec,
+			decoded_frame,
+			&got_pic,
+			pkt);
+# endif
 
 		if (err<0) {
 			fprintf(stderr, "Error decoding frame: %d\n", err);
