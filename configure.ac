@@ -103,7 +103,7 @@ LIBS="$LIBS $ZLIB_LIBS"
 AC_ARG_WITH([physfs-prefix],
 	[  --with-physfs-prefix=PFX Prefix where Physfs is installed (optional)],
 	[WITH_PHYSFS_PFX="$withval"],
-	[WITH_PHYSFS_PFX=""])
+	[WITH_PHYSFS_PFX="/usr"])
 if test "x$WITH_PHYSFS_PFX"  != "x"; then
 	CFLAGS="$CFLAGS -I${WITH_PHYSFS_PFX}/include"
 	LIBS="$LIBS -L${WITH_PHYSFS_PFX}/lib"
@@ -158,6 +158,7 @@ AC_ARG_ENABLE(movies,
 if test "x$WANT_MOVIES" = "xyes"; then
 	PKG_CHECK_MODULES([AVCODEC], [libavcodec])
 	PKG_CHECK_MODULES([AVFORMAT], [libavformat])
+	PKG_CHECK_MODULES([SWSCALE], [libswscale])
 
 	AC_DEFINE(ENABLE_MOVIES, 1, [Define if you want movie player])
 fi

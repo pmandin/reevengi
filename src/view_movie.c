@@ -27,9 +27,17 @@
 #include "config.h"
 #endif
 
+/*#define USE_OLD_AVIO_API 1*/
+
 #include <SDL.h>
 #ifdef ENABLE_MOVIES
-#include <libavformat/avformat.h>
+# include <libavformat/avformat.h>
+# include <libavcodec/avcodec.h>
+# ifndef USE_OLD_AVIO_API
+#  include <libavformat/avio.h>
+#  include <libavutil/pixdesc.h>
+#  include <libswscale/swscale.h>
+# endif
 #endif
 
 #include "filesystem.h"
@@ -61,8 +69,6 @@
 
 #define STR_MAGIC 0x60010180
 
-/*#define USE_OLD_AVIO_API 1*/
-
 /*--- Variables ---*/
 
 static int restart_movie = 1;
@@ -74,7 +80,9 @@ static AVFormatContext *fmt_ctx = NULL;
 static ByteIOContext bio_ctx;
 # else
 static AVIOContext *avio_ctx;
+struct SwsContext *img_convert_ctx = NULL;
 # endif
+static AVFrame *decoded_frame = NULL;
 #endif
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
@@ -82,9 +90,6 @@ static SDL_RWops *movie_src = NULL;
 static int audstream = -1, vidstream = -1;
 static int emul_cd;
 static int emul_cd_pos;
-#ifdef ENABLE_MOVIES
-static AVFrame *decoded_frame = NULL;
-#endif
 
 static SDL_Overlay *overlay = NULL;
 
@@ -322,8 +327,14 @@ static int movie_init(const char *filename)
 		}
 		printf("\n");
 	}
-#endif
 
+	decoded_frame = avcodec_alloc_frame();
+	if (!decoded_frame) {
+		fprintf(stderr, "Can not alloc decoded frame\n");
+		return 1;
+	}
+
+#endif
 	return 0;
 }
 
@@ -360,6 +371,13 @@ void movie_shutdown(void)
 # endif
 		tmpbuf=NULL;
 	}
+
+# ifndef USE_OLD_AVIO_API
+	if (img_convert_ctx) {
+	        sws_freeContext(img_convert_ctx);
+		img_convert_ctx = NULL;
+	}
+# endif
 #endif
 
 	if (movie_src) {
@@ -406,7 +424,6 @@ static int probe_movie(const char *filename)
 	return retval;
 }
 
-#ifdef ENABLE_MOVIES
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 {
 	int size_read = 0;
@@ -470,6 +487,7 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		size_read = buf_size;
 	}
 
+/*	printf("movie: ioread %d bytes\n", size_read);*/
 	return size_read;
 }
 
@@ -497,13 +515,15 @@ static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 		new_offset = (new_offset * RAW_CD_SECTOR_SIZE) / DATA_CD_SECTOR_SIZE;
 	}
 
+/*	printf("movie: ioseek %d bytes\n", new_offset);*/
 	return new_offset;
 }
-#endif
 
-static void update_overlay_yuv420(void)
+static void update_overlay_yuv420()
 {
 #ifdef ENABLE_MOVIES
+
+# ifdef USE_OLD_AVIO_API
 	int x,y;
 	Uint8 *dst[3], *dst_line[3];
 	Uint8 *src[3], *src_line[3];
@@ -546,6 +566,34 @@ static void update_overlay_yuv420(void)
 		dst[1] += overlay->pitches[1];
 		dst[2] += overlay->pitches[2];
 	}
+# else
+        AVPicture pict = { { 0 } };
+#  ifdef AV_PIX_FMT_YUV420P
+#   define MY_PIX_FORMAT AV_PIX_FMT_YUV420P
+#  else
+#   define MY_PIX_FORMAT PIX_FMT_YUV420P
+#  endif
+
+        pict.data[0] = overlay->pixels[0];
+        pict.data[1] = overlay->pixels[1];
+        pict.data[2] = overlay->pixels[2];
+
+        pict.linesize[0] = overlay->pitches[0];
+        pict.linesize[1] = overlay->pitches[1];
+        pict.linesize[2] = overlay->pitches[2];
+
+    	img_convert_ctx = sws_getCachedContext(img_convert_ctx,
+		overlay->w, overlay->h, fmt_ctx->streams[vidstream]->codec->pix_fmt,
+		overlay->w, overlay->h, MY_PIX_FORMAT,
+		SWS_POINT, NULL, NULL, NULL);
+        if (img_convert_ctx) {
+	        sws_scale(img_convert_ctx,
+			(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
+			0, overlay->h,
+			pict.data, pict.linesize);
+	}
+# endif
+
 #endif
 }
 
@@ -562,13 +610,7 @@ static int movie_decode_video(SDL_Surface *screen)
 	}
 
 	if (pkt->stream_index == vidstream) {
-		if (!decoded_frame) {
-			decoded_frame = avcodec_alloc_frame();
-			if (!decoded_frame) {
-				fprintf(stderr, "Can not alloc decoded frame\n");
-				return retval;
-			}
-		}
+/*		printf("packet at %d\n", pkt->pos);*/
 
 		/* Decode video packet */
 # ifdef USE_OLD_AVIO_API
@@ -597,6 +639,14 @@ static int movie_decode_video(SDL_Surface *screen)
 			rect.w = vid_w;
 			rect.h = vid_h;
 
+/*			printf("frame %dx%d, pts %d, %d, %d, %d\n",
+				decoded_frame->width,
+				decoded_frame->height,
+				decoded_frame->pts,
+				decoded_frame->pkt_pts,
+				decoded_frame->coded_picture_number,
+				decoded_frame->display_picture_number);*/
+
 			/* Rescale to biggest visible screen size */
 			w2 = (vid_w * screen->h) / vid_h;
 			h2 = (vid_h * screen->w) / vid_w;
@@ -609,6 +659,8 @@ static int movie_decode_video(SDL_Surface *screen)
 			rect.y = (screen->h - h2)>>1;
 			rect.w = w2;
 			rect.h = h2;
+
+/*			printf("rect: %d,%d %dx%d\n",rect.x,rect.y,rect.w,rect.h);*/
 
 			/* Create overlay */
 			if (!overlay) {
