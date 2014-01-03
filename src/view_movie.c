@@ -121,7 +121,7 @@ void movie_shutdown(void)
 
 void movie_refresh(void)
 {
-	restart_movie = 1;
+	/*restart_movie = 1;*/
 }
 
 int view_movie_input(SDL_Event *event)
@@ -474,12 +474,16 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		/* TODO: skip non video sectors */
 		/* TODO: detect audio sectors */
 
-/*		logMsg(1, "cd: pos %d, read %d\n", emul_cd_pos, buf_size);*/
+		logMsg(2, "cd: pos %d, read %d\n", emul_cd_pos, buf_size);
 		while (buf_size>0) {
 			int sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
 			int max_size;
 			int pos_data_type = -1; /* need to set data type */
 			int is_video = 0;
+
+			logMsg(2,"cd:  generate sector %d, pos %d, remains %d\n",
+				emul_cd_pos / RAW_CD_SECTOR_SIZE, sector_pos,
+				buf_size);
 			while ((sector_pos<CD_SYNC_SIZE) && (buf_size>0)) {
 				buf[size_read++] = ((sector_pos==0) || (sector_pos==11)) ? 0 : 0xff;
 				buf_size--;
@@ -498,6 +502,7 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 			while ((sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) && (buf_size>0)) {
 				max_size = CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE-sector_pos;
 				max_size = (max_size>buf_size) ? buf_size : max_size;
+				logMsg(2, "cd: reading real data at 0x%08x in file, %d\n", SDL_RWtell((SDL_RWops *)opaque), max_size);
 				if (SDL_RWread((SDL_RWops *)opaque, &buf[size_read], max_size, 1)<1) {
 					return -1;
 				}
@@ -521,8 +526,10 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 			/* set data type */
 			if (pos_data_type>=0) {
 				if (is_video) {
+					logMsg(2, "cd: generate video\n");
 					buf[pos_data_type] = 0x08;
 				} else {
+					logMsg(2, "cd: generate audio\n");
 					buf[pos_data_type] = 0x04;
 				}
 			}
@@ -534,14 +541,20 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		size_read = buf_size;
 	}
 
+	logMsg(2, "cd: after read: pos %d, read %d\n", emul_cd_pos, size_read);
 	return size_read;
 }
 
 static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 {
-	int64_t new_offset;
+	int64_t new_offset = offset;
+
+	logMsg(2, "cd: ioseek %d, %d\n", offset, whence);
 
 	if (emul_cd) {
+		int sector_num, sector_num1, sector_pos, sector_pos1;
+		int64_t file_offset;
+
 		switch(whence) {
 			case RW_SEEK_SET:
 			case RW_SEEK_END:
@@ -552,13 +565,27 @@ static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 				break;
 		}
 
-		offset = (emul_cd_pos * DATA_CD_SECTOR_SIZE) / RAW_CD_SECTOR_SIZE;
-	}
+		sector_num = emul_cd_pos / RAW_CD_SECTOR_SIZE;
+		sector_num1 = sector_num;
+		sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
+		sector_pos1 = sector_pos;
 
-	new_offset = SDL_RWseek((SDL_RWops *)opaque, offset, whence);
+		if (sector_pos1<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) {
+			sector_pos1 = 0;
+		} else if ((sector_pos1>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) &&
+			  (sector_pos1<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE))
+		{
+			sector_pos1 -= CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE;
+		} else if (sector_pos1>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) {
+			sector_pos1 = 0;
+			sector_num1++;
+		}
 
-	if (emul_cd) {
-		new_offset = (new_offset * RAW_CD_SECTOR_SIZE) / DATA_CD_SECTOR_SIZE;
+		file_offset = (sector_num1 * RAW_CD_SECTOR_SIZE) + sector_pos1;
+		SDL_RWseek((SDL_RWops *)opaque, file_offset, whence);
+		new_offset = (sector_num * RAW_CD_SECTOR_SIZE) + sector_pos;
+	} else {
+		new_offset = SDL_RWseek((SDL_RWops *)opaque, offset, whence);
 	}
 
 	return new_offset;
@@ -580,7 +607,7 @@ static int movie_decode_video(SDL_Surface *screen)
 	/* 33333/1000000 = 0.033333s per frame or 33.333ms per frame  */
 	current_frame = ((current_tic-start_tic) * fps_den) / (fps_num * 1000);
 
-	logMsg(2, "movie: av_read_frame %p %p\n", fmt_ctx, &pkt);
+	logMsg(2, "movie: av_read_frame %p %p at 0x%08x\n", fmt_ctx, &pkt, emul_cd_pos);
 	err = av_read_frame(fmt_ctx, &pkt);
 	if (err<0) {
 		return retval;
@@ -650,6 +677,10 @@ static int movie_decode_video(SDL_Surface *screen)
 
 			retval = 1;
 		}
+	} else if (pkt.stream_index == audstream) {
+		logMsg(2, "movie: audio packet\n");
+	} else {
+		logMsg(2, "movie: unknown packet\n");
 	}
 
 	av_free_packet(&pkt);
