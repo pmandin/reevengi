@@ -97,6 +97,8 @@ static void movie_stop(void);
 static void check_emul_cd(void);
 
 static int probe_movie(const char *filename);
+static int probe_movie2(const char *filename);
+
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static int64_t movie_ioseek( void *opaque, int64_t offset, int whence );
 
@@ -230,6 +232,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		movie_shutdown();
 		return 1;
 	}
+	emul_cd_pos = 0;
 
 	movie_src = FS_makeRWops(filename);
 	if (!movie_src) {
@@ -238,7 +241,6 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		return 1;
 	}
 
-	emul_cd_pos = 0;
 
 	if (!tmpbuf) {
 		tmpbuf = (char *) av_malloc(BUFSIZE);
@@ -251,6 +253,13 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 
 	fmt_ctx = avformat_alloc_context();
 	fmt_ctx->pb = avio_ctx;
+
+/*	if (probe_movie2(filename)!=0) {
+		fprintf(stderr, "Can not probe movie %s\n", filename);
+		movie_shutdown();
+		return 1;
+	}
+	emul_cd_pos = 0;*/
 
 	err = avformat_open_input(&fmt_ctx, filename, &input_fmt, NULL);
 
@@ -295,7 +304,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 				vCodecCtx = cc;
 				fps_num = fmt_ctx->streams[i]->time_base.num;
 				fps_den = fmt_ctx->streams[i]->time_base.den;
-				/*logMsg(1, "movie: fps: %d\n", fps_den/fps_num);*/
+				logMsg(1, "movie: fps: %d\n", fps_den/fps_num);
 				break;
 			case AVMEDIA_TYPE_AUDIO:
 				audstream = i;
@@ -396,7 +405,7 @@ static int probe_movie(const char *filename)
 	AVProbeData	pd;
 
 	pd.filename = filename;
-	pd.buf_size = 2048;
+	pd.buf_size = RAW_CD_SECTOR_SIZE;
 	pd.buf = (unsigned char *) malloc(pd.buf_size);
 	if (!pd.buf) {
 		fprintf(stderr, "Can not allocate %d bytes to probe movie\n", pd.buf_size);
@@ -408,8 +417,11 @@ static int probe_movie(const char *filename)
 		if (movie_ioread( src, pd.buf, pd.buf_size) == pd.buf_size) {
 			AVInputFormat *fmt = av_probe_input_format(&pd, 1);
 			if (fmt) {
+				logMsg(1, "movie: input format probed\n");
 				memcpy(&input_fmt, fmt, sizeof(AVInputFormat));
 				retval = 0;
+			} else {
+				fprintf(stderr, "Failed probing\n");
 			}
 		} else {
 			fprintf(stderr, "Error reading file %s for probing\n", filename);
@@ -417,6 +429,36 @@ static int probe_movie(const char *filename)
 		SDL_RWclose(src);
 	} else {
 		fprintf(stderr, "Can not open file %s for probing\n", filename);
+	}
+
+	free(pd.buf);
+#endif
+	return retval;
+}
+
+static int probe_movie2(const char *filename)
+{
+	int retval = 1;	
+#ifdef ENABLE_MOVIES
+	AVProbeData	pd;
+
+	pd.filename = filename;
+	pd.buf_size = 2048;
+	pd.buf = (unsigned char *) malloc(pd.buf_size);
+	if (!pd.buf) {
+		fprintf(stderr, "Can not allocate %d bytes to probe movie\n", pd.buf_size);
+		return retval;
+	}
+
+	if (movie_ioread( movie_src, pd.buf, pd.buf_size) == pd.buf_size) {
+		AVInputFormat *fmt = av_probe_input_format(&pd, 1);
+		if (fmt) {
+			logMsg(1, "movie: input format probed\n");
+			memcpy(&input_fmt, fmt, sizeof(AVInputFormat));
+			retval = 0;
+		}
+	} else {
+		fprintf(stderr, "Error reading file %s for probing\n", filename);
 	}
 
 	free(pd.buf);
@@ -432,6 +474,7 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		/* TODO: skip non video sectors */
 		/* TODO: detect audio sectors */
 
+/*		logMsg(1, "cd: pos %d, read %d\n", emul_cd_pos, buf_size);*/
 		while (buf_size>0) {
 			int sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
 			int max_size;
@@ -476,8 +519,12 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 			}
 
 			/* set data type */
-			if ((pos_data_type>=0) && is_video) {
-				buf[pos_data_type] = 0x08;
+			if (pos_data_type>=0) {
+				if (is_video) {
+					buf[pos_data_type] = 0x08;
+				} else {
+					buf[pos_data_type] = 0x04;
+				}
 			}
 		}
 	} else {
@@ -531,7 +578,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		current_tic = clockGet();
 	}
 	/* 33333/1000000 = 0.033333s per frame or 33.333ms per frame  */
-	current_frame = (current_tic * fps_den) / (fps_num * 1000);
+	current_frame = ((current_tic-start_tic) * fps_den) / (fps_num * 1000);
 
 	logMsg(2, "movie: av_read_frame %p %p\n", fmt_ctx, &pkt);
 	err = av_read_frame(fmt_ctx, &pkt);
