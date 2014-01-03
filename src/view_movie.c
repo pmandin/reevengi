@@ -552,7 +552,7 @@ static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 	logMsg(2, "cd: ioseek %d, %d\n", offset, whence);
 
 	if (emul_cd) {
-		int sector_num, sector_num1, sector_pos, sector_pos1;
+		int sector_num, sector_pos;
 		int64_t file_offset;
 
 		switch(whence) {
@@ -566,24 +566,23 @@ static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 		}
 
 		sector_num = emul_cd_pos / RAW_CD_SECTOR_SIZE;
-		sector_num1 = sector_num;
 		sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
-		sector_pos1 = sector_pos;
 
-		if (sector_pos1<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) {
-			sector_pos1 = 0;
-		} else if ((sector_pos1>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) &&
-			  (sector_pos1<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE))
+		if (sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) {
+			sector_pos = 0;
+		} else if ((sector_pos>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE) &&
+			  (sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE))
 		{
-			sector_pos1 -= CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE;
+			sector_pos -= CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE;
 		} else if (sector_pos1>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) {
-			sector_pos1 = 0;
-			sector_num1++;
+			sector_pos = 0;
+			sector_num++;
 		}
 
-		file_offset = (sector_num1 * RAW_CD_SECTOR_SIZE) + sector_pos1;
+		file_offset = (sector_num * DATA_CD_SECTOR_SIZE) + sector_pos;
 		SDL_RWseek((SDL_RWops *)opaque, file_offset, whence);
-		new_offset = (sector_num * RAW_CD_SECTOR_SIZE) + sector_pos;
+
+		new_offset = emul_cd_pos;
 	} else {
 		new_offset = SDL_RWseek((SDL_RWops *)opaque, offset, whence);
 	}
