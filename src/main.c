@@ -122,6 +122,7 @@ int main(int argc, char **argv)
 #ifdef ENABLE_MOVIES
 		game->switch_movie(game);
 		params.use_opengl = 0;
+		params.bpp = 32;
 #else
 		logMsg(0,"Movie player disabled\n");
 		params.viewmode = VIEWMODE_BACKGROUND;
