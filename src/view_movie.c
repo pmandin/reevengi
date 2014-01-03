@@ -27,20 +27,18 @@
 #include "config.h"
 #endif
 
-/*#define USE_OLD_AVIO_API 1*/
-
 #include <SDL.h>
 #ifdef ENABLE_MOVIES
-# include <libavformat/avformat.h>
-# include <libavcodec/avcodec.h>
-# ifndef USE_OLD_AVIO_API
-#  include <libavformat/avio.h>
-#  include <libavutil/pixdesc.h>
-#  include <libswscale/swscale.h>
-# endif
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avio.h>
+#include <libswscale/swscale.h>
 #endif
 
 #include "filesystem.h"
+#include "log.h"
+#include "view_movie.h"
+#include "clock.h"
 
 #include "g_common/game.h"
 #include "g_common/room.h"
@@ -48,8 +46,6 @@
 #include "g_re1/game_re1.h"
 #include "g_re2/game_re2.h"
 #include "g_re3/game_re3.h"
-
-#include "view_movie.h"
 
 /*--- Defines ---*/
 
@@ -72,42 +68,59 @@
 /*--- Variables ---*/
 
 static int restart_movie = 1;
+static int first_time = 1;
 
 #ifdef ENABLE_MOVIES
 static AVInputFormat input_fmt;
 static AVFormatContext *fmt_ctx = NULL;
-# ifdef USE_OLD_AVIO_API
-static ByteIOContext bio_ctx;
-# else
+static AVFrame *decoded_frame = NULL;
+static AVCodecContext *vCodecCtx = NULL;
 static AVIOContext *avio_ctx;
 struct SwsContext *img_convert_ctx = NULL;
-# endif
-static AVFrame *decoded_frame = NULL;
 #endif
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
 
 static int audstream = -1, vidstream = -1;
+static int fps_num = 1, fps_den = 1;
 static int emul_cd;
 static int emul_cd_pos;
 
 static SDL_Overlay *overlay = NULL;
+static Uint32 start_tic, current_tic;
 
 /*--- Functions prototypes ---*/
 
-static int movie_init(const char *filename);
+static int movie_start(const char *filename, SDL_Surface *screen);
+static void movie_stop(void);
 
 static void check_emul_cd(void);
 
 static int probe_movie(const char *filename);
-#ifdef ENABLE_MOVIES
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static int64_t movie_ioseek( void *opaque, int64_t offset, int whence );
-#endif
 
 static int movie_decode_video(SDL_Surface *screen);
 
 /*--- Functions ---*/
+
+void movie_init(void)
+{
+#ifdef ENABLE_MOVIES
+	logMsg(2, "movie: av_register_all\n");
+	av_register_all();
+#endif
+}
+
+void movie_shutdown(void)
+{
+	movie_stop();
+}
+
+void movie_refresh(void)
+{
+	restart_movie = 1;
+}
 
 int view_movie_input(SDL_Event *event)
 {
@@ -135,24 +148,13 @@ int view_movie_input(SDL_Event *event)
 
 int view_movie_update(SDL_Surface *screen)
 {
-#ifdef ENABLE_MOVIES
-	static int first_time = 1;
-
-	/* Init ffmpeg ? */
-	if (first_time) {
-		first_time = 0;
-
-		avcodec_register_all();
-		av_register_all();
-	}
-
 	if (restart_movie) {
-		printf("Playing movie %d: %s\n", game->num_movie, game->cur_movie);
+		logMsg(1, "Playing movie %d: %s\n", game->num_movie, game->cur_movie);
 		restart_movie = 0;
 
-		movie_shutdown();
+		movie_stop();
 
-		if (movie_init(game->cur_movie)!=0) {
+		if (movie_start(game->cur_movie, screen)!=0) {
 			return 0;
 		}
 	}
@@ -162,9 +164,6 @@ int view_movie_update(SDL_Surface *screen)
 	}
 
 	return movie_decode_video(screen);
-#else
-	return 0;
-#endif
 }
 
 static void check_emul_cd(void)
@@ -216,10 +215,12 @@ static void check_emul_cd(void)
 	}
 }
 
-static int movie_init(const char *filename)
+static int movie_start(const char *filename, SDL_Surface *screen)
 {
 #ifdef ENABLE_MOVIES
 	int i, err;
+
+	logMsg(2, "movie: init\n");
 
 	check_emul_cd();
 	emul_cd_pos = 0;
@@ -230,8 +231,6 @@ static int movie_init(const char *filename)
 		return 1;
 	}
 
-	printf("movie: %s\n", input_fmt.long_name);
-
 	movie_src = FS_makeRWops(filename);
 	if (!movie_src) {
 		fprintf(stderr, "Can not open movie %s\n", filename);
@@ -241,20 +240,6 @@ static int movie_init(const char *filename)
 
 	emul_cd_pos = 0;
 
-# ifdef USE_OLD_AVIO_API
-	if (!tmpbuf) {
-		tmpbuf = (char *) malloc(BUFSIZE);
-	}
-
-	init_put_byte(&bio_ctx,
-		tmpbuf, BUFSIZE, 0, movie_src,
-		movie_ioread, NULL, movie_ioseek
-	);
-
-	input_fmt.flags |= AVFMT_NOFILE;
-
-	err = avformat_open_input(&fmt_ctx, &bio_ctx, filename, &input_fmt, NULL);
-# else
 	if (!tmpbuf) {
 		tmpbuf = (char *) av_malloc(BUFSIZE);
 	}
@@ -268,7 +253,6 @@ static int movie_init(const char *filename)
 	fmt_ctx->pb = avio_ctx;
 
 	err = avformat_open_input(&fmt_ctx, filename, &input_fmt, NULL);
-# endif
 
 	if (err<0) {
 		fprintf(stderr,"Can not open stream: %d\n", err);
@@ -276,70 +260,91 @@ static int movie_init(const char *filename)
 		return 1;
 	}
 
-
-# ifdef USE_OLD_AVIO_API
-	err = av_find_stream_info(fmt_ctx);
-# else
+	logMsg(2, "movie: avformat_find_stream_info %p\n", fmt_ctx);
 	err = avformat_find_stream_info(fmt_ctx, NULL);
-# endif
 	if (err<0) {
 		fprintf(stderr,"Can not find stream info: %d\n", err);
 		movie_shutdown();
 		return 1;
 	}
 
-	printf("movie: %d streams\n", fmt_ctx->nb_streams);
+	logMsg(2, "movie: av_dump_format %p\n", fmt_ctx);
+	av_dump_format(fmt_ctx, 0, filename, 0);
+
 	for (i=0; i<fmt_ctx->nb_streams; i++) {
 		AVCodec *codec;
 		AVCodecContext *cc = fmt_ctx->streams[i]->codec;
 
+		logMsg(2, "movie: avcodec_find_decoder 0x%08x\n", cc->codec_id);
 		codec = avcodec_find_decoder(cc->codec_id);
 		if (!codec) {
 			fprintf(stderr, "Can not find codec for stream %d\n", i);
 			continue;
 		}
 
-# ifdef USE_OLD_AVIO_API
-		err = avcodec_open(cc, codec);
-# else
+		logMsg(2, "movie: avcodec_open2 %p %p\n", cc, codec);
 		err = avcodec_open2(cc, codec, NULL);
-# endif
 		if (err<0) {
 			fprintf(stderr, "Can not open codec for stream %d\n", i);
 			continue;
 		}
 
-		printf("movie: stream %d: %s: ", i, codec->name);
 		switch(cc->codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
-				printf("video, %dx%d, %08x", cc->width, cc->height, cc->pix_fmt);
 				vidstream = i;
+				vCodecCtx = cc;
+				fps_num = fmt_ctx->streams[i]->time_base.num;
+				fps_den = fmt_ctx->streams[i]->time_base.den;
+				/*logMsg(1, "movie: fps: %d\n", fps_den/fps_num);*/
 				break;
 			case AVMEDIA_TYPE_AUDIO:
-				printf("audio, %d Hz, %d channels",
-					cc->sample_rate, cc->channels
-				);
 				audstream = i;
 				break;
 			default:
-				printf("other type");
 				break;
 		}
-		printf("\n");
 	}
 
+	logMsg(2, "movie: avcodec_alloc_frame\n");
 	decoded_frame = avcodec_alloc_frame();
 	if (!decoded_frame) {
 		fprintf(stderr, "Can not alloc decoded frame\n");
 		return 1;
 	}
 
+#  ifdef AV_PIX_FMT_YUV420P
+#   define MY_PIX_FORMAT AV_PIX_FMT_YUV420P
+#  else
+#   define MY_PIX_FORMAT PIX_FMT_YUV420P
+#  endif
+
+	logMsg(2, "movie: sws_getContext\n");
+    	img_convert_ctx = sws_getContext(
+		vCodecCtx->width, vCodecCtx->height, vCodecCtx->pix_fmt,
+		vCodecCtx->width, vCodecCtx->height, MY_PIX_FORMAT,
+		SWS_POINT, NULL, NULL, NULL);
+	if (!img_convert_ctx) {
+		fprintf(stderr, "Could not create sws scaling context\n");
+		return 1;
+	}
+
+	logMsg(2, "movie: Created overlay %dx%d\n", vCodecCtx->width, vCodecCtx->height);
+	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
+		SDL_YV12_OVERLAY, screen);
+	if (!overlay) {
+		fprintf(stderr, "Can not create overlay\n");
+		return 1;
+	}
+
+	start_tic = 0;
 #endif
 	return 0;
 }
 
-void movie_shutdown(void)
+void movie_stop(void)
 {
+	logMsg(2, "movie: stop\n");
+
 	audstream = vidstream = -1;
 	emul_cd = 0;
 
@@ -354,30 +359,25 @@ void movie_shutdown(void)
 		decoded_frame = NULL;
 	}
 
+	if (vCodecCtx) {
+		avcodec_close(vCodecCtx);
+		vCodecCtx = NULL;
+	}
+
 	if (fmt_ctx) {
-# ifdef USE_OLD_AVIO_API
-		avformat_close_input(fmt_ctx);
-# else
 		avformat_free_context(fmt_ctx);
-# endif
 		fmt_ctx = NULL;
 	}
 
 	if (tmpbuf) {
-# ifdef USE_OLD_AVIO_API
-		free(tmpbuf);
-# else
 		av_free(tmpbuf);
-# endif
 		tmpbuf=NULL;
 	}
 
-# ifndef USE_OLD_AVIO_API
 	if (img_convert_ctx) {
 	        sws_freeContext(img_convert_ctx);
 		img_convert_ctx = NULL;
 	}
-# endif
 #endif
 
 	if (movie_src) {
@@ -487,7 +487,6 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		size_read = buf_size;
 	}
 
-/*	printf("movie: ioread %d bytes\n", size_read);*/
 	return size_read;
 }
 
@@ -515,137 +514,57 @@ static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 		new_offset = (new_offset * RAW_CD_SECTOR_SIZE) / DATA_CD_SECTOR_SIZE;
 	}
 
-/*	printf("movie: ioseek %d bytes\n", new_offset);*/
 	return new_offset;
-}
-
-static void update_overlay_yuv420()
-{
-#ifdef ENABLE_MOVIES
-
-# ifdef USE_OLD_AVIO_API
-	int x,y;
-	Uint8 *dst[3], *dst_line[3];
-	Uint8 *src[3], *src_line[3];
-
-	src[0] = decoded_frame->data[0];
-	src[1] = decoded_frame->data[1];
-	src[2] = decoded_frame->data[2];
-
-	dst[0] = overlay->pixels[0];
-	dst[1] = overlay->pixels[1];
-	dst[2] = overlay->pixels[2];
-
-	for (y=0; y<overlay->h; y++) {
-		src_line[0] = src[0];
-		dst_line[0] = dst[0];
-
-		for (x=0; x<overlay->w; x++) {
-			*(dst_line[0]++) = *(src_line[0]++);
-		}
-
-		src[0] += decoded_frame->linesize[0];
-		dst[0] += overlay->pitches[0];
-	}
-
-	for (y=0; y<overlay->h>>1; y++) {
-		src_line[1] = src[1];
-		src_line[2] = src[2];
-
-		dst_line[1] = dst[1];
-		dst_line[2] = dst[2];
-
-		for (x=0; x<overlay->w>>1; x++) {
-			*(dst_line[1]++) = *(src_line[2]++);
-			*(dst_line[2]++) = *(src_line[1]++);
-		}
-
-		src[1] += decoded_frame->linesize[1];
-		src[2] += decoded_frame->linesize[2];
-
-		dst[1] += overlay->pitches[1];
-		dst[2] += overlay->pitches[2];
-	}
-# else
-        AVPicture pict = { { 0 } };
-#  ifdef AV_PIX_FMT_YUV420P
-#   define MY_PIX_FORMAT AV_PIX_FMT_YUV420P
-#  else
-#   define MY_PIX_FORMAT PIX_FMT_YUV420P
-#  endif
-
-        pict.data[0] = overlay->pixels[0];
-        pict.data[1] = overlay->pixels[1];
-        pict.data[2] = overlay->pixels[2];
-
-        pict.linesize[0] = overlay->pitches[0];
-        pict.linesize[1] = overlay->pitches[1];
-        pict.linesize[2] = overlay->pitches[2];
-
-    	img_convert_ctx = sws_getCachedContext(img_convert_ctx,
-		overlay->w, overlay->h, fmt_ctx->streams[vidstream]->codec->pix_fmt,
-		overlay->w, overlay->h, MY_PIX_FORMAT,
-		SWS_POINT, NULL, NULL, NULL);
-        if (img_convert_ctx) {
-	        sws_scale(img_convert_ctx,
-			(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
-			0, overlay->h,
-			pict.data, pict.linesize);
-	}
-# endif
-
-#endif
 }
 
 static int movie_decode_video(SDL_Surface *screen)
 {
 	int retval = 0;
 #ifdef ENABLE_MOVIES
-	AVPacket pkt1, *pkt = &pkt1;
+	AVPacket pkt;
 	int err, got_pic;
+	int current_frame;
 
-	err = av_read_frame(fmt_ctx, pkt);
+	if (start_tic == 0) {
+		current_tic = start_tic = clockGet();
+	} else {
+		current_tic = clockGet();
+	}
+	/* 33333/1000000 = 0.033333s per frame or 33.333ms per frame  */
+	current_frame = (current_tic * fps_den) / (fps_num * 1000);
+
+	logMsg(2, "movie: av_read_frame %p %p\n", fmt_ctx, &pkt);
+	err = av_read_frame(fmt_ctx, &pkt);
 	if (err<0) {
 		return retval;
 	}
 
-	if (pkt->stream_index == vidstream) {
-/*		printf("packet at %d\n", pkt->pos);*/
-
+	if (pkt.stream_index == vidstream) {
 		/* Decode video packet */
-# ifdef USE_OLD_AVIO_API
-		err = avcodec_decode_video(
-			fmt_ctx->streams[vidstream]->codec,
-			decoded_frame,
-			&got_pic,
-			pkt->data, pkt->size);
-# else
+		logMsg(2, "movie: avcodec_decode_video2 %p %p %p\n", vCodecCtx, decoded_frame, &pkt);
 		err = avcodec_decode_video2(
-			fmt_ctx->streams[vidstream]->codec,
+			vCodecCtx,
 			decoded_frame,
 			&got_pic,
-			pkt);
-# endif
+			&pkt);
 
 		if (err<0) {
 			fprintf(stderr, "Error decoding frame: %d\n", err);
 		} else if (got_pic) {
+			AVPicture pict;
 			SDL_Rect rect;
-			int vid_w = fmt_ctx->streams[vidstream]->codec->width;
-			int vid_h = fmt_ctx->streams[vidstream]->codec->height;
+			int vid_w = vCodecCtx->width;
+			int vid_h = vCodecCtx->height;
 			int w2, h2;
 
-			rect.x = rect.y = 0;
-			rect.w = vid_w;
-			rect.h = vid_h;
-
-/*			printf("frame %dx%d, pts %d, %d, %d, %d\n",
-				decoded_frame->width,
-				decoded_frame->height,
-				decoded_frame->pts,
-				decoded_frame->pkt_pts,
-				decoded_frame->coded_picture_number,
-				decoded_frame->display_picture_number);*/
+			if (current_frame < decoded_frame->pkt_pts) {
+				int delay_frame = decoded_frame->pkt_pts - current_frame;
+				int delay_ms = (delay_frame * 1000 * fps_num) / fps_den;
+				if (delay_ms>0) {
+					/*logMsg(2, "movie: wait %d\n", delay_ms);*/
+					SDL_Delay(delay_ms);
+				}
+			}
 
 			/* Rescale to biggest visible screen size */
 			w2 = (vid_w * screen->h) / vid_h;
@@ -660,21 +579,23 @@ static int movie_decode_video(SDL_Surface *screen)
 			rect.w = w2;
 			rect.h = h2;
 
-/*			printf("rect: %d,%d %dx%d\n",rect.x,rect.y,rect.w,rect.h);*/
-
-			/* Create overlay */
-			if (!overlay) {
-				overlay = SDL_CreateYUVOverlay(vid_w, vid_h,
-					SDL_YV12_OVERLAY, screen);
-				if (!overlay) {
-					fprintf(stderr, "Can not create overlay\n");
-					return retval;
-				}
-			}
-
 			/* Update overlay surface */
 			SDL_LockYUVOverlay(overlay);
-			update_overlay_yuv420();
+
+		        pict.data[0] = overlay->pixels[0];
+		        pict.data[1] = overlay->pixels[2];
+		        pict.data[2] = overlay->pixels[1];
+
+		        pict.linesize[0] = overlay->pitches[0];
+		        pict.linesize[1] = overlay->pitches[2];
+		        pict.linesize[2] = overlay->pitches[1];
+
+			logMsg(2, "movie: sws_scale\n");
+		        sws_scale(img_convert_ctx,
+				(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
+				0, vCodecCtx->height,
+				pict.data, pict.linesize);
+
 			SDL_UnlockYUVOverlay(overlay);
 
 			/* Display overlay */
@@ -684,7 +605,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		}
 	}
 
-	av_free_packet(pkt);
+	av_free_packet(&pkt);
 #endif
 
 	return retval;

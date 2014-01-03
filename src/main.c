@@ -177,6 +177,7 @@ int main(int argc, char **argv)
 			view_background_init();
 			break;
 		case VIEWMODE_MOVIE:
+			movie_init();
 			break;
 	}
 
@@ -283,6 +284,7 @@ static void viewer_update(void)
 		list_render_texture_download();
 		list_render_skel_download();
 		video.setVideoMode(new_width, new_height, video.bpp);
+		movie_refresh();
 	}
 
 	render.startFrame();

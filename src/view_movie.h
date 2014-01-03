@@ -25,6 +25,9 @@
 
 int view_movie_input(SDL_Event *event);
 int view_movie_update(SDL_Surface *screen);
+
+void movie_init(void);
 void movie_shutdown(void);
+void movie_refresh(void);
 
 #endif /* VIEW_MOVIE_H */
