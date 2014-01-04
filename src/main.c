@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 #ifdef ENABLE_MOVIES
 		game->switch_movie(game);
 		params.use_opengl = 0;
-		/*params.bpp = 32;*/
+		params.bpp = 32;
 #else
 		logMsg(0,"Movie player disabled\n");
 		params.viewmode = VIEWMODE_BACKGROUND;
@@ -282,7 +282,7 @@ static void viewer_update(void)
 		list_render_texture_download();
 		list_render_skel_download();
 		video.setVideoMode(new_width, new_height, video.bpp);
-		movie_refresh();
+		movie_refresh(video.screen);
 	}
 
 	render.startFrame();

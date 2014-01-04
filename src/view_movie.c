@@ -119,9 +119,22 @@ void movie_shutdown(void)
 	movie_stop();
 }
 
-void movie_refresh(void)
+void movie_refresh(SDL_Surface *screen)
 {
-	/*restart_movie = 1;*/
+	if (overlay) {
+		SDL_FreeYUVOverlay(overlay);
+		overlay=NULL;
+	}
+
+	if (!vCodecCtx) {
+		return;
+	}
+
+	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
+		SDL_YV12_OVERLAY, screen);
+	if (!overlay) {
+		fprintf(stderr, "Can not create overlay\n");
+	}
 }
 
 int view_movie_input(SDL_Event *event)
@@ -574,7 +587,7 @@ static int64_t movie_ioseek( void *opaque, int64_t offset, int whence )
 			  (sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE))
 		{
 			sector_pos -= CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE;
-		} else if (sector_pos1>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) {
+		} else if (sector_pos>=CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) {
 			sector_pos = 0;
 			sector_num++;
 		}
