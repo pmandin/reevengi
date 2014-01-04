@@ -121,6 +121,7 @@ void movie_shutdown(void)
 
 void movie_refresh(SDL_Surface *screen)
 {
+#ifdef ENABLE_MOVIES
 	if (overlay) {
 		SDL_FreeYUVOverlay(overlay);
 		overlay=NULL;
@@ -135,6 +136,7 @@ void movie_refresh(SDL_Surface *screen)
 	if (!overlay) {
 		fprintf(stderr, "Can not create overlay\n");
 	}
+#endif
 }
 
 int view_movie_input(SDL_Event *event)
@@ -172,10 +174,6 @@ int view_movie_update(SDL_Surface *screen)
 		if (movie_start(game->cur_movie, screen)!=0) {
 			return 0;
 		}
-	}
-
-	if (!fmt_ctx) {
-		return 0;
 	}
 
 	return movie_decode_video(screen);
@@ -618,6 +616,10 @@ static int movie_decode_video(SDL_Surface *screen)
 	}
 	/* 33333/1000000 = 0.033333s per frame or 33.333ms per frame  */
 	current_frame = ((current_tic-start_tic) * fps_den) / (fps_num * 1000);
+
+	if (!fmt_ctx) {
+		return retval;
+	}
 
 	logMsg(2, "movie: av_read_frame %p %p at 0x%08x\n", fmt_ctx, &pkt, emul_cd_pos);
 	err = av_read_frame(fmt_ctx, &pkt);
