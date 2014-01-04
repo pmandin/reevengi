@@ -20,14 +20,16 @@
 
 /*--- Includes ---*/
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <SDL.h>
+#ifdef ENABLE_OPENGL
+#include <SDL_opengl.h>
+#endif
 #ifdef ENABLE_MOVIES
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -39,6 +41,11 @@
 #include "log.h"
 #include "view_movie.h"
 #include "clock.h"
+#include "parameters.h"
+
+#ifdef ENABLE_OPENGL
+#include "r_opengl/dyngl.h"
+#endif
 
 #include "g_common/game.h"
 #include "g_common/room.h"
@@ -91,8 +98,14 @@ static Uint32 start_tic, current_tic;
 
 /*--- Functions prototypes ---*/
 
+static void movie_refresh_soft(SDL_Surface *screen);
+static void movie_refresh_opengl(SDL_Surface *screen);
+
 static int movie_start(const char *filename, SDL_Surface *screen);
+
 static void movie_stop(void);
+static void movie_stop_soft(void);
+static void movie_stop_opengl(void);
 
 static void check_emul_cd(void);
 
@@ -103,6 +116,9 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static int64_t movie_ioseek( void *opaque, int64_t offset, int whence );
 
 static int movie_decode_video(SDL_Surface *screen);
+
+static void movie_update_frame_soft(SDL_Rect *rect);
+static void movie_update_frame_opengl(SDL_Rect *rect);
 
 /*--- Functions ---*/
 
@@ -121,6 +137,15 @@ void movie_shutdown(void)
 
 void movie_refresh(SDL_Surface *screen)
 {
+	if (params.use_opengl) {
+		movie_refresh_opengl(screen);
+	} else {
+		movie_refresh_soft(screen);
+	}
+}
+
+static void movie_refresh_soft(SDL_Surface *screen)
+{
 #ifdef ENABLE_MOVIES
 	if (overlay) {
 		SDL_FreeYUVOverlay(overlay);
@@ -136,6 +161,12 @@ void movie_refresh(SDL_Surface *screen)
 	if (!overlay) {
 		fprintf(stderr, "Can not create overlay\n");
 	}
+#endif
+}
+
+static void movie_refresh_opengl(SDL_Surface *screen)
+{
+#if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
 #endif
 }
 
@@ -232,6 +263,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 {
 #ifdef ENABLE_MOVIES
 	int i, err;
+	AVPixelFormat dstFormat;
 
 	logMsg(2, "movie: init\n");
 
@@ -332,16 +364,24 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		return 1;
 	}
 
-#  ifdef AV_PIX_FMT_YUV420P
-#   define MY_PIX_FORMAT AV_PIX_FMT_YUV420P
+	if (params.use_opengl) {
+#  ifdef AV_PIX_FMT_RGBA
+		dstFormat = AV_PIX_FMT_RGBA;
 #  else
-#   define MY_PIX_FORMAT PIX_FMT_YUV420P
+		dstFormat = PIX_FMT_RGBA;
 #  endif
+	} else {
+#  ifdef AV_PIX_FMT_YUV420P
+		dstFormat = AV_PIX_FMT_YUV420P;
+#  else
+		dstFormat = PIX_FMT_YUV420P;
+#  endif
+	}
 
 	logMsg(2, "movie: sws_getContext\n");
     	img_convert_ctx = sws_getContext(
 		vCodecCtx->width, vCodecCtx->height, vCodecCtx->pix_fmt,
-		vCodecCtx->width, vCodecCtx->height, MY_PIX_FORMAT,
+		vCodecCtx->width, vCodecCtx->height, dstFormat,
 		SWS_POINT, NULL, NULL, NULL);
 	if (!img_convert_ctx) {
 		fprintf(stderr, "Could not create sws scaling context\n");
@@ -368,9 +408,10 @@ void movie_stop(void)
 	audstream = vidstream = -1;
 	emul_cd = 0;
 
-	if (overlay) {
-		SDL_FreeYUVOverlay(overlay);
-		overlay=NULL;
+	if (params.use_opengl) {
+		movie_stop_opengl();
+	} else {
+		movie_stop_soft();
 	}
 
 #ifdef ENABLE_MOVIES
@@ -404,6 +445,20 @@ void movie_stop(void)
 		SDL_RWclose(movie_src);
 		movie_src = NULL;
 	}
+}
+
+static void movie_stop_soft(void)
+{
+	if (overlay) {
+		SDL_FreeYUVOverlay(overlay);
+		overlay=NULL;
+	}
+}
+
+static void movie_stop_opengl(void)
+{
+#ifdef ENABLE_OPENGL
+#endif
 }
 
 /* Read first 2Ko to probe */
@@ -639,7 +694,6 @@ static int movie_decode_video(SDL_Surface *screen)
 		if (err<0) {
 			fprintf(stderr, "Error decoding frame: %d\n", err);
 		} else if (got_pic) {
-			AVPicture pict;
 			SDL_Rect rect;
 			int vid_w = vCodecCtx->width;
 			int vid_h = vCodecCtx->height;
@@ -667,27 +721,11 @@ static int movie_decode_video(SDL_Surface *screen)
 			rect.w = w2;
 			rect.h = h2;
 
-			/* Update overlay surface */
-			SDL_LockYUVOverlay(overlay);
-
-		        pict.data[0] = overlay->pixels[0];
-		        pict.data[1] = overlay->pixels[2];
-		        pict.data[2] = overlay->pixels[1];
-
-		        pict.linesize[0] = overlay->pitches[0];
-		        pict.linesize[1] = overlay->pitches[2];
-		        pict.linesize[2] = overlay->pitches[1];
-
-			logMsg(2, "movie: sws_scale\n");
-		        sws_scale(img_convert_ctx,
-				(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
-				0, vCodecCtx->height,
-				pict.data, pict.linesize);
-
-			SDL_UnlockYUVOverlay(overlay);
-
-			/* Display overlay */
-			SDL_DisplayYUVOverlay(overlay, &rect);
+			if (params.use_opengl) {
+				movie_update_frame_opengl(&rect);
+			} else {
+				movie_update_frame_soft(&rect);
+			}
 
 			retval = 1;
 		}
@@ -701,4 +739,38 @@ static int movie_decode_video(SDL_Surface *screen)
 #endif
 
 	return retval;
+}
+
+static void movie_update_frame_soft(SDL_Rect *rect)
+{
+#ifdef ENABLE_MOVIES
+	AVPicture pict;
+
+	SDL_LockYUVOverlay(overlay);
+
+	pict.data[0] = overlay->pixels[0];
+	pict.data[1] = overlay->pixels[2];
+	pict.data[2] = overlay->pixels[1];
+
+	pict.linesize[0] = overlay->pitches[0];
+	pict.linesize[1] = overlay->pitches[2];
+	pict.linesize[2] = overlay->pitches[1];
+
+	logMsg(2, "movie: sws_scale\n");
+	sws_scale(img_convert_ctx,
+		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
+		0, vCodecCtx->height,
+		pict.data, pict.linesize);
+
+	SDL_UnlockYUVOverlay(overlay);
+
+	/* Display overlay */
+	SDL_DisplayYUVOverlay(overlay, rect);
+#endif
+}
+
+static void movie_update_frame_opengl(SDL_Rect *rect)
+{
+#if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
+#endif
 }
