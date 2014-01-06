@@ -34,6 +34,7 @@
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avio.h>
+#include <libavutil/pixdesc.h>
 #include <libswscale/swscale.h>
 #endif
 
@@ -42,6 +43,7 @@
 #include "view_movie.h"
 #include "clock.h"
 #include "parameters.h"
+#include "video.h"
 
 #ifdef ENABLE_OPENGL
 #include "r_opengl/dyngl.h"
@@ -53,6 +55,8 @@
 #include "g_re1/game_re1.h"
 #include "g_re2/game_re2.h"
 #include "g_re3/game_re3.h"
+
+#include "r_common/render.h"
 
 /*--- Defines ---*/
 
@@ -176,7 +180,7 @@ static void movie_refresh_opengl(SDL_Surface *screen)
 		SDL_Surface *vid_surf;
 
 		vid_surf = SDL_CreateRGBSurface(0, vCodecCtx->width, vCodecCtx->height,
-			0,0,0,0);
+			32, 0,0,0,0);
 
 		if (vid_surf) {
 			vid_texture = render.createTexture(0);
@@ -287,7 +291,8 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 {
 #ifdef ENABLE_MOVIES
 	int i, err;
-	AVPixelFormat dstFormat;
+	int dstFormat;
+/*	AVPixelFormat dstFormat;*/
 
 	logMsg(2, "movie: init\n");
 
@@ -757,5 +762,34 @@ static void movie_update_frame_soft(SDL_Rect *rect)
 static void movie_update_frame_opengl(SDL_Rect *rect)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
+	AVPicture pict;
+
+	pict.data[0] = vid_texture->pixels;
+	pict.linesize[0] = vid_texture->pitch;
+
+	logMsg(2, "movie: sws_scale gl\n");
+	sws_scale(img_convert_ctx,
+		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
+		0, vCodecCtx->height,
+		pict.data, pict.linesize);
+
+	vid_texture->upload(vid_texture, 0);
+
+	render.set_dithering(params.dithering);
+	render.set_useDirtyRects(0);
+	render.set_texture(0, vid_texture);
+
+	render.bitmap.clipSource(0,0,0,0);
+	render.bitmap.clipDest(
+		video.viewport.x,video.viewport.y,
+		video.viewport.w,video.viewport.h);
+	render.bitmap.setScaler(
+		vid_texture->w, vid_texture->h,
+		video.viewport.w,video.viewport.h);
+	render.bitmap.setDepth(0, 0.0f);
+	render.bitmap.drawImage();
+
+	render.set_dithering(0);
+	render.set_useDirtyRects(0);
 #endif
 }
