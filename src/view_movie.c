@@ -96,6 +96,8 @@ static int emul_cd_pos;
 static SDL_Overlay *overlay = NULL;
 static Uint32 start_tic, current_tic;
 
+render_texture_t *vid_texture = NULL;
+
 /*--- Functions prototypes ---*/
 
 static void movie_refresh_soft(SDL_Surface *screen);
@@ -110,7 +112,6 @@ static void movie_stop_opengl(void);
 static void check_emul_cd(void);
 
 static int probe_movie(const char *filename);
-static int probe_movie2(const char *filename);
 
 static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static int64_t movie_ioseek( void *opaque, int64_t offset, int whence );
@@ -167,6 +168,16 @@ static void movie_refresh_soft(SDL_Surface *screen)
 static void movie_refresh_opengl(SDL_Surface *screen)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
+	if (!vid_texture) {
+		vid_texture = render.createTexture(0);
+	}
+
+	if (!vid_texture || !vCodecCtx) {
+		return;
+	}		
+
+	
+	vid_texture->resize(vid_texture, vCodecCtx->width, vCodecCtx->height);
 #endif
 }
 
@@ -297,13 +308,6 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 	fmt_ctx = avformat_alloc_context();
 	fmt_ctx->pb = avio_ctx;
 
-/*	if (probe_movie2(filename)!=0) {
-		fprintf(stderr, "Can not probe movie %s\n", filename);
-		movie_shutdown();
-		return 1;
-	}
-	emul_cd_pos = 0;*/
-
 	err = avformat_open_input(&fmt_ctx, filename, &input_fmt, NULL);
 
 	if (err<0) {
@@ -388,13 +392,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		return 1;
 	}
 
-	logMsg(2, "movie: Created overlay %dx%d\n", vCodecCtx->width, vCodecCtx->height);
-	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
-		SDL_YV12_OVERLAY, screen);
-	if (!overlay) {
-		fprintf(stderr, "Can not create overlay\n");
-		return 1;
-	}
+	movie_refresh(screen);
 
 	start_tic = 0;
 #endif
@@ -458,6 +456,10 @@ static void movie_stop_soft(void)
 static void movie_stop_opengl(void)
 {
 #ifdef ENABLE_OPENGL
+	if (vid_texture) {
+		vid_texture->shutdown(vid_texture);
+		vid_texture = NULL;
+	}
 #endif
 }
 
@@ -495,36 +497,6 @@ static int probe_movie(const char *filename)
 		SDL_RWclose(src);
 	} else {
 		fprintf(stderr, "Can not open file %s for probing\n", filename);
-	}
-
-	free(pd.buf);
-#endif
-	return retval;
-}
-
-static int probe_movie2(const char *filename)
-{
-	int retval = 1;	
-#ifdef ENABLE_MOVIES
-	AVProbeData	pd;
-
-	pd.filename = filename;
-	pd.buf_size = 2048;
-	pd.buf = (unsigned char *) malloc(pd.buf_size);
-	if (!pd.buf) {
-		fprintf(stderr, "Can not allocate %d bytes to probe movie\n", pd.buf_size);
-		return retval;
-	}
-
-	if (movie_ioread( movie_src, pd.buf, pd.buf_size) == pd.buf_size) {
-		AVInputFormat *fmt = av_probe_input_format(&pd, 1);
-		if (fmt) {
-			logMsg(1, "movie: input format probed\n");
-			memcpy(&input_fmt, fmt, sizeof(AVInputFormat));
-			retval = 0;
-		}
-	} else {
-		fprintf(stderr, "Error reading file %s for probing\n", filename);
 	}
 
 	free(pd.buf);
