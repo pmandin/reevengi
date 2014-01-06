@@ -168,16 +168,29 @@ static void movie_refresh_soft(SDL_Surface *screen)
 static void movie_refresh_opengl(SDL_Surface *screen)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
-	if (!vid_texture) {
-		vid_texture = render.createTexture(0);
+	if (!vCodecCtx) {
+		return;
 	}
 
-	if (!vid_texture || !vCodecCtx) {
+	if (!vid_texture) {
+		SDL_Surface *vid_surf;
+
+		vid_surf = SDL_CreateRGBSurface(0, vCodecCtx->width, vCodecCtx->height,
+			0,0,0,0);
+
+		if (vid_surf) {
+			vid_texture = render.createTexture(0);
+			if (vid_texture) {
+				vid_texture->load_from_surf(vid_texture, vid_surf);
+			}
+
+			SDL_FreeSurface(vid_surf);
+		}
+	}
+
+	if (!vid_texture) {
 		return;
 	}		
-
-	
-	vid_texture->resize(vid_texture, vCodecCtx->width, vCodecCtx->height);
 #endif
 }
 
