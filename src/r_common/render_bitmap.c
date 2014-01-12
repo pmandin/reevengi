@@ -94,6 +94,10 @@ static void clipDest(int x, int y, int w, int h)
 
 static void setScaler(int srcw, int srch, int dstw, int dsth)
 {
+	render.bitmap.srcWidth = srcw;
+	render.bitmap.srcHeight = srch;
+	render.bitmap.dstWidth = dstw;
+	render.bitmap.dstHeight = dsth;
 }
 
 static void setDepth(int enabled, float depth)
