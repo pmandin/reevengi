@@ -763,6 +763,7 @@ static void movie_update_frame_opengl(SDL_Rect *rect)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
 	AVPicture pict;
+	int dst_x, dst_y, dst_w, dst_h;
 
 	pict.data[0] = vid_texture->pixels;
 	pict.linesize[0] = vid_texture->pitch;
@@ -774,18 +775,38 @@ static void movie_update_frame_opengl(SDL_Rect *rect)
 		pict.data, pict.linesize);
 
 	vid_texture->upload(vid_texture, 0);
+	vid_texture->update(vid_texture, 0);
 
 	render.set_dithering(params.dithering);
 	render.set_useDirtyRects(0);
 	render.set_texture(0, vid_texture);
 
+	dst_w = (vid_texture->w * video.height) / vid_texture->h;
+	dst_h = (vid_texture->h * video.width) / vid_texture->w;
+	if (dst_w > video.width) {
+		/* Use dst_h */
+		dst_w = (vid_texture->w * dst_h) / vid_texture->h;
+	} else if (dst_h > video.height) {
+		/* Use dst_w */
+		dst_h = (vid_texture->h * dst_w) / vid_texture->w;
+	}
+	dst_x = (video.width - dst_w)>>1;
+	dst_y = (video.height - dst_h)>>1;
+
+	logMsg(2, "movie: screen: %dx%d, viewport: %d,%d %dx%d movie: %dx%d with ratio: %d,%d %dx%d\n",
+		video.width, video.height,
+		video.viewport.x,video.viewport.y,
+		video.viewport.w,video.viewport.h,
+		vid_texture->w, vid_texture->h,
+		dst_x, dst_y, dst_w, dst_h);
+
 	render.bitmap.clipSource(0,0,0,0);
 	render.bitmap.clipDest(
-		video.viewport.x,video.viewport.y,
-		video.viewport.w,video.viewport.h);
+		dst_x, dst_y,
+		dst_w, dst_h);
 	render.bitmap.setScaler(
 		vid_texture->w, vid_texture->h,
-		video.viewport.w,video.viewport.h);
+		dst_w, dst_h);
 	render.bitmap.setDepth(0, 0.0f);
 	render.bitmap.drawImage();
 
