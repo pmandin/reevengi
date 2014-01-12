@@ -43,6 +43,7 @@ struct render_texture_s {
 
 	/* Send/remove texture from video card */
 	void (*upload)(render_texture_t *this, int num_pal);
+	void (*update)(render_texture_t *this, int num_pal);
 	void (*download)(render_texture_t *this);
 
 	void (*prepare_resize)(render_texture_t *this, int *w, int *h);

@@ -37,6 +37,7 @@
 static void shutdown(render_texture_t *this);
 
 static void upload(render_texture_t *this, int num_pal);
+static void update(render_texture_t *this, int num_pal);
 static void download(render_texture_t *this);
 
 static void prepare_resize(render_texture_t *this, int *w, int *h);
@@ -71,6 +72,7 @@ render_texture_t *render_texture_create(int flags)
 
 	tex->shutdown = shutdown;
 	tex->upload = upload;
+	tex->update = update;
 	tex->download = download;
 	tex->prepare_resize = prepare_resize;
 	tex->resize = resize;
@@ -118,6 +120,10 @@ static void shutdown(render_texture_t *this)
 }
 
 static void upload(render_texture_t *this, int num_pal)
+{
+}
+
+static void update(render_texture_t *this, int num_pal)
 {
 }
 

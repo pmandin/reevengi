@@ -27,6 +27,7 @@
 
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <assert.h>
 
 #include "../parameters.h"
 #include "../log.h"
@@ -43,6 +44,7 @@
 /*--- Functions prototypes ---*/
 
 static void upload(render_texture_t *this, int num_pal);
+static void update(render_texture_t *this, int num_pal);
 static void download(render_texture_t *this);
 
 static void prepare_resize(render_texture_t *this, int *w, int *h);
@@ -73,6 +75,7 @@ render_texture_t *render_texture_gl_create(int flags)
 	tex = (render_texture_t *) gl_tex;
 
 	tex->upload = upload;
+	tex->update = update;
 	tex->download = download;
 	tex->prepare_resize = prepare_resize;
 /*	tex->mark_trans = mark_trans;*/
@@ -93,9 +96,6 @@ static void upload(render_texture_t *this, int num_pal)
 {
 	render_texture_gl_t *texgl = (render_texture_gl_t *) this;
 	int i = this->paletted ? num_pal : 0;
-	GLenum internalFormat = GL_RGBA;
-	GLenum pixelType = GL_UNSIGNED_BYTE;
-	GLenum surfaceFormat = GL_RGBA;
 
 	/* Already uploaded ? */
 	if (texgl->texture_id[i] != 0xFFFFFFFFUL) {
@@ -107,6 +107,19 @@ static void upload(render_texture_t *this, int num_pal)
 	gl.GenTextures(1, &texgl->texture_id[i]);
 
 	gl.BindTexture(texgl->textureTarget, texgl->texture_id[i]);
+
+	this->update(this, num_pal);
+}
+
+static void update(render_texture_t *this, int num_pal)
+{
+	render_texture_gl_t *texgl = (render_texture_gl_t *) this;
+	int i = this->paletted ? num_pal : 0;
+	GLenum internalFormat = GL_RGBA;
+	GLenum pixelType = GL_UNSIGNED_BYTE;
+	GLenum surfaceFormat = GL_RGBA;
+
+	assert(texgl->texture_id[i] != 0xFFFFFFFFUL);
 
 	/* Upload new palette */
 	switch (this->bpp) {
