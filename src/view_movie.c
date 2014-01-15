@@ -195,6 +195,8 @@ static void movie_refresh_opengl(SDL_Surface *screen)
 	if (!vid_texture) {
 		return;
 	}		
+
+	vid_texture->upload(vid_texture, 0);
 #endif
 }
 
@@ -774,7 +776,7 @@ static void movie_update_frame_opengl(SDL_Rect *rect)
 		0, vCodecCtx->height,
 		pict.data, pict.linesize);
 
-	vid_texture->upload(vid_texture, 0);
+/*	vid_texture->upload(vid_texture, 0);*/
 	vid_texture->update(vid_texture, 0);
 
 	render.set_dithering(params.dithering);
