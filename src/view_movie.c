@@ -806,9 +806,6 @@ static void movie_update_frame_opengl(SDL_Rect *rect)
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
 	int dst_x, dst_y, dst_w, dst_h;
 
-/*	vid_texture->upload(vid_texture, 0);*/
-	vid_texture->update(vid_texture, 0);
-
 	render.set_dithering(params.dithering);
 	render.set_useDirtyRects(0);
 	render.set_texture(0, vid_texture);
