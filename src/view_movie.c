@@ -100,6 +100,7 @@ static int emul_cd_pos;
 static SDL_Overlay *overlay = NULL;
 static Uint32 start_tic, current_tic;
 
+static AVPicture pict;
 render_texture_t *vid_texture = NULL;
 
 /*--- Functions prototypes ---*/
@@ -121,6 +122,9 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size );
 static int64_t movie_ioseek( void *opaque, int64_t offset, int whence );
 
 static int movie_decode_video(SDL_Surface *screen);
+
+static void movie_scale_frame_soft(void);
+static void movie_scale_frame_opengl(void);
 
 static void movie_update_frame_soft(SDL_Rect *rect);
 static void movie_update_frame_opengl(SDL_Rect *rect);
@@ -653,7 +657,7 @@ static int movie_decode_video(SDL_Surface *screen)
 	int retval = 0;
 #ifdef ENABLE_MOVIES
 	AVPacket pkt;
-	int err, got_pic;
+	int err, got_pic = 0;
 	int current_frame;
 
 	if (start_tic == 0) {
@@ -688,38 +692,6 @@ static int movie_decode_video(SDL_Surface *screen)
 		if (err<0) {
 			fprintf(stderr, "Error decoding frame: %d\n", err);
 		} else if (got_pic) {
-			SDL_Rect rect;
-			int vid_w = vCodecCtx->width;
-			int vid_h = vCodecCtx->height;
-			int w2, h2;
-
-			if (current_frame < decoded_frame->pkt_pts) {
-				int delay_frame = decoded_frame->pkt_pts - current_frame;
-				int delay_ms = (delay_frame * 1000 * fps_num) / fps_den;
-				if (delay_ms>0) {
-					/*logMsg(2, "movie: wait %d\n", delay_ms);*/
-					SDL_Delay(delay_ms);
-				}
-			}
-
-			/* Rescale to biggest visible screen size */
-			w2 = (vid_w * screen->h) / vid_h;
-			h2 = (vid_h * screen->w) / vid_w;
-			if (w2>screen->w) {
-				w2 = screen->w;
-			} else if (h2>screen->h) {
-				h2 = screen->h;
-			}
-			rect.x = (screen->w - w2)>>1;
-			rect.y = (screen->h - h2)>>1;
-			rect.w = w2;
-			rect.h = h2;
-
-			if (params.use_opengl) {
-				movie_update_frame_opengl(&rect);
-			} else {
-				movie_update_frame_soft(&rect);
-			}
 
 			retval = 1;
 		}
@@ -729,13 +701,60 @@ static int movie_decode_video(SDL_Surface *screen)
 		logMsg(2, "movie: unknown packet\n");
 	}
 
+	/* Scale and decode frame */
+	if (got_pic) {
+		if (current_frame < decoded_frame->pkt_pts) {
+			int delay_frame = decoded_frame->pkt_pts - current_frame;
+			int delay_ms = (delay_frame * 1000 * fps_num) / fps_den;
+			if (delay_ms>0) {
+				/*logMsg(2, "movie: wait %d\n", delay_ms);*/
+				SDL_Delay(delay_ms);
+			}
+		}
+
+		logMsg(2, "movie: decode and scale frame\n");
+		if (params.use_opengl) {
+			movie_scale_frame_opengl();
+		} else {
+			movie_scale_frame_soft();
+		}
+	}
+
+	/* Display current decoded frame */
+	{
+		SDL_Rect rect;
+		int vid_w = vCodecCtx->width;
+		int vid_h = vCodecCtx->height;
+		int w2, h2;
+
+		/* Rescale to biggest visible screen size */
+		w2 = (vid_w * screen->h) / vid_h;
+		h2 = (vid_h * screen->w) / vid_w;
+		if (w2>screen->w) {
+			w2 = screen->w;
+		} else if (h2>screen->h) {
+			h2 = screen->h;
+		}
+		rect.x = (screen->w - w2)>>1;
+		rect.y = (screen->h - h2)>>1;
+		rect.w = w2;
+		rect.h = h2;
+
+/*		logMsg(2, "movie: update frame\n");*/
+		if (params.use_opengl) {
+			movie_update_frame_opengl(&rect);
+		} else {
+			movie_update_frame_soft(&rect);
+		}
+	}
+
 	av_free_packet(&pkt);
 #endif
 
 	return retval;
 }
 
-static void movie_update_frame_soft(SDL_Rect *rect)
+static void movie_scale_frame_soft(void)
 {
 #ifdef ENABLE_MOVIES
 	AVPicture pict;
@@ -750,33 +769,42 @@ static void movie_update_frame_soft(SDL_Rect *rect)
 	pict.linesize[1] = overlay->pitches[2];
 	pict.linesize[2] = overlay->pitches[1];
 
-	logMsg(2, "movie: sws_scale\n");
 	sws_scale(img_convert_ctx,
 		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
 		0, vCodecCtx->height,
 		pict.data, pict.linesize);
 
 	SDL_UnlockYUVOverlay(overlay);
+#endif
+}
 
-	/* Display overlay */
+static void movie_update_frame_soft(SDL_Rect *rect)
+{
+#ifdef ENABLE_MOVIES
 	SDL_DisplayYUVOverlay(overlay, rect);
+#endif
+}
+
+static void movie_scale_frame_opengl(void)
+{
+#if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
+	pict.data[0] = vid_texture->pixels;
+	pict.linesize[0] = vid_texture->pitch;
+
+	sws_scale(img_convert_ctx,
+		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
+		0, vCodecCtx->height,
+		pict.data, pict.linesize);
+
+/*	vid_texture->upload(vid_texture, 0);*/
+	vid_texture->update(vid_texture, 0);
 #endif
 }
 
 static void movie_update_frame_opengl(SDL_Rect *rect)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
-	AVPicture pict;
 	int dst_x, dst_y, dst_w, dst_h;
-
-	pict.data[0] = vid_texture->pixels;
-	pict.linesize[0] = vid_texture->pitch;
-
-	logMsg(2, "movie: sws_scale gl\n");
-	sws_scale(img_convert_ctx,
-		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
-		0, vCodecCtx->height,
-		pict.data, pict.linesize);
 
 /*	vid_texture->upload(vid_texture, 0);*/
 	vid_texture->update(vid_texture, 0);
@@ -797,12 +825,12 @@ static void movie_update_frame_opengl(SDL_Rect *rect)
 	dst_x = (video.width - dst_w)>>1;
 	dst_y = (video.height - dst_h)>>1;
 
-	logMsg(2, "movie: screen: %dx%d, viewport: %d,%d %dx%d movie: %dx%d with ratio: %d,%d %dx%d\n",
+/*	logMsg(2, "movie: screen: %dx%d, viewport: %d,%d %dx%d movie: %dx%d with ratio: %d,%d %dx%d\n",
 		video.width, video.height,
 		video.viewport.x,video.viewport.y,
 		video.viewport.w,video.viewport.h,
 		vid_texture->w, vid_texture->h,
-		dst_x, dst_y, dst_w, dst_h);
+		dst_x, dst_y, dst_w, dst_h);*/
 
 	render.bitmap.clipSource(0,0,0,0);
 	render.bitmap.clipDest(
