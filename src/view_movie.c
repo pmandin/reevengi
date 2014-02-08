@@ -88,6 +88,7 @@ static AVFrame *decoded_frame = NULL;
 static AVCodecContext *vCodecCtx = NULL;
 static AVIOContext *avio_ctx;
 struct SwsContext *img_convert_ctx = NULL;
+static AVPicture pict;
 #endif
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
@@ -100,7 +101,6 @@ static int emul_cd_pos;
 static SDL_Overlay *overlay = NULL;
 static Uint32 start_tic, current_tic;
 
-static AVPicture pict;
 render_texture_t *vid_texture = NULL;
 
 /*--- Functions prototypes ---*/
