@@ -26,16 +26,20 @@
 
 /* 0x00-0x0f */
 #define INST_NOP	0x00
-#define INST_RETURN	0x01
-#define INST_SLEEP_1	0x02
+#define INST_EVT_END	0x01
+#define INST_EVT_NEXT	0x02
+#define INST_EVT_CHAIN	0x03
 #define INST_EVT_EXEC	0x04
 #define INST_EVT_KILL	0x05
 #define INST_IF		0x06
 #define INST_ELSE	0x07
 #define INST_END_IF	0x08
-#define INST_SLEEP_N	0x0a
-#define INST_SLEEP_W	0x0b
+#define INST_SLEEP	0x09
+#define INST_SLEEPING	0x0a
+#define INST_WSLEEP	0x0b
+#define INST_WSLEEPING	0x0c
 #define INST_BEGIN_FOR	0x0d
+/* continue for, exit for 0x0e ? */
 #define INST_END_FOR	0x0f
 
 /* 0x10-0x1f */
@@ -48,8 +52,10 @@
 #define INST_DEFAULT	0x16
 #define INST_END_SWITCH	0x17
 #define INST_GOTO	0x18
-#define INST_FUNC	0x19
+#define INST_GOSUB	0x19
+#define INST_RETURN	0x1a
 #define INST_BREAK	0x1b
+#define INST_BREAKPOINT	0x1c
 #define INST_EVAL_CC	0x1d
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f

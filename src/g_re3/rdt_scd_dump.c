@@ -56,9 +56,17 @@ typedef struct {
 /*--- Constants ---*/
 
 static const script_dump_t work_set_0[]={
+	{0, "NO_WK"},
 	{1, "PL_WK"},
+	{2, "SPL_WK"},
 	{3, "EM_WK"},
-	{4, "OM_WK"}
+	{4, "OM_WK"},
+	{6, "ALL_WK"},
+	
+	{0x80, "PL_PARTS_WK"},
+	{0xa0, "SPL_PARTS_WK"},
+	{0xc0, "EM_PARTS_WK"},
+	{0xe0, "OM_PARTS_WK"}
 };
 
 /*--- Variables ---*/
@@ -196,11 +204,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_NOP:
 				strcat(strBuf, "nop\n");
 				break;
-			case INST_RETURN:
-				strcat(strBuf, "RETURN\n");
+			case INST_EVT_END:
+				strcat(strBuf, "EVT_END\n");
 				break;
-			case INST_SLEEP_1:
-				strcat(strBuf, "SLEEP 1\n");
+			case INST_EVT_NEXT:
+				strcat(strBuf, "EVT_NEXT\n");
+				break;
+			case INST_EVT_CHAIN:
+				strcat(strBuf, "EVT_CHAIN xx\n");
 				break;
 			case INST_EVT_EXEC:
 				sprintf(tmpBuf, "EVT_EXEC 0x%02x func%02x()\n",
@@ -229,12 +240,18 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_END_IF:
 				strcat(strBuf, "END_IF\n");
 				break;
-			case INST_SLEEP_N:
-				sprintf(tmpBuf, "SLEEP %d\n", SDL_SwapLE16(inst->sleepn.delay));
+			case INST_SLEEP:
+				strcat(strBuf, "SLEEP\n");
+				break;
+			case INST_SLEEPING:
+				sprintf(tmpBuf, "SLEEPING %d\n", SDL_SwapLE16(inst->sleepn.delay));
 				strcat(strBuf, tmpBuf);
 				break;
-			case INST_SLEEP_W:
-				strcat(strBuf, "SLEEP\n");
+			case INST_WSLEEP:
+				strcat(strBuf, "WSLEEP\n");
+				break;
+			case INST_WSLEEPING:
+				strcat(strBuf, "WSLEEPING xx\n");
 				break;
 			case INST_BEGIN_FOR:
 				sprintf(tmpBuf, "BEGIN_FOR %d\n", SDL_SwapLE16(inst->i_for.count));
@@ -288,9 +305,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_GOTO:
 				strcat(strBuf, "GOTO xxx\n");
 				break;
-			case INST_FUNC:
-				sprintf(tmpBuf, "func%02x()\n", inst->func.num_func);
+			case INST_GOSUB:
+				sprintf(tmpBuf, "GOSUB func%02x()\n", inst->func.num_func);
 				strcat(strBuf, tmpBuf);
+				break;
+			case INST_RETURN:
+				strcat(strBuf, "RETURN\n");
 				break;
 			case INST_BREAK:
 				strcat(strBuf, "BREAK\n");
