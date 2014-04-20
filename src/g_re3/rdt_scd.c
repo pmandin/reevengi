@@ -238,16 +238,17 @@ static const script_inst_len_t inst_length[]={
 	{INST_PLC_NECK,		10},
 	{INST_PLC_RET,		1},
 	{INST_PLC_FLG,		4},
-	{0x85,		2},
-	{0x86,		1},
-	{INST_PLC_STOP,	1},
-	{INST_PLC_ROT,	4},
-	{INST_PLC_CNT,	2},
-	{0x8a,		1},
-	{0x8b,		1},
-	{0x8c,		1},
-	{0x8e,		4},
-	{0x8f,		2}
+	{INST_PLC_GUN,		2},
+	{INST_PLC_GUN_EFF,	1},
+	{INST_PLC_STOP,		1},
+	{INST_PLC_ROT,		4},
+	{INST_PLC_CNT,		2},
+	{INST_SPLC_RET,		1},
+	{INST_SPLC_SCE,		1},
+	{INST_PLC_SCE,		1},
+	{INST_SPL_WEAPON_CHG,	1},
+	{INST_PLC_MOT_NUM,	4},
+	{INST_EM_RESET,		2}
 };
 
 /*--- Functions ---*/

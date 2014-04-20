@@ -657,6 +657,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_PLC_FLG:
 				strcat(strBuf, "PLC_FLG xxx\n");
 				break;
+			case INST_PLC_GUN:
+				strcat(strBuf, "PLC_GUN xxx\n");
+				break;
+			case INST_PLC_GUN_EFF:
+				strcat(strBuf, "PLC_GUN_EFF xxx\n");
+				break;
 			case INST_PLC_STOP:
 				strcat(strBuf, "PLC_STOP xxx\n");
 				break;
@@ -665,6 +671,24 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_PLC_CNT:
 				strcat(strBuf, "PLC_CNT xxx\n");
+				break;
+			case INST_SPLC_RET:
+				strcat(strBuf, "SPLC_RET xxx\n");
+				break;
+			case INST_SPLC_SCE:
+				strcat(strBuf, "SPLC_SCE xxx\n");
+				break;
+			case INST_PLC_SCE:
+				strcat(strBuf, "PLC_SCE xxx\n");
+				break;
+			case INST_SPL_WEAPON_CHG:
+				strcat(strBuf, "SPL_WEAPON_CHG xxx\n");
+				break;
+			case INST_PLC_MOT_NUM:
+				strcat(strBuf, "PLC_MOT_NUM xxx\n");
+				break;
+			case INST_EM_RESET:
+				strcat(strBuf, "EM_RESET xxx\n");
 				break;
 
 			default:

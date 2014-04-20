@@ -171,9 +171,17 @@
 #define INST_PLC_NECK	0x82
 #define INST_PLC_RET	0x83
 #define INST_PLC_FLG	0x84
+#define INST_PLC_GUN	0x85
+#define INST_PLC_GUN_EFF	0x86
 #define INST_PLC_STOP	0x87
 #define INST_PLC_ROT	0x88
 #define INST_PLC_CNT	0x89
+#define INST_SPLC_RET	0x8a
+#define INST_SPLC_SCE	0x8b
+#define INST_PLC_SCE	0x8c
+#define INST_SPL_WEAPON_CHG	0x8d
+#define INST_PLC_MOT_NUM	0x8e
+#define INST_EM_RESET	0x8f
 
 /*--- Types ---*/
 
