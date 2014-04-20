@@ -331,6 +331,33 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_EVT_CUT:
 				strcat(strBuf, "EVT_CUT xxx\n");
 				break;
+			case INST_CHASER_EVT_CLR:
+				strcat(strBuf, "CHASER_EVT_CLR xxx\n");
+				break;
+			case INST_MAP_OPEN:
+				strcat(strBuf, "MAP_OPEN xxx\n");
+				break;
+			case INST_POINT_ADD:
+				strcat(strBuf, "POINT_ADD xxx\n");
+				break;
+			case INST_DOOR_CK:
+				strcat(strBuf, "DOOR_CK xxx\n");
+				break;
+			case INST_DIEDEMO_ON:
+				strcat(strBuf, "DIEDEMO_ON xxx\n");
+				break;
+			case INST_DIR_CK:
+				strcat(strBuf, "DIR_CK xxx\n");
+				break;
+			case INST_PARTS_SET:
+				strcat(strBuf, "PARTS_SET xxx\n");
+				break;
+			case INST_VLOOP_SET:
+				strcat(strBuf, "VLOOP_SET xxx\n");
+				break;
+			case INST_OTA_BE_SET:
+				strcat(strBuf, "OTA_BE_SET xxx\n");
+				break;
 			case INST_LINE_BEGIN:
 				strcat(strBuf, "LINE_BEGIN xxx\n");
 				break;
@@ -343,6 +370,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x30-0x3f */
 
+			case INST_LIGHT_POS_SET:
+				strcat(strBuf, "LIGHT_POS_SET xxx\n");
+				break;
+			case INST_LIGHT_KIDO_SET:
+				strcat(strBuf, "LIGHT_KIDO_SET xxx\n");
+				break;
 			case INST_LIGHT_COLOR_SET:
 				strcat(strBuf, "LIGHT_COLOR_SET xxx\n");
 				break;
@@ -350,11 +383,38 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				sprintf(tmpBuf, "AHEAD_ROOM_SET 0x%04x\n", SDL_SwapLE16(inst->ahead_room_set.value));
 				strcat(strBuf, tmpBuf);
 				break;
-			case INST_EVAL_BGM_TBL_CK:
-				strcat(strBuf, "EVAL_BGM_TBL_CK xxx\n");
+			case INST_ESPR_CTR:
+				strcat(strBuf, "ESPR_CTR xxx\n");
+				break;
+			case INST_BGM_TBL_CK:
+				strcat(strBuf, "BGM_TBL_CK xxx\n");
+				break;
+			case INST_ITEM_GET_CK:
+				strcat(strBuf, "ITEM_GET_CK xxx\n");
+				break;
+			case INST_OM_REV:
+				strcat(strBuf, "OM_REV xxx\n");
+				break;
+			case INST_CHASER_LIFE_INIT:
+				strcat(strBuf, "CHASER_LIFE_INIT xxx\n");
+				break;
+			case INST_PARTS_BOMB:
+				strcat(strBuf, "PARTS_BOMB xxx\n");
+				break;
+			case INST_PARTS_DOWN:
+				strcat(strBuf, "PARTS_DOWN xxx\n");
 				break;
 			case INST_CHASER_ITEM_SET:
 				strcat(strBuf, "CHASER_ITEM_SET xxx\n");
+				break;
+			case INST_WEAPON_CHG_OLD:
+				strcat(strBuf, "WEAPON_CHG_OLD xxx\n");
+				break;
+			case INST_SEL_EVT_ON:
+				strcat(strBuf, "SEL_EVT_ON xxx\n");
+				break;
+			case INST_ITEM_LOST:
+				strcat(strBuf, "ITEM_LOST xxx\n");
 				break;
 			case INST_FLOOR_SET:
 				strcat(strBuf, "FLOOR_SET xxx\n");

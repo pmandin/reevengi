@@ -63,15 +63,35 @@
 /* 0x20-0x2f */
 #define INST_CALC_OP	0x20
 #define INST_EVT_CUT	0x22
+#define INST_CHASER_EVT_CLR 0x24
+#define INST_MAP_OPEN	0x25
+#define INST_POINT_ADD	0x26
+#define INST_DOOR_CK	0x27
+#define INST_DIEDEMO_ON	0x28
+#define INST_DIR_CK	0x29
+#define INST_PARTS_SET	0x2a
+#define INST_VLOOP_SET	0x2b
+#define INST_OTA_BE_SET	0x2c
 #define INST_LINE_BEGIN	0x2d
 #define INST_LINE_MAIN	0x2e
 #define INST_LINE_END	0x2f
 
 /* 0x30-0x3f */
+#define INST_LIGHT_POS_SET	0x30
+#define INST_LIGHT_KIDO_SET	0x31
 #define INST_LIGHT_COLOR_SET	0x32
 #define INST_AHEAD_ROOM_SET	0x33
-#define INST_EVAL_BGM_TBL_CK	0x35
+#define INST_ESPR_CTR		0x34
+#define INST_BGM_TBL_CK		0x35
+#define INST_ITEM_GET_CK	0x36
+#define INST_OM_REV		0x37
+#define INST_CHASER_LIFE_INIT	0x38
+#define INST_PARTS_BOMB		0x39
+#define INST_PARTS_DOWN		0x3a
 #define INST_CHASER_ITEM_SET	0x3b
+#define INST_WEAPON_CHG_OLD	0x3c
+#define INST_SEL_EVT_ON		0x3d
+#define INST_ITEM_LOST		0x3e
 #define INST_FLOOR_SET	0x3f
 
 /* 0x40-0x4f */
