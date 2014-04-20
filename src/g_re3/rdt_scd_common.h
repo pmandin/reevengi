@@ -55,7 +55,7 @@
 #define INST_GOSUB	0x19
 #define INST_RETURN	0x1a
 #define INST_BREAK	0x1b
-#define INST_BREAKPOINT	0x1c
+#define INST_BREAKPOINT	0x1c	/* nop */
 #define INST_EVAL_CC	0x1d
 #define INST_VALUE_SET	0x1e
 #define INST_SET1	0x1f
@@ -95,25 +95,40 @@
 #define INST_FLOOR_SET	0x3f
 
 /* 0x40-0x4f */
-#define INST_VAR_SET	0x40
-#define INST_CALC_STORE	0x41
-#define INST_CALC_LOAD	0x42
+#define INST_MEMB_SET	0x40
+#define INST_MEMB_SET2	0x41
+#define INST_MEMB_CPY	0x42
+#define INST_MEMB_CMP	0x43
+#define INST_MEMB_CALC	0x44
+#define INST_MEMB_CALC2	0x45
 #define INST_FADE_SET	0x46
 #define INST_WORK_SET	0x47
-#define INST_EVAL_CK	0x4c
-#define INST_FLAG_SET	0x4d
-#define INST_EVAL_CMP	0x4e
+#define INST_SPD_SET	0x48
+#define INST_ADD_SPD	0x49
+#define INST_ADD_ASPD	0x4a
+#define INST_ADD_VSPD	0x4b
+#define INST_CK		0x4c
+#define INST_SET	0x4d
+#define INST_CMP	0x4e
+#define INST_RND	0x4f
 
 /* 0x50-0x5f */
 #define INST_CUT_CHG	0x50
+#define INST_CUT_OLD	0x51
 #define INST_CUT_AUTO	0x52
 #define INST_CUT_REPLACE	0x53
+#define INST_CUT_BE_SET	0x54
 #define INST_POS_SET	0x55
 #define INST_DIR_SET	0x56
 #define INST_SET_VIB0	0x57
+#define INST_SET_VIB1	0x58
 #define INST_SET_VIB_FADE	0x59
 #define INST_RBJ_SET	0x5a
 #define INST_MESSAGE_ON	0x5b
+#define INST_RAIN_SET	0x5c
+#define INST_MESSAGE_OFF	0x5d
+#define INST_SHAKE_ON	0x5e
+#define INST_WEAPON_CHG	0x5f
 
 /* 0x60-0x6f */
 #define INST_DOOR_SET	0x61

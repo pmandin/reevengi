@@ -422,19 +422,28 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x40-0x4f */
 
-			case INST_VAR_SET:
+			case INST_MEMB_SET:
 				{
 					script_var_set_t *varSet = (script_var_set_t *) inst;
 
-					sprintf(tmpBuf, "SET var%02x = %d\n", varSet->num_var, SDL_SwapLE16(varSet->value));
+					sprintf(tmpBuf, "MEMB_SET var%02x = %d\n", varSet->num_var, SDL_SwapLE16(varSet->value));
 					strcat(strBuf, tmpBuf);
 				}
 				break;
-			case INST_CALC_STORE:
-				strcat(strBuf, "CALC_STORE xxx\n");
+			case INST_MEMB_SET2:
+				strcat(strBuf, "MEMB_SET2 xxx\n");
 				break;
-			case INST_CALC_LOAD:
-				strcat(strBuf, "CALC_LOAD xxx\n");
+			case INST_MEMB_CPY:
+				strcat(strBuf, "MEMB_CPY xxx\n");
+				break;
+			case INST_MEMB_CMP:
+				strcat(strBuf, "MEMB_CMP xxx\n");
+				break;
+			case INST_MEMB_CALC:
+				strcat(strBuf, "MEMB_CALC xxx\n");
+				break;
+			case INST_MEMB_CALC2:
+				strcat(strBuf, "MEMB_CALC2 xxx\n");
 				break;
 			case INST_FADE_SET:
 				strcat(strBuf, "FADE_SET xxx\n");
@@ -453,17 +462,32 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 					strcat(strBuf, tmpBuf);
 				}
 				break;
-			case INST_EVAL_CK:
-				strcat(strBuf, "EVAL_CK xxx\n");
+			case INST_SPD_SET:
+				strcat(strBuf, "SPD_SET xxx\n");
 				break;
-			case INST_FLAG_SET:
+			case INST_ADD_SPD:
+				strcat(strBuf, "ADD_SPD xxx\n");
+				break;
+			case INST_ADD_ASPD:
+				strcat(strBuf, "ADD_ASPD xxx\n");
+				break;
+			case INST_ADD_VSPD:
+				strcat(strBuf, "ADD_VSPD xxx\n");
+				break;
+			case INST_CK:
+				strcat(strBuf, "CK xxx\n");
+				break;
+			case INST_SET:
 				sprintf(tmpBuf, "SET 0x%02x object 0x%02x %s\n",
 					inst->set_flag.flag, inst->set_flag.object,
 					(inst->set_flag.value ? "on" : "off"));
 				strcat(strBuf, tmpBuf);
 				break;
-			case INST_EVAL_CMP:
-				strcat(strBuf, "EVAL_CMP xxx\n");
+			case INST_CMP:
+				strcat(strBuf, "CMP xxx\n");
+				break;
+			case INST_RND:
+				strcat(strBuf, "RND xxx\n");
 				break;
 
 			/* 0x50-0x5f */
@@ -471,11 +495,17 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_CUT_CHG:
 				strcat(strBuf, "CUT_CHG xxx\n");
 				break;
+			case INST_CUT_OLD:
+				strcat(strBuf, "CUT_OLD xxx\n");
+				break;
 			case INST_CUT_AUTO:
 				strcat(strBuf, "CUT_AUTO xxx\n");
 				break;
 			case INST_CUT_REPLACE:
 				strcat(strBuf, "CUT_REPLACE xxx\n");
+				break;
+			case INST_CUT_BE_SET:
+				strcat(strBuf, "CUT_BE_SET xxx\n");
 				break;
 			case INST_POS_SET:
 				strcat(strBuf, "POS_SET xxx\n");
@@ -486,6 +516,9 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_SET_VIB0:
 				strcat(strBuf, "SET_VIB0 xxx\n");
 				break;
+			case INST_SET_VIB1:
+				strcat(strBuf, "SET_VIB1 xxx\n");
+				break;
 			case INST_SET_VIB_FADE:
 				strcat(strBuf, "SET_VIB_FADE xxx\n");
 				break;
@@ -494,6 +527,18 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_MESSAGE_ON:
 				strcat(strBuf, "MESSAGE_ON xxx\n");
+				break;
+			case INST_RAIN_SET:
+				strcat(strBuf, "RAIN_SET xxx\n");
+				break;
+			case INST_MESSAGE_OFF:
+				strcat(strBuf, "MESSAGE_OFF xxx\n");
+				break;
+			case INST_SHAKE_ON:
+				strcat(strBuf, "SHAKE_ON xxx\n");
+				break;
+			case INST_WEAPON_CHG:
+				strcat(strBuf, "WEAPON_CHG xxx\n");
 				break;
 
 			/* 0x60-0x6f */
