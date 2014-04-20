@@ -594,6 +594,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_ESPR_ON:
 				strcat(strBuf, "ESPR_ON xxx\n");
 				break;
+			case INST_ESPR_ON2:
+				strcat(strBuf, "ESPR_ON2 xxx\n");
+				break;
+			case INST_ESPR3D_ON:
+				strcat(strBuf, "ESPR3D_ON xxx\n");
+				break;
 			case INST_ESPR3D_ON2:
 				strcat(strBuf, "ESPR3D_ON2 xxx\n");
 				break;
@@ -602,6 +608,9 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				break;
 			case INST_ESPR_KILL2:
 				strcat(strBuf, "ESPR_KILL2 xxx\n");
+				break;
+			case INST_ESPR_KILL_ALL:
+				strcat(strBuf, "ESPR_KILL_ALL xxx\n");
 				break;
 			case INST_SE_ON:
 				strcat(strBuf, "SE_ON xxx\n");
@@ -612,11 +621,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_XA_ON:
 				strcat(strBuf, "XA_ON xxx\n");
 				break;
+			case INST_MOVIE_ON:
+				strcat(strBuf, "MOVIE_ON xxx\n");
+				break;
 			case INST_BGM_TBL_SET:
 				strcat(strBuf, "BGM_TBL_SET xxx\n");
 				break;
+			case INST_STATUS_ON:
+				strcat(strBuf, "STATUS_ON xxx\n");
+				break;
 			case INST_EM_SET:
 				strcat(strBuf, "EM_SET xxx\n");
+				break;
+			case INST_MIZU_DIV:
+				strcat(strBuf, "MIZU_DIV xxx\n");
 				break;
 			case INST_OM_SET:
 				strcat(strBuf, "OM_SET xxx\n");

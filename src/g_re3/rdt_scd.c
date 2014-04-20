@@ -333,7 +333,7 @@ void rdt3_scd_scriptExecInst(room_t *this)
 	inst = (script_inst_t *) this->cur_inst;
 
 	switch(inst->opcode) {
-		case INST_DOOR_SET:
+		case INST_DOOR_AOT_SET:
 			{
 				script_door_set_t *doorSet = (script_door_set_t *) inst;
 				room_door_t roomDoor;

@@ -136,6 +136,7 @@
 #define INST_AOT_SET	0x63
 #define INST_AOT_SET_4P	0x64
 #define INST_AOT_RESET	0x65
+#define INST_AOT_ON	0x66
 #define INST_ITEM_AOT_SET	0x67
 #define INST_ITEM_AOT_SET_4P	0x68
 #define INST_KAGE_SET	0x69
@@ -148,14 +149,20 @@
 
 /* 0x70-0x7f */
 #define INST_ESPR_ON	0x70
+#define INST_ESPR_ON2	0x71
+#define INST_ESPR3D_ON	0x72
 #define INST_ESPR3D_ON2	0x73
 #define INST_ESPR_KILL	0x74
 #define INST_ESPR_KILL2	0x75
+#define INST_ESPR_KILL_ALL	0x76
 #define INST_SE_ON	0x77
 #define INST_BGM_CTL	0x78
 #define INST_XA_ON	0x79
+#define INST_MOVIE_ON	0x7a
 #define INST_BGM_TBL_SET	0x7b
+#define INST_STATUS_ON	0x7c
 #define INST_EM_SET	0x7d
+#define INST_MIZU_DIV	0x7e
 #define INST_OM_SET	0x7f
 
 /* 0x80-0x89 */
