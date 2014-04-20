@@ -543,8 +543,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 			/* 0x60-0x6f */
 
-			case INST_DOOR_SET:
-				strcat(strBuf, "DOOR_SET xxx\n");
+			case INST_DOOR_AOT_SET:
+				strcat(strBuf, "DOOR_AOT_SET xxx\n");
+				break;
+			case INST_DOOR_AOT_SET_4P:
+				strcat(strBuf, "DOOR_AOT_SET_4P xxx\n");
 				break;
 			case INST_AOT_SET:
 				strcat(strBuf, "AOT_SET xxx\n");
@@ -555,8 +558,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_AOT_RESET:
 				strcat(strBuf, "AOT_RESET xxx\n");
 				break;
+			case INST_AOT_ON:
+				strcat(strBuf, "AOT_ON xxx\n");
+				break;
 			case INST_ITEM_AOT_SET:
 				strcat(strBuf, "ITEM_AOT_SET xxx\n");
+				break;
+			case INST_ITEM_AOT_SET_4P:
+				strcat(strBuf, "ITEM_AOT_SET_4P xxx\n");
 				break;
 			case INST_KAGE_SET:
 				strcat(strBuf, "KAGE_SET xxx\n");
@@ -564,8 +573,20 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			case INST_SUPER_SET:
 				strcat(strBuf, "SUPER_SET xxx\n");
 				break;
+			case INST_KEEP_ITEM_CK:
+				strcat(strBuf, "KEEP_ITEM_CK xxx\n");
+				break;
+			case INST_KEY_CK:
+				strcat(strBuf, "KEY_CK xxx\n");
+				break;
+			case INST_TRG_CK:
+				strcat(strBuf, "TRG_CK xxx\n");
+				break;
 			case INST_SCA_ID_SET:
 				strcat(strBuf, "SCA_ID_SET xxx\n");
+				break;
+			case INST_OM_BOMB:
+				strcat(strBuf, "OM_BOMB xxx\n");
 				break;
 
 			/* 0x70-0x7f */

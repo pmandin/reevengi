@@ -131,14 +131,20 @@
 #define INST_WEAPON_CHG	0x5f
 
 /* 0x60-0x6f */
-#define INST_DOOR_SET	0x61
+#define INST_DOOR_AOT_SET	0x61
+#define INST_DOOR_AOT_SET_4P	0x62
 #define INST_AOT_SET	0x63
 #define INST_AOT_SET_4P	0x64
 #define INST_AOT_RESET	0x65
 #define INST_ITEM_AOT_SET	0x67
+#define INST_ITEM_AOT_SET_4P	0x68
 #define INST_KAGE_SET	0x69
 #define INST_SUPER_SET	0x6a
+#define INST_KEEP_ITEM_CK	0x6b
+#define INST_KEY_CK	0x6c
+#define INST_TRG_CK	0x6d
 #define INST_SCA_ID_SET	0x6e
+#define INST_OM_BOMB	0x6f
 
 /* 0x70-0x7f */
 #define INST_ESPR_ON	0x70
