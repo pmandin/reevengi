@@ -1,0 +1,538 @@
+<?xml version="1.0"?>
+<scd version="1">
+  <!-- 0x00-0x0f -->
+  <inst name="NOP" id="0x00">
+    <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+  </inst>
+  <inst name="IF" id="0x01">
+    <field name="opcode" type="Uint8" />
+    <field name="block_length" type="Uint8" />
+  </inst>
+  <inst name="ELSE" id="0x02">
+    <field name="opcode" type="Uint8" />
+    <field name="block_length" type="Uint8" />
+  </inst>
+  <inst name="END_IF" id="0x03">
+    <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+  </inst>
+  <inst name="BIT_TEST" id="0x04">
+    <field name="opcode" type="Uint8" />
+    <field name="flag" type="Uint8" />
+    <field name="object" type="Uint8" />
+    <field name="value" type="Uint8" />
+  </inst>
+  <inst name="BIT_OP" id="0x05">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="CMP06" id="0x06">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="CMP07" id="0x07">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+  </inst>
+  <inst name="STAGEROOMCAM_SET" id="0x08">
+    <field name="opcode" type="Uint8" />
+    <field name="object" type="Uint8" /><!-- 0 stage, 1 room, 2 camera -->
+    <field name="value" type="Uint16" />
+  </inst>
+  <inst name="CUT_SET09" id="0x09">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="CUT_SET0A" id="0x0a">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="PRINT_MSG" id="0x0b">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown" type="Uint16" />
+  </inst>
+  <inst name="DOOR_SET" id="0x0c">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="x" type="Uint16" />
+    <field name="y" type="Uint16" />
+    <field name="w" type="Uint16" />
+    <field name="h" type="Uint16" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="anim" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="unknown3" type="Uint8" />
+    <field name="next_stage_and_room" type="Uint8" /><!-- bits 7-5: stage, 4-0: room -->
+    <field name="next_x" type="Sint16" />
+    <field name="next_y" type="Sint16" />
+    <field name="next_z" type="Sint16" />
+    <field name="next_dir" type="Sint16" />
+    <field name="unknown4" type="Uint8" />
+    <field name="unknown5" type="Uint8" />
+  </inst>
+  <inst name="ITEM_SET" id="0x0d">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="x" type="Uint16" />
+    <field name="y" type="Uint16" />
+    <field name="w" type="Uint16" />
+    <field name="h" type="Uint16" />
+    <field name="type" type="Uint8" /><!-- 0x10: typewriter -->
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="unknown3" type="Uint8" />
+    <field name="unknown4" type="Uint8" />
+    <field name="unknown5" type="Uint8" />
+    <field name="unknown6" type="Uint8" />
+  </inst>
+  <inst name="NOP0E" id="0x0e">
+    <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+  </inst>
+  <inst name="INST0F" id="0x0f">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+  </inst>
+
+  <!-- 0x10-0x1f -->
+  <inst name="CMP10" id="0x10">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="CMP11" id="0x11">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="ITEM_ATTR_SET" id="0x12">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="unknown2" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+    <field name="unknown4" type="Uint16" />
+  </inst>
+  <inst name="ITEM_ATTR2_SET" id="0x13">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+  </inst>
+  <inst name="INST14" id="0x14">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST15" id="0x15">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST16" id="0x16">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST17" id="0x17">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+    <field name="unknown4" type="Uint16" />
+  </inst>
+  <inst name="ITEM_MODEL_SET" id="0x18">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint16" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+    <field name="unknown4" type="Uint16" />
+    <field name="unknown5" type="Uint16" />
+    <field name="unknown6" type="Uint16" />
+    <field name="unknown7" type="Uint16" />
+    <field name="unknown8" type="Uint16" />
+    <field name="unknown9" type="Uint16" />
+    <field name="unknown10" type="Uint16" />
+    <field name="unknown11" type="Uint16" />
+  </inst>
+  <inst name="INST19" id="0x19">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST1A" id="0x1a">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="EM_SET" id="0x1b">
+    <field name="opcode" type="Uint8" />
+    <field name="model" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="killed" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="a" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+    <field name="x" type="Uint16" />
+    <field name="y" type="Uint16" />
+    <field name="z" type="Uint16" />
+    <field name="id" type="Uint8" />
+    <field name="unknown4" type="Uint8" />
+    <field name="unknown5" type="Uint8" />
+    <field name="unknown6" type="Uint8" />
+  </inst>
+  <inst name="INST1C" id="0x1c">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+  </inst>
+  <inst name="INST1D" id="0x1d">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST1E" id="0x1e">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="OM_SET" id="0x1f">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint16" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+    <field name="unknown4" type="Uint16" />
+    <field name="unknown5" type="Uint16" />
+    <field name="unknown6" type="Uint16" />
+    <field name="unknown7" type="Uint16" />
+    <field name="unknown8" type="Uint16" />
+    <field name="unknown9" type="Uint16" />
+    <field name="unknown10" type="Uint16" />
+    <field name="unknown11" type="Uint16" />
+    <field name="unknown12" type="Uint16" />
+  </inst>
+
+  <!-- 0x20-0x2f -->
+  <inst name="PLAYER_POS_SET" id="0x20">
+    <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="unknown0" type="Uint16" />
+    <field name="a" type="Uint16" />
+    <field name="unknown1" type="Uint16" />
+    <field name="x" type="Uint16" />
+    <field name="y" type="Uint16" />
+    <field name="z" type="Uint16" />
+  </inst>
+  <inst name="EM_POS_SET" id="0x21">
+    <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="dummy" type="Uint16" />
+    <field name="a" type="Uint16" />
+    <field name="unknown" type="Uint16" />
+    <field name="x" type="Uint16" />
+    <field name="y" type="Uint16" />
+    <field name="z" type="Uint16" />
+  </inst>
+  <inst name="INST22" id="0x22">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST23" id="0x23">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST24" id="0x24">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST25" id="0x25">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST26" id="0x26" />
+  <inst name="INST27" id="0x27">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST28" id="0x28" />
+  <inst name="INST29" id="0x29">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST2A" id="0x2a">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+  </inst>
+  <inst name="INST2B" id="0x2b">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST2C" id="0x2c">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown" type="Uint8" />
+  </inst>
+  <inst name="INST2D" id="0x2d">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST2E" id="0x2e" />
+  <inst name="INST2F" id="0x2f">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+
+  <!-- 0x30-0x3f -->
+  <inst name="INST30" id="0x30">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+  </inst>
+  <inst name="INST31" id="0x31">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST32" id="0x32">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST33" id="0x33" />
+  <inst name="INST34" id="0x34">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+  </inst>
+  <inst name="INST35" id="0x35">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST36" id="0x36">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST37" id="0x37">
+    <field name="opcode" type="Uint8" />
+    <field name="row" type="Uint8" /><!-- row,col in 7*32 byte array -->
+    <field name="col" type="Uint8" />
+    <field name="value" type="Uint8" />
+  </inst>
+  <inst name="INST38" id="0x38">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST39" id="0x39">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST3A" id="0x3a">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST3B" id="0x3b">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+  </inst>
+  <inst name="INST3C" id="0x3c">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+  </inst>
+  <inst name="INST3D" id="0x3d">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+  </inst>
+  <inst name="INST3E" id="0x3e">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST3F" id="0x3f">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+  </inst>
+
+  <!-- 0x40-0x4f -->
+  <inst name="INST40" id="0x40">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+    <field name="unknown4" type="Uint32" />
+  </inst>
+  <inst name="INST41" id="0x41">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST42" id="0x42">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST43" id="0x43">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST44" id="0x44">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST45" id="0x45">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST46" id="0x46">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+    <field name="unknown4" type="Uint32" />
+    <field name="unknown5" type="Uint32" />
+    <field name="unknown6" type="Uint32" />
+    <field name="unknown7" type="Uint32" />
+    <field name="unknown8" type="Uint32" />
+    <field name="unknown9" type="Uint32" />
+    <field name="unknown10" type="Uint16" />
+  </inst>
+  <inst name="INST47" id="0x47">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+    <field name="unknown4" type="Uint16" />
+  </inst>
+  <inst name="INST48" id="0x48">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST49" id="0x49">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST4A" id="0x4a">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST4B" id="0x4b">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST4C" id="0x4c">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST4D" id="0x4d">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+  <inst name="INST4E" id="0x4e">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+  </inst>
+  <inst name="INST4F" id="0x4f">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+
+  <!-- 0x50 -->
+  <inst name="INST50" id="0x50">
+    <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+  </inst>
+</scd>
+
+<!--
+dexit
+dret
+dsleep
+next
+if8
+if16
+sfor
+efor
+dtask_init
+dtask_kill
+sv_work8
+add_work8
+sv_work16
+add_work16
+fade_in
+fade_out
+model_set
+cam_pset
+cam_aset
+cam_add
+cam_add2
+pos_pset
+pos_aset
+pos_add
+pos_add2
+dir_pset
+dir_aset
+dir_add
+dir_add2
+vert_set
+vert_add
+mess_disp	0x0b?
+call_se
+attri2_set
+color_set
+packed_add
+demo_sleep
+demo_stfoff
+
+0x0b mess_disp ?
+0x14 event?
+0x17 volume_set, pan_set
+
+room1070 # 0x1b 0x00 0x03 0x91 0x01 0x02 0x00 0x00 0x2d 0x00 0x00 0x00 0x06 0x45 0x00 0x00 0xd2 0x34 0x00 0x00 0x00 0x00
+room1080 # 0x1b 0x02 0x80 0x00 0x01 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x30 0x75 0x30 0x75 0x30 0x75 0x00 0x00 0x00 0x00
+room1080 # 0x1b 0x02 0x01 0x00 0x01 0x02 0x00 0x00 0x00 0x08 0x00 0x00 0x10 0x27 0x00 0x00 0x10 0x0e 0x00 0x00 0x00 0x00
+room1080 # 0x1b 0x02 0x80 0x01 0x01 0x02 0x00 0x00 0xe0 0x07 0x00 0x00 0xf0 0x6e 0x48 0xf4 0x04 0x42 0x01 0x00 0x00 0x00
+room1080 # 0x1b 0x02 0x01 0x01 0x01 0x02 0x00 0x00 0x00 0x0c 0x00 0x00 0xc0 0x5d 0x00 0x00 0xe8 0x3a 0x01 0x00 0x00 0x00
+room10a0 # 0x1b 0x11 0x00 0x71 0x01 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x50 0x20 0x00 0x00 0x81 0x09 0x00 0x00 0x00 0x00
+room10a0 # 0x1b 0x11 0x00 0x72 0x01 0x02 0x00 0x00 0x07 0x04 0x00 0x00 0xcf 0x0b 0x00 0x00 0xd0 0x1a 0x01 0x00 0x00 0x00
+  -->
