@@ -1,5 +1,7 @@
 v 0.19
-
+- movie: fixed replay speed, updated for ffmpeg/libav changes,
+  tested against libav. Replay also works in OpenGL now.
+- re3: scd: added more script intructions
 
 v 0.18
 
