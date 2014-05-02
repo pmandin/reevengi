@@ -18,6 +18,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_AS
 AC_PROG_RANLIB
+AM_PROG_CC_C_O
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -119,6 +120,12 @@ fi
 LIBS=$TMP_LIBS
 CFLAGS=$TMP_CFLAGS
 
+# LibXml
+
+PKG_CHECK_MODULES([LIBXML], [libxml-2.0],
+	[AC_DEFINE([HAVE_LIBXML], [1], [Use libxml])]
+) 
+
 # OpenGL renderer
 
 AC_ARG_ENABLE(opengl,
@@ -192,6 +199,7 @@ AC_SUBST(PHYSFS_LIBS)
 AC_CONFIG_FILES([
 Makefile
 diff/Makefile
+extra/Makefile
 src/Makefile
 src/g_common/Makefile
 src/g_re1/Makefile
