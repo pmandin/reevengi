@@ -66,7 +66,41 @@
     <field name="h" type="Uint16" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
-    <field name="anim" type="Uint8" />
+    <field name="anim" type="Uint8">
+      <value name="door00" id="0x00" />
+      <value name="door01" id="0x01" />
+      <value name="door02" id="0x02" />
+      <value name="door03" id="0x03" />
+      <value name="door04" id="0x04" />
+      <value name="door05" id="0x05" />
+      <value name="door06" id="0x06" />
+      <value name="door07" id="0x07" />
+      <value name="door08" id="0x08" />
+      <value name="door09" id="0x09" />
+      <value name="door10" id="0x0a" />
+      <value name="door11" id="0x0b" />
+      <value name="door12" id="0x0c" />
+      <value name="door13" id="0x0d" />
+      <value name="door14" id="0x0e" />
+      <value name="mon" id="0x0f" />
+      <value name="ele03" id="0x10" />
+      <value name="ele01" id="0x11" />
+      <value name="ele01a" id="0x12" />
+      <value name="ele01b" id="0x13" />
+      <value name="ele02" id="0x14" />
+      <value name="ele04" id="0x15" />
+      <value name="kai01" id="0x16" />
+      <value name="kai03" id="0x17" />
+      <value name="kai02" id="0x18" />
+      <value name="kai04" id="0x19" />
+      <value name="lad00" id="0x1a" />
+      <value name="lad01" id="0x1b" />
+      <value name="door00k" id="0x1c" />
+      <value name="door01k" id="0x1d" />
+      <value name="door03k" id="0x1e" />
+      <value name="door05k" id="0x1f" />
+      <value name="door15" id="0x20" />
+    </field>
     <field name="unknown2" type="Uint8" />
     <field name="unknown3" type="Uint8" />
     <field name="next_stage_and_room" type="Uint8" /><!-- bits 7-5: stage, 4-0: room -->
@@ -177,7 +211,49 @@
   </inst>
   <inst name="EM_SET" id="0x1b">
     <field name="opcode" type="Uint8" />
-    <field name="model" type="Uint8" />
+    <field name="model" type="Uint8">
+      <value name="Zombie (Scientist)" id="0x00" />
+      <value name="Zombie (Nude)" id="0x01" />
+      <value name="Zombie (Dog)" id="0x02" />
+      <value name="Spider (Brown)" id="0x03" />
+      <value name="Spider (Grey)" id="0x04" />
+      <value name="Crow" id="0x05" />
+      <value name="Hunter" id="0x06" />
+      <value name="Bee" id="0x07" />
+      <value name="Tentacle" id="0x08" />
+      <value name="Chimera" id="0x09" />
+      <value name="Snake" id="0x0a" />
+      <value name="Shark" id="0x0b" />
+      <value name="Tyran (Grey)" id="0x0c" />
+      <value name="Yawn" id="0x0d" />
+      <value name="Plant 42 (Roots)" id="0x0e" />
+      <value name="Plant 42 (Tentacle)" id="0x0f" />
+      <value name="Tyran (Pink)" id="0x10" />
+      <value name="Zombie" id="0x11" />
+      <value name="Yawn (Injured)" id="0x12" />
+      <value name="Web" id="0x13" />
+      <value name="Arm" id="0x14" />
+      <value name="Arm #2" id="0x15" />
+      <value name="Chris Redfield" id="0x20" />
+      <value name="Jill Valentine" id="0x21" />
+      <value name="Barry Burton" id="0x22" />
+      <value name="Rebecca Chambers" id="0x23" />
+      <value name="Albert Wesker" id="0x24" />
+      <value name="Kenneth J. Sullivan" id="0x25" />
+      <value name="Forest Speyer" id="0x26" />
+      <value name="Enrico Marini" id="0x27" />
+      <value name="Character 4" id="0x28" />
+      <value name="Kenneth (Injured)" id="0x29" />
+      <value name="Barry (Injured)" id="0x2a" />
+      <value name="Barry (Prisoner?)" id="0x2b" />
+      <value name="Rebecca (Prisoner?)" id="0x2c" />
+      <value name="Barry (#2)" id="0x2d" />
+      <value name="Wesker (#2)" id="0x2e" />
+      <value name="Chris (Special #1)" id="0x30" />
+      <value name="Jill (Special #1)" id="0x31" />
+      <value name="Chris (Special #2)" id="0x32" />
+      <value name="Jill (Special #2)" id="0x33" />
+    </field>	
     <field name="unknown0" type="Uint8" />
     <field name="killed" type="Uint8" />
     <field name="unknown1" type="Uint8" />
