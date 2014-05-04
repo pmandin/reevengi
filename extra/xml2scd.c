@@ -39,8 +39,8 @@ xmlXPathObjectPtr xpathSearch (xmlDocPtr doc, xmlChar *xpath);
 void generateDefines(xmlDocPtr doc);
 void generateTypes(xmlDocPtr doc);
 void generateTypeFields(xmlNodePtr node);
-void generateDump(xmlDocPtr doc);
-void generateDumpFields(xmlNodePtr node, char *name_low);
+void generateDumps(xmlDocPtr doc);
+void generateDumpFields(xmlNodePtr node, char *name_low, int *has_block_length);
 
 /*--- Functions ---*/
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	xmlDocPtr doc;
 
 	if (argc<3) {
-		fprintf(stderr, "Usage: %s /path/to/scdN.xml [--defines|--types|--dump]\n", argv[0]);
+		fprintf(stderr, "Usage: %s /path/to/scdN.xml [--defines|--types|--dumps]\n", argv[0]);
 		return 1;
 	}
 
@@ -64,8 +64,8 @@ int main(int argc, char **argv)
 		if (strcmp(argv[2],"--types")==0) {
 			generateTypes(doc);
 		}
-		if (strcmp(argv[2],"--dump")==0) {
-			generateDump(doc);
+		if (strcmp(argv[2],"--dumps")==0) {
+			generateDumps(doc);
 		}
 	} else {
 		fprintf(stderr, "xml2scd: Can not read %s\n", argv[1]);
@@ -229,7 +229,7 @@ void generateTypeFields(xmlNodePtr node)
 	}
 }
 
-void generateDump(xmlDocPtr doc)
+void generateDumps(xmlDocPtr doc)
 {
 	xmlXPathObjectPtr path;
 	xmlChar *inst_name, *inst_id;
@@ -248,7 +248,8 @@ void generateDump(xmlDocPtr doc)
 	nodeset = path->nodesetval;
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
-				
+		int has_block_length = 0;
+
 		node = nodeset->nodeTab[i];
 		if (strcmp(node->name, "inst")!=0) {
 			continue;
@@ -279,7 +280,18 @@ void generateDump(xmlDocPtr doc)
 			DUMP_BUFFER_FINAL,
 			(strcmp(&inst_id[2], inst_name_low) == 0) ? "INST_" : "",
 			inst_name_up);
-		generateDumpFields(node, inst_name_low);
+		generateDumpFields(node, inst_name_low, &has_block_length);
+
+		/* Process length of block */
+		if (has_block_length) {
+			printf("\t\tblock_len = %s->i_%s.block_length;\n",
+				DUMP_INST_PTR,
+				inst_name_low);
+			printf("\t\tblock_ptr = (script_inst_t *) (&((Uint8 *) %s)[sizeof(script_inst_%s_t)]);\n",
+				DUMP_INST_PTR,
+				inst_name_low);
+		}
+
 		printf("\t}\n"
 			"\tbreak;\n");
 
@@ -290,7 +302,7 @@ void generateDump(xmlDocPtr doc)
 	xmlXPathFreeObject(path);
 }
 
-void generateDumpFields(xmlNodePtr node, char *name_low)
+void generateDumpFields(xmlNodePtr node, char *name_low, int *has_block_length)
 {
 	xmlNodePtr child;
 	xmlChar *field_name, *field_type;
@@ -302,7 +314,12 @@ void generateDumpFields(xmlNodePtr node, char *name_low)
 		}
 
 		field_name = xmlGetProp(child, "name");
-		if ((strcmp(field_name, "opcode")==0) || (strcmp(field_name, "dummy")==0)) {
+		if ((strcmp(field_name, "opcode")==0)
+		    || (strcmp(field_name, "dummy")==0)) {
+			continue;
+		}
+		if (strcmp(field_name, "block_length")==0) {
+			*has_block_length = 1;
 			continue;
 		}
 		field_type = xmlGetProp(child, "type");
