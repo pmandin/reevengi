@@ -370,7 +370,7 @@ void generateDumpFieldValues(xmlNodePtr node, char *field_value)
 			first_value=0;
 		}
 
-		printf("\t\t\tcase %s:\tsprintf(%s, \" (%s)\");\n",
+		printf("\t\t\tcase %s:\tsprintf(%s, \" (%s)\");\tbreak;\n",
 			value_id,
 			DUMP_BUFFER_TMP,
 			value_name);
