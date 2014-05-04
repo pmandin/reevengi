@@ -10,7 +10,9 @@ AM_CXXFLAGS = $(SDL_CFLAGS)
 
 XML2SCD = $(top_builddir)/extra/xml2scd
 
-rdt_scd_defs.gen.h:	scd1.xml $(XML2SCD)
+SCD_XML = scd2.xml
+
+rdt_scd_defs.gen.h:	$(SCD_XML) $(XML2SCD)
 	$(XML2SCD) $< --defines > $@
 
 header_files = emd.h adt.h game_re2.h game_re2_pc_game.h \
@@ -21,4 +23,4 @@ header_files = emd.h adt.h game_re2.h game_re2_pc_game.h \
 generated_files = rdt_scd_defs.gen.h
 
 EXTRA_DIST = $(header_files) $(generated_files) \
-	libg_re2.vcproj scd2.xml
+	libg_re2.vcproj $(SCD_XML)

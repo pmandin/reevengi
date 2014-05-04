@@ -6,33 +6,48 @@
   </inst>
   <inst name="RETURN" id="0x01">
     <field name="opcode" type="Uint8" />
+    <field name="ret_value" type="Uint8" />
   </inst>
   <inst name="DO_EVENTS" id="0x02">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="RESET" id="0x03">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="num_func" type="Uint8" />
   </inst>
   <inst name="EVT_EXEC" id="0x04">
     <field name="opcode" type="Uint8" />
+    <field name="cond" type="Uint8" />
+    <field name="ex_opcode" type="Uint8" />
+    <field name="num_func" type="Uint8" />
   </inst>
   <inst name="05" id="0x05">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="IF" id="0x06">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="block_length" type="Uint16" />
   </inst>
   <inst name="ELSE" id="0x07">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="block_length" type="Uint16" />
   </inst>
   <inst name="END_IF" id="0x08">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="SLEEP_INIT" id="0x09">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="count" type="Uint16" />
   </inst>
   <inst name="SLEEP_LOOP" id="0x0a"><!-- 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN -->
     <field name="opcode" type="Uint8" />
+    <field name="count0" type="Uint8" />
+    <field name="count1" type="Uint8" />
   </inst>
   <inst name="0B" id="0x0b">
     <field name="opcode" type="Uint8" />
@@ -42,12 +57,17 @@
   </inst>
   <inst name="BEGIN_LOOP" id="0x0d">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="block_length" type="Uint16" />
+    <field name="count" type="Uint16" />
   </inst>
   <inst name="END_LOOP" id="0x0e">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="BEGIN_WHILE" id="0x0f">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="block_length" type="Uint16" />
   </inst>
 
  <!-- 0x10-0x1f -->
@@ -56,15 +76,23 @@
   </inst>
   <inst name="DO" id="0x11">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="block_length" type="Uint16" />
   </inst>
   <inst name="WHILE" id="0x12">
     <field name="opcode" type="Uint8" />
+    <field name="block_length" type="Uint8" />
   </inst>
   <inst name="BEGIN_SWITCH" id="0x13">
     <field name="opcode" type="Uint8" />
+    <field name="varw" type="Uint8" />
+    <field name="block_length" type="Uint16" />
   </inst>
   <inst name="CASE" id="0x14">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="block_length" type="Uint16" />
+    <field name="value" type="Uint16" />
   </inst>
   <inst name="DEFAULT" id="0x15">
     <field name="opcode" type="Uint8" />
@@ -74,9 +102,14 @@
   </inst>
   <inst name="GOTO" id="0x17">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="rel_offset" type="Sint16" />
   </inst>
   <inst name="FUNC" id="0x18">
     <field name="opcode" type="Uint8" />
+    <field name="num_func" type="Uint8" />
   </inst>
   <inst name="19" id="0x19">
     <field name="opcode" type="Uint8" />
@@ -92,6 +125,9 @@
   </inst>
   <inst name="CHG_SCRIPT" id="0x1d">
     <field name="opcode" type="Uint8" />
+    <field name="varw" type="Uint8" />
+    <field name="offset" type="Uint8" />
+    <field name="size" type="Uint8" /><!-- 0 byte, 1 word -->
   </inst>
   <inst name="1E" id="0x1e">
     <field name="opcode" type="Uint8" />
@@ -106,48 +142,102 @@
   </inst>
   <inst name="BIT_TEST" id="0x21">
     <field name="opcode" type="Uint8" />
+    <field name="array" type="Uint8" />
+    <field name="bit" type="Uint8" />
+    <field name="value" type="Uint8" />
   </inst>
   <inst name="BIT_CHG" id="0x22">
     <field name="opcode" type="Uint8" />
+    <field name="array" type="Uint8" />
+    <field name="bit" type="Uint8" />
+    <field name="operation" type="Uint8" />
   </inst>
   <inst name="CMP_VARW" id="0x23"><!-- var1a is current camera -->
     <field name="opcode" type="Uint8" />
-  </inst>	/*  */
+    <field name="dummy" type="Uint8" />
+    <field name="varw" type="Uint8" />
+    <field name="compare" type="Uint8" />
+    <field name="value" type="Uint16" />
+  </inst>
   <inst name="SET_VARW" id="0x24">
     <field name="opcode" type="Uint8" />
+    <field name="varw" type="Uint8" />
+    <field name="value" type="Uint16" />
   </inst>
   <inst name="COPY_VARW" id="0x25">
     <field name="opcode" type="Uint8" />
+    <field name="dst" type="Uint8" />
+    <field name="src" type="Uint8" />
   </inst>
   <inst name="OP_VARW_IMM" id="0x26">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="operation" type="Uint8" /><!-- add,sub,mul,div, mod,or,and,xor, not,lsl,lsr,asr -->
+    <field name="varw" type="Uint8" />
+    <field name="value" type="Uint16" />
   </inst>
   <inst name="OP_VARW" id="0x27">
     <field name="opcode" type="Uint8" />
+    <field name="operation" type="Uint8" /><!-- add,sub,mul,div, mod,or,and,xor, not,lsl,lsr,asr -->
+    <field name="varw" type="Uint8" />
+    <field name="src" type="Uint8" />
   </inst>
   <inst name="28" id="0x28">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="CAM_SET" id="0x29">
     <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
   </inst>
   <inst name="2A" id="0x2a">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="PRINT_TEXT" id="0x2b">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="unknown3" type="Uint8" />
   </inst>
   <inst name="ESPR3D_SET" id="0x2c">
     <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="type" type="Uint8" /><!-- ptr to this stored in room object list -->
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="x" type="Sint16" />
+    <field name="y" type="Sint16" />
+    <field name="w" type="Sint16" />
+    <field name="h" type="Sint16" />
+    <field name="unknown3" type="Uint16" /><!-- Instructions to execute. 0:examine 1:activate 2:? or 0xff -->
+    <field name="unknown4" type="Uint16" />
+    <field name="unknown5" type="Uint16" />
   </inst>
   <inst name="TRIGGER_SET" id="0x2d">
     <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint16" />
+    <field name="unknown1" type="Uint32" />
+    <field name="unknown2" type="Uint32" />
+    <field name="unknown3" type="Uint32" />
+    <field name="unknown4" type="Uint32" />
+    <field name="unknown5" type="Uint32" />
+    <field name="unknown6" type="Uint32" />
+    <field name="unknown7" type="Uint32" />
+    <field name="unknown8" type="Uint32" />
+    <field name="unknown9" type="Uint16" />
   </inst>
   <inst name="SET_REG_MEM" id="0x2e"><!-- 0x2e 01 00 : reenable control+animation in room1010 -->
     <field name="opcode" type="Uint8" />
+    <field name="component" type="Uint8" />
+    <field name="index" type="Uint8" />
   </inst>
   <inst name="SET_REG_IMM" id="0x2f">
     <field name="opcode" type="Uint8" />
+    <field name="component" type="Uint8" />
+    <field name="value" type="Sint16" />
   </inst>
 
   <!-- 0x30-0x3f -->
@@ -162,39 +252,73 @@
   </inst>
   <inst name="SET_REG3" id="0x33">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="value0" type="Sint16" />
+    <field name="value1" type="Sint16" />
+    <field name="value2" type="Sint16" />
   </inst>
   <inst name="EM_SET_VAR" id="0x34">
     <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="value" type="Sint16" />
   </inst>
   <inst name="EM_SET_VAR_VARW" id="0x35">
     <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="varw" type="Uint8" />
   </inst>
   <inst name="36" id="0x36">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+    <field name="x" type="Sint16" />
+    <field name="y" type="Sint16" />
+    <field name="z" type="Sint16" />
   </inst>
   <inst name="CAM_CHG" id="0x37">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="camera" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
   </inst>
   <inst name="FLOOR_SET" id="0x38">
     <field name="opcode" type="Uint8" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
   </inst>
   <inst name="39" id="0x39">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="ESPR_SET" id="0x3a">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="unknown0" type="Uint16" />
+    <field name="unknown1" type="Uint16" />
+    <field name="unknown2" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
+    <field name="unknown4" type="Uint16" />
+    <field name="unknown5" type="Uint16" />
+    <field name="unknown6" type="Uint16" />
   </inst>
   <inst name="DOOR_SET" id="0x3b">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="STATUS_SET" id="0x3c">
     <field name="opcode" type="Uint8" />
+    <field name="screen" type="Uint8" />
   </inst>
   <inst name="EM_GET_VAR_VARW" id="0x3d">
     <field name="opcode" type="Uint8" />
+    <field name="varw" type="Uint8" />
+    <field name="id" type="Uint8" />
   </inst>
   <inst name="CMP_IMM" id="0x3e">
     <field name="opcode" type="Uint8" />
+    <field name="unknown0" type="Uint8" />
+    <field name="unknown1" type="Uint8" />
+    <field name="compare" type="Uint8" />
+    <field name="value" type="Sint16" />
   </inst>
   <inst name="3F" id="0x3f">
     <field name="opcode" type="Uint8" />
