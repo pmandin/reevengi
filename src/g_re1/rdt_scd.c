@@ -35,7 +35,6 @@
 #include "rdt.h"
 #include "rdt_scd.h"
 #include "rdt_scd_dump.h"
-/*#include "rdt_scd_common.h"*/
 
 #include "rdt_scd_defs.gen.h"
 #include "rdt_scd_types.gen.h"
@@ -49,99 +48,7 @@ typedef struct {
 
 /*--- Variables ---*/
 
-#if 0
-static const script_inst_len_t inst_length[]={
-	{INST_NOP,	2},
-	{INST_IF,	sizeof(script_if_t)},
-	{INST_ELSE,	sizeof(script_else_t)},
-	{INST_END_IF,	sizeof(script_endif_t)},
-	{INST_BIT_TEST,	sizeof(script_bit_test_t)},
-	{INST_BIT_OP,	4},
-	{INST_CMP06,	4},
-	{INST_CMP07,	6},
-	{INST_STAGEROOMCAM_SET,	sizeof(script_stageroomcam_set_t)},
-	{0x09,	2},
-	{0x0a,	2},
-	{INST_PRINT_MSG,	sizeof(script_printmsg_t)},
-	{INST_DOOR_SET,	sizeof(script_door_set_t)},
-	{INST_ITEM_SET,	sizeof(script_item_set_t)},
-	{INST_NOP0E,	sizeof(script_nop0e_t)},
-	{0x0f,	8},
-
-	{INST_CMP10,	2},
-	{INST_CMP11,	2},
-	{INST_ITEM_ATTR_SET,	sizeof(script_item_attr_set_t)},
-	{INST_ITEM_ATTR2_SET,	sizeof(script_item_attr2_set_t)},
-	{0x14,	4},
-	{0x15,	2},
-	{0x16,	2},
-	{0x17,	10},
-	{INST_ITEM_MODEL_SET,	sizeof(script_item_model_set_t)},
-	{0x19,	4},
-	{0x1a,	2},
-	{INST_EM_SET,	sizeof(script_em_set_t)},
-	{0x1c,	6},
-	{0x1d,	2},
-	{0x1e,	4},
-	{INST_OM_SET,	sizeof(script_om_set_t)},
-
-	{INST_PLAYER_POS_SET,	sizeof(script_player_pos_set_t)},
-	{INST_EM_POS_SET,	sizeof(script_em_pos_set_t)},
-	{0x22,	4},
-	{0x23,	2},
-	{0x24,	4},
-	{0x25,	4},
-	{0x27,	2},
-	/*{0x28,	6},*/
-	{0x29,	2},
-	{0x2a,	12},
-	{0x2b,	4},
-	{0x2c,	2},
-	{0x2d,	4},
-	{0x2f,	4},
-
-	{0x30,	12},
-	{0x31,	4},
-	{0x32,	4},
-	/*{0x33,	12},*/
-	{0x34,	8},
-	{0x35,	4},
-	{0x36,	4},
-	{0x37,	4},
-	{0x38,	4},
-	{0x39,	2},
-	{0x3a,	4},
-	{0x3b,	6},
-	{0x3c,	6},
-	{0x3d,	12},
-	{0x3e,	2},
-	{0x3f,	6},
-
-	{0x40,	16},
-	{0x41,	4},
-	{0x42,	4},
-	{0x43,	4},
-	{0x44,	2},
-	{0x45,	2},
-	{0x46,	2+(12*3)+6},
-	{0x47,	14},
-	{0x48,	2},
-	{0x49,	2},
-	{0x4a,	2},
-	{0x4b,	2},
-	{0x4c,	4},
-	{0x4d,	2},
-	{0x4e,	4},
-	{0x4f,	2},
-
-	{0x50,	2}
-};
-#else
-
 #include "rdt_scd_lengths.gen.c"
-
-#endif
-
 
 /*--- Functions ---*/
 
@@ -191,7 +98,7 @@ int rdt1_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 
 	/* Variable length instructions */
 	switch(curInstPtr[0]) {
-		case 0x28:
+		case INST_28:
 			switch(curInstPtr[2]) {
 				case 0:
 				case 2:
@@ -210,7 +117,7 @@ int rdt1_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 					break;
 			}
 			break;
-		case 0x33:
+		case INST_33:
 			switch(curInstPtr[1]) {
 				case 0:
 				case 4:
