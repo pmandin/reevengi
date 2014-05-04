@@ -41,7 +41,11 @@
   </inst>
   <inst name="STAGEROOMCAM_SET" id="0x08">
     <field name="opcode" type="Uint8" />
-    <field name="object" type="Uint8" /><!-- 0 stage, 1 room, 2 camera -->
+    <field name="object" type="Uint8">
+      <value name="Stage" id="0x00" />
+      <value name="Room" id="0x01" />
+      <value name="Camera" id="0x02" />
+    </field>
     <field name="value" type="Uint16" />
   </inst>
   <inst name="CUT_SET09" id="0x09">
