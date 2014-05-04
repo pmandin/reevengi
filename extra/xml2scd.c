@@ -282,6 +282,8 @@ void generateDumps(xmlDocPtr doc)
 			(strcmp(&inst_id[2], inst_name_low) == 0) ? "INST_" : "",
 			inst_name_up);
 		generateDumpFields(node, inst_name_low, &has_block_length);
+		printf("\t\tstrcat(%s, \"\\n\");\n",
+			DUMP_BUFFER_FINAL);
 
 		/* Process length of block */
 		if (has_block_length) {
