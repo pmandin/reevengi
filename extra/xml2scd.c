@@ -41,6 +41,7 @@ void generateTypes(xmlDocPtr doc);
 void generateTypeFields(xmlNodePtr node);
 void generateDumps(xmlDocPtr doc);
 void generateDumpFields(xmlNodePtr node, char *name_low, int *has_block_length);
+void generateDumpFieldValues(xmlNodePtr node, char *field_value);
 
 /*--- Functions ---*/
 
@@ -338,5 +339,46 @@ void generateDumpFields(xmlNodePtr node, char *name_low, int *has_block_length)
 			swapValue);
 
 		printf("\t\tstrcat(strBuf, tmpBuf);\n");
+
+		generateDumpFieldValues(child, swapValue);
+	}
+}
+
+void generateDumpFieldValues(xmlNodePtr node, char *field_value)
+{
+	xmlNodePtr child;
+	xmlChar *value_name, *value_id;
+	int first_value = 1;
+
+	for (child = node->children; child; child = child->next) {
+		if (child->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+
+		if (strcmp(child->name, "value")!=0) {
+			continue;
+		}
+
+		value_name = xmlGetProp(child, "name");
+		value_id = xmlGetProp(child, "id");
+
+		if (first_value) {
+			printf("\t\tswitch (%s) {\n",
+				field_value);
+			first_value=0;
+		}
+
+		printf("\t\t\tcase %s:\tsprintf(%s, \" (%s)\");\n",
+			value_id,
+			DUMP_BUFFER_TMP,
+			value_name);
+	}
+
+	if (!first_value) {
+		printf("\t\t\tdefault:\tbreak;\n"
+			"\t\t}\n");
+		printf("\t\tstrcat(%s, %s);\n",
+			DUMP_BUFFER_FINAL,
+			DUMP_BUFFER_TMP);
 	}
 }
