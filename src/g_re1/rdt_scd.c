@@ -34,8 +34,11 @@
 
 #include "rdt.h"
 #include "rdt_scd.h"
-#include "rdt_scd_common.h"
 #include "rdt_scd_dump.h"
+/*#include "rdt_scd_common.h"*/
+
+#include "rdt_scd_defs.gen.h"
+#include "rdt_scd_types.gen.h"
 
 /*--- Types ---*/
 
@@ -46,6 +49,7 @@ typedef struct {
 
 /*--- Variables ---*/
 
+#if 0
 static const script_inst_len_t inst_length[]={
 	{INST_NOP,	2},
 	{INST_IF,	sizeof(script_if_t)},
@@ -132,6 +136,12 @@ static const script_inst_len_t inst_length[]={
 
 	{0x50,	2}
 };
+#else
+
+#include "rdt_scd_lengths.gen.c"
+
+#endif
+
 
 /*--- Functions ---*/
 
@@ -242,7 +252,7 @@ void rdt1_scd_scriptExecInst(room_t *this)
 	switch(inst->opcode) {
 		case INST_DOOR_SET:
 			{
-				script_door_set_t *doorSet = (script_door_set_t *) inst;
+				script_inst_door_set_t *doorSet = (script_inst_door_set_t *) inst;
 				room_door_t roomDoor;
 				int next_stage, next_room;
 
@@ -281,7 +291,7 @@ void rdt1_scd_scriptExecInst(room_t *this)
 #if 0
 		case INST_ITEM_SET:
 			{
-				script_item_set_t *itemSet = (script_item_set_t *) inst;
+				script_inst_item_set_t *itemSet = (script_item_set_t *) inst;
 				room_item_t item;
 
 				item.x = SDL_SwapLE16(itemSet->x);

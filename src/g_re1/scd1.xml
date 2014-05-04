@@ -345,12 +345,16 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
   </inst>
-  <inst name="26" id="0x26" />
+  <inst name="26" id="0x26">
+    <field name="opcode" type="Uint8" />
+  </inst>
   <inst name="27" id="0x27">
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
-  <inst name="28" id="0x28" />
+  <inst name="28" id="0x28" variable_length="1">
+    <field name="opcode" type="Uint8" />
+  </inst>
   <inst name="29" id="0x29">
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
@@ -376,7 +380,9 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
   </inst>
-  <inst name="2E" id="0x2e" />
+  <inst name="2E" id="0x2e">
+    <field name="opcode" type="Uint8" />
+  </inst>
   <inst name="2F" id="0x2f">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
@@ -401,7 +407,9 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
   </inst>
-  <inst name="33" id="0x33" />
+  <inst name="33" id="0x33" variable_length="1">
+    <field name="opcode" type="Uint8" />
+  </inst>
   <inst name="34" id="0x34">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
