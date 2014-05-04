@@ -33,7 +33,9 @@
 #include "../g_common/game.h"
 
 #include "rdt.h"
-#include "rdt_scd_common.h"
+/*#include "rdt_scd_common.h"*/
+#include "rdt_scd_defs.gen.h"
+#include "rdt_scd_types.gen.h"
 
 #ifndef ENABLE_SCRIPT_DISASM
 
@@ -203,6 +205,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		switch(inst->opcode) {
 
+#if 0
 			/* 0x00-0x0f */
 
 			case INST_NOP:
@@ -287,7 +290,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 #endif
 			case INST_DOOR_SET:
 				{
-					int next_stage = (inst->door_set.next_stage_and_room>>5) & 7;
+					int next_stage = (inst->i_door_set.next_stage_and_room>>5) & 7;
 
 					switch(next_stage) {
 						case 0:
@@ -303,13 +306,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 					sprintf(tmpBuf, "OBJECT #0x%02x = DOOR_SET x=%d,y=%d,w=%d,h=%d anim=%d (%s), stage=%d,room=%d, px=%d,py=%d,pz=%d,pa=%d\n",
 						inst->door_set.id,
-						SDL_SwapLE16(inst->door_set.x), SDL_SwapLE16(inst->door_set.y),
-						SDL_SwapLE16(inst->door_set.w), SDL_SwapLE16(inst->door_set.h),
-						inst->door_set.anim,
-						(inst->door_set.anim < sizeof(door_anims)/sizeof(const char *) ? door_anims[inst->door_set.anim] : "???" ),
-						next_stage, inst->door_set.next_stage_and_room & 31,
-						SDL_SwapLE16(inst->door_set.next_x), SDL_SwapLE16(inst->door_set.next_y),
-						SDL_SwapLE16(inst->door_set.next_z), SDL_SwapLE16(inst->door_set.next_dir)
+						SDL_SwapLE16(inst->i_door_set.x), SDL_SwapLE16(inst->door_set.y),
+						SDL_SwapLE16(inst->i_door_set.w), SDL_SwapLE16(inst->door_set.h),
+						inst->i_door_set.anim,
+						(inst->i_door_set.anim < sizeof(door_anims)/sizeof(const char *) ? door_anims[inst->i_door_set.anim] : "???" ),
+						next_stage, inst->i_door_set.next_stage_and_room & 31,
+						SDL_SwapLE16(inst->i_door_set.next_x), SDL_SwapLE16(inst->i_door_set.next_y),
+						SDL_SwapLE16(inst->i_door_set.next_z), SDL_SwapLE16(inst->i_door_set.next_dir)
 					);
 					strcat(strBuf, tmpBuf);
 				}
@@ -415,6 +418,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				sprintf(tmpBuf, "Unknown opcode 0x%02x\n", inst->opcode);
 				strcat(strBuf, tmpBuf);
 				break;
+#else
+
+#include "rdt_scd_dumps.gen.c"
+
+#endif
 		}
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
