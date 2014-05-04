@@ -8,8 +8,17 @@ libg_re2_a_SOURCES = emd.c adt.c game_re2.c \
 AM_CFLAGS = $(SDL_CFLAGS)
 AM_CXXFLAGS = $(SDL_CFLAGS)
 
-EXTRA_DIST = emd.h adt.h game_re2.h game_re2_pc_game.h \
+XML2SCD = $(top_builddir)/extra/xml2scd
+
+rdt_scd_defs.gen.h:	scd1.xml $(XML2SCD)
+	$(XML2SCD) $< --defines > $@
+
+header_files = emd.h adt.h game_re2.h game_re2_pc_game.h \
 	rdt.h rdt_rid.h rdt_rvd.h rdt_pri.h rdt_msg.h \
 	rdt_scd.h rdt_scd_common.h rdt_scd_dump.h rdt_sca.h \
-	rdt_esp.h rdt_lit.h ems.h \
-	libg_re2.vcproj
+	rdt_esp.h rdt_lit.h ems.h
+
+generated_files = rdt_scd_defs.gen.h
+
+EXTRA_DIST = $(header_files) $(generated_files) \
+	libg_re2.vcproj scd2.xml

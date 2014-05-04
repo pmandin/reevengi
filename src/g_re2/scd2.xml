@@ -1,0 +1,449 @@
+<?xml version="1.0"?>
+<scd version="2">
+  <!-- 0x00-0x0f --> 
+  <inst name="NOP" id="0x00">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="RETURN" id="0x01">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="DO_EVENTS" id="0x02">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="RESET" id="0x03">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="EVT_EXEC" id="0x04">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="05" id="0x05">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="IF" id="0x06">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ELSE" id="0x07">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="END_IF" id="0x08">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SLEEP_INIT" id="0x09">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SLEEP_LOOP" id="0x0a"><!-- 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN -->
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="0B" id="0x0b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="0C" id="0x0c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BEGIN_LOOP" id="0x0d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="END_LOOP" id="0x0e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BEGIN_WHILE" id="0x0f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+ <!-- 0x10-0x1f -->
+  <inst name="END_WHILE" id="0x10">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="DO" id="0x11">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="WHILE" id="0x12">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BEGIN_SWITCH" id="0x13">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CASE" id="0x14">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="DEFAULT" id="0x15">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="END_SWITCH" id="0x16">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="GOTO" id="0x17">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="FUNC" id="0x18">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="19" id="0x19">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BREAK" id="0x1a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="1B" id="0x1b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="1C" id="0x1c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CHG_SCRIPT" id="0x1d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="1E" id="0x1e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="1F" id="0x1f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x20-0x2f -->
+  <inst name="20" id="0x20">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BIT_TEST" id="0x21">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BIT_CHG" id="0x22">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CMP_VARW" id="0x23"><!-- var1a is current camera -->
+    <field name="opcode" type="Uint8" />
+  </inst>	/*  */
+  <inst name="SET_VARW" id="0x24">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="COPY_VARW" id="0x25">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="OP_VARW_IMM" id="0x26">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="OP_VARW" id="0x27">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="28" id="0x28">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CAM_SET" id="0x29">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="2A" id="0x2a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="PRINT_TEXT" id="0x2b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ESPR3D_SET" id="0x2c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="TRIGGER_SET" id="0x2d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SET_REG_MEM" id="0x2e"><!-- 0x2e 01 00 : reenable control+animation in room1010 -->
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SET_REG_IMM" id="0x2f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x30-0x3f -->
+  <inst name="SET_REG_TMP" id="0x30">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ADD_REG" id="0x31">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="EM_SET_POS" id="0x32">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SET_REG3" id="0x33">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="EM_SET_VAR" id="0x34">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="EM_SET_VAR_VARW" id="0x35">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="36" id="0x36">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CAM_CHG" id="0x37">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="FLOOR_SET" id="0x38">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="39" id="0x39">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ESPR_SET" id="0x3a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="DOOR_SET" id="0x3b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="STATUS_SET" id="0x3c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="EM_GET_VAR_VARW" id="0x3d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CMP_IMM" id="0x3e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="3F" id="0x3f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x40-0x4f -->
+  <inst name="40" id="0x40">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="41" id="0x41">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="STATUS_SHOW" id="0x42">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="43" id="0x43">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="EM_SET" id="0x44">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="45" id="0x45">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="46" id="0x46">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ACTIVATE_OBJECT" id="0x47">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="48" id="0x48">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="49" id="0x49">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="4A" id="0x4a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="CAMSWITCH_SWAP" id="0x4b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="4C" id="0x4c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="4D" id="0x4d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ITEM_AOT_SET" id="0x4e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="4F" id="0x4f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x50-0x5f -->
+  <inst name="50" id="0x50">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SND_SET" id="0x51">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="52" id="0x52">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="53" id="0x53">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="54" id="0x54">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="55" id="0x55">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="56" id="0x56">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="57" id="0x57">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="58" id="0x58">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="SND_PLAY" id="0x59">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="5A" id="0x5a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="5B" id="0x5b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="5C" id="0x5c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="5D" id="0x5d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ITEM_HAVE" id="0x5e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="5F" id="0x5f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x60-0x6f -->
+  <inst name="60" id="0x60">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="61" id="0x61">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ITEM_REMOVE" id="0x62">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="63" id="0x63">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="64" id="0x64">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="65" id="0x65">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="66" id="0x66">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="WALL_SET" id="0x67">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="67" id="0x68">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="68" id="0x69">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="LIGHT_POS_SET" id="0x6a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="LIGHT_RANGE_SET" id="0x6b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="6C" id="0x6c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="BG_YPOS_SET" id="0x6d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="6E" id="0x6e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="MOVIE_PLAY" id="0x6f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x70-0x7f -->
+  <inst name="70" id="0x70">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="71" id="0x71">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="72" id="0x72">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="73" id="0x73">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="74" id="0x74">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="75" id="0x75">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ITEM_ADD" id="0x76">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="77" id="0x77">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="78" id="0x78">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="79" id="0x79">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="7A" id="0x7a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="7B" id="0x7b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="LIGHT_COLOR_SET" id="0x7c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="LIGHT_POS_CAM_SET" id="0x7d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="LIGHT_RANGE_CAM_SET" id="0x7e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="LIGHT_COLOR_CAM_SET" id="0x7f">
+    <field name="opcode" type="Uint8" />
+  </inst>
+
+  <!-- 0x80-0x8e -->
+  <inst name="80" id="0x80">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="81" id="0x81">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="82" id="0x82">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="83" id="0x83">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="84" id="0x84">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="85" id="0x85">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="POISON_CHECK" id="0x86">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="POISON_CLEAR" id="0x87">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="ITEM_HAVE_AND_REMOVE" id="0x88">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="89" id="0x89">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="8A" id="0x8a">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="8B" id="0x8b">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="8C" id="0x8c">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="8D" id="0x8d">
+    <field name="opcode" type="Uint8" />
+  </inst>
+  <inst name="8E" id="0x8e">
+    <field name="opcode" type="Uint8" />
+  </inst>
+</scd>
