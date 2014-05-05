@@ -140,22 +140,15 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		}
 		reindent(indent);
 
-		switch(inst->opcode) {
 #include "rdt_scd_dumps.gen.c"
-		}
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
 
 		if (block_ptr) {
 			int next_len = block_len - inst_len;
-			/*if (inst->opcode == INST_CASE) next_len = block_len;
-			if (inst->opcode == INST_BEGIN_WHILE) next_len = block_len - 2;
-			if (inst->opcode == INST_BEGIN_LOOP) next_len = block_len - 2;*/
-			/*logMsg(1, " block 0x%04x inst 0x%04x next 0x%04x\n", block_len, inst_len, next_len);*/
 
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
-			/*if (inst->opcode == INST_DO) next_len += sizeof(script_do_t);*/
 			inst_len += next_len;
 		}
 
@@ -166,7 +159,6 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		length -= inst_len;
 		offset += inst_len;
 		inst = (script_inst_t *) (&((Uint8 *) inst)[inst_len]);
-		/*printf("instlen %d, len %d\n", inst_len, length);*/
 	}
 }
 

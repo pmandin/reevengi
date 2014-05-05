@@ -32,7 +32,9 @@
 #include "../g_common/room.h"
 
 #include "rdt.h"
-#include "rdt_scd_common.h"
+
+#include "rdt_scd_defs.gen.h"
+#include "rdt_scd_types.gen.h"
 
 #ifndef ENABLE_SCRIPT_DISASM
 
@@ -427,6 +429,11 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		}
 		reindent(indent);
 
+#if 1
+
+#include "rdt_scd_dumps.gen.c"
+
+#else
 		switch(inst->opcode) {
 			/* Nops */
 
@@ -470,13 +477,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, "Ifel_ck\n");
 				block_len = SDL_SwapLE16(inst->i_if.block_length);
 				block_ptr = (script_inst_t *) (&((Uint8 *) inst)[sizeof(script_if_t)]);
-				{
+/*				{
 					script_inst_t *end_block_ptr = (script_inst_t *) (&((Uint8 *) block_ptr)[block_len-2]);
 					if (end_block_ptr->opcode == INST_END_IF) {
 						block_len += 2;
 					}
 				}				
-				break;
+*/				break;
 			case INST_ELSE:
 				strcat(strBuf, "Else_ck\n");
 				block_len = SDL_SwapLE16(inst->i_else.block_length);
@@ -1264,19 +1271,31 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 		}
+#endif
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
 
 		if (block_ptr) {
-			int next_len = block_len - inst_len;
+			int next_len;
+			
+			if (inst->opcode == INST_IFEL_CK) {
+				script_inst_t *end_block_ptr;
+
+				end_block_ptr = (script_inst_t *) (&((Uint8 *) block_ptr)[block_len-2]);
+				if (end_block_ptr->opcode == INST_ENDIF) {
+					block_len += 2;
+				}
+			}
+
+			next_len = block_len - inst_len;
 			if (inst->opcode == INST_CASE) next_len = block_len;
-			if (inst->opcode == INST_BEGIN_WHILE) next_len = block_len - 2;
-			if (inst->opcode == INST_BEGIN_LOOP) next_len = block_len - 2;
+			if (inst->opcode == INST_WHILE) next_len = block_len - 2;
+			if (inst->opcode == INST_DO) next_len = block_len - 2;
 			/*logMsg(1, " block 0x%04x inst 0x%04x next 0x%04x\n", block_len, inst_len, next_len);*/
 
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
-			if (inst->opcode == INST_DO) next_len += sizeof(script_do_t);
+			if (inst->opcode == INST_DO) next_len += sizeof(script_inst_do_t);
 			inst_len += next_len;
 		}
 

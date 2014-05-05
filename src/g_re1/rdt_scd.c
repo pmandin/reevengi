@@ -37,9 +37,10 @@
 #include "rdt_scd_dump.h"
 
 #include "rdt_scd_defs.gen.h"
-#include "rdt_scd_types.gen.h"
 
 /*--- Types ---*/
+
+#include "rdt_scd_types.gen.h"
 
 typedef struct {
 	Uint8 opcode;

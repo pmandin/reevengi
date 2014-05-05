@@ -9,22 +9,24 @@ AM_CXXFLAGS = $(SDL_CFLAGS)
 
 XML2SCD = $(top_builddir)/extra/xml2scd
 
+SCD_XML = scd1.xml
+
 rdt_scd_dump.c: rdt_scd_defs.gen.h rdt_scd_types.gen.h \
 	rdt_scd_dumps.gen.c
 
 rdt_scd.c:	rdt_scd_defs.gen.h rdt_scd_types.gen.h \
 	rdt_scd_lengths.gen.c
 
-rdt_scd_defs.gen.h:	scd1.xml $(XML2SCD)
+rdt_scd_defs.gen.h:	$(SCD_XML) $(XML2SCD)
 	$(XML2SCD) $< --defines > $@
 
-rdt_scd_types.gen.h:	scd1.xml $(XML2SCD)
+rdt_scd_types.gen.h:	$(SCD_XML) $(XML2SCD)
 	$(XML2SCD) $< --types > $@
 
-rdt_scd_dumps.gen.c:	scd1.xml $(XML2SCD)
+rdt_scd_dumps.gen.c:	$(SCD_XML) $(XML2SCD)
 	$(XML2SCD) $< --dumps > $@
 
-rdt_scd_lengths.gen.c:	scd1.xml $(XML2SCD)
+rdt_scd_lengths.gen.c:	$(SCD_XML) $(XML2SCD)
 	$(XML2SCD) $< --lengths > $@
 
 header_files = emd.h pak.h game_re1.h rdt.h rdt_rvd.h rdt_rid.h \
@@ -35,5 +37,5 @@ generated_files = rdt_scd_defs.gen.h rdt_scd_types.gen.h rdt_scd_dumps.gen.c \
 	rdt_scd_lengths.gen.c
 
 EXTRA_DIST = $(header_files) $(generated_files) \
-	libg_re1.vcproj scd1.xml
+	libg_re1.vcproj $(SCD_XML)
 	
