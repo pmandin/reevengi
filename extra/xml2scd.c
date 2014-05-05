@@ -288,7 +288,7 @@ void generateDumps(xmlDocPtr doc)
 			"\t\t\tstrcat(%s, \"%s%s\");\n",
 			DUMP_BUFFER_FINAL,
 			(strcmp(&inst_id[2], inst_name_low) == 0) ? "INST_" : "",
-			inst_name_up);
+			inst_name);
 		generateDumpFields(node, inst_name_low, &has_block_length);
 		printf("\t\t\tstrcat(%s, \"\\n\");\n",
 			DUMP_BUFFER_FINAL);
@@ -310,7 +310,15 @@ void generateDumps(xmlDocPtr doc)
 		free(inst_name_low);
 	}
 
-	printf("}\n");
+	printf(	"\tdefault:\n");
+	printf(	"\t\tsprintf(%s, \"Unknown opcode 0x%%02x\\n\", %s->opcode);\n",
+		DUMP_BUFFER_TMP,
+		DUMP_INST_PTR);
+	printf(	"\t\tstrcat(%s, %s);\n",
+		DUMP_BUFFER_FINAL,
+		DUMP_BUFFER_TMP);
+	printf(	"\t\tbreak;\n"
+		"}\n");
 
 	xmlXPathFreeObject(path);
 }
