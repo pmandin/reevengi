@@ -258,10 +258,10 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
     <field name="unknown2" type="Uint8" />
-    <field name="x" type="Sint16" />
-    <field name="y" type="Sint16" />
-    <field name="w" type="Sint16" />
-    <field name="h" type="Sint16" />
+    <field name="x" type="Sint16" base="10"/>
+    <field name="y" type="Sint16" base="10" />
+    <field name="w" type="Sint16" base="10" />
+    <field name="h" type="Sint16" base="10" />
     <field name="unknown3" type="Uint16" /><!-- Instructions to execute. 0:examine 1:activate 2:? or 0xff -->
     <field name="unknown4" type="Uint16" />
     <field name="unknown5" type="Uint16" />
@@ -327,9 +327,9 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
     <field name="unknown2" type="Uint16" />
-    <field name="x" type="Sint16" />
-    <field name="y" type="Sint16" />
-    <field name="z" type="Sint16" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
   </inst>
   <inst name="Sca_id_set" id="0x37">
     <field name="opcode" type="Uint8" />
@@ -365,14 +365,14 @@
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" />
     <field name="unknown1" type="Uint16" />
-    <field name="x" type="Sint16" />
-    <field name="y" type="Sint16" />
-    <field name="w" type="Sint16" />
-    <field name="h" type="Sint16" />
-    <field name="next_x" type="Sint16" />
-    <field name="next_y" type="Sint16" />
-    <field name="next_z" type="Sint16" />
-    <field name="next_dir" type="Sint16" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="w" type="Sint16" base="10" />
+    <field name="h" type="Sint16" base="10" />
+    <field name="next_x" type="Sint16" base="10" />
+    <field name="next_y" type="Sint16" base="10" />
+    <field name="next_z" type="Sint16" base="10" />
+    <field name="next_dir" type="Sint16" base="10" />
     <field name="next_stage" type="Uint8" />
     <field name="next_room" type="Uint8" />
     <field name="next_camera" type="Uint8" />
@@ -500,10 +500,10 @@
     <field name="sound_bank" type="Uint8" />
     <field name="texture" type="Uint8" />
     <field name="killed" type="Uint8" />
-    <field name="x" type="Sint16" />
-    <field name="y" type="Sint16" />
-    <field name="z" type="Sint16" />
-    <field name="dir" type="Sint16" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
+    <field name="dir" type="Sint16" base="10" />
     <field name="unknown2" type="Uint16" />
     <field name="unknown3" type="Uint16" />
  </inst>
@@ -571,10 +571,10 @@
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" />
     <field name="unknown1" type="Uint16" />
-    <field name="x" type="Uint16" />
-    <field name="y" type="Uint16" />
-    <field name="h" type="Uint16" />
-    <field name="w" type="Uint16" />
+    <field name="x" type="Uint16" base="10" />
+    <field name="y" type="Uint16" base="10" />
+    <field name="h" type="Uint16" base="10" />
+    <field name="w" type="Uint16" base="10" />
     <field name="type" type="Uint16">
       <!-- <value name="" id="0x00" /> -->
       <value name="Knife" id="0x01" />
@@ -1089,14 +1089,14 @@
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" /><!-- ptr to this stored in room object list -->
     <field name="unknown1" type="Uint16" />
-    <field name="x0" type="Sint16" />
-    <field name="z0" type="Sint16" />
-    <field name="x1" type="Sint16" />
-    <field name="z1" type="Sint16" />
-    <field name="x2" type="Sint16" />
-    <field name="z2" type="Sint16" />
-    <field name="x3" type="Sint16" />
-    <field name="z3" type="Sint16" />
+    <field name="x0" type="Sint16" base="10" />
+    <field name="z0" type="Sint16" base="10" />
+    <field name="x1" type="Sint16" base="10" />
+    <field name="z1" type="Sint16" base="10" />
+    <field name="x2" type="Sint16" base="10" />
+    <field name="z2" type="Sint16" base="10" />
+    <field name="x3" type="Sint16" base="10" />
+    <field name="z3" type="Sint16" base="10" />
     <field name="unknown2" type="Uint16" />
     <field name="unknown3" type="Uint16" />
     <field name="unknown4" type="Uint16" />

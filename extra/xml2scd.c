@@ -326,8 +326,9 @@ void generateDumps(xmlDocPtr doc)
 void generateDumpFields(xmlNodePtr node, char *name_low, int *has_block_length)
 {
 	xmlNodePtr child;
-	xmlChar *field_name, *field_type;
+	xmlChar *field_name, *field_type, *field_base;
 	char swapValue[32];
+	int base, size;
 
 	for (child = node->children; child; child = child->next) {
 		if (child->type != XML_ELEMENT_NODE) {
@@ -344,19 +345,35 @@ void generateDumpFields(xmlNodePtr node, char *name_low, int *has_block_length)
 			continue;
 		}
 		field_type = xmlGetProp(child, "type");
+		base = 16;
+		field_base = xmlGetProp(child, "base");
+		if (field_base) {
+			base = atoi(field_base);
+		}
 
 		sprintf(swapValue, "%s->i_%s.%s", DUMP_INST_PTR, name_low, field_name);
+		size=2;
 		if ((strcmp(field_type, "Uint16")==0) || (strcmp(field_type, "Sint16")==0)) {
 			sprintf(swapValue, "SDL_SwapLE16(%s->i_%s.%s)", DUMP_INST_PTR, name_low, field_name);
+			size=4;
 		}
 		if ((strcmp(field_type, "Uint32")==0) || (strcmp(field_type, "Sint32")==0)) {
 			sprintf(swapValue, "SDL_SwapLE32(%s->i_%s.%s)", DUMP_INST_PTR, name_low, field_name);
+			size=8;
 		}
 
-		printf("\t\t\tsprintf(%s, \" %s=%%d\", %s);\n",
-			DUMP_BUFFER_TMP,
-			field_name,
-			swapValue);
+		if (base==10) {
+			printf("\t\t\tsprintf(%s, \" %s=%%d\", %s);\n",
+				DUMP_BUFFER_TMP,
+				field_name,
+				swapValue);
+		} else {
+			printf("\t\t\tsprintf(%s, \" %s=0x%%0%dx\", %s);\n",
+				DUMP_BUFFER_TMP,
+				field_name,
+				size,
+				swapValue);
+		}
 
 		printf("\t\t\tstrcat(strBuf, tmpBuf);\n");
 
