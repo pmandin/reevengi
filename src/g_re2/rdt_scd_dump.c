@@ -182,8 +182,8 @@ static const bitarray_name_t bitarray_names[]={
 
 /*--- Variables ---*/
 
-static char strBuf[256];
-static char tmpBuf[256];
+static char strBuf[512];
+static char tmpBuf[512];
 
 /*--- Functions prototypes ---*/
 
