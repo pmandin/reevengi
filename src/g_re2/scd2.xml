@@ -43,12 +43,11 @@
   <inst name="Sleep" id="0x09">
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="count" type="Uint16" />
+    <field name="count" type="Uint16" base="10" />
   </inst>
   <inst name="Sleeping" id="0x0a"><!-- 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN -->
     <field name="opcode" type="Uint8" />
-    <field name="count0" type="Uint8" />
-    <field name="count1" type="Uint8" />
+    <field name="count" type="Uint16" base="10" />
   </inst>
   <inst name="Wsleep" id="0x0b">
     <field name="opcode" type="Uint8" />
@@ -60,7 +59,7 @@
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
-    <field name="count" type="Uint16" />
+    <field name="count" type="Uint16" base="10" />
   </inst>
   <inst name="Next" id="0x0e"><!-- End for loop -->
     <field name="opcode" type="Uint8" />
@@ -212,7 +211,7 @@
       <value name="Asr" id="0x0b" />
     </field>
     <field name="varw" type="Uint8" />
-    <field name="value" type="Uint16" />
+    <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Calc2" id="0x27">
     <field name="opcode" type="Uint8" />
@@ -314,8 +313,53 @@
   </inst>
   <inst name="Member_set" id="0x34">
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
-    <field name="value" type="Sint16" />
+    <field name="id" type="Uint8" >
+<!--	{0x00, 1, ""},	em[0x00].w
+	{0x01, 1, ""},	em[0x02].w
+	{0x02, 1, ""},	em[0x04].b
+	{0x03, 1, ""},	em[0x05].b
+	{0x04, 1, ""},	em[0x06].b
+	{0x05, 1, ""},	em[0x07].b
+	{0x06, 1, ""},	em[0x08].b -->
+      <value name="Em_Pose" id="0x07" /><!-- em[0x10e].w -->
+	{0x08, 1, ""},	em[0x0a].b
+	{0x09, 1, ""},	em[0x0b].b
+	{0x0a, 1, ""},	em[0x10].l -->
+      <value name="Em_PosX" id="0x0b" /><!-- em[0x38].w -->
+      <value name="Em_PosY" id="0x0c" /><!-- em[0x3c].w -->
+      <value name="Em_PosZ" id="0x0d" /><!-- em[0x40].w -->
+      <value name="Em_DirX" id="0x0e" /><!-- em[0x74].w -->
+      <value name="Em_DirY" id="0x0f" /><!-- em[0x76].w -->
+      <value name="Em_DirZ" id="0x10" /><!-- em[0x78].w -->
+<!--	{0x11, 1, ""},	em[0x106].b
+	{0x12, 1, ""},	em[0x154].w
+	{0x13, 1, ""},	em[0x1c2].w -->
+      <value name="Em_PosX_New" id="0x14" /><!-- em[0x1c4].w -->
+      <value name="Em_PosZ_New" id="0x15" /><!-- em[0x1c6].w -->
+<!--	{0x16, 1, ""},	em[0x1cc].w
+	{0x17, 1, ""},	em[0x1d4].w
+	{0x18, 1, ""},	em[0x1d6].w
+	{0x19, 1, ""},	em[0x1d8].w
+	{0x1a, 1, ""},	em[0x1da].w
+	{0x1b, 1, ""},	em[0x144].b
+	{0x1c, 1, ""},	em[0x144].w
+	{0x1d, 1, ""},	em[0x146].w
+	{0x1e, 1, ""},	em[0x148].w
+	{0x1f, 1, ""},	em[0x14e].b
+	{0x20, 1, ""},	em[0x94].w
+	{0x21, 1, ""},	em[0x98].w
+	{0x22, 1, ""},	em[0x96].w
+	{0x23, 1, ""},	em[0x9a].w
+	{0x24, 1, ""},	em[0x9e].w
+	{0x25, 1, ""},	em[0x9c].w
+	{0x26, 1, ""},	em[0x1de].w
+	{0x27, 1, ""},	em[0x118].w
+	{0x28, 1, ""},	em[0x11a].w
+	{0x29, 1, ""},	em[0x218].w
+	{0x2a, 1, ""},	em[0x21a].w
+	{0x2b, 1, ""},	em[0x1d3].b -->
+   </field>
+    <field name="value" type="Sint16" base="10"/>
   </inst>
   <inst name="Member_set2" id="0x35">
     <field name="opcode" type="Uint8" />
@@ -571,8 +615,8 @@
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" />
     <field name="unknown1" type="Uint16" />
-    <field name="x" type="Uint16" base="10" />
-    <field name="y" type="Uint16" base="10" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
     <field name="h" type="Uint16" base="10" />
     <field name="w" type="Uint16" base="10" />
     <field name="type" type="Uint16">
