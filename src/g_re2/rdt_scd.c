@@ -138,7 +138,7 @@ void rdt2_scd_scriptExecInst(room_t *this)
 				room_door_t roomDoor;
 
 				roomDoor.x = SDL_SwapLE16(doorSet->x);
-				roomDoor.y = SDL_SwapLE16(doorSet->y);
+				roomDoor.y = SDL_SwapLE16(doorSet->z);
 				roomDoor.w = SDL_SwapLE16(doorSet->w);
 				roomDoor.h = SDL_SwapLE16(doorSet->h);
 
@@ -161,7 +161,7 @@ void rdt2_scd_scriptExecInst(room_t *this)
 				room_item_t item;
 
 				item.x = SDL_SwapLE16(itemAotSet->x);
-				item.y = SDL_SwapLE16(itemAotSet->y);
+				item.y = SDL_SwapLE16(itemAotSet->z);
 				item.w = SDL_SwapLE16(itemAotSet->w);
 				item.h = SDL_SwapLE16(itemAotSet->h);
 

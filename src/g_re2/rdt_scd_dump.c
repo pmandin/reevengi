@@ -67,76 +67,12 @@ void rdt2_scd_scriptDump(room_t *this, int num_script)
 /*--- Types ---*/
 
 typedef struct {
-	Uint8 id;
-	Uint8 hexa;	/* display as : 0: decimal, 1:hexa */
-	const char *name;
-} em_var_name_t;
-
-typedef struct {
 	Uint8 array;
 	Uint8 bit;
 	const char *name;
 } bitarray_name_t;
 
-typedef struct {
-	Uint8 model;
-	const char *name;
-} em_model_name_t;
-
 /*--- Constants ---*/
-
-static const em_var_name_t em_var_name[]={
-	/*
-	{0x00, 1, ""},	em[0x00].w
-	{0x01, 1, ""},	em[0x02].w
-	{0x02, 1, ""},	em[0x04].b
-	{0x03, 1, ""},	em[0x05].b
-	{0x04, 1, ""},	em[0x06].b
-	{0x05, 1, ""},	em[0x07].b
-	{0x06, 1, ""},	em[0x08].b
-	*/
-	{0x07, 1, "#EM_POSE"},	/* em[0x10e].w */
-	/*
-	{0x08, 1, ""},	em[0x0a].b
-	{0x09, 1, ""},	em[0x0b].b
-	{0x0a, 1, ""},	em[0x10].l
-	*/
-	{0x0b, 0, "#EM_X_POS"},	/* em[0x38].l */
-	{0x0c, 0, "#EM_Y_POS"},	/* em[0x3c].l */
-	{0x0d, 0, "#EM_Z_POS"},	/* em[0x40].l */
-	{0x0e, 0, "#EM_X_ANGLE"},	/* em[0x74].w */
-	{0x0f, 0, "#EM_Y_ANGLE"},	/* em[0x76].w */
-	{0x10, 0, "#EM_Z_ANGLE"},	/* em[0x78].w */
-	/*
-	{0x11, 1, ""},	em[0x106].b
-	{0x12, 1, ""},	em[0x154].w
-	{0x13, 1, ""},	em[0x1c2].w*/
-	{0x14, 0, "#EM_X_POS_NEW"},	/*em[0x1c4].w*/
-	{0x15, 0, "#EM_Z_POS_NEW"}	/*em[0x1c6].w*/
-	/*{0x16, 1, ""},	em[0x1cc].w
-	{0x17, 1, ""},	em[0x1d4].w
-	{0x18, 1, ""},	em[0x1d6].w
-	{0x19, 1, ""},	em[0x1d8].w
-	{0x1a, 1, ""},	em[0x1da].w
-	{0x1b, 1, ""},	em[0x144].b
-	{0x1c, 1, ""},	em[0x144].w
-	{0x1d, 1, ""},	em[0x146].w
-	{0x1e, 1, ""},	em[0x148].w
-	{0x1f, 1, ""},	em[0x14e].b
-	{0x20, 1, ""},	em[0x94].w
-	{0x21, 1, ""},	em[0x98].w
-	{0x22, 1, ""},	em[0x96].w
-	{0x23, 1, ""},	em[0x9a].w
-	{0x24, 1, ""},	em[0x9e].w
-	{0x25, 1, ""},	em[0x9c].w
-	{0x26, 1, ""},	em[0x1de].w
-	{0x27, 1, ""},	em[0x118].w
-	{0x28, 1, ""},	em[0x11a].w
-	{0x29, 1, ""},	em[0x218].w
-	{0x2a, 1, ""},	em[0x21a].w
-	{0x2b, 1, ""},	em[0x1d3].b
-	*/
-};
 
 static const bitarray_name_t bitarray_names[]={
 	{0, 0x19, "game.difficulty"},
@@ -297,6 +233,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 #include "rdt_scd_dumps.gen.c"
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
+
+		if (inst->opcode == INST_MESSAGE_ON) {
+			this->getText(this, 0, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+			logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
+
+			this->getText(this, 1, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+			sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
+		}
 
 		if (block_ptr) {
 			int next_len;

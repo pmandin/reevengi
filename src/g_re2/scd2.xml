@@ -15,13 +15,13 @@
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
-    <field name="num_func" type="Uint8" />
+    <field name="event" type="Uint8" />
   </inst>
   <inst name="Evt_exec" id="0x04">
     <field name="opcode" type="Uint8" />
     <field name="cond" type="Uint8" />
     <field name="ex_opcode" type="Uint8" /><!-- 0x18: execute function -->
-    <field name="num_func" type="Uint8" />
+    <field name="event" type="Uint8" />
   </inst>
   <inst name="Evt_kill" id="0x05">
     <field name="opcode" type="Uint8" />
@@ -47,7 +47,8 @@
   </inst>
   <inst name="Sleeping" id="0x0a"><!-- 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN -->
     <field name="opcode" type="Uint8" />
-    <field name="count" type="Uint16" base="10" />
+    <field name="count0" type="Uint8" base="10" />
+    <field name="count1" type="Uint8" base="10" />
   </inst>
   <inst name="Wsleep" id="0x0b">
     <field name="opcode" type="Uint8" />
@@ -109,11 +110,11 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
     <field name="unknown2" type="Uint8" />
-    <field name="rel_offset" type="Sint16" />
+    <field name="rel_offset" type="Sint16" base="10" />
   </inst>
   <inst name="Gosub" id="0x18">
     <field name="opcode" type="Uint8" />
-    <field name="num_func" type="Uint8" />
+    <field name="event" type="Uint8" />
   </inst>
   <inst name="Return" id="0x19">
     <field name="opcode" type="Uint8" />
@@ -258,7 +259,7 @@
     <field name="unknown1" type="Uint8" />
     <field name="unknown2" type="Uint8" />
     <field name="x" type="Sint16" base="10"/>
-    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
     <field name="w" type="Sint16" base="10" />
     <field name="h" type="Sint16" base="10" />
     <field name="unknown3" type="Uint16" /><!-- Instructions to execute. 0:examine 1:activate 2:? or 0xff -->
@@ -268,16 +269,11 @@
   <inst name="Obj_model_set" id="0x2d">
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="unknown0" type="Uint16" />
-    <field name="unknown1" type="Uint32" />
-    <field name="unknown2" type="Uint32" />
-    <field name="unknown3" type="Uint32" />
-    <field name="unknown4" type="Uint32" />
-    <field name="unknown5" type="Uint32" />
-    <field name="unknown6" type="Uint32" />
-    <field name="unknown7" type="Uint32" />
-    <field name="unknown8" type="Uint32" />
-    <field name="unknown9" type="Uint16" />
+    <field name="unknown0" type="Uint16" array="6" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
+    <field name="unknown1" type="Uint16" array="9" />
   </inst>
   <inst name="Work_set" id="0x2e"><!-- 0x2e 01 00 : reenable control+animation in room1010 -->
     <field name="opcode" type="Uint8" />
@@ -300,9 +296,9 @@
   <inst name="Pos_set" id="0x32">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
   </inst>
   <inst name="Dir_set" id="0x33">
     <field name="opcode" type="Uint8" />
@@ -410,7 +406,7 @@
     <field name="unknown0" type="Uint16" />
     <field name="unknown1" type="Uint16" />
     <field name="x" type="Sint16" base="10" />
-    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
     <field name="w" type="Sint16" base="10" />
     <field name="h" type="Sint16" base="10" />
     <field name="next_x" type="Sint16" base="10" />
@@ -616,9 +612,9 @@
     <field name="unknown0" type="Uint16" />
     <field name="unknown1" type="Uint16" />
     <field name="x" type="Sint16" base="10" />
-    <field name="y" type="Sint16" base="10" />
-    <field name="h" type="Uint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
     <field name="w" type="Uint16" base="10" />
+    <field name="h" type="Uint16" base="10" />
     <field name="type" type="Uint16">
       <!-- <value name="" id="0x00" /> -->
       <value name="Knife" id="0x01" />
@@ -811,7 +807,7 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
   </inst>
-  <inst name="Xa_on" id="0x59">
+  <inst name="Xa_on" id="0x59"><!-- Play a sound -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="value" type="Sint16" />
@@ -1300,15 +1296,19 @@
     <field name="opcode" type="Uint8" />
     <field name="camera" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="param" type="Uint8" />
-    <field name="value" type="Sint16" />
+    <field name="param" type="Uint8">
+      <value name="x" id="11" />
+      <value name="y" id="12" />
+      <value name="z" id="13" />
+    </field>
+    <field name="value" type="Sint16" base="10"/>
   </inst>
   <inst name="Light_kido_set2" id="0x7e">
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="camera" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="range" type="Uint16" />
+    <field name="range" type="Uint16" base="10"/>
   </inst>
   <inst name="Light_color_set2" id="0x7f">
     <field name="opcode" type="Uint8" />
