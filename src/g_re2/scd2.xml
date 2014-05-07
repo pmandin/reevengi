@@ -1,5 +1,221 @@
 <?xml version="1.0"?>
 <scd version="2">
+  <!-- enums -->
+  <enum name="calc">
+    <value name="Add" id="0x00" />
+    <value name="Sub" id="0x01" />
+    <value name="Mul" id="0x02" />
+    <value name="Div" id="0x03" />
+    <value name="Mod" id="0x04" />
+    <value name="Or" id="0x05" />
+    <value name="And" id="0x06" />
+    <value name="Xor" id="0x07" />
+    <value name="Not" id="0x08" />
+    <value name="Lsr" id="0x09" />
+    <value name="Lsl" id="0x0a" />
+    <value name="Asr" id="0x0b" />
+  </enum>
+
+  <enum name="model">
+      <value name="Zombie (Police Officer)" id="0x10" />
+      <value name="Zombie (Male Civilian)" id="0x11" />
+      <value name="Zombie (Male Civilian)" id="0x12" />
+      <value name="Zombie (Female Civilian)" id="0x13" />
+      <value name="Zombie (Scientist)" id="0x15" />
+      <value name="Zombie (Male Civilian)" id="0x16" />
+      <value name="Zombie (Nude)" id="0x17" />
+      <value name="Zombie (Male Civilian)" id="0x18" />
+      <value name="Zombie (Male Civilian)" id="0x1e" />
+      <value name="Zombie (Male Civilian)" id="0x1f" />
+      <value name="Zombie (Dog)" id="0x20" />
+      <value name="Crow" id="0x21" />
+      <value name="Licker (Normal)" id="0x22" />
+      <value name="Alligator" id="0x23" />
+      <value name="Licker" id="0x24" />
+      <value name="Spider (Big)" id="0x25" />
+      <value name="Spider (Small)" id="0x26" />
+      <value name="G-Baby" id="0x27" />
+      <value name="G-Mutant" id="0x28" />
+      <value name="Insect" id="0x29" />
+      <value name="Mr. X (Normal)" id="0x2a" />
+      <value name="Mr. X (Mutated)" id="0x2b" />
+      <value name="Mr. X (Arm)" id="0x2c" />
+      <value name="Zombie (Arm)" id="0x2d" />
+      <value name="Ivy (Form 1)" id="0x2e" />
+      <value name="Ivy (Tentacle)" id="0x2f" />
+      <value name="William Birkin (Form 1)" id="0x30" />
+      <value name="William Birkin (Form 2)" id="0x31" />
+      <value name="William Birkin (Form 3)" id="0x33" />
+      <value name="William Birkin (Form 4)" id="0x34" />
+      <value name="William Birkin (Form 5)" id="0x36" />
+      <value name="William Birkin (Form 5 Tentacle 1)" id="0x37" />
+      <value name="William Birkin (Form 5 Tentacle 2)" id="0x38" />
+      <value name="Ivy (Form 2)" id="0x39" />
+      <value name="Moth (Giant)" id="0x3a" />
+      <value name="Moth (Larvae)" id="0x3b" />
+      <value name="Fuse Case Machine-Arm" id="0x3e" />
+      <value name="Fuse Box" id="0x3f" />
+      <value name="Brian Irons" id="0x40" />
+      <value name="Ada Wong" id="0x41" />
+      <value name="Brian Irons" id="0x42" />
+      <value name="Ada Wong (Injured)" id="0x43" />
+      <value name="Ben Bertolucci" id="0x44" />
+      <value name="Sherry Birkin" id="0x45" />
+      <value name="Ben Bertolucci" id="0x46" />
+      <value name="Annette Birkin" id="0x47" />
+      <value name="Robert Kendo" id="0x48" />
+      <value name="Annette Birkin" id="0x49" />
+      <value name="Marvin Branagh" id="0x4a" />
+      <value name="Mayor's daughter" id="0x4b" />
+      <value name="Sherry Birkin (Claire's Vest)" id="0x4f" />
+      <value name="Leon S. Kennedy" id="0x50" />
+      <value name="Claire Redfield" id="0x51" />
+      <value name="Leon S. Kennedy (Injured)" id="0x54" />
+      <value name="Claire Redfield (No Vest)" id="0x55" />
+      <value name="Leon S. Kennedy (Special 1)" id="0x58" />
+      <value name="Claire Redfield (Special)" id="0x59" />
+      <value name="Leon S. Kennedy (Special 2)" id="0x5a" />
+  </enum>
+
+  <enum name="item">
+    <!-- <value name="" id="0x00" /> -->
+      <value name="Knife" id="0x01" />
+      <value name="HK VP70" id="0x02" />
+      <value name="Browning" id="0x03" />
+      <value name="Custom handgun" id="0x04" />
+      <value name="Magnum" id="0x05" />
+      <value name="Custom magnum" id="0x06" />
+      <value name="Shotgun" id="0x07" />
+      <value name="Custom shotgun" id="0x08" />
+      <value name="Grenade launcher + grenade rounds" id="0x09" />
+      <value name="Grenade launcher + fire rounds" id="0x0a" />
+      <value name="Grenade launcher + acid rounds" id="0x0b" />
+      <value name="Bowgun" id="0x0c" />
+      <value name="Calico M950" id="0x0d" />
+      <value name="Sparkshot" id="0x0e" />
+      <value name="Ingram" id="0x0f" />
+
+      <value name="Flamethrower" id="0x10" />
+      <value name="Rocket launcher" id="0x11" />
+      <value name="Gatling gun" id="0x12" />
+      <value name="Machine gun" id="0x13" />
+      <value name="Handgun ammo" id="0x14" />
+      <value name="Shotgun ammo" id="0x15" />
+      <value name="Magnum ammo" id="0x16" />
+      <value name="Flamer fuel" id="0x17" />
+      <value name="Grenade rounds" id="0x18" />
+      <value name="Fire rounds" id="0x19" />
+      <value name="Acid rounds" id="0x1a" />
+      <value name="SMG ammo" id="0x1b" />
+      <value name="Sparkshot ammo" id="0x1c" />
+      <value name="Bowgun ammo" id="0x1d" />
+      <value name="Ink ribbon" id="0x1e" />
+      <value name="Small key" id="0x1f" />
+
+      <value name="Handgun parts" id="0x20" />
+      <value name="Magnum parts" id="0x21" />
+      <value name="Shotgun parts" id="0x22" />
+      <value name="First aid spray" id="0x23" />
+      <value name="Chemical F-09" id="0x24" />
+      <value name="Chemical ACw-32" id="0x25" />
+      <value name="Green herb" id="0x26" />
+      <value name="Red herb" id="0x27" />
+      <value name="Blue herb" id="0x28" />
+      <value name="Green + green herbs" id="0x29" />
+      <value name="Green + red herbs" id="0x2a" />
+      <value name="Green + blue herbs" id="0x2b" />
+      <value name="Green + green + green herbs" id="0x2c" />
+      <value name="Green + green + blue herbs" id="0x2d" />
+      <value name="Green + red + blue herbs" id="0x2e" />
+      <value name="Lighter" id="0x2f" />
+
+      <value name="Lockpick" id="0x30" />
+      <value name="Sherry's photo" id="0x31" />
+      <value name="Valve handle" id="0x32" />
+      <value name="Red jewel" id="0x33" />
+      <value name="Red card" id="0x34" />
+      <value name="Blue card" id="0x35" />
+      <value name="Serpent stone" id="0x36" />
+      <value name="Jaguar stone" id="0x37" />
+      <value name="Jaguar stone (left part)" id="0x38" />
+      <value name="Jaguar stone (right part)" id="0x39" />
+      <value name="Eagle stone" id="0x3a" />
+      <value name="Rook plug" id="0x3b" />
+      <value name="King plug" id="0x3c" />
+      <value name="Bishop plug" id="0x3d" />
+      <value name="Knight plug" id="0x3e" />
+      <value name="Weapon storage key" id="0x3f" />
+
+      <value name="Detonator" id="0x40" />
+      <value name="C4" id="0x41" />
+      <value name="C4 + detonator" id="0x42" />
+      <value name="Crank" id="0x43" />
+      <value name="Film A" id="0x44" />
+      <value name="Film B" id="0x45" />
+      <value name="Film C" id="0x46" />
+      <value name="Unicorn medal" id="0x47" />
+      <value name="Eagle medal" id="0x48" />
+      <value name="Wolf medal" id="0x49" />
+      <value name="Cog" id="0x4a" />
+      <value name="Manhole opener" id="0x4b" />
+      <value name="Main fuse" id="0x4c" />
+      <value name="Fuse case" id="0x4d" />
+      <value name="Vaccine" id="0x4e" />
+      <value name="Vaccine container" id="0x4f" />
+
+      <value name="Firestarter" id="0x50" />
+      <value name="Base vaccine" id="0x51" />
+      <value name="G-Virus" id="0x52" />
+      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
+      <value name="Special key" id="0x53" />
+      <value name="Joint S plug" id="0x54" />
+      <value name="Joint N plug" id="0x55" />
+      <value name="Wire" id="0x56" />
+      <value name="Ada's photo" id="0x57" />
+      <value name="Cabin key" id="0x58" />
+      <value name="Spade key" id="0x59" />
+      <value name="Diamond key" id="0x5a" />
+      <value name="Heart key" id="0x5b" />
+      <value name="Club key" id="0x5c" />
+      <value name="Control panel key (down)" id="0x5d" />
+      <value name="Control panel key (up)" id="0x5e" />
+      <value name="Power room key" id="0x5f" />
+
+      <value name="MO disk" id="0x60" />
+      <value name="Umbrella keycard" id="0x61" />
+      <value name="Master key" id="0x62" />
+      <value name="Weapons locker key" id="0x63" />
+      <value name="Chris's diary" id="0x68" />
+      <value name="Memo to Leon" id="0x6a" />
+      <value name="Police memorandum" id="0x6b" />
+      <value name="Operation report 1" id="0x6c" />
+      <value name="Mail to the chief" id="0x6e" />
+      <value name="Secretary's diary A" id="0x6f" />
+
+      <value name="Secretary's diary B" id="0x70" />
+      <value name="Watchman's diary" id="0x77" />
+      <value name="Chief's diary" id="0x78" />
+      <value name="Sewer manager diary" id="0x79" />
+      <value name="Sewer manager fax" id="0x7a" />
+      <value name="P-epsilon report" id="0x7e" />
+
+ <!-- 113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 -->
+ <!-- 114,125 = User registration,Lab security manual ? room 60a0 -->
+  </enum>
+
+  <enum name="movie">
+    <value name="zmovie/r10b.bin" id="0x04" />
+    <value name="zmovie/r200.bin" id="0x05" />
+    <value name="zmovie/r505.bin" id="0x06" />
+    <value name="zmovie/r602.bin" id="0x07" />
+    <value name="plX/zmovie/r108X.bin" id="0x08" />
+    <value name="zmovie/r109.bin" id="0x09" />
+    <value name="plX/zmovie/r204X.bin" id="0x0a" />
+    <value name="plX/zmovie/r40[8|9].bin" id="0x0b" />
+    <value name="plX/zmovie/r700X.bin" id="0x0c" />
+    <value name="plX/zmovie/r703X.bin" id="0x0d" />
+  </enum>
+
   <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <field name="opcode" type="Uint8" />
@@ -201,39 +417,13 @@
   <inst name="Calc" id="0x26">
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="operation" type="Uint8" >
-      <value name="Add" id="0x00" />
-      <value name="Sub" id="0x01" />
-      <value name="Mul" id="0x02" />
-      <value name="Div" id="0x03" />
-      <value name="Mod" id="0x04" />
-      <value name="Or" id="0x05" />
-      <value name="And" id="0x06" />
-      <value name="Xor" id="0x07" />
-      <value name="Not" id="0x08" />
-      <value name="Lsr" id="0x09" />
-      <value name="Lsl" id="0x0a" />
-      <value name="Asr" id="0x0b" />
-    </field>
+    <field name="operation" type="Uint8" enum="calc" />
     <field name="varw" type="Uint8" />
     <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Calc2" id="0x27">
     <field name="opcode" type="Uint8" />
-    <field name="operation" type="Uint8" >
-      <value name="Add" id="0x00" />
-      <value name="Sub" id="0x01" />
-      <value name="Mul" id="0x02" />
-      <value name="Div" id="0x03" />
-      <value name="Mod" id="0x04" />
-      <value name="Or" id="0x05" />
-      <value name="And" id="0x06" />
-      <value name="Xor" id="0x07" />
-      <value name="Not" id="0x08" />
-      <value name="Lsr" id="0x09" />
-      <value name="Lsl" id="0x0a" />
-      <value name="Asr" id="0x0b" />
-    </field>
+    <field name="operation" type="Uint8" enum="calc" />
     <field name="varw" type="Uint8" />
     <field name="src" type="Uint8" />
   </inst>
@@ -483,66 +673,7 @@
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="model" type="Uint8">
-      <value name="Zombie (Police Officer)" id="0x10" />
-      <value name="Zombie (Male Civilian)" id="0x11" />
-      <value name="Zombie (Male Civilian)" id="0x12" />
-      <value name="Zombie (Female Civilian)" id="0x13" />
-      <value name="Zombie (Scientist)" id="0x15" />
-      <value name="Zombie (Male Civilian)" id="0x16" />
-      <value name="Zombie (Nude)" id="0x17" />
-      <value name="Zombie (Male Civilian)" id="0x18" />
-      <value name="Zombie (Male Civilian)" id="0x1e" />
-      <value name="Zombie (Male Civilian)" id="0x1f" />
-      <value name="Zombie (Dog)" id="0x20" />
-      <value name="Crow" id="0x21" />
-      <value name="Licker (Normal)" id="0x22" />
-      <value name="Alligator" id="0x23" />
-      <value name="Licker" id="0x24" />
-      <value name="Spider (Big)" id="0x25" />
-      <value name="Spider (Small)" id="0x26" />
-      <value name="G-Baby" id="0x27" />
-      <value name="G-Mutant" id="0x28" />
-      <value name="Insect" id="0x29" />
-      <value name="Mr. X (Normal)" id="0x2a" />
-      <value name="Mr. X (Mutated)" id="0x2b" />
-      <value name="Mr. X (Arm)" id="0x2c" />
-      <value name="Zombie (Arm)" id="0x2d" />
-      <value name="Ivy (Form 1)" id="0x2e" />
-      <value name="Ivy (Tentacle)" id="0x2f" />
-      <value name="William Birkin (Form 1)" id="0x30" />
-      <value name="William Birkin (Form 2)" id="0x31" />
-      <value name="William Birkin (Form 3)" id="0x33" />
-      <value name="William Birkin (Form 4)" id="0x34" />
-      <value name="William Birkin (Form 5)" id="0x36" />
-      <value name="William Birkin (Form 5 Tentacle 1)" id="0x37" />
-      <value name="William Birkin (Form 5 Tentacle 2)" id="0x38" />
-      <value name="Ivy (Form 2)" id="0x39" />
-      <value name="Moth (Giant)" id="0x3a" />
-      <value name="Moth (Larvae)" id="0x3b" />
-      <value name="Fuse Case Machine-Arm" id="0x3e" />
-      <value name="Fuse Box" id="0x3f" />
-      <value name="Brian Irons" id="0x40" />
-      <value name="Ada Wong" id="0x41" />
-      <value name="Brian Irons" id="0x42" />
-      <value name="Ada Wong (Injured)" id="0x43" />
-      <value name="Ben Bertolucci" id="0x44" />
-      <value name="Sherry Birkin" id="0x45" />
-      <value name="Ben Bertolucci" id="0x46" />
-      <value name="Annette Birkin" id="0x47" />
-      <value name="Robert Kendo" id="0x48" />
-      <value name="Annette Birkin" id="0x49" />
-      <value name="Marvin Branagh" id="0x4a" />
-      <value name="Mayor's daughter" id="0x4b" />
-      <value name="Sherry Birkin (Claire's Vest)" id="0x4f" />
-      <value name="Leon S. Kennedy" id="0x50" />
-      <value name="Claire Redfield" id="0x51" />
-      <value name="Leon S. Kennedy (Injured)" id="0x54" />
-      <value name="Claire Redfield (No Vest)" id="0x55" />
-      <value name="Leon S. Kennedy (Special 1)" id="0x58" />
-      <value name="Claire Redfield (Special)" id="0x59" />
-      <value name="Leon S. Kennedy (Special 2)" id="0x5a" />
-    </field>
+    <field name="model" type="Uint8" enum="model" />
     <field name="pose" type="Uint16" />
     <field name="unknown1" type="Uint8" />
     <field name="sound_bank" type="Uint8" />
@@ -623,131 +754,7 @@
     <field name="z" type="Sint16" base="10" />
     <field name="w" type="Uint16" base="10" />
     <field name="h" type="Uint16" base="10" />
-    <field name="type" type="Uint16">
-      <!-- <value name="" id="0x00" /> -->
-      <value name="Knife" id="0x01" />
-      <value name="HK VP70" id="0x02" />
-      <value name="Browning" id="0x03" />
-      <value name="Custom handgun" id="0x04" />
-      <value name="Magnum" id="0x05" />
-      <value name="Custom magnum" id="0x06" />
-      <value name="Shotgun" id="0x07" />
-      <value name="Custom shotgun" id="0x08" />
-      <value name="Grenade launcher + grenade rounds" id="0x09" />
-      <value name="Grenade launcher + fire rounds" id="0x0a" />
-      <value name="Grenade launcher + acid rounds" id="0x0b" />
-      <value name="Bowgun" id="0x0c" />
-      <value name="Calico M950" id="0x0d" />
-      <value name="Sparkshot" id="0x0e" />
-      <value name="Ingram" id="0x0f" />
-
-      <value name="Flamethrower" id="0x10" />
-      <value name="Rocket launcher" id="0x11" />
-      <value name="Gatling gun" id="0x12" />
-      <value name="Machine gun" id="0x13" />
-      <value name="Handgun ammo" id="0x14" />
-      <value name="Shotgun ammo" id="0x15" />
-      <value name="Magnum ammo" id="0x16" />
-      <value name="Flamer fuel" id="0x17" />
-      <value name="Grenade rounds" id="0x18" />
-      <value name="Fire rounds" id="0x19" />
-      <value name="Acid rounds" id="0x1a" />
-      <value name="SMG ammo" id="0x1b" />
-      <value name="Sparkshot ammo" id="0x1c" />
-      <value name="Bowgun ammo" id="0x1d" />
-      <value name="Ink ribbon" id="0x1e" />
-      <value name="Small key" id="0x1f" />
-
-      <value name="Handgun parts" id="0x20" />
-      <value name="Magnum parts" id="0x21" />
-      <value name="Shotgun parts" id="0x22" />
-      <value name="First aid spray" id="0x23" />
-      <value name="Chemical F-09" id="0x24" />
-      <value name="Chemical ACw-32" id="0x25" />
-      <value name="Green herb" id="0x26" />
-      <value name="Red herb" id="0x27" />
-      <value name="Blue herb" id="0x28" />
-      <value name="Green + green herbs" id="0x29" />
-      <value name="Green + red herbs" id="0x2a" />
-      <value name="Green + blue herbs" id="0x2b" />
-      <value name="Green + green + green herbs" id="0x2c" />
-      <value name="Green + green + blue herbs" id="0x2d" />
-      <value name="Green + red + blue herbs" id="0x2e" />
-      <value name="Lighter" id="0x2f" />
-
-      <value name="Lockpick" id="0x30" />
-      <value name="Sherry's photo" id="0x31" />
-      <value name="Valve handle" id="0x32" />
-      <value name="Red jewel" id="0x33" />
-      <value name="Red card" id="0x34" />
-      <value name="Blue card" id="0x35" />
-      <value name="Serpent stone" id="0x36" />
-      <value name="Jaguar stone" id="0x37" />
-      <value name="Jaguar stone (left part)" id="0x38" />
-      <value name="Jaguar stone (right part)" id="0x39" />
-      <value name="Eagle stone" id="0x3a" />
-      <value name="Rook plug" id="0x3b" />
-      <value name="King plug" id="0x3c" />
-      <value name="Bishop plug" id="0x3d" />
-      <value name="Knight plug" id="0x3e" />
-      <value name="Weapon storage key" id="0x3f" />
-
-      <value name="Detonator" id="0x40" />
-      <value name="C4" id="0x41" />
-      <value name="C4 + detonator" id="0x42" />
-      <value name="Crank" id="0x43" />
-      <value name="Film A" id="0x44" />
-      <value name="Film B" id="0x45" />
-      <value name="Film C" id="0x46" />
-      <value name="Unicorn medal" id="0x47" />
-      <value name="Eagle medal" id="0x48" />
-      <value name="Wolf medal" id="0x49" />
-      <value name="Cog" id="0x4a" />
-      <value name="Manhole opener" id="0x4b" />
-      <value name="Main fuse" id="0x4c" />
-      <value name="Fuse case" id="0x4d" />
-      <value name="Vaccine" id="0x4e" />
-      <value name="Vaccine container" id="0x4f" />
-
-      <value name="Firestarter" id="0x50" />
-      <value name="Base vaccine" id="0x51" />
-      <value name="G-Virus" id="0x52" />
-      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
-      <value name="Special key" id="0x53" />
-      <value name="Joint S plug" id="0x54" />
-      <value name="Joint N plug" id="0x55" />
-      <value name="Wire" id="0x56" />
-      <value name="Ada's photo" id="0x57" />
-      <value name="Cabin key" id="0x58" />
-      <value name="Spade key" id="0x59" />
-      <value name="Diamond key" id="0x5a" />
-      <value name="Heart key" id="0x5b" />
-      <value name="Club key" id="0x5c" />
-      <value name="Control panel key (down)" id="0x5d" />
-      <value name="Control panel key (up)" id="0x5e" />
-      <value name="Power room key" id="0x5f" />
-
-      <value name="MO disk" id="0x60" />
-      <value name="Umbrella keycard" id="0x61" />
-      <value name="Master key" id="0x62" />
-      <value name="Weapons locker key" id="0x63" />
-      <value name="Chris's diary" id="0x68" />
-      <value name="Memo to Leon" id="0x6a" />
-      <value name="Police memorandum" id="0x6b" />
-      <value name="Operation report 1" id="0x6c" />
-      <value name="Mail to the chief" id="0x6e" />
-      <value name="Secretary's diary A" id="0x6f" />
-
-      <value name="Secretary's diary B" id="0x70" />
-      <value name="Watchman's diary" id="0x77" />
-      <value name="Chief's diary" id="0x78" />
-      <value name="Sewer manager diary" id="0x79" />
-      <value name="Sewer manager fax" id="0x7a" />
-      <value name="P-epsilon report" id="0x7e" />
-
- <!-- 113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 -->
- <!-- 114,125 = User registration,Lab security manual ? room 60a0 -->
-      </field>
+    <field name="type" type="Uint16" enum="item" />
     <field name="amount" type="Uint16" base="10" />
     <field name="unknown2" type="Uint16" />
     <field name="unknown3" type="Uint16" />
@@ -839,131 +846,7 @@
   </inst>
   <inst name="Keep_Item_ck" id="0x5e">
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8">
-      <!-- <value name="" id="0x00" /> -->
-      <value name="Knife" id="0x01" />
-      <value name="HK VP70" id="0x02" />
-      <value name="Browning" id="0x03" />
-      <value name="Custom handgun" id="0x04" />
-      <value name="Magnum" id="0x05" />
-      <value name="Custom magnum" id="0x06" />
-      <value name="Shotgun" id="0x07" />
-      <value name="Custom shotgun" id="0x08" />
-      <value name="Grenade launcher + grenade rounds" id="0x09" />
-      <value name="Grenade launcher + fire rounds" id="0x0a" />
-      <value name="Grenade launcher + acid rounds" id="0x0b" />
-      <value name="Bowgun" id="0x0c" />
-      <value name="Calico M950" id="0x0d" />
-      <value name="Sparkshot" id="0x0e" />
-      <value name="Ingram" id="0x0f" />
-
-      <value name="Flamethrower" id="0x10" />
-      <value name="Rocket launcher" id="0x11" />
-      <value name="Gatling gun" id="0x12" />
-      <value name="Machine gun" id="0x13" />
-      <value name="Handgun ammo" id="0x14" />
-      <value name="Shotgun ammo" id="0x15" />
-      <value name="Magnum ammo" id="0x16" />
-      <value name="Flamer fuel" id="0x17" />
-      <value name="Grenade rounds" id="0x18" />
-      <value name="Fire rounds" id="0x19" />
-      <value name="Acid rounds" id="0x1a" />
-      <value name="SMG ammo" id="0x1b" />
-      <value name="Sparkshot ammo" id="0x1c" />
-      <value name="Bowgun ammo" id="0x1d" />
-      <value name="Ink ribbon" id="0x1e" />
-      <value name="Small key" id="0x1f" />
-
-      <value name="Handgun parts" id="0x20" />
-      <value name="Magnum parts" id="0x21" />
-      <value name="Shotgun parts" id="0x22" />
-      <value name="First aid spray" id="0x23" />
-      <value name="Chemical F-09" id="0x24" />
-      <value name="Chemical ACw-32" id="0x25" />
-      <value name="Green herb" id="0x26" />
-      <value name="Red herb" id="0x27" />
-      <value name="Blue herb" id="0x28" />
-      <value name="Green + green herbs" id="0x29" />
-      <value name="Green + red herbs" id="0x2a" />
-      <value name="Green + blue herbs" id="0x2b" />
-      <value name="Green + green + green herbs" id="0x2c" />
-      <value name="Green + green + blue herbs" id="0x2d" />
-      <value name="Green + red + blue herbs" id="0x2e" />
-      <value name="Lighter" id="0x2f" />
-
-      <value name="Lockpick" id="0x30" />
-      <value name="Sherry's photo" id="0x31" />
-      <value name="Valve handle" id="0x32" />
-      <value name="Red jewel" id="0x33" />
-      <value name="Red card" id="0x34" />
-      <value name="Blue card" id="0x35" />
-      <value name="Serpent stone" id="0x36" />
-      <value name="Jaguar stone" id="0x37" />
-      <value name="Jaguar stone (left part)" id="0x38" />
-      <value name="Jaguar stone (right part)" id="0x39" />
-      <value name="Eagle stone" id="0x3a" />
-      <value name="Rook plug" id="0x3b" />
-      <value name="King plug" id="0x3c" />
-      <value name="Bishop plug" id="0x3d" />
-      <value name="Knight plug" id="0x3e" />
-      <value name="Weapon storage key" id="0x3f" />
-
-      <value name="Detonator" id="0x40" />
-      <value name="C4" id="0x41" />
-      <value name="C4 + detonator" id="0x42" />
-      <value name="Crank" id="0x43" />
-      <value name="Film A" id="0x44" />
-      <value name="Film B" id="0x45" />
-      <value name="Film C" id="0x46" />
-      <value name="Unicorn medal" id="0x47" />
-      <value name="Eagle medal" id="0x48" />
-      <value name="Wolf medal" id="0x49" />
-      <value name="Cog" id="0x4a" />
-      <value name="Manhole opener" id="0x4b" />
-      <value name="Main fuse" id="0x4c" />
-      <value name="Fuse case" id="0x4d" />
-      <value name="Vaccine" id="0x4e" />
-      <value name="Vaccine container" id="0x4f" />
-
-      <value name="Firestarter" id="0x50" />
-      <value name="Base vaccine" id="0x51" />
-      <value name="G-Virus" id="0x52" />
-      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
-      <value name="Special key" id="0x53" />
-      <value name="Joint S plug" id="0x54" />
-      <value name="Joint N plug" id="0x55" />
-      <value name="Wire" id="0x56" />
-      <value name="Ada's photo" id="0x57" />
-      <value name="Cabin key" id="0x58" />
-      <value name="Spade key" id="0x59" />
-      <value name="Diamond key" id="0x5a" />
-      <value name="Heart key" id="0x5b" />
-      <value name="Club key" id="0x5c" />
-      <value name="Control panel key (down)" id="0x5d" />
-      <value name="Control panel key (up)" id="0x5e" />
-      <value name="Power room key" id="0x5f" />
-
-      <value name="MO disk" id="0x60" />
-      <value name="Umbrella keycard" id="0x61" />
-      <value name="Master key" id="0x62" />
-      <value name="Weapons locker key" id="0x63" />
-      <value name="Chris's diary" id="0x68" />
-      <value name="Memo to Leon" id="0x6a" />
-      <value name="Police memorandum" id="0x6b" />
-      <value name="Operation report 1" id="0x6c" />
-      <value name="Mail to the chief" id="0x6e" />
-      <value name="Secretary's diary A" id="0x6f" />
-
-      <value name="Secretary's diary B" id="0x70" />
-      <value name="Watchman's diary" id="0x77" />
-      <value name="Chief's diary" id="0x78" />
-      <value name="Sewer manager diary" id="0x79" />
-      <value name="Sewer manager fax" id="0x7a" />
-      <value name="P-epsilon report" id="0x7e" />
-
- <!-- 113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 -->
- <!-- 114,125 = User registration,Lab security manual ? room 60a0 -->
-    </field>
+    <field name="id" type="Uint8" enum="item" />
   </inst>
   <inst name="Xa_vol" id="0x5f">
     <field name="opcode" type="Uint8" />
@@ -989,131 +872,7 @@
   </inst>
   <inst name="Sce_Item_lost" id="0x62">
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8">
-      <!-- <value name="" id="0x00" /> -->
-      <value name="Knife" id="0x01" />
-      <value name="HK VP70" id="0x02" />
-      <value name="Browning" id="0x03" />
-      <value name="Custom handgun" id="0x04" />
-      <value name="Magnum" id="0x05" />
-      <value name="Custom magnum" id="0x06" />
-      <value name="Shotgun" id="0x07" />
-      <value name="Custom shotgun" id="0x08" />
-      <value name="Grenade launcher + grenade rounds" id="0x09" />
-      <value name="Grenade launcher + fire rounds" id="0x0a" />
-      <value name="Grenade launcher + acid rounds" id="0x0b" />
-      <value name="Bowgun" id="0x0c" />
-      <value name="Calico M950" id="0x0d" />
-      <value name="Sparkshot" id="0x0e" />
-      <value name="Ingram" id="0x0f" />
-
-      <value name="Flamethrower" id="0x10" />
-      <value name="Rocket launcher" id="0x11" />
-      <value name="Gatling gun" id="0x12" />
-      <value name="Machine gun" id="0x13" />
-      <value name="Handgun ammo" id="0x14" />
-      <value name="Shotgun ammo" id="0x15" />
-      <value name="Magnum ammo" id="0x16" />
-      <value name="Flamer fuel" id="0x17" />
-      <value name="Grenade rounds" id="0x18" />
-      <value name="Fire rounds" id="0x19" />
-      <value name="Acid rounds" id="0x1a" />
-      <value name="SMG ammo" id="0x1b" />
-      <value name="Sparkshot ammo" id="0x1c" />
-      <value name="Bowgun ammo" id="0x1d" />
-      <value name="Ink ribbon" id="0x1e" />
-      <value name="Small key" id="0x1f" />
-
-      <value name="Handgun parts" id="0x20" />
-      <value name="Magnum parts" id="0x21" />
-      <value name="Shotgun parts" id="0x22" />
-      <value name="First aid spray" id="0x23" />
-      <value name="Chemical F-09" id="0x24" />
-      <value name="Chemical ACw-32" id="0x25" />
-      <value name="Green herb" id="0x26" />
-      <value name="Red herb" id="0x27" />
-      <value name="Blue herb" id="0x28" />
-      <value name="Green + green herbs" id="0x29" />
-      <value name="Green + red herbs" id="0x2a" />
-      <value name="Green + blue herbs" id="0x2b" />
-      <value name="Green + green + green herbs" id="0x2c" />
-      <value name="Green + green + blue herbs" id="0x2d" />
-      <value name="Green + red + blue herbs" id="0x2e" />
-      <value name="Lighter" id="0x2f" />
-
-      <value name="Lockpick" id="0x30" />
-      <value name="Sherry's photo" id="0x31" />
-      <value name="Valve handle" id="0x32" />
-      <value name="Red jewel" id="0x33" />
-      <value name="Red card" id="0x34" />
-      <value name="Blue card" id="0x35" />
-      <value name="Serpent stone" id="0x36" />
-      <value name="Jaguar stone" id="0x37" />
-      <value name="Jaguar stone (left part)" id="0x38" />
-      <value name="Jaguar stone (right part)" id="0x39" />
-      <value name="Eagle stone" id="0x3a" />
-      <value name="Rook plug" id="0x3b" />
-      <value name="King plug" id="0x3c" />
-      <value name="Bishop plug" id="0x3d" />
-      <value name="Knight plug" id="0x3e" />
-      <value name="Weapon storage key" id="0x3f" />
-
-      <value name="Detonator" id="0x40" />
-      <value name="C4" id="0x41" />
-      <value name="C4 + detonator" id="0x42" />
-      <value name="Crank" id="0x43" />
-      <value name="Film A" id="0x44" />
-      <value name="Film B" id="0x45" />
-      <value name="Film C" id="0x46" />
-      <value name="Unicorn medal" id="0x47" />
-      <value name="Eagle medal" id="0x48" />
-      <value name="Wolf medal" id="0x49" />
-      <value name="Cog" id="0x4a" />
-      <value name="Manhole opener" id="0x4b" />
-      <value name="Main fuse" id="0x4c" />
-      <value name="Fuse case" id="0x4d" />
-      <value name="Vaccine" id="0x4e" />
-      <value name="Vaccine container" id="0x4f" />
-
-      <value name="Firestarter" id="0x50" />
-      <value name="Base vaccine" id="0x51" />
-      <value name="G-Virus" id="0x52" />
-      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
-      <value name="Special key" id="0x53" />
-      <value name="Joint S plug" id="0x54" />
-      <value name="Joint N plug" id="0x55" />
-      <value name="Wire" id="0x56" />
-      <value name="Ada's photo" id="0x57" />
-      <value name="Cabin key" id="0x58" />
-      <value name="Spade key" id="0x59" />
-      <value name="Diamond key" id="0x5a" />
-      <value name="Heart key" id="0x5b" />
-      <value name="Club key" id="0x5c" />
-      <value name="Control panel key (down)" id="0x5d" />
-      <value name="Control panel key (up)" id="0x5e" />
-      <value name="Power room key" id="0x5f" />
-
-      <value name="MO disk" id="0x60" />
-      <value name="Umbrella keycard" id="0x61" />
-      <value name="Master key" id="0x62" />
-      <value name="Weapons locker key" id="0x63" />
-      <value name="Chris's diary" id="0x68" />
-      <value name="Memo to Leon" id="0x6a" />
-      <value name="Police memorandum" id="0x6b" />
-      <value name="Operation report 1" id="0x6c" />
-      <value name="Mail to the chief" id="0x6e" />
-      <value name="Secretary's diary A" id="0x6f" />
-
-      <value name="Secretary's diary B" id="0x70" />
-      <value name="Watchman's diary" id="0x77" />
-      <value name="Chief's diary" id="0x78" />
-      <value name="Sewer manager diary" id="0x79" />
-      <value name="Sewer manager fax" id="0x7a" />
-      <value name="P-epsilon report" id="0x7e" />
-
- <!-- 113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 -->
- <!-- 114,125 = User registration,Lab security manual ? room 60a0 -->
-    </field>
+    <field name="id" type="Uint8" enum="item" />
   </inst>
   <inst name="Plc_gun_eff" id="0x63">
     <field name="opcode" type="Uint8" />
@@ -1210,18 +969,7 @@
   </inst>
   <inst name="Movie_on" id="0x6f">
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8">
-      <value name="zmovie/r10b.bin" id="0x04" />
-      <value name="zmovie/r200.bin" id="0x05" />
-      <value name="zmovie/r505.bin" id="0x06" />
-      <value name="zmovie/r602.bin" id="0x07" />
-      <value name="plX/zmovie/r108X.bin" id="0x08" />
-      <value name="zmovie/r109.bin" id="0x09" />
-      <value name="plX/zmovie/r204X.bin" id="0x0a" />
-      <value name="plX/zmovie/r40[8|9].bin" id="0x0b" />
-      <value name="plX/zmovie/r700X.bin" id="0x0c" />
-      <value name="plX/zmovie/r703X.bin" id="0x0d" />
-    </field>
+    <field name="id" type="Uint8" enum="movie" />
   </inst>
 
   <!-- 0x70-0x7f -->
@@ -1262,7 +1010,7 @@
   </inst>
   <inst name="Sce_Item_get" id="0x76">
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="id" type="Uint8" enum="item" />
     <field name="amount" type="Uint8" />
   </inst>
   <inst name="Sce_line_start" id="0x77">
@@ -1358,15 +1106,15 @@
     <field name="unknown1" type="Uint16" />
     <field name="unknown2" type="Uint16" />
   </inst>
-  <inst name="Poison_ck" id="0x86">
+  <inst name="Poison_ck" id="0x86"><!-- Check poisoned status -->
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Poison_clr" id="0x87">
+  <inst name="Poison_clr" id="0x87"><!-- Clear poisoned status -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Sce_Item_ck_Lost" id="0x88">
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="id" type="Uint8" enum="item" />
     <field name="unknown0" type="Uint8" />
   </inst>
   <inst name="89" id="0x89">
