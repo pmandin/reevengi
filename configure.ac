@@ -20,6 +20,22 @@ AM_PROG_AS
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
 
+if test x"$cross_compiling" = xyes; then
+	CC_FOR_BUILD="${CC_FOR_BUILD-gcc}"
+	CCLD_FOR_BUILD="${CCLD_FOR_BUILD-gcc}"
+	CFLAGS_FOR_BUILD="${CFLAGS_FOR_BUILD}"
+	LDFLAGS_FOR_BUILD="${LDFLAGS_FOR_BUILD}"
+else
+	CC_FOR_BUILD="${CC_FOR_BUILD-\$(CC)}"
+	CCLD_FOR_BUILD="${CCLD_FOR_BUILD-\$(CCLD)}"
+	CFLAGS_FOR_BUILD="${CFLAGS_FOR_BUILD-\$(CFLAGS)}"
+	LDFLAGS_FOR_BUILD="${LDFLAGS_FOR_BUILD-\$(LDFLAGS)}"
+fi
+AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
+AC_ARG_VAR(CCLD_FOR_BUILD,[build system C linker frontend])
+AC_ARG_VAR(CFLAGS_FOR_BUILD,[build system C compiler arguments])
+AC_ARG_VAR(LDFLAGS_FOR_BUILD,[build system C linker frontend arguments])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h])
