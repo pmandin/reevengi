@@ -104,7 +104,7 @@ static const bitarray_name_t bitarray_names[]={
 	{4, 0x99, "room2040.cord_broken"},
 	{4, 0xaf, "room2070.used_specialkey"},
 	
-	{5, 0x02, "room2040.corpse_examined"},
+/*	{5, 0x02, "room2040.corpse_examined"},*/
 	{5, 0x03, "room1010.kendo_examined"},
 	{5, 0x12, "room1030.enable_brad"},
 	
@@ -125,7 +125,7 @@ static char tmpBuf[512];
 
 static void reindent(int num_indent);
 static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
-static void getBitArrayName(char *dest, int num_array, int num_bit);
+static const char *getBitArrayName(int num_array, int num_bit);
 
 /*--- Functions ---*/
 
@@ -234,13 +234,38 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
 
-		if (inst->opcode == INST_MESSAGE_ON) {
-			this->getText(this, 0, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
-			logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
+		switch(inst->opcode) {
+			case INST_CK:
+				{
+					const char *array_name;
 
-			this->getText(this, 1, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
-			sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
+					array_name = getBitArrayName(inst->i_ck.array, inst->i_ck.bit);
+					if (array_name) {
+						logMsg(1, "0x%08x: #\t%s\n", offset, array_name);
+					}
+				}
+				break;
+			case INST_SET:
+				{
+					const char *array_name;
+
+					getBitArrayName(inst->i_set.array, inst->i_set.bit);
+					if (array_name) {
+						logMsg(1, "0x%08x: #\t%s\n", offset, array_name);
+					}
+				}
+				break;
+			case INST_MESSAGE_ON:
+				{
+					this->getText(this, 0, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+					logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
+
+					this->getText(this, 1, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
+				}
+				break;
 		}
+
 
 		if (block_ptr) {
 			int next_len;
@@ -279,18 +304,18 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 	}
 }
 
-static void getBitArrayName(char dest[40], int num_array, int num_bit)
+static const char *getBitArrayName(int num_array, int num_bit)
 {
 	int i;
 
 	for (i=0; i<sizeof(bitarray_names)/sizeof(bitarray_name_t); i++) {
 		if (bitarray_names[i].array != num_array) continue;
 		if (bitarray_names[i].bit != num_bit) continue;
-		strcpy(dest, bitarray_names[i].name);
-		return;
+
+		return bitarray_names[i].name;
 	}
 
-	sprintf(dest, "array 0x%02x, bit 0x%02x", num_array, num_bit);
+	return NULL;
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */

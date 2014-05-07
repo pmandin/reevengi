@@ -282,7 +282,12 @@
   </inst>
   <inst name="Speed_set" id="0x2f">
     <field name="opcode" type="Uint8" />
-    <field name="component" type="Uint8" />
+    <field name="component" type="Uint8">
+      <value name="speed0" id="0x01" />
+      <value name="speed1" id="0x04" />
+      <value name="aspeed0" id="0x06" />
+      <value name="aspeed1" id="0x0a" />
+    </field>
     <field name="value" type="Sint16" base="10" />
   </inst>
 
@@ -773,7 +778,11 @@
   <inst name="Sce_espr3d_on" id="0x54">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" array="10" />
+    <field name="unknown1" type="Uint16" array="3" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
+    <field name="unknown2" type="Uint16" array="4" />
   </inst>
   <inst name="Member_calc" id="0x55">
     <field name="opcode" type="Uint8" />
