@@ -88,7 +88,9 @@
   </inst>
   <inst name="Switch" id="0x13">
     <field name="opcode" type="Uint8" />
-    <field name="varw" type="Uint8" />
+    <field name="varw" type="Uint8">
+      <value name="CurrentCamera" id="0x1a" />
+    </field>
     <field name="block_length" type="Uint16" />
   </inst>
   <inst name="Case" id="0x14">
@@ -172,7 +174,9 @@
   <inst name="Cmp" id="0x23"><!-- var1a is current camera -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="varw" type="Uint8" />
+    <field name="varw" type="Uint8">
+      <value name="CurrentCamera" id="0x1a" />
+    </field>
     <field name="compare" type="Uint8">
       <value name="EQ" id="0x00" />
       <value name="GT" id="0x01" />
@@ -236,11 +240,11 @@
   <inst name="Sce_rnd" id="0x28">
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Cut_chg" id="0x29">
+  <inst name="Cut_chg" id="0x29"><!-- Change camera, save current for restoration using Cut_old  -->
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="camera" type="Uint8" />
   </inst>
-  <inst name="Cut_old" id="0x2a">
+  <inst name="Cut_old" id="0x2a"><!-- Restore camera changed by instruction Cut_chg -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Message_on" id="0x2b">
@@ -251,7 +255,7 @@
     <field name="unknown2" type="Uint8" />
     <field name="unknown3" type="Uint8" />
   </inst>
-  <inst name="Aot_set" id="0x2c">
+  <inst name="Aot_set" id="0x2c"><!-- Define rectangular zone -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="type" type="Uint8" /><!-- ptr to this stored in room object list -->
@@ -277,7 +281,11 @@
   </inst>
   <inst name="Work_set" id="0x2e"><!-- 0x2e 01 00 : reenable control+animation in room1010 -->
     <field name="opcode" type="Uint8" />
-    <field name="component" type="Uint8" />
+    <field name="component" type="Uint8">
+      <value name="player" id="0x01" /><!-- player -->
+      <value name="entity" id="0x03" /><!-- enemy, other characters -->
+      <value name="object" id="0x04" /><!-- items, activable objects -->
+    </field>
     <field name="index" type="Uint8" />
   </inst>
   <inst name="Speed_set" id="0x2f">
@@ -300,7 +308,7 @@
   </inst>
   <inst name="Pos_set" id="0x32">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
     <field name="x" type="Sint16" base="10" />
     <field name="y" type="Sint16" base="10" />
     <field name="z" type="Sint16" base="10" />
@@ -403,7 +411,7 @@
     <field name="z" type="Sint16" base="10" />
     <field name="unknown1" type="Uint16" />
   </inst>
-  <inst name="Door_aot_set" id="0x3b">
+  <inst name="Door_aot_set" id="0x3b"><!-- Define rectangular door -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" />
@@ -606,7 +614,7 @@
     <field name="unknown5" type="Uint32" />
     <field name="unknown6" type="Uint16" />
   </inst>
-  <inst name="Item_aot_set" id="0x4e">
+  <inst name="Item_aot_set" id="0x4e"><!-- Define rectangular item -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" />
@@ -704,7 +712,8 @@
       <value name="Firestarter" id="0x50" />
       <value name="Base vaccine" id="0x51" />
       <value name="G-Virus" id="0x52" />
-      <value name="Base vaccine (case only)" id="0x53" />
+      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
+      <value name="Special key" id="0x53" />
       <value name="Joint S plug" id="0x54" />
       <value name="Joint N plug" id="0x55" />
       <value name="Wire" id="0x56" />
@@ -817,14 +826,14 @@
   </inst>
   <inst name="Plc_cnt" id="0x5b">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="unknown0" type="Uint8" base="10" />
   </inst>
   <inst name="Sce_shake_on" id="0x5c">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
   </inst>
-  <inst name="Mizu_div_set" id="0x5d">
+  <inst name="Mizu_div_set" id="0x5d"><!-- Mizu (water in japanese) -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
   </inst>
@@ -919,7 +928,8 @@
       <value name="Firestarter" id="0x50" />
       <value name="Base vaccine" id="0x51" />
       <value name="G-Virus" id="0x52" />
-      <value name="Base vaccine (case only)" id="0x53" />
+      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
+      <value name="Special key" id="0x53" />
       <value name="Joint S plug" id="0x54" />
       <value name="Joint N plug" id="0x55" />
       <value name="Wire" id="0x56" />
@@ -961,17 +971,16 @@
   </inst>
 
   <!-- 0x60-0x6f -->
-  <inst name="Kage_set" id="0x60">
+  <inst name="Kage_set" id="0x60"><!-- Kage (shadow in japanese) -->
     <field name="opcode" type="Uint8" />
-    <field name="entity_type" type="Uint8" /><!-- 1:em_set, 2:0x89, 3:0x2e, other:script data -->
-    <field name="unknown0" type="Uint8" /><!-- for entity_type=3 -->
-    <field name="unknown1" type="Uint8" />
-    <field name="unknown2" type="Uint8" />
-    <field name="unknown3" type="Uint8" />
-    <field name="unknown4" type="Uint16" />
-    <field name="unknown5" type="Uint16" />
-    <field name="unknown6" type="Uint16" />
-    <field name="unknown7" type="Uint16" />
+    <field name="component" type="Uint8">
+      <value name="player" id="0x01" /><!-- player -->
+      <value name="entity" id="0x03" /><!-- enemy, other characters -->
+      <value name="object" id="0x04" /><!-- items, activable objects -->
+    </field>
+    <field name="index" type="Uint8" />
+    <field name="unknown0" type="Uint8" array="3" />
+    <field name="unknown1" type="Uint16" array="4" />
   </inst>
   <inst name="Cut_be_set" id="0x61">
     <field name="opcode" type="Uint8" />
@@ -1069,7 +1078,8 @@
       <value name="Firestarter" id="0x50" />
       <value name="Base vaccine" id="0x51" />
       <value name="G-Virus" id="0x52" />
-      <value name="Base vaccine (case only)" id="0x53" />
+      <!-- <value name="Base vaccine (case only)" id="0x53" /> -->
+      <value name="Special key" id="0x53" />
       <value name="Joint S plug" id="0x54" />
       <value name="Joint N plug" id="0x55" />
       <value name="Wire" id="0x56" />
@@ -1123,7 +1133,7 @@
   <inst name="Plc_stop" id="0x66">
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Aot_set_4p" id="0x67">
+  <inst name="Aot_set_4p" id="0x67"><!-- Define non-rectangular zone -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" /><!-- ptr to this stored in room object list -->
@@ -1140,31 +1150,33 @@
     <field name="unknown3" type="Uint16" />
     <field name="unknown4" type="Uint16" />
   </inst>
-  <inst name="Door_aot_set_4p" id="0x68">
+  <inst name="Door_aot_set_4p" id="0x68"><!-- Define non-rectangular door -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint32" />
-    <field name="unknown3" type="Uint32" />
-    <field name="unknown4" type="Uint32" />
-    <field name="unknown5" type="Uint32" />
-    <field name="unknown6" type="Uint32" />
-    <field name="unknown7" type="Uint32" />
-    <field name="unknown8" type="Uint32" />
-    <field name="unknown9" type="Uint32" />
-    <field name="unknown10" type="Uint32" />
+    <field name="unknown1" type="Uint16" array="2" />
+    <field name="x0" type="Sint16" base="10" />
+    <field name="z0" type="Sint16" base="10" />
+    <field name="x1" type="Sint16" base="10" />
+    <field name="z1" type="Sint16" base="10" />
+    <field name="x2" type="Sint16" base="10" />
+    <field name="z2" type="Sint16" base="10" />
+    <field name="x3" type="Sint16" base="10" />
+    <field name="z3" type="Sint16" base="10" />
+    <field name="unknown2" type="Uint16" array="9" />
   </inst>
-  <inst name="Item_aot_set_4p" id="0x69">
+  <inst name="Item_aot_set_4p" id="0x69"><!-- Define non-rectangular item -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint32" />
-    <field name="unknown3" type="Uint32" />
-    <field name="unknown4" type="Uint32" />
-    <field name="unknown5" type="Uint32" />
-    <field name="unknown6" type="Uint32" />
-    <field name="unknown7" type="Uint32" />
-    <field name="unknown8" type="Uint16" />
+    <field name="unknown1" type="Uint16" array="2" />
+    <field name="x0" type="Sint16" base="10" />
+    <field name="z0" type="Sint16" base="10" />
+    <field name="x1" type="Sint16" base="10" />
+    <field name="z1" type="Sint16" base="10" />
+    <field name="x2" type="Sint16" base="10" />
+    <field name="z2" type="Sint16" base="10" />
+    <field name="x3" type="Sint16" base="10" />
+    <field name="z3" type="Sint16" base="10" />
+    <field name="unknown2" type="Uint16" array="5" />
   </inst>
   <inst name="Light_pos_set" id="0x6a">
     <field name="opcode" type="Uint8" />
@@ -1180,7 +1192,7 @@
   <inst name="Light_kido_set" id="0x6b">
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="range" type="Uint16" />
+    <field name="range" type="Uint16" base="10" />
   </inst>
   <inst name="Rbj_reset" id="0x6c">
     <field name="opcode" type="Uint8" />
