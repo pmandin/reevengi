@@ -28,13 +28,16 @@
 
 /*--- Constants ---*/
 
-static const char txt2asc[0x60]={
+static const char txt2asc[0x90]={
 	' ','.','?','?', '?','(',')','?', '?','?','?','?', '0','1','2','3',
 	'4','5','6','7', '8','9',':','?', ',','"','!','?', '?','A','B','C',
 	'D','E','F','G', 'H','I','J','K', 'L','M','N','O', 'P','Q','R','S',
 	'T','U','V','W', 'X','Y','Z','[', '/',']','\'','-', '_','a','b','c',
 	'd','e','f','g', 'h','i','j','k', 'l','m','n','o', 'p','q','r','s',
-	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','?'
+	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','à',
+	'?','?','?','è', '?','é','?','ê', '?','ï','?','?', '?','?','?','ù',
+	'?','?','ç','ç', '?','?','?','?', '"','.','?','?', '?','?','?','?',
+	'?','?','?','?', '?','?','?','?', '°','?','?','?', '?','?','?','?'
 };
 
 static const char *txtcolor[6]={
@@ -116,15 +119,14 @@ void rdt2_msg_getText(room_t *this, int lang, int num_text, char *buffer, int bu
 				break;
 			case 0xfd:
 				/* Wait player input */
-				sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[i+1]);
-				strncat(buffer, strBuf, bufferLen-1);
+				/*sprintf(strBuf, "[0xfd][0x%02x]", txtPtr[i+1]);
+				strncat(buffer, strBuf, bufferLen-1);*/
+				strncat(buffer, "[Pause]", bufferLen-1);
 				i++;
 				break;
 			default:
-				if (txtPtr[i]<0x60) {
+				if (txtPtr[i]<0x90) {
 					sprintf(strBuf, "%c", txt2asc[txtPtr[i]]);
-				} else if (txtPtr[i]==0x79) {
-					sprintf(strBuf, ".");
 				} else {
 					sprintf(strBuf, "[0x%02x]", txtPtr[i]);
 				}
