@@ -31,6 +31,9 @@ Use at your own risks.
   Note: You need to apply the patch in the diff directory to the stable 1.0
   release of PhysicsFS to have support for Resident Evil 3 PC archive files.
 
+- Libxml2 (optional, if you want to modify XML files)
+  http://www.xmlsoft.org
+
 
 2 Command-line parameters
 -------------------------
