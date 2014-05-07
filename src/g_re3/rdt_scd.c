@@ -32,10 +32,14 @@
 #include "../g_common/room_door.h"
 #include "../g_re2/rdt.h"
 
-#include "rdt_scd_common.h"
+/*#include "rdt_scd_common.h"*/
 #include "rdt_scd_dump.h"
 
+#include "rdt_scd_defs.gen.h"
+
 /*--- Types ---*/
+
+#include "rdt_scd_types.gen.h"
 
 /*
 typedef struct {
@@ -87,6 +91,9 @@ typedef struct {
 
 /*--- Variables ---*/
 
+#include "rdt_scd_lengths.gen.c"
+
+#if 0
 static const script_inst_len_t inst_length[]={
 	/* 0x00-0x0f */
 	{INST_NOP,		1},
@@ -250,6 +257,7 @@ static const script_inst_len_t inst_length[]={
 	{INST_PLC_MOT_NUM,	4},
 	{INST_EM_RESET,		2}
 };
+#endif
 
 /*--- Functions ---*/
 
@@ -336,11 +344,11 @@ void rdt3_scd_scriptExecInst(room_t *this)
 	switch(inst->opcode) {
 		case INST_DOOR_AOT_SET:
 			{
-				script_door_set_t *doorSet = (script_door_set_t *) inst;
+				script_inst_door_aot_set_t *doorSet = (script_inst_door_aot_set_t *) inst;
 				room_door_t roomDoor;
 
 				roomDoor.x = SDL_SwapLE16(doorSet->x);
-				roomDoor.y = SDL_SwapLE16(doorSet->y);
+				roomDoor.y = SDL_SwapLE16(doorSet->z);
 				roomDoor.w = SDL_SwapLE16(doorSet->w);
 				roomDoor.h = SDL_SwapLE16(doorSet->h);
 

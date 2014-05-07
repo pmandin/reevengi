@@ -32,7 +32,10 @@
 #include "../g_common/room.h"
 #include "../g_re2/rdt.h"
 
-#include "rdt_scd_common.h"
+#include "rdt_scd_defs.gen.h"
+#include "rdt_scd_types.gen.h"
+
+/*#include "rdt_scd_common.h"*/
 
 #ifndef ENABLE_SCRIPT_DISASM
 
@@ -71,8 +74,8 @@ static const script_dump_t work_set_0[]={
 
 /*--- Variables ---*/
 
-static char strBuf[256];
-static char tmpBuf[256];
+static char strBuf[512];
+static char tmpBuf[512];
 
 /*--- Functions prototypes ---*/
 
@@ -196,6 +199,12 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			memset(strBuf, 0, sizeof(strBuf));
 		}
 		reindent(indent);
+
+#if 1
+
+#include "rdt_scd_dumps.gen.c"
+
+#else
 
 		switch(inst->opcode) {
 
@@ -696,19 +705,21 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				strcat(strBuf, tmpBuf);
 				break;
 		}
+#endif
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
 
 		if (block_ptr) {
 			int next_len = block_len - inst_len;
+
 			if (inst->opcode == INST_CASE) next_len = block_len;
-			if (inst->opcode == INST_BEGIN_WHILE) next_len = block_len - 2;
-			if (inst->opcode == INST_BEGIN_FOR) next_len = block_len - 2;
+			if (inst->opcode == INST_WHILE) next_len = block_len - 2;
+			if (inst->opcode == INST_FOR) next_len = block_len - 2;
 			/*logMsg(1, " block 0x%04x inst 0x%04x next 0x%04x\n", block_len, inst_len, next_len);*/
 
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
-			if (inst->opcode == INST_DO) next_len += sizeof(script_do_t);
+			if (inst->opcode == INST_DO) next_len += sizeof(script_inst_do_t);
 			inst_len += next_len;
 		}
 
