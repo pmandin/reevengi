@@ -95,15 +95,15 @@
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
-    <field name="value" type="Uint16" />
+    <field name="value" type="Uint16" base="10" />
   </inst>
   <inst name="Default" id="0x15">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Eswitch" id="0x16"><!-- End switch case -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Goto" id="0x17">
     <field name="opcode" type="Uint8" />
@@ -118,11 +118,11 @@
   </inst>
   <inst name="Return" id="0x19">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Break" id="0x1a">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
   </inst>
   <inst name="For2" id="0x1b">
     <field name="opcode" type="Uint8" />
