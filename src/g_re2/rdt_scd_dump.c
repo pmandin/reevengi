@@ -75,15 +75,16 @@ typedef struct {
 /*--- Constants ---*/
 
 static const bitarray_name_t bitarray_names[]={
-	{0, 0x19, "game.difficulty"},
+	{0, 0x19, "game.difficulty"},/*0 hard, 1 easy */
 
-	{1, 0x00, "game.character"},
-	{1, 0x01, "game.scenario"},
-	{1, 0x06, "game.type"},
-	{1, 0x1b, "game.letterbox"},
+	{1, 0x00, "game.character"},/*0 leon, 1 claire */
+	{1, 0x01, "game.scenario"},/*0 A, 1 B */
+	{1, 0x06, "game.type"},/*0 leon/claire, 1 tofu/hunk */
+	{1, 0x1b, "game.letterbox"},/*0 normal, 1 cinema, with black bars*/
 	
 	{2, 0x07, "room.mutex"},
 	
+	{4, 0x02, "room1050.cabinkey_used"},
 	{4, 0x05, "room2010.seen_licker"},
 	{4, 0x06, "room2000.first_visit"},
 	{4, 0x12, "room10b0.put_jewel1"},
@@ -111,8 +112,11 @@ static const bitarray_name_t bitarray_names[]={
 	{0x0b, 0x1f, "player_answer"},
 	
 	{0x1d, 0x02, "room60c0.door_unlocked_scenario_a"},
+	{0x1d, 0x05, "room2080.leon_special1"},
+	{0x1d, 0x06, "room2080.claire_special"},
 	{0x1d, 0x09, "room2040.cord_on_shutter"},
 	{0x1d, 0x0a, "room20f0.cord_on_shutter"},
+	{0x1d, 0x0f, "room2080.leon_special2"},
 	{0x1d, 0x11, "room1030.met_brad"}
 };
 
@@ -239,9 +243,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				{
 					const char *array_name;
 
-					array_name = getBitArrayName(inst->i_ck.array, inst->i_ck.bit);
-					if (array_name) {
-						logMsg(1, "0x%08x: #\t%s\n", offset, array_name);
+					if (inst->i_ck.array == 6) {
+						logMsg(1, "0x%08x: #\tkilled[0x%02x]\n", offset, inst->i_ck.bit);
+					} else {
+						array_name = getBitArrayName(inst->i_ck.array, inst->i_ck.bit);
+						if (array_name) {
+							logMsg(1, "0x%08x: #\t%s\n", offset, array_name);
+						}
 					}
 				}
 				break;
@@ -249,9 +257,13 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 				{
 					const char *array_name;
 
-					getBitArrayName(inst->i_set.array, inst->i_set.bit);
-					if (array_name) {
-						logMsg(1, "0x%08x: #\t%s\n", offset, array_name);
+					if (inst->i_set.array == 6) {
+						logMsg(1, "0x%08x: #\tkilled[0x%02x]\n", offset, inst->i_set.bit);
+					} else {
+						array_name = getBitArrayName(inst->i_set.array, inst->i_set.bit);
+						if (array_name) {
+							logMsg(1, "0x%08x: #\t%s\n", offset, array_name);
+						}
 					}
 				}
 				break;
