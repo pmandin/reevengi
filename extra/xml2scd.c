@@ -335,7 +335,7 @@ void generateDumpFields(xmlDocPtr doc, xmlNodePtr node, char *name_low, int *has
 {
 	xmlNodePtr child;
 	xmlChar *field_name, *field_type, *field_base, *field_array;
-	char swapValue[32];
+	char swapValue[64];
 	int base, size, i, array_size;
 
 	for (child = node->children; child; child = child->next) {
