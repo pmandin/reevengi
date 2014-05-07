@@ -64,7 +64,7 @@
   </inst>
   <inst name="Next" id="0x0e"><!-- End for loop -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
   </inst>
   <inst name="While" id="0x0f">
     <field name="opcode" type="Uint8" />
@@ -75,7 +75,7 @@
  <!-- 0x10-0x1f -->
   <inst name="Ewhile" id="0x10"><!-- End while loop -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Do" id="0x11">
     <field name="opcode" type="Uint8" />
@@ -283,7 +283,7 @@
   <inst name="Speed_set" id="0x2f">
     <field name="opcode" type="Uint8" />
     <field name="component" type="Uint8" />
-    <field name="value" type="Sint16" />
+    <field name="value" type="Sint16" base="10" />
   </inst>
 
   <!-- 0x30-0x3f -->
@@ -318,7 +318,7 @@
 	{0x05, 1, ""},	em[0x07].b
 	{0x06, 1, ""},	em[0x08].b -->
       <value name="Em_Pose" id="0x07" /><!-- em[0x10e].w -->
-	{0x08, 1, ""},	em[0x0a].b
+<!--	{0x08, 1, ""},	em[0x0a].b
 	{0x09, 1, ""},	em[0x0b].b
 	{0x0a, 1, ""},	em[0x10].l -->
       <value name="Em_PosX" id="0x0b" /><!-- em[0x38].w -->
@@ -392,13 +392,11 @@
   <inst name="Sce_espr_on" id="0x3a">
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="unknown0" type="Uint16" />
+    <field name="unknown0" type="Uint16" array="3" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
     <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
-    <field name="unknown4" type="Uint16" />
-    <field name="unknown5" type="Uint16" />
-    <field name="unknown6" type="Uint16" />
   </inst>
   <inst name="Door_aot_set" id="0x3b">
     <field name="opcode" type="Uint8" />
@@ -438,7 +436,7 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
     <field name="compare" type="Uint8" />
-    <field name="value" type="Sint16" />
+    <field name="value" type="Sint16" base="10" />
   </inst>
   <inst name="Plc_motion" id="0x3f">
     <field name="opcode" type="Uint8" />
@@ -452,16 +450,13 @@
     <field name="dummy" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
   </inst>
   <inst name="Plc_neck" id="0x41">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
-    <field name="unknown4" type="Uint16" />
+    <field name="unknown1" type="Uint16" array="4" />
   </inst>
   <inst name="Plc_ret" id="0x42">
     <field name="opcode" type="Uint8" />
@@ -739,7 +734,7 @@
  <!-- 113,115,116,117,123 = Operation report 2 ? extra costumes? room 2080 -->
  <!-- 114,125 = User registration,Lab security manual ? room 60a0 -->
       </field>
-    <field name="amount" type="Uint16" />
+    <field name="amount" type="Uint16" base="10" />
     <field name="unknown2" type="Uint16" />
     <field name="unknown3" type="Uint16" />
   </inst>
@@ -778,12 +773,7 @@
   <inst name="Sce_espr3d_on" id="0x54">
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint32" />
-    <field name="unknown3" type="Uint32" />
-    <field name="unknown4" type="Uint32" />
-    <field name="unknown5" type="Uint32" />
-    <field name="unknown6" type="Uint16" />
+    <field name="unknown1" type="Uint16" array="10" />
   </inst>
   <inst name="Member_calc" id="0x55">
     <field name="opcode" type="Uint8" />
