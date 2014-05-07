@@ -136,11 +136,13 @@ fi
 LIBS=$TMP_LIBS
 CFLAGS=$TMP_CFLAGS
 
-# LibXml
-
+# LibXml (native)
+TMP_PKG_CONFIG=$PKG_CONFIG
+PKG_CONFIG="pkg-config"
 PKG_CHECK_MODULES([LIBXML], [libxml-2.0],
 	[AC_DEFINE([HAVE_LIBXML], [1], [Use libxml])]
 ) 
+PKG_CONFIG=$TMP_PKG_CONFIG
 
 # OpenGL renderer
 
