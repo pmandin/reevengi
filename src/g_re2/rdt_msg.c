@@ -28,6 +28,7 @@
 
 /*--- Constants ---*/
 
+/* Note: 0x74-0x77 are S. T. A. R. displayed in green */
 static const char txt2asc[0x90]={
 	' ','.','?','?', '?','(',')','?', '?','?','?','?', '0','1','2','3',
 	'4','5','6','7', '8','9',':','?', ',','"','!','?', '?','A','B','C',
@@ -36,7 +37,7 @@ static const char txt2asc[0x90]={
 	'd','e','f','g', 'h','i','j','k', 'l','m','n','o', 'p','q','r','s',
 	't','u','v','w', 'x','y','z','?', '?','?','?','?', '?','?','?','à',
 	'?','â','?','è', '?','é','?','ê', '?','ï','?','?', '?','?','?','ù',
-	'?','?','ç','ç', '?','?','?','?', '"','.','?','?', '?','?','?','?',
+	'?','û','ç','ç', 'S','T','A','R', '"','.','?','?', '?','?','?','?',
 	'?','?','?','?', '?','?','?','?', '°','?','?','?', '?','?','?','?'
 };
 
@@ -75,6 +76,18 @@ void rdt2_msg_getText(room_t *this, int lang, int num_text, char *buffer, int bu
 
 	while ((txtPtr[i] != 0xfe) && (i<bufferLen-1)) {
 		switch(txtPtr[i]) {
+			case 0x74:
+				strncat(buffer, "S.", bufferLen-1);
+				break;
+			case 0x75:
+				strncat(buffer, "T.", bufferLen-1);
+				break;
+			case 0x76:
+				strncat(buffer, "A.", bufferLen-1);
+				break;
+			case 0x77:
+				strncat(buffer, "R.", bufferLen-1);
+				break;
 			case 0xf3:
 				strncat(buffer, "[0xf3]", bufferLen-1);
 				break;
