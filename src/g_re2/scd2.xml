@@ -450,15 +450,14 @@
     <field name="id" type="Uint8" />
     <field name="type" type="Uint8" /><!-- ptr to this stored in room object list -->
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint8" />
-    <field name="unknown2" type="Uint8" />
+    <field name="unknown1" type="Uint16" />
     <field name="x" type="Sint16" base="10"/>
     <field name="z" type="Sint16" base="10" />
     <field name="w" type="Sint16" base="10" />
     <field name="h" type="Sint16" base="10" />
-    <field name="unknown3" type="Uint16" /><!-- Instructions to execute. 0:examine 1:activate 2:? or 0xff -->
+    <field name="unknown2" type="Uint16" /><!-- Instructions to execute. 0:examine 1:activate 2:? or 0xff -->
+    <field name="unknown3" type="Uint16" />
     <field name="unknown4" type="Uint16" />
-    <field name="unknown5" type="Uint16" />
   </inst>
   <inst name="Obj_model_set" id="0x2d">
     <field name="opcode" type="Uint8" />
@@ -595,11 +594,12 @@
   <inst name="Sce_espr_on" id="0x3a">
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="unknown0" type="Uint16" array="3" />
+    <field name="unknown0" type="Uint8" array="4" />
+    <field name="dir" type="Sint16" base="10" />
     <field name="x" type="Sint16" base="10" />
     <field name="y" type="Sint16" base="10" />
     <field name="z" type="Sint16" base="10" />
-    <field name="unknown1" type="Uint16" />
+    <field name="unknown3" type="Uint16" />
   </inst>
   <inst name="Door_aot_set" id="0x3b"><!-- Define rectangular door -->
     <field name="opcode" type="Uint8" />
@@ -697,9 +697,9 @@
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
-    <field name="unknown2" type="Uint16" /><!-- instructions to execute? 3*2 or 1*6 ? -->
-    <field name="unknown3" type="Uint16" />
-    <field name="unknown4" type="Uint16" />
+    <field name="x" type="Sint16" base="10" /><!-- instructions to execute? 3*2 or 1*6 ? -->
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
   </inst>
   <inst name="Aot_on" id="0x47">
     <field name="opcode" type="Uint8" />
@@ -837,8 +837,8 @@
   </inst>
   <inst name="Sce_shake_on" id="0x5c">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint8" />
+    <field name="unknown" type="Uint8" /><!-- shake direction ? -->
+    <field name="value" type="Sint8" base="10" />
   </inst>
   <inst name="Mizu_div_set" id="0x5d"><!-- Mizu (water in japanese) -->
     <field name="opcode" type="Uint8" />
@@ -895,7 +895,8 @@
   <inst name="Aot_set_4p" id="0x67"><!-- Define non-rectangular zone -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="unknown0" type="Uint16" /><!-- ptr to this stored in room object list -->
+    <field name="type" type="Uint8" /><!-- ptr to this stored in room object list -->
+    <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
     <field name="x0" type="Sint16" base="10" />
     <field name="z0" type="Sint16" base="10" />
@@ -935,7 +936,7 @@
     <field name="z2" type="Sint16" base="10" />
     <field name="x3" type="Sint16" base="10" />
     <field name="z3" type="Sint16" base="10" />
-    <field name="unknown2" type="Uint16" array="5" />
+    <field name="unknown2" type="Uint16" array="4" />
   </inst>
   <inst name="Light_pos_set" id="0x6a">
     <field name="opcode" type="Uint8" />
