@@ -138,7 +138,7 @@ void rdt3_scd_scriptDump(room_t *this, int num_script)
 			func_len = SDL_SwapLE16(functionArrayPtr[i+1]) - func_offset;
 		}
 
-		logMsg(1, "0x%08x: BEGIN_FUNC func%02x\n", func_offset, i);
+		logMsg(1, "0x%08x: BEGIN_FUNC event%02x\n", func_offset, i);
 		scriptDumpBlock(this, startInst, func_offset, func_len, 1);
 		logMsg(1, "          : END_FUNC\n\n");
 	}
@@ -709,13 +709,41 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
 
-		if (block_ptr) {
-			int next_len = block_len - inst_len;
+		switch(inst->opcode) {
+			/*case INST_AOT_SET:
+				{
+					this->getText(this, 0, SDL_SwapLE16(inst->i_aot_set.message), tmpBuf, sizeof(tmpBuf));
+					logMsg(1, "0x%08x: #\t%s\n", offset, tmpBuf);
+				}
+				break;*/
+			case INST_MESSAGE_ON:
+				{
+					this->getText(this, 0, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+					logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
 
+					this->getText(this, 1, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
+				}
+				break;
+		}
+
+		if (block_ptr) {
+			int next_len;
+
+			if (inst->opcode == INST_IF) {
+				script_inst_t *end_block_ptr;
+
+				end_block_ptr = (script_inst_t *) (&((Uint8 *) block_ptr)[block_len-2]);
+				if (end_block_ptr->opcode == INST_ENDIF) {
+					block_len += 2;
+				}
+			}
+
+			next_len = block_len - inst_len;
 			if (inst->opcode == INST_CASE) next_len = block_len;
 			if (inst->opcode == INST_WHILE) next_len = block_len - 2;
 			if (inst->opcode == INST_FOR) next_len = block_len - 2;
-			/*logMsg(1, " block 0x%04x inst 0x%04x next 0x%04x\n", block_len, inst_len, next_len);*/
+			if (inst->opcode == INST_SWITCH) next_len = block_len - 2;
 
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
