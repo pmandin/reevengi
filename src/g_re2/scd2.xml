@@ -27,7 +27,7 @@
       <value name="Zombie (Male Civilian)" id="0x18" />
       <value name="Zombie (Male Civilian)" id="0x1e" />
       <value name="Zombie (Male Civilian)" id="0x1f" />
-      <value name="Zombie (Dog)" id="0x20" />
+      <value name="Dog" id="0x20" />
       <value name="Crow" id="0x21" />
       <value name="Licker (Normal)" id="0x22" />
       <value name="Alligator" id="0x23" />
@@ -236,7 +236,7 @@
   <inst name="Evt_exec" id="0x04">
     <field name="opcode" type="Uint8" />
     <field name="cond" type="Uint8" />
-    <field name="ex_opcode" type="Uint8" /><!-- 0x18: execute function -->
+    <field name="ex_opcode" type="Uint8" /><!-- 0x18: Gosub -->
     <field name="event" type="Uint8" />
   </inst>
   <inst name="Evt_kill" id="0x05">
