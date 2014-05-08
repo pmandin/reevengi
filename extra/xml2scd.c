@@ -49,6 +49,8 @@ void generateDumpFieldEnumValues(xmlNodePtr node, char *field_value);
 
 void generateLengths(xmlDocPtr doc);
 
+void generateRewiki(xmlDocPtr doc);
+
 /*--- Functions ---*/
 
 int main(int argc, char **argv)
@@ -56,7 +58,7 @@ int main(int argc, char **argv)
 	xmlDocPtr doc;
 
 	if (argc<3) {
-		fprintf(stderr, "Usage: %s /path/to/scdN.xml [--defines|--types|--dumps|--lengths]\n", argv[0]);
+		fprintf(stderr, "Usage: %s /path/to/scdN.xml [--defines|--types|--dumps|--lengths|--rewiki]\n", argv[0]);
 		return 1;
 	}
 
@@ -76,6 +78,9 @@ int main(int argc, char **argv)
 		}
 		if (strcmp(argv[2],"--lengths")==0) {
 			generateLengths(doc);
+		}
+		if (strcmp(argv[2],"--rewiki")==0) {
+			generateRewiki(doc);
 		}
 	} else {
 		fprintf(stderr, "xml2scd: Can not read %s\n", argv[1]);
@@ -618,3 +623,78 @@ void generateLengths(xmlDocPtr doc)
 
 	xmlXPathFreeObject(path);
 }
+
+void generateRewiki(xmlDocPtr doc)
+{
+	xmlXPathObjectPtr path;
+	xmlChar *inst_name, *inst_id;
+	char *inst_name_up, *inst_name_low;
+	xmlNodeSetPtr nodeset;
+	int i, j;
+
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	if (!path) {
+		fprintf(stderr, "xml2scd: Path not found\n");
+	}
+
+	printf(	"{|\n"
+		"!Byte!!Instruction!!Length!!Description\n");
+
+	/* Each instruction */
+	nodeset = path->nodesetval;
+	for (i=0; i < nodeset->nodeNr; i++) {
+		xmlNodePtr node;
+				
+		node = nodeset->nodeTab[i];
+		if (strcmp(node->name, "inst")!=0) {
+			continue;
+		}
+
+		inst_name = xmlGetProp(node, "name");
+		inst_id = xmlGetProp(node, "id");
+
+		/* Convert to lower case for structure */
+		inst_name_low = strdup(inst_name);
+		j=0;
+		while (inst_name_low[j]) {
+			inst_name_low[j] = tolower(inst_name_low[j]);
+			++j;
+		}
+
+		printf(	"|-\n"
+			"|%s||%s||-||%s\n", inst_id, inst_name, "description");
+
+		printf(	"<pre><nowiki>\n"
+			"typedef struct {\n");
+		generateTypeFields(node);		
+		printf(	"} script_inst_%s_t;\n"
+			"</nowiki></pre>\n",
+			inst_name_low);
+
+		free(inst_name_low);
+	}
+
+	printf("|}\n");
+
+	xmlXPathFreeObject(path);
+}
+
+#if 0
+{|
+!Byte!!Instruction!!Length!!Description
+
+|-
+|0x63||AOT_SET||20||Message ?
+<pre><nowiki>
+typedef struct {
+	unsigned char opcode; /* 0x63 */
+	unsigned char event_type;
+	unsigned char event_flag;
+	unsigned char unknown0[3];
+	short x,y,w,h;
+	short unknown1[3];	/* unknown1[1] can be result of calling a function */
+} script_aot_set_t;
+</nowiki></pre>
+
+|}
+#endif
