@@ -419,7 +419,7 @@
   <!-- 0x50-0x5f --> 
   <inst name="Cut_chg" id="0x50">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" />
+    <field name="camera" type="Uint8" />
   </inst>
   <inst name="Cut_old" id="0x51">
     <field name="opcode" type="Uint8" />
@@ -640,9 +640,14 @@
   </inst>
   <inst name="Espr3d_on2" id="0x73">
     <field name="opcode" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint32" array="5" />
+    <field name="unknown1" type="Uint16" array="3" />
+    <field name="x" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" />
+    <field name="z" type="Sint16" base="10" />
+    <field name="unknown2" type="Uint16" array="3"/>
   </inst>
   <inst name="Espr_kill" id="0x74">
     <field name="opcode" type="Uint8" />

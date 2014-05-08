@@ -744,6 +744,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 			if (inst->opcode == INST_WHILE) next_len = block_len - 2;
 			if (inst->opcode == INST_FOR) next_len = block_len - 2;
 			if (inst->opcode == INST_SWITCH) next_len = block_len - 2;
+			if (inst->opcode == INST_DO) next_len = block_len - 2;
 
 			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
