@@ -124,6 +124,7 @@ static const bitarray_name_t bitarray_names[]={
 
 static char strBuf[512];
 static char tmpBuf[512];
+/*static char tmpFuncs[256];*/
 
 /*--- Functions prototypes ---*/
 
@@ -174,6 +175,8 @@ void rdt2_scd_scriptDump(room_t *this, int num_script)
 	 */
 	functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
 
+	/*memset(tmpFuncs, 0, sizeof(tmpFuncs));*/
+
 	logMsg(1, "rdt: Dumping script %d\n", num_script);
 	num_funcs = SDL_SwapLE16(functionArrayPtr[0]) >> 1;
 	for (i=0; i<num_funcs; i++) {
@@ -185,10 +188,56 @@ void rdt2_scd_scriptDump(room_t *this, int num_script)
 			func_len = SDL_SwapLE16(functionArrayPtr[i+1]) - func_offset;
 		}
 
-		logMsg(1, "0x%08x: BEGIN_EVENT event%02x\n", func_offset, i);
+		logMsg(1, "0x%08x (file at 0x%08x): BEGIN_EVENT event%02x\n", func_offset, offset+func_offset, i);
 		scriptDumpBlock(this, startInst, func_offset, func_len, 1);
 		logMsg(1, "          : END_EVENT\n\n");
 	}
+
+	/* Dump used functions */
+	/*for (i=0; i<sizeof(tmpFuncs); i++) {
+		if (i<=0x10) {
+			if (i!=0x03)
+				continue;
+		}
+		if (i<=0x20) {
+			if ((i!=0x15) && (i!=0x19) && (i!=0x1b) && (i!=0x1c) && (i!=0x1e) && (i!=0x1f))
+				continue;
+		}
+		if (i<=0x30) {
+			if ((i!=0x27) && (i!=0x2a))
+				continue;
+		}
+		if (i<=0x40) {
+			if ((i!=0x30) && (i!=0x31) && (i!=0x33) && (i!=0x38))
+				continue;
+		}
+		if (i<=0x50) {
+			if ((i!=0x45) && (i!=0x49) && (i!=0x4a) && (i!=0x4d) && (i!=0x4f))
+				continue;
+		}
+		if (i<=0x60) {
+			if ((i!=0x50) && (i!=0x52) && (i!=0x54) && (i!=0x55) && (i!=0x56) && (i!=0x5a) && (i!=0x5c) && (i!=0x5d))
+				continue;
+		}
+		if (i<=0x70) {
+			if (i!=0x63)
+				continue;
+		}
+		if (i<=0x80) {
+			if ((i!=0x70) && (i!=0x72) && (i!=0x75) && (i!=0x77) && (i!=0x7c) && (i!=0x7d))
+				continue;
+		}
+		if (i<=0x90) {
+			if ((i!=0x80) && (i!=0x8a) && (i!=0x8b) && (i!=0x8d) && (i!=0x8e))
+				continue;
+		}
+		if (i>=0x8f) {
+			continue;
+		}
+		if (tmpFuncs[i]) {
+			logMsg(1, "Function 0x%02x used\n", i);
+		}
+	}*/
 }
 
 static void reindent(int num_indent)
@@ -237,8 +286,14 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 #include "rdt_scd_dumps.gen.c"
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
+/*		tmpFuncs[inst->opcode] = 1;*/
 
 		switch(inst->opcode) {
+			case INST_GOTO:
+				{
+					logMsg(1, "0x%08x: #\tGoto [0x%04x]\n", offset, offset + SDL_SwapLE16(inst->i_goto.rel_offset));
+				}
+				break;
 			case INST_CK:
 				{
 					const char *array_name;
