@@ -238,6 +238,10 @@ void generateTypeFields(xmlNodePtr node)
 			continue;
 		}
 
+		if (strcmp(child->name, "field")!=0) {
+			continue;
+		}
+
 		field_name = xmlGetProp(child, "name");
 		field_type = xmlGetProp(child, "type");
 		field_array = xmlGetProp(child, "array");
@@ -345,6 +349,10 @@ void generateDumpFields(xmlDocPtr doc, xmlNodePtr node, char *name_low, int *has
 
 	for (child = node->children; child; child = child->next) {
 		if (child->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+
+		if (strcmp(child->name, "field")!=0) {
 			continue;
 		}
 
@@ -678,23 +686,3 @@ void generateRewiki(xmlDocPtr doc)
 
 	xmlXPathFreeObject(path);
 }
-
-#if 0
-{|
-!Byte!!Instruction!!Length!!Description
-
-|-
-|0x63||AOT_SET||20||Message ?
-<pre><nowiki>
-typedef struct {
-	unsigned char opcode; /* 0x63 */
-	unsigned char event_type;
-	unsigned char event_flag;
-	unsigned char unknown0[3];
-	short x,y,w,h;
-	short unknown1[3];	/* unknown1[1] can be result of calling a function */
-} script_aot_set_t;
-</nowiki></pre>
-
-|}
-#endif
