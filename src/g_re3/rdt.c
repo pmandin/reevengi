@@ -99,7 +99,7 @@ static void postLoad(room_t *this)
 	/*rdt3_sca_init(room);*/
 
 	displayTexts(this, 0);
-	displayTexts(this, 1);
+	/*displayTexts(this, 1);*/
 
 	/* Dump scripts if wanted */
 	if (params.dump_script) {
