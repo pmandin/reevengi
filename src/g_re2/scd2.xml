@@ -274,6 +274,8 @@
   </enum>
 
   <enum name="variables">
+    <value name="ScreenY" id="0x04" /><!-- room2000, for scrolling screen -->
+    <value name="PlayerY" id="0x05" /><!-- room2000, for moving player while scrolling screen -->
     <value name="Tmp" id="0x10" />
     <value name="CurrentCamera" id="0x1a" />
   </enum>
@@ -541,7 +543,7 @@
   </inst>
   <inst name="Cmp" id="0x23">
     <!-- usage: room1000 -->
-    <description>Compare a value.</description>
+    <description>Compares a value.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="varw" type="Uint8" enum="variables" />
@@ -550,15 +552,17 @@
   </inst>
   <inst name="Save" id="0x24">
     <!-- usage: room1010 -->
+    <description>Sets value of a variable.</description>
     <field name="opcode" type="Uint8" />
     <field name="varw" type="Uint8" enum="variables" />
-    <field name="value" type="Uint16" />
+    <field name="value" type="Sint16" base="10" />
   </inst>
   <inst name="Copy" id="0x25">
     <!-- usage: room1010 -->
+    <description>Copies a variable to another variable.</description>
     <field name="opcode" type="Uint8" />
-    <field name="dst" type="Uint8" />
-    <field name="src" type="Uint8" />
+    <field name="varw_dst" type="Uint8" enum="variables" />
+    <field name="varw_src" type="Uint8" enum="variables" />
   </inst>
   <inst name="Calc" id="0x26">
     <!-- usage: room1000 -->
@@ -1222,7 +1226,7 @@
     <!-- usage: room11b0?? room2070 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
+    <field name="unknown1" type="Sint16" base="10" />
     <field name="unknown2" type="Uint16" />
   </inst>
   <inst name="Sce_line_end" id="0x79">
