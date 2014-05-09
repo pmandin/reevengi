@@ -266,15 +266,20 @@
  <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <!-- usage: room1000 -->
+    <description>NO Operation.
+      Mostly used to align next instruction on even offset.
+    </description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Evt_end" id="0x01">
     <!-- usage: room1000 -->
+    <description>*MAYBE* Terminate and disable current event execution.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Evt_next" id="0x02">
     <!-- usage: room1000 -->
+    <description>*MAYBE* Skip temporarily further execution of current event (equivalent to Sleep 1).</description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Evt_chain" id="0x03">
@@ -285,6 +290,7 @@
   </inst>
   <inst name="Evt_exec" id="0x04">
     <!-- usage: room1000 -->
+    <description>*MAYBE* Add another event to be executed regulary.</description>
     <field name="opcode" type="Uint8" />
     <field name="cond" type="Uint8" />
     <field name="ex_opcode" type="Uint8" /><!-- 0x18: Gosub -->
@@ -292,83 +298,118 @@
   </inst>
   <inst name="Evt_kill" id="0x05">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Disable an event.</description>
     <field name="opcode" type="Uint8" />
     <field name="event" type="Uint8" />
   </inst>
   <inst name="Ifel_ck" id="0x06">
     <!-- usage: room1000 -->
+    <description>IF block instruction start.
+      Any following Ck instruction evaluated to FALSE will end this block.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
   </inst>
   <inst name="Else_ck" id="0x07">
     <!-- usage: room1000 -->
+    <description>ELSE block instruction start.
+      Block to execute if precedent IF block must be stopped if some condition evaluated to FALSE.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
   </inst>
   <inst name="Endif" id="0x08">
     <!-- usage: room1000 -->
+    <description>IF block instruction end.
+      Exit current IF instruction block.
+    </description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Sleep" id="0x09">
     <!-- usage: room1000 -->
+    <description>Initialize Sleep.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="count" type="Uint16" base="10" />
+    <field name="count" type="Uint16" base="10" /><!-- number of gametics to sleep, 30 tics/second? -->
   </inst>
   <inst name="Sleeping" id="0x0a"><!-- 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN -->
     <!-- usage: room1000 -->
+    <description>Execute Sleep.
+      Current event instructions will not be executed for the duration of sleep.
+    </description>
     <field name="opcode" type="Uint8" />
-    <field name="count0" type="Uint8" base="10" />
+    <field name="count0" type="Uint8" base="10" /><!-- word: count1*256+count0 = nb of gametics to sleep -->
     <field name="count1" type="Uint8" base="10" />
   </inst>
   <inst name="Wsleep" id="0x0b">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Initialize global sleep.</description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Wsleeping" id="0x0c">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Execute global sleep.
+      All events instructions will not be executed for the duration of sleep.
+    </description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="For" id="0x0d">
     <!-- usage: room1000 -->
+    <description>Initialize FOR loop.
+      Execute a block of instructions 'count' times.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
     <field name="count" type="Uint16" base="10" />
   </inst>
-  <inst name="Next" id="0x0e"><!-- End for loop -->
+  <inst name="Next" id="0x0e">
     <!-- usage: room1000 -->
+    <description>End of FOR block.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="While" id="0x0f">
     <!-- usage: room1010 -->
+    <description>Start of WHILE block.
+      Execute a block of instructions unless a following Ck condition is evaluated to FALSE.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
   </inst>
 
  <!-- 0x10-0x1f -->
-  <inst name="Ewhile" id="0x10"><!-- End while loop -->
+  <inst name="Ewhile" id="0x10">
     <!-- usage: room1010 -->
+    <description>End of WHILE block.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Do" id="0x11">
     <!-- usage: room1000 -->
+    <description>Start of DO block.
+      Execute a block of instructions (condition at end of block).
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
   </inst>
   <inst name="Edwhile" id="0x12"><!-- End do loop -->
     <!-- usage: room1000 -->
+    <description>End of DO block.
+      Execute the block of instructions as long as the following Ck condition(s) are evaluated to TRUE.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="block_length" type="Uint8" />
   </inst>
   <inst name="Switch" id="0x13">
     <!-- usage: room1000 -->
+    <description>Start of SWITCH block.
+      Execute a block of instructions depending on the value of 'varw' variable.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="varw" type="Uint8">
       <value name="CurrentCamera" id="0x1a" />
@@ -377,22 +418,32 @@
   </inst>
   <inst name="Case" id="0x14">
     <!-- usage: room1000 -->
+    <description>Start of CASE block.
+      Execute a block of instructions if 'varw' variable of Switch instruction equals 'value'.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
     <field name="value" type="Uint16" base="10" />
   </inst>
   <inst name="Default" id="0x15">
+    <description>Start of DEFAULT block.
+      Execute a block of instructions if none of preceding Case instructions matches.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Eswitch" id="0x16"><!-- End switch case -->
     <!-- usage: room1000 -->
+    <description>End of SWITCH block.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Goto" id="0x17">
     <!-- usage: room1000 -->
+    <description>Jump to another instruction in current event.
+      'rel_offset' is relative to start of this instruction.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
@@ -401,15 +452,18 @@
   </inst>
   <inst name="Gosub" id="0x18">
     <!-- usage: room1000 -->
+    <description>Execute a subroutine for this event.</description>
     <field name="opcode" type="Uint8" />
     <field name="event" type="Uint8" />
   </inst>
   <inst name="Return" id="0x19">
+    <description>End a subroutine called with Gosub.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Break" id="0x1a">
     <!-- usage: room1000 -->
+    <description>Exit a currently executing block (For, Case, Do, etc).</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
@@ -422,8 +476,12 @@
   <inst name="Break_point" id="0x1c">
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Work_copy" id="0x1d"><!-- Change instruction by writing value inside script -->
+  <inst name="Work_copy" id="0x1d">
     <!-- usage: room1010 -->
+    <description>Change instruction by writing value inside script.
+      'varw' is the variable we want to write at offset 'offset' (relative to start of next instruction).
+      'size' tells if we write a byte or a word.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="varw" type="Uint8" />
     <field name="offset" type="Uint8" />
@@ -444,15 +502,17 @@
     <!-- usage: room1000 -->
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Ck" id="0x21"><!-- Bit test -->
+  <inst name="Ck" id="0x21">
     <!-- usage: room1000 -->
+    <description>Test a bit in a given array</description>
     <field name="opcode" type="Uint8" />
     <field name="array" type="Uint8" />
     <field name="bit" type="Uint8" />
     <field name="value" type="Uint8" />
   </inst>
-  <inst name="Set" id="0x22"><!-- Bit set -->
+  <inst name="Set" id="0x22">
     <!-- usage: room1000 -->
+    <description>Set a bit in a given array</description>
     <field name="opcode" type="Uint8" />
     <field name="array" type="Uint8" />
     <field name="bit" type="Uint8" />
@@ -462,8 +522,9 @@
       <value name="Chg" id="0x07" />
     </field>
   </inst>
-  <inst name="Cmp" id="0x23"><!-- var1a is current camera -->
+  <inst name="Cmp" id="0x23">
     <!-- usage: room1000 -->
+    <description>Compare a value.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="varw" type="Uint8">
@@ -991,7 +1052,7 @@
   <inst name="Door_aot_set_4p" id="0x68"><!-- Define non-rectangular door -->
   <!-- usage: room60b0 -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
+    <field name="id" type="Uint8" />
     <field name="unknown1" type="Uint16" array="2" />
     <field name="x0" type="Sint16" base="10" />
     <field name="z0" type="Sint16" base="10" />
@@ -1001,13 +1062,26 @@
     <field name="z2" type="Sint16" base="10" />
     <field name="x3" type="Sint16" base="10" />
     <field name="z3" type="Sint16" base="10" />
-    <field name="unknown2" type="Uint16" array="9" />
+    <field name="next_x" type="Sint16" base="10" />
+    <field name="next_y" type="Sint16" base="10" />
+    <field name="next_z" type="Sint16" base="10" />
+    <field name="next_dir" type="Sint16" base="10" />
+    <field name="next_stage" type="Uint8" />
+    <field name="next_room" type="Uint8" />
+    <field name="next_camera" type="Uint8" />
+    <field name="unknown2" type="Uint8" />
+    <field name="door_type" type="Uint8" />
+    <field name="door_lock" type="Uint8" />
+    <field name="unknown3" type="Uint8" />
+    <field name="door_locked" type="Uint8" />
+    <field name="door_key" type="Uint8" />
+    <field name="unknown4" type="Uint8" />
   </inst>
   <inst name="Item_aot_set_4p" id="0x69"><!-- Define non-rectangular item -->
     <!-- usage: room1080 -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" array="2" />
+    <field name="id" type="Uint8" />
+    <field name="unknown0" type="Uint16" array="2" />
     <field name="x0" type="Sint16" base="10" />
     <field name="z0" type="Sint16" base="10" />
     <field name="x1" type="Sint16" base="10" />
@@ -1016,7 +1090,9 @@
     <field name="z2" type="Sint16" base="10" />
     <field name="x3" type="Sint16" base="10" />
     <field name="z3" type="Sint16" base="10" />
-    <field name="unknown2" type="Uint16" array="4" />
+    <field name="type" type="Uint16" enum="item" />
+    <field name="amount" type="Uint16" base="10" />
+    <field name="unknown1" type="Uint16" array="2" />
   </inst>
   <inst name="Light_pos_set" id="0x6a">
     <!-- usage: room10a0 -->
