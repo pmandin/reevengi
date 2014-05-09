@@ -16,6 +16,16 @@
     <value name="Asr" id="0x0b" />
   </enum>
 
+  <enum name="compare">
+    <value name="EQ" id="0x00" />
+    <value name="GT" id="0x01" />
+    <value name="GE" id="0x02" />
+    <value name="LT" id="0x03" />
+    <value name="LE" id="0x04" />
+    <value name="NE" id="0x05" />
+    <!-- <value name="??" id="0x06" /> -->
+  </enum>
+
   <enum name="model">
       <value name="Zombie (Police Officer)" id="0x10" />
       <value name="Zombie (Male Civilian)" id="0x11" />
@@ -263,6 +273,11 @@
 	{0x2b, 1, ""},	em[0x1d3].b -->
   </enum>
 
+  <enum name="variables">
+    <value name="Tmp" id="0x10" />
+    <value name="CurrentCamera" id="0x1a" />
+  </enum>
+
  <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <!-- usage: room1000 -->
@@ -332,7 +347,11 @@
     <description>Initialize Sleep.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="count" type="Uint16" base="10" /><!-- number of gametics to sleep, 30 tics/second? -->
+    <field name="count" type="Uint16" base="10">
+      <description>Number of game ticks to sleep.
+	Game logic runs at 30 Hz, so 30 ticks per second.
+      </description>
+    </field>
   </inst>
   <inst name="Sleeping" id="0x0a"><!-- 0x09 and 0x0a are mixed in byte code this way : 0x09 0x0a 0xNN 0xNN -->
     <!-- usage: room1000 -->
@@ -340,8 +359,8 @@
       Current event instructions will not be executed for the duration of sleep.
     </description>
     <field name="opcode" type="Uint8" />
-    <field name="count0" type="Uint8" base="10" /><!-- word: count1*256+count0 = nb of gametics to sleep -->
-    <field name="count1" type="Uint8" base="10" />
+    <field name="count_lo" type="Uint8" base="10" /><!-- word: count_hi*256+count_lo = nb of gametics to sleep -->
+    <field name="count_hi" type="Uint8" base="10" />
   </inst>
   <inst name="Wsleep" id="0x0b">
     <!-- usage: room1010 -->
@@ -411,9 +430,7 @@
       Execute a block of instructions depending on the value of 'varw' variable.
     </description>
     <field name="opcode" type="Uint8" />
-    <field name="varw" type="Uint8">
-      <value name="CurrentCamera" id="0x1a" />
-    </field>
+    <field name="varw" type="Uint8" enum="variables" />
     <field name="block_length" type="Uint16" />
   </inst>
   <inst name="Case" id="0x14">
@@ -483,7 +500,7 @@
       'size' tells if we write a byte or a word.
     </description>
     <field name="opcode" type="Uint8" />
-    <field name="varw" type="Uint8" />
+    <field name="varw" type="Uint8" enum="variables" />
     <field name="offset" type="Uint8" />
     <field name="size" type="Uint8">
       <value name="byte" id="0x00" />
@@ -527,24 +544,14 @@
     <description>Compare a value.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
-    <field name="varw" type="Uint8">
-      <value name="CurrentCamera" id="0x1a" />
-    </field>
-    <field name="compare" type="Uint8">
-      <value name="EQ" id="0x00" />
-      <value name="GT" id="0x01" />
-      <value name="GE" id="0x02" />
-      <value name="LT" id="0x03" />
-      <value name="LE" id="0x04" />
-      <value name="NE" id="0x05" />
-      <!-- <value name="??" id="0x06" /> -->
-    </field>
-    <field name="value" type="Uint16" />
+    <field name="varw" type="Uint8" enum="variables" />
+    <field name="compare" type="Uint8" enum="compare" />
+    <field name="value" type="Uint16" base="10" />
   </inst>
   <inst name="Save" id="0x24">
     <!-- usage: room1010 -->
     <field name="opcode" type="Uint8" />
-    <field name="varw" type="Uint8" />
+    <field name="varw" type="Uint8" enum="variables" />
     <field name="value" type="Uint16" />
   </inst>
   <inst name="Copy" id="0x25">
@@ -558,29 +565,34 @@
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="operation" type="Uint8" enum="calc" />
-    <field name="varw" type="Uint8" />
+    <field name="varw" type="Uint8" enum="variables" />
     <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Calc2" id="0x27">
     <field name="opcode" type="Uint8" />
     <field name="operation" type="Uint8" enum="calc" />
-    <field name="varw" type="Uint8" />
+    <field name="varw" type="Uint8" enum="variables" />
     <field name="src" type="Uint8" />
   </inst>
   <inst name="Sce_rnd" id="0x28">
     <!-- usage: room1010 -->
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Cut_chg" id="0x29"><!-- Change camera, save current for restoration using Cut_old  -->
+  <inst name="Cut_chg" id="0x29">
     <!-- usage: room1010 -->
+    <description>Change camera.
+      Save current camera for restoration using Cut_old.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="camera" type="Uint8" />
   </inst>
-  <inst name="Cut_old" id="0x2a"><!-- Restore camera changed by instruction Cut_chg -->
+  <inst name="Cut_old" id="0x2a">
+    <description>Restore camera changed by instruction Cut_chg.</description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Message_on" id="0x2b">
     <!-- usage: room1010 -->
+    <description>Prints text.</description>
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="id" type="Uint8" />
@@ -605,6 +617,7 @@
   </inst>
   <inst name="Obj_model_set" id="0x2d">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Defines 3D model to use for an object.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" array="6" />
@@ -644,6 +657,7 @@
   </inst>
   <inst name="Pos_set" id="0x32">
     <!-- usage: room1000 -->
+    <description>Defines entity position.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="x" type="Sint16" base="10" />
@@ -666,8 +680,8 @@
   <inst name="Member_set2" id="0x35">
     <!-- usage: room1000 -->
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
-    <field name="varw" type="Uint8" />
+    <field name="id" type="Uint8" enum="member" />
+    <field name="varw" type="Uint8" enum="variables" />
   </inst>
   <inst name="Se_on" id="0x36">
     <!-- usage: room1010 -->
@@ -700,17 +714,22 @@
   </inst>
   <inst name="Sce_espr_on" id="0x3a">
     <!-- usage: room1000 -->
+    <description>Defines 3D animation using sprites.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="unknown0" type="Uint8" array="4" />
+    <!--room1000 unknown0[0]=0x04: smoke animation  -->
+    <!--room1000 unknown0[0]=0x0d: fire animation (small) -->
+    <!--room1000 unknown0[0]=0x0e: fire animation (big) -->
     <field name="dir" type="Sint16" base="10" />
     <field name="x" type="Sint16" base="10" />
     <field name="y" type="Sint16" base="10" />
     <field name="z" type="Sint16" base="10" />
     <field name="unknown3" type="Uint16" />
   </inst>
-  <inst name="Door_aot_set" id="0x3b"><!-- Define rectangular door -->
+  <inst name="Door_aot_set" id="0x3b">
   <!-- usage: room1000 -->
+    <description>Defines rectangular door.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" />
@@ -742,15 +761,15 @@
   <inst name="Member_copy" id="0x3d">
     <!-- usage: room1000 -->
     <field name="opcode" type="Uint8" />
-    <field name="varw" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="varw" type="Uint8" enum="variables" />
+    <field name="id" type="Uint8" enum="member" />
   </inst>
   <inst name="Member_cmp" id="0x3e">
     <!-- usage: room1000 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
-    <field name="compare" type="Uint8" />
+    <field name="compare" type="Uint8" enum="compare" />
     <field name="value" type="Sint16" base="10" />
   </inst>
   <inst name="Plc_motion" id="0x3f">
@@ -778,6 +797,7 @@
   </inst>
   <inst name="Plc_ret" id="0x42">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Exit status screen.</description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Plc_flg" id="0x43">
@@ -788,6 +808,7 @@
   </inst>
   <inst name="Sce_em_set" id="0x44">
     <!-- usage: room1000 -->
+    <description>Defines entity (enemy, other character).</description>
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="id" type="Uint8" />
@@ -812,16 +833,17 @@
   </inst>
   <inst name="Aot_reset" id="0x46">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Reset object state</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint8" />
+    <field name="unknown0" type="Uint16" />
     <field name="x" type="Sint16" base="10" /><!-- instructions to execute? 3*2 or 1*6 ? -->
-    <field name="y" type="Sint16" base="10" />
+    <field name="y" type="Sint16" base="10" /><!-- OR position to move it relative to another object -->
     <field name="z" type="Sint16" base="10" />
   </inst>
   <inst name="Aot_on" id="0x47">
     <!-- usage: room1010 -->
+    <description>*MAYBE* Enable object</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
   </inst>
@@ -852,6 +874,7 @@
   </inst>
   <inst name="Sce_espr_kill" id="0x4c">
     <!-- usage: room1000 -->
+    <description>Stops animation.</description>
     <field name="opcode" type="Uint8" />
     <field name="anim0" type="Uint8" />
     <field name="anim1" type="Uint8" />
@@ -950,8 +973,9 @@
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" />
   </inst>
-  <inst name="Xa_on" id="0x59"><!-- Play a sound -->
+  <inst name="Xa_on" id="0x59">
     <!-- usage: room1010 -->
+    <description>Play a sound.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="value" type="Sint16" />
@@ -966,11 +990,13 @@
     <field name="unknown" type="Uint8" base="10" /><!-- set eax[0x154].w -->
   </inst>
   <inst name="Sce_shake_on" id="0x5c">
+    <description>Shakes screen.</description>
     <field name="opcode" type="Uint8" />
     <field name="x" type="Sint8" base="10" />
     <field name="y" type="Sint8" base="10" />
   </inst>
-  <inst name="Mizu_div_set" id="0x5d"><!-- Mizu (water in japanese) -->
+  <inst name="Mizu_div_set" id="0x5d">
+    <description>Defines water level (mizu = water in japanese).</description>
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
   </inst>
@@ -986,8 +1012,9 @@
   </inst>
 
   <!-- 0x60-0x6f -->
-  <inst name="Kage_set" id="0x60"><!-- Kage (shadow in japanese) -->
+  <inst name="Kage_set" id="0x60">
     <!-- usage: room1000 -->
+    <description>Defines entity/player shadow (kage = shadow in japanese)</description>
     <field name="opcode" type="Uint8" />
     <field name="component" type="Uint8">
       <value name="player" id="0x01" /><!-- player -->
@@ -1006,6 +1033,7 @@
   </inst>
   <inst name="Sce_Item_lost" id="0x62">
     <!-- usage: room10b0 -->
+    <description>Removes item from inventory.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" enum="item" />
   </inst>
@@ -1049,8 +1077,9 @@
     <field name="unknown3" type="Uint16" />
     <field name="unknown4" type="Uint16" />
   </inst>
-  <inst name="Door_aot_set_4p" id="0x68"><!-- Define non-rectangular door -->
-  <!-- usage: room60b0 -->
+  <inst name="Door_aot_set_4p" id="0x68">
+    <!-- usage: room60b0 -->
+    <description>Defines non-rectangular door.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown1" type="Uint16" array="2" />
@@ -1096,6 +1125,7 @@
   </inst>
   <inst name="Light_pos_set" id="0x6a">
     <!-- usage: room10a0 -->
+    <description>Defines light position.</description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="id" type="Uint8" />
@@ -1108,6 +1138,7 @@
   </inst>
   <inst name="Light_kido_set" id="0x6b">
     <!-- usage: room1000 -->
+    <description>Defines light range.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="range" type="Uint16" base="10" />
@@ -1131,6 +1162,7 @@
   </inst>
   <inst name="Movie_on" id="0x6f">
     <!-- usage: room1080 -->
+    <description>Play movie file</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" enum="movie" />
   </inst>
@@ -1284,12 +1316,14 @@
     <field name="unknown1" type="Uint16" />
     <field name="unknown2" type="Uint16" />
   </inst>
-  <inst name="Poison_ck" id="0x86"><!-- Check poisoned status -->
+  <inst name="Poison_ck" id="0x86">
     <!-- usage: room4080 -->
+    <description>Check poisoned status</description>
     <field name="opcode" type="Uint8" />
   </inst>
-  <inst name="Poison_clr" id="0x87"><!-- Clear poisoned status -->
+  <inst name="Poison_clr" id="0x87">
     <!-- usage: room4080 -->
+    <description>Clear poisoned status</description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Sce_Item_ck_Lost" id="0x88">
