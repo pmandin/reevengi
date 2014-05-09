@@ -1,6 +1,21 @@
 <?xml version="1.0"?>
 <scd version="3">
   <!-- enums -->
+  <enum name="calc">
+    <value name="Add" id="0x00" />
+    <value name="Sub" id="0x01" />
+    <!-- <value name="Mul" id="0x02" />
+    <value name="Div" id="0x03" /> -->
+    <value name="Mod" id="0x04" />
+    <value name="Or" id="0x05" />
+    <value name="And" id="0x06" />
+    <value name="Xor" id="0x07" />
+    <!-- <value name="Not" id="0x08" />
+    <value name="Lsr" id="0x09" />
+    <value name="Lsl" id="0x0a" />
+    <value name="Asr" id="0x0b" /> -->
+  </enum>
+
   <enum name="model">
     <value name="Zombie (Male Civilian)" id="0x10" />
     <value name="Zombie (Female Civilian)" id="0x11" />
@@ -47,10 +62,10 @@
     <value name="Plug" id="0x40" />
     <value name="Carlos" id="0x50" />
     <value name="Mercenary #2" id="0x51" />
-    <value name="Mercenary #3" id="0x52" />
+    <value name="Nicholaï" id="0x52" />
     <value name="Brad Vickers" id="0x53" />
     <value name="Character #1 (Guy)" id="0x54" />
-    <value name="Mercenary #4 (Zombie)" id="0x55" />
+    <value name="Mikhail (Zombie)" id="0x55" />
     <value name="Mercenary #5" id="0x56" />
     <value name="Marvin Branagh" id="0x57" />
     <value name="Brad Vickers (Killed)" id="0x58" />
@@ -59,9 +74,9 @@
     <value name="Jill Valentine" id="0x5b" />
     <value name="Carlos" id="0x5c" />
     <value name="Carlos" id="0x5d" />
-    <value name="Mercenary #3" id="0x5e" />
+    <value name="Nicholaï" id="0x5e" />
     <value name="Jill Valentine" id="0x5f" />
-    <value name="Mercenary #3 (Killed)" id="0x60" />
+    <value name="Nicholaï (Killed)" id="0x60" />
     <value name="Character #4 (Girl)" id="0x61" />
     <value name="Jill Valentine (Biker)" id="0x62" />
     <value name="Jill Valentine (Resident Evil)" id="0x63" />
@@ -73,13 +88,23 @@
     <value name="Jill Valentine (Blue)" id="0x71" />
   </enum>
 
+  <enum name="movie">
+    <value name="zmovie/ins01.dat" id="0x01" />
+    <value name="zmovie/ins02.dat" id="0x02" />
+    <value name="zmovie/ins03.dat" id="0x03" />
+    <value name="zmovie/ins04.dat" id="0x04" />
+    <value name="zmovie/ins05.dat" id="0x05" />
+    <value name="zmovie/ins06.dat" id="0x06" />
+    <value name="zmovie/ins07.dat" id="0x07" />
+  </enum>
+
   <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Evt_end" id="0x01">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" />
+    <field name="ret_value" type="Uint8" />
   </inst>
   <inst name="Evt_next" id="0x02">
     <field name="opcode" type="Uint8" />
@@ -467,7 +492,7 @@
   <inst name="Message_on" id="0x5b">
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="unknown" type="Uint16" array="3" />
+    <field name="unknown" type="Uint16" array="2" />
   </inst>
   <inst name="Rain_set" id="0x5c">
     <field name="opcode" type="Uint8" />
@@ -562,11 +587,12 @@
   </inst>
   <inst name="Aot_reset" id="0x65">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="9" />
+    <field name="id" type="Uint8" />
+    <field name="unknown" type="Uint16" array="4" />
   </inst>
   <inst name="Aot_on" id="0x66">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" />
+    <field name="id" type="Uint8" />
   </inst>
   <inst name="Item_aot_set" id="0x67">
     <field name="opcode" type="Uint8" />
@@ -647,7 +673,7 @@
     <field name="x" type="Sint16" base="10" />
     <field name="y" type="Sint16" base="10" />
     <field name="z" type="Sint16" base="10" />
-    <field name="unknown2" type="Uint16" array="3"/>
+    <field name="unknown2" type="Uint16" array="4"/>
   </inst>
   <inst name="Espr_kill" id="0x74">
     <field name="opcode" type="Uint8" />
@@ -655,7 +681,7 @@
   </inst>
   <inst name="Espr_kill2" id="0x75">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" />
+    <field name="id" type="Uint8" />
   </inst>
   <inst name="Espr_kill_all" id="0x76">
     <field name="opcode" type="Uint8" />
@@ -676,7 +702,7 @@
   </inst>
   <inst name="Movie_on" id="0x7a">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" />
+    <field name="id" type="Uint8" enum="movie" />
   </inst>
   <inst name="Bgm_tbl_set" id="0x7b">
     <field name="opcode" type="Uint8" />

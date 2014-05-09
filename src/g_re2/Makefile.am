@@ -32,7 +32,7 @@ rdt_scd_lengths.gen.c:	$(SCD_XML) $(XML2SCD)
 
 header_files = emd.h adt.h game_re2.h game_re2_pc_game.h \
 	rdt.h rdt_rid.h rdt_rvd.h rdt_pri.h rdt_msg.h \
-	rdt_scd.h rdt_scd_common.h rdt_scd_dump.h rdt_sca.h \
+	rdt_scd.h rdt_scd_dump.h rdt_sca.h \
 	rdt_esp.h rdt_lit.h ems.h
 
 generated_files = rdt_scd_defs.gen.h rdt_scd_types.gen.h \

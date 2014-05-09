@@ -61,8 +61,8 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 
 /*--- Variables ---*/
 
-static char strBuf[256];
-static char tmpBuf[256];
+static char strBuf[512];
+static char tmpBuf[512];
 
 /*--- Functions prototypes ---*/
 
@@ -92,9 +92,9 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 	scriptPtr = & (((Uint8 *) this->file)[offset]);
 	script_length = SDL_SwapLE16(*((Uint16 *) scriptPtr));
 
-	logMsg(1, "0x%08x: BEGIN_FUNC func00\n", offset+2);
+	logMsg(1, "0x%08x: BEGIN_EVENT event00\n", offset+2);
 	scriptDumpBlock(this, (script_inst_t *) &scriptPtr[2], offset+2, script_length-2, 1);
-	logMsg(1, "          : END_FUNC\n\n");
+	logMsg(1, "          : END_EVENT\n\n");
 }
 
 static void reindent(int num_indent)
