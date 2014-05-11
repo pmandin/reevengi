@@ -59,6 +59,10 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 
 /*--- Types ---*/
 
+/*--- Constants ---*/
+
+#include "rdt_scd_enums.gen.c"
+
 /*--- Variables ---*/
 
 static char strBuf[512];

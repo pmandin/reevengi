@@ -72,6 +72,8 @@ static const script_dump_t work_set_0[]={
 	{0xe0, "OM_PARTS_WK"}
 };
 
+#include "rdt_scd_enums.gen.c"
+
 /*--- Variables ---*/
 
 static char strBuf[512];

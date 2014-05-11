@@ -120,6 +120,8 @@ static const bitarray_name_t bitarray_names[]={
 	{0x1d, 0x11, "room1030.met_brad"}
 };
 
+#include "rdt_scd_enums.gen.c"
+
 /*--- Variables ---*/
 
 static char strBuf[512];
