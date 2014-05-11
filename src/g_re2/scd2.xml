@@ -307,7 +307,62 @@
     <value name="*MAYBE* player exits" id="0x42" />
   </enum>
 
- <!-- 0x00-0x0f --> 
+  <!-- Unions -->
+  <union name="aot_params">
+    <struct name="dummy">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="door" id="0x01">
+      <field name="x" type="Sint16" />
+      <field name="y" type="Sint16" />
+      <field name="z" type="Sint16" />
+    </struct>
+    <struct name="item" id="0x02">
+      <field name="type" type="Uint16" enum="item" />
+      <field name="amount" type="Uint16" />
+      <field name="unknown" type="Uint16" />
+    </struct>
+    <struct name="standard" id="0x03">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="message" id="0x04">
+      <field name="id" type="Uint8" />
+      <field name="unknown0" type="Uint8" />
+      <field name="unknown1" type="Uint16" array="2" />
+    </struct>
+    <struct name="event" id="0x05">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="flag_change" id="0x06">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="water" id="0x07">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="move" id="0x08">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="typewriter" id="0x09">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="itembox" id="0x0a">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="damage" id="0x0b">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="status" id="0x0c">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="drawer" id="0x0d">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="windows" id="0x0e">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+  </union>
+
+  <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <!-- usage: room1000 -->
     <description>NO Operation.
@@ -644,11 +699,12 @@
     <field name="z" type="Sint16" base="10" />
     <field name="w" type="Sint16" base="10" />
     <field name="h" type="Sint16" base="10" />
-    <field name="unknown1" type="Uint16" />
-      <!-- Message ID to display if type=message -->
-      <!-- Instructions to execute. 0:examine 1:activate 2:? or 0xff -->
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
+    <field name="aot_params" type="union" switch="type" />
+    <!-- field name="params" type="Uint8" array="6" -->
+      <!-- aot_type=item: params[0,1]=item id params[2,3]=amount params[4,5]=?? -->
+      <!-- aot_type=door: params[0,1]=x, params[2,3]=y, params[4,5]=z -->
+      <!-- aot_type=message: params[0]=message id to display, params[4] and [5] = 0xff -->
+      <!-- aot_type=event: params[0]=condition, params[2]=opcode (Gosub, 0x18), params[3]=event num -->
   </inst>
   <inst name="Obj_model_set" id="0x2d">
     <!-- usage: room1010 -->
@@ -874,7 +930,7 @@
     <field name="id" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
-    <field name="unknown" type="Uint16" array="3" />
+    <field name="params" type="Uint8" array="6" />
       <!-- unknown[0] = message ID to display if type=message -->
       <!-- unknown[1] = 0x18 (Gosub) + event ID if type=event -->
     <!-- <field name="x" type="Sint16" base="10" />--><!-- instructions to execute? 3*2 or 1*6 ? -->
@@ -1114,10 +1170,7 @@
     <field name="z2" type="Sint16" base="10" />
     <field name="x3" type="Sint16" base="10" />
     <field name="z3" type="Sint16" base="10" />
-    <field name="unknown1" type="Uint16" />
-      <!-- Message ID to display if type=message -->
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
+    <field name="params" type="Uint8" array="6" />
   </inst>
   <inst name="Door_aot_set_4p" id="0x68">
     <!-- usage: room60b0 -->
