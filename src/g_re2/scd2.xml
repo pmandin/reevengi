@@ -331,7 +331,13 @@
       <field name="unknown1" type="Uint16" array="2" />
     </struct>
     <struct name="event" id="0x05">
-      <field name="unknown" type="Uint16" array="3" />
+      <field name="cond" type="Uint8" />
+      <field name="unknown0" type="Uint8" />
+      <field name="ex_opcode" type="Uint8"><!-- 2-bytes instruction to execute -->
+        <value name="Gosub" id="0x18" />
+      </field>
+      <field name="event" type="Uint8" />
+      <field name="unknown1" type="Uint16" />
     </struct>
     <struct name="flag_change" id="0x06">
       <field name="unknown" type="Uint16" array="3" />
@@ -930,12 +936,7 @@
     <field name="id" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
-    <field name="params" type="Uint8" array="6" />
-      <!-- unknown[0] = message ID to display if type=message -->
-      <!-- unknown[1] = 0x18 (Gosub) + event ID if type=event -->
-    <!-- <field name="x" type="Sint16" base="10" />--><!-- instructions to execute? 3*2 or 1*6 ? -->
-    <!-- <field name="y" type="Sint16" base="10" />--><!-- OR position to move it relative to another object -->
-    <!-- <field name="z" type="Sint16" base="10" />-->
+    <field name="aot_params" type="union" switch="type" />
   </inst>
   <inst name="Aot_on" id="0x47">
     <!-- usage: room1010 -->
@@ -1170,7 +1171,7 @@
     <field name="z2" type="Sint16" base="10" />
     <field name="x3" type="Sint16" base="10" />
     <field name="z3" type="Sint16" base="10" />
-    <field name="params" type="Uint8" array="6" />
+    <field name="aot_params" type="union" switch="type" />
   </inst>
   <inst name="Door_aot_set_4p" id="0x68">
     <!-- usage: room60b0 -->
