@@ -114,12 +114,10 @@ xmlXPathObjectPtr xpathSearch (xmlDocPtr doc, xmlChar *xpath)
 void generateDefines(xmlDocPtr doc)
 {
 	xmlXPathObjectPtr path;
-	xmlChar *inst_name, *inst_id;
-	char *inst_name_up;
 	xmlNodeSetPtr nodeset;
-	int i, j;
+	int i;
 
-	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/inst");
 	if (!path) {
 		fprintf(stderr, "xml2scd: Path not found\n");
 		return;
@@ -130,11 +128,11 @@ void generateDefines(xmlDocPtr doc)
 	nodeset = path->nodesetval;
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
-				
+		xmlChar *inst_name, *inst_id;
+		char *inst_name_up;
+		int j;
+
 		node = nodeset->nodeTab[i];
-		if (strcmp(node->name, "inst")!=0) {
-			continue;
-		}
 
 		inst_name = xmlGetProp(node, "name");
 		inst_id = xmlGetProp(node, "id");
@@ -323,7 +321,7 @@ void generateDumps(xmlDocPtr doc)
 	xmlNodeSetPtr nodeset;
 	int i, j;
 
-	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/inst");
 	if (!path) {
 		fprintf(stderr, "xml2scd: Path not found\n");
 	}
@@ -338,9 +336,6 @@ void generateDumps(xmlDocPtr doc)
 		int has_block_length = 0;
 
 		node = nodeset->nodeTab[i];
-		if (strcmp(node->name, "inst")!=0) {
-			continue;
-		}
 
 		inst_name = xmlGetProp(node, "name");
 		inst_id = xmlGetProp(node, "id");
@@ -573,7 +568,7 @@ void generateDumpFieldEnums(xmlDocPtr doc, xmlNodePtr node, char *field_value)
 		return;
 	}
 
-	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/enum");
 	if (!path) {
 		fprintf(stderr, "xml2scd: Path not found\n");
 		return;
@@ -584,9 +579,6 @@ void generateDumpFieldEnums(xmlDocPtr doc, xmlNodePtr node, char *field_value)
 		xmlNodePtr child;
 				
 		child = nodeset->nodeTab[i];
-		if (strcmp(child->name, "enum")!=0) {
-			continue;
-		}
 
 		enum_name = xmlGetProp(child, "name");
 		if (strcmp(enum_name, node_enum_name)!=0) {
@@ -652,7 +644,7 @@ void generateDumpFieldUnions(xmlDocPtr doc, xmlNodePtr node, char *name_low, cha
 		return;
 	}
 
-	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/union");
 	if (!path) {
 		fprintf(stderr, "xml2scd: Path not found\n");
 		return;
@@ -664,9 +656,6 @@ void generateDumpFieldUnions(xmlDocPtr doc, xmlNodePtr node, char *name_low, cha
 		xmlChar *child_name;
 		
 		child = nodeset->nodeTab[i];
-		if (strcmp(child->name, "union")!=0) {
-			continue;
-		}
 
 		child_name = xmlGetProp(child, "name");
 		if (strcmp(child_name, union_name)!=0) {
@@ -727,7 +716,7 @@ void generateLengths(xmlDocPtr doc)
 	int i, j;
 	int first_value=1;
 
-	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/inst");
 	if (!path) {
 		fprintf(stderr, "xml2scd: Path not found\n");
 	}
@@ -742,9 +731,6 @@ void generateLengths(xmlDocPtr doc)
 		xmlNodePtr node;
 				
 		node = nodeset->nodeTab[i];
-		if (strcmp(node->name, "inst")!=0) {
-			continue;
-		}
 
 		inst_name = xmlGetProp(node, "name");
 		var_length = xmlGetProp(node, "variable_length");
@@ -791,7 +777,7 @@ void generateRewiki(xmlDocPtr doc)
 	xmlNodeSetPtr nodeset;
 	int i, j;
 
-	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/*[name()]");
+	path = (xmlXPathObjectPtr) xpathSearch(doc, "/scd/inst");
 	if (!path) {
 		fprintf(stderr, "xml2scd: Path not found\n");
 	}
@@ -805,9 +791,6 @@ void generateRewiki(xmlDocPtr doc)
 		xmlNodePtr node;
 				
 		node = nodeset->nodeTab[i];
-		if (strcmp(node->name, "inst")!=0) {
-			continue;
-		}
 
 		inst_name = xmlGetProp(node, "name");
 		inst_id = xmlGetProp(node, "id");
