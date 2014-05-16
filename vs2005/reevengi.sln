@@ -26,6 +26,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libr_soft", "..\src\r_soft\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libr_opengl", "..\src\r_opengl\libr_opengl.vcproj", "{54566049-13F3-4854-AA2E-3DFF5C79E15C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xml2scd", "..\extra\xmltools.vcproj", "{50FB6294-24B2-4DA5-A0A7-E294BE5E1819}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
