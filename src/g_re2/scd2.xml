@@ -313,13 +313,13 @@
       <field name="unknown" type="Uint16" array="3" />
     </struct>
     <struct name="door" id="0x01">
-      <field name="x" type="Sint16" />
-      <field name="y" type="Sint16" />
-      <field name="z" type="Sint16" />
+      <field name="x" type="Sint16" base="10" />
+      <field name="y" type="Sint16" base="10" />
+      <field name="z" type="Sint16" base="10" />
     </struct>
     <struct name="item" id="0x02">
       <field name="type" type="Uint16" enum="item" />
-      <field name="amount" type="Uint16" />
+      <field name="amount" type="Uint16" base="10" />
       <field name="unknown" type="Uint16" />
     </struct>
     <struct name="standard" id="0x03">
