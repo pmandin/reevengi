@@ -8,4 +8,4 @@ xml2scd.o:	$(xml2scd_SOURCES)
 xml2scd:	xml2scd.o
 	$(CCLD_FOR_BUILD) $(LDFLAGS_FOR_BUILD) $(LIBXML_LIBS) -o $@ $<
 
-EXTRA_DIST = xmltools.vcproj Makefile.nmake
+EXTRA_DIST = xml2scd.vcproj Makefile.nmake
