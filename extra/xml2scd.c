@@ -476,11 +476,60 @@ void generateDumps(xmlDocPtr doc)
 	xmlXPathFreeObject(path);
 }
 
+/*
+			strcat(strBuf, "Door_set");
+			sprintf(tmpBuf, " id=0x%02x", inst->i_door_set.id);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " x=%d", SDL_SwapLE16(inst->i_door_set.x));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " y=%d", SDL_SwapLE16(inst->i_door_set.y));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " w=%d", SDL_SwapLE16(inst->i_door_set.w));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " h=%d", SDL_SwapLE16(inst->i_door_set.h));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " unknown0=0x%02x", inst->i_door_set.unknown0);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " unknown1=0x%02x", inst->i_door_set.unknown1);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " anim=0x%02x", inst->i_door_set.anim);
+			strcat(strBuf, tmpBuf);
+			{
+				int i;
+
+				for (i=0; i<sizeof(scd_enum_door_names)/sizeof(scd_enum_t); i++) {
+					if (inst->i_door_set.anim == scd_enum_door_names[i].id) {
+						sprintf(tmpBuf, " (%s)", scd_enum_door_names[i].name);
+						strcat(strBuf, tmpBuf);
+						break;
+					}
+				}
+			}
+			sprintf(tmpBuf, " unknown2=0x%02x", inst->i_door_set.unknown2);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " unknown3=0x%02x", inst->i_door_set.unknown3);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " next_stage_and_room=0x%02x", inst->i_door_set.next_stage_and_room);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " next_x=%d", SDL_SwapLE16(inst->i_door_set.next_x));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " next_y=%d", SDL_SwapLE16(inst->i_door_set.next_y));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " next_z=%d", SDL_SwapLE16(inst->i_door_set.next_z));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " next_dir=%d", SDL_SwapLE16(inst->i_door_set.next_dir));
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " unknown4=0x%02x", inst->i_door_set.unknown4);
+			strcat(strBuf, tmpBuf);
+			sprintf(tmpBuf, " unknown5=0x%02x", inst->i_door_set.unknown5);
+			strcat(strBuf, tmpBuf);
+			strcat(strBuf, "\n");
+*/
 void generateDumpFields(xmlDocPtr doc, xmlNodePtr node, char *name_low, int *has_block_length)
 {
 	xmlNodePtr child;
 	xmlChar *field_name, *field_type, *field_base, *field_array;
-	char swapValue[64];
+	char swapValue[128];
 	int base, size, i, array_size;
 
 	for (child = node->children; child; child = child->next) {
@@ -711,7 +760,7 @@ void generateDumpFieldUnions(xmlDocPtr doc, xmlNodePtr node, char *name_low, cha
 	xmlNodeSetPtr nodeset;
 	xmlChar *union_name;
 	int i, first_value=1;
-	char swapValue[64];
+	char swapValue[128];
 
 	union_name = xmlGetProp(node, "name");
 	if (!union_name) {
@@ -752,7 +801,7 @@ void generateDumpFieldUnionStructs(xmlDocPtr doc, xmlNodePtr node, char *name_lo
 {
 	xmlNodePtr child;
 	int has_block_length = 0;
-	char swapValue[64];
+	char swapValue[128];
 
 	for (child = node->children; child; child = child->next) {
 		xmlChar *struct_name, *struct_id;
