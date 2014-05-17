@@ -33,7 +33,7 @@ Use at your own risks.
 
 - Libxml2 (optional, if you want to modify XML files)
   http://www.xmlsoft.org
-
+  Win32 builds available at http://www.zlatkovic.com/libxml.en.html
 
 2 Command-line parameters
 -------------------------

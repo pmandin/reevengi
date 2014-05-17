@@ -1,8 +1,8 @@
 v 0.19
-- movie: fixed replay speed, updated for ffmpeg/libav changes,
+- Movie player: fixed replay speed, updated for ffmpeg/libav changes,
   tested against libav. Replay also works in OpenGL now.
-- re3: scd: added more script intructions
-- scd: generate files from XML description.
+- re1,2,3 scd bytecodes: generate needed files from XML description.
+- Software renderer: m68k: rewritten texturing routine.
 
 v 0.18
 
