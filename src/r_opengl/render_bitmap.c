@@ -137,6 +137,13 @@ f/(f-n) * 1-n/z
 	gl.MatrixMode(GL_PROJECTION);
 	gl.LoadIdentity();
 	gl.Ortho(0.0f, video.viewport.w, video.viewport.h, 0.0f, 0.0f, 1.0f);
+/*	gl.Ortho(
+		(float) render.bitmap.dstRect.x,
+		(float) (render.bitmap.dstRect.x + render.bitmap.dstRect.w),
+		(float) (render.bitmap.dstRect.y + render.bitmap.dstRect.h),
+		(float) render.bitmap.dstRect.y,
+		0.0f,
+		1.0f);*/
 
 	gl.MatrixMode(GL_TEXTURE);
 	gl.LoadIdentity();
