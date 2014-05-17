@@ -783,6 +783,7 @@ void generateDumpFieldUnionStructs(xmlDocPtr doc, xmlNodePtr node, char *name_lo
 		printf(	"\t\t\t\tcase %s:\n"
 			"\t\t\t\t\t{\n", struct_id);
 		generateDumpFields(doc, child, swapValue, &has_block_length);
+		dumpFlushConcat();
 		printf(	"\t\t\t\t\t}\n"
 			"\t\t\t\t\tbreak;\n");
 	}
