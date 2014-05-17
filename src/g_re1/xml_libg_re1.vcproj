@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="8,00"
+	Name="xml_libg_re1"
+	ProjectGUID="{EFBDDB84-0128-4F86-8539-3784B655E4ED}"
+	RootNamespace="xml_libg_re1"
+	Keyword="MakeFileProj"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /f $(SolutionDir)..\extra\Makefile.nmake SCD_XML=scd1.xml XML2SCD=$(SolutionDir)$(ConfigurationName)\xml2scd.exe all"
+				ReBuildCommandLine="nmake /f $(SolutionDir)..\extra\Makefile.nmake SCD_XML=scd1.xml XML2SCD=$(SolutionDir)$(ConfigurationName)\xml2scd.exe rebuild-all"
+				CleanCommandLine="nmake /f $(SolutionDir)..\extra\Makefile.nmake SCD_XML=scd1.xml XML2SCD=$(SolutionDir)$(ConfigurationName)\xml2scd.exe clean"
+				Output=""
+				PreprocessorDefinitions="WIN32;_DEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /f $(SolutionDir)..\extra\Makefile.nmake SCD_XML=scd1.xml XML2SCD=$(SolutionDir)$(ConfigurationName)\xml2scd.exe all"
+				ReBuildCommandLine="nmake /f $(SolutionDir)..\extra\Makefile.nmake SCD_XML=scd1.xml XML2SCD=$(SolutionDir)$(ConfigurationName)\xml2scd.exe rebuild-all"
+				CleanCommandLine="nmake /f $(SolutionDir)..\extra\Makefile.nmake SCD_XML=scd1.xml XML2SCD=$(SolutionDir)$(ConfigurationName)\xml2scd.exe clean"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

@@ -1,0 +1,27 @@
+# XML2SCD = defined in project file, path to xml2scd.exe
+# SCD_XML = defined in project file, path to scdX.xml
+
+TARGETS = rdt_scd_defs.gen.h rdt_scd_types.gen.h \
+	rdt_scd_dumps.gen.c rdt_scd_lengths.gen.c rdt_scd_enums.gen.c
+
+all: $(TARGETS)
+
+rebuild-all:	clean all
+
+clean:
+	del $(TARGETS)
+
+rdt_scd_defs.gen.h:	$(SCD_XML)
+	$(XML2SCD) $** --defines > $@
+
+rdt_scd_types.gen.h:	$(SCD_XML)
+	$(XML2SCD) $** --types > $@
+
+rdt_scd_dumps.gen.c:	$(SCD_XML)
+	$(XML2SCD) $** --dumps > $@
+
+rdt_scd_lengths.gen.c:	$(SCD_XML)
+	$(XML2SCD) $** --lengths > $@
+
+rdt_scd_enums.gen.c:	$(SCD_XML)
+	$(XML2SCD) $** --enums > $@

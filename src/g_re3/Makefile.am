@@ -41,4 +41,4 @@ generated_files = rdt_scd_defs.gen.h rdt_scd_types.gen.h \
 	rdt_scd_enums.gen.c
 
 EXTRA_DIST = $(header_files) $(generated_files) \
-	libg_re3.vcproj $(SCD_XML)
+	libg_re3.vcproj xml_libg_re3.vcproj $(SCD_XML)
