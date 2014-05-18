@@ -170,19 +170,21 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		logMsg(1, "0x%08x: %s", offset, strBuf);
 
 		switch(inst->opcode) {
-			/*case INST_AOT_SET:
-				{
-					this->getText(this, 0, SDL_SwapLE16(inst->i_aot_set.message), tmpBuf, sizeof(tmpBuf));
-					logMsg(1, "0x%08x: #\t%s\n", offset, tmpBuf);
-				}
-				break;*/
 			case INST_MESSAGE_ON:
 				{
 					this->getText(this, 0, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
 					logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
 
-					this->getText(this, 1, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
-					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);
+					/*this->getText(this, 1, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
+					sprintf(strBuf, "#\tL1\t%s\n", tmpBuf);*/
+				}
+				break;
+			case INST_AOT_RESET:
+				{
+					if (inst->i_aot_reset.type == 0x04 /* aot_type message */ ) {
+						this->getText(this, 0, inst->i_aot_reset.aot_params.message.id, tmpBuf, sizeof(tmpBuf));
+						logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
+					}
 				}
 				break;
 		}

@@ -111,6 +111,94 @@
     <value name="Om_parts_wk" id="0xe0" />
   </enum>
 
+  <enum name="aot_type">
+    <!-- ptr to this stored in room object list -->
+    <value name="dummy" id="0x00" />
+    <value name="door" id="0x01" />
+    <value name="item" id="0x02" />
+    <value name="standard" id="0x03" />
+    <value name="message" id="0x04" />
+    <value name="event" id="0x05" />
+    <value name="flag change" id="0x06" />
+    <value name="water" id="0x07" />
+    <value name="move" id="0x08" />
+    <value name="typewriter" id="0x09" />
+    <value name="itembox" id="0x0a" />
+    <value name="damage" id="0x0b" />
+    <value name="status" id="0x0c" />
+    <value name="drawer" id="0x0d" />
+    <value name="windows" id="0x0e" />
+  </enum>
+
+  <enum name="aot_trigger">
+    <value name="disabled" id="0x00" />
+    <value name="player \?\?\?" id="0x21" />
+    <value name="player activates" id="0x31" />
+    <value name="player enters" id="0x41" />
+    <value name="*MAYBE* player exits" id="0x42" />
+  </enum>
+
+  <!-- Unions -->
+  <union name="aot_params">
+    <struct name="dummy">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="door" id="0x01">
+      <field name="x" type="Sint16" base="10" />
+      <field name="y" type="Sint16" base="10" />
+      <field name="z" type="Sint16" base="10" />
+    </struct>
+    <struct name="item" id="0x02">
+      <field name="type" type="Uint16" /><!-- enum="item"--> 
+      <field name="amount" type="Uint16" base="10" />
+      <field name="unknown" type="Uint16" />
+    </struct>
+    <struct name="standard" id="0x03">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="message" id="0x04">
+      <field name="id" type="Uint8" />
+      <field name="unknown0" type="Uint8" />
+      <field name="unknown1" type="Uint16" array="2" />
+    </struct>
+    <struct name="event" id="0x05">
+      <field name="cond" type="Uint8" />
+      <field name="unknown0" type="Uint8" />
+      <field name="ex_opcode" type="Uint8"><!-- 2-bytes instruction to execute -->
+        <value name="Gosub" id="0x19" />
+      </field>
+      <field name="event" type="Uint8" />
+      <field name="unknown1" type="Uint16" />
+    </struct>
+    <struct name="flag_change" id="0x06">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="water" id="0x07">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="move" id="0x08">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="typewriter" id="0x09">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="itembox" id="0x0a">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="damage" id="0x0b">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="status" id="0x0c">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="drawer" id="0x0d">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+    <struct name="windows" id="0x0e">
+      <field name="unknown" type="Uint16" array="3" />
+    </struct>
+  </union>
+
   <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <field name="opcode" type="Uint8" />
@@ -602,7 +690,9 @@
   <inst name="Aot_reset" id="0x65">
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="unknown" type="Uint16" array="4" />
+    <field name="type" type="Uint8" enum="aot_type" />
+    <field name="trigger" type="Uint8" enum="aot_trigger" />
+    <field name="aot_params" type="union" switch="type" />
   </inst>
   <inst name="Aot_on" id="0x66">
     <field name="opcode" type="Uint8" />
