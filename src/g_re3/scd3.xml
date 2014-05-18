@@ -98,6 +98,19 @@
     <value name="zmovie/ins07.dat" id="0x07" />
   </enum>
 
+  <enum name="workset_object">
+    <value name="No_wk" id="0x00" />
+    <value name="Pl_wk" id="0x01" />
+    <value name="Spl_wk" id="0x02" />
+    <value name="Em_wk" id="0x03" />
+    <value name="Om_wk" id="0x04" />
+    <value name="All_wk" id="0x06" />
+    <value name="Pl_parts_wk" id="0x80" />
+    <value name="Spl_parts_wk" id="0xa0" />
+    <value name="Em_parts_wk" id="0xc0" />
+    <value name="Om_parts_wk" id="0xe0" />
+  </enum>
+
   <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
     <field name="opcode" type="Uint8" />
@@ -409,7 +422,8 @@
   </inst>
   <inst name="Work_set" id="0x47">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="2" />
+    <field name="unknown" type="Uint8" />
+    <field name="object" type="Uint8" enum="workset_object" />
   </inst>
   <inst name="Spd_set" id="0x48">
     <field name="opcode" type="Uint8" />
