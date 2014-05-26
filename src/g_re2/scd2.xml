@@ -714,14 +714,30 @@
   </inst>
   <inst name="Obj_model_set" id="0x2d">
     <!-- usage: room1010 -->
-    <description>*MAYBE* Defines 3D model to use for an object.</description>
+    <description>Defines 3D model to use for an object.</description>
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
-    <field name="unknown0" type="Uint16" array="6" />
+    <field name="tex_ctr" type="Uint8" />
+    <field name="wait" type="Uint8" />
+    <field name="pattern" type="Uint8" />
+    <field name="nFloor" type="Uint8" />
+    <field name="Super" type="Uint8" />
+    <field name="type" type="Uint8" />
+    <field name="set_flg" type="Uint16" />
+    <field name="be_flg" type="Uint16" />
+    <field name="attribute" type="Uint16" />
     <field name="x" type="Sint16" base="10" />
     <field name="y" type="Sint16" base="10" />
     <field name="z" type="Sint16" base="10" />
-    <field name="unknown1" type="Uint16" array="9" />
+    <field name="cdir_x" type="Sint16" base="10" />
+    <field name="cdir_y" type="Sint16" base="10" />
+    <field name="cdir_z" type="Sint16" base="10" />
+    <field name="offset_x" type="Sint16" base="10" />
+    <field name="offset_y" type="Sint16" base="10" />
+    <field name="offset_z" type="Sint16" base="10" />
+    <field name="size_x" type="Sint16" base="10" />
+    <field name="size_y" type="Sint16" base="10" />
+    <field name="size_z" type="Sint16" base="10" />
   </inst>
   <inst name="Work_set" id="0x2e"><!-- 0x2e 01 00 : reenable control+animation in room1010 -->
     <!-- usage: room1000 -->
@@ -908,20 +924,21 @@
     <!-- usage: room1000 -->
     <description>Defines entity (enemy, other character).</description>
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="id" type="Uint8" />
-    <field name="model" type="Uint8" enum="model" />
-    <field name="pose" type="Uint16" />
-    <field name="unknown1" type="Uint8" />
-    <field name="sound_bank" type="Uint8" />
-    <field name="texture" type="Uint8" />
-    <field name="killed" type="Uint8" />
+    <field name="dummy" type="Uint8" />
+    <field name="aot" type="Uint8" />
+    <field name="id" type="Uint8" enum="model" />
+    <field name="type" type="Uint8" />
+    <field name="status" type="Uint8" />
+    <field name="nFloor" type="Uint8" />
+    <field name="Sound_flg" type="Uint8" />
+    <field name="Model_type" type="Uint8" />
+    <field name="Em_set_flg" type="Uint8" /><!-- killed array ID -->
     <field name="x" type="Sint16" base="10" />
     <field name="y" type="Sint16" base="10" />
     <field name="z" type="Sint16" base="10" />
-    <field name="dir" type="Sint16" base="10" />
-    <field name="unknown2" type="Uint16" />
-    <field name="unknown3" type="Uint16" />
+    <field name="cdir_y" type="Sint16" base="10" />
+    <field name="Motion" type="Uint16" />
+    <field name="Ctr_flg" type="Uint16" />
  </inst>
   <inst name="Col_chg_set" id="0x45">
     <field name="opcode" type="Uint8" />
