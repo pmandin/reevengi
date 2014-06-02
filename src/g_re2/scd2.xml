@@ -11,8 +11,8 @@
     <value name="And" id="0x06" />
     <value name="Xor" id="0x07" />
     <value name="Not" id="0x08" />
-    <value name="Lsr" id="0x09" />
-    <value name="Lsl" id="0x0a" />
+    <value name="Lsl" id="0x09" />
+    <value name="Lsr" id="0x0a" />
     <value name="Asr" id="0x0b" />
   </enum>
 
@@ -23,7 +23,7 @@
     <value name="LT" id="0x03" />
     <value name="LE" id="0x04" />
     <value name="NE" id="0x05" />
-    <!-- <value name="??" id="0x06" /> -->
+    <value name="??" id="0x06" /><!-- true if (op1 & op2) != 0-->
   </enum>
 
   <enum name="model">
@@ -1066,14 +1066,15 @@
   </inst>
   <inst name="Member_calc" id="0x55">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
-    <field name="unknown2" type="Uint16" />
+    <field name="operation" type="Uint8" enum="calc" />
+    <field name="unknown0" type="Uint16" />
+    <field name="value" type="Uint16" />
   </inst>
   <inst name="Member_calc2" id="0x56">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="unknown1" type="Uint16" />
+    <field name="operation" type="Uint8" enum="calc" />
+    <field name="value" type="Uint8" />
+    <field name="id" type="Uint8" /><!-- index in some array -->
   </inst>
   <inst name="Sce_bgmtbl_set" id="0x57">
     <!-- usage: room1010 -->
