@@ -697,7 +697,7 @@
   <inst name="Aot_set" id="0x2c"><!-- Define rectangular zone -->
     <!-- usage: room1000 -->
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="unknown0" type="Uint16" />
@@ -844,7 +844,7 @@
   <!-- usage: room1000 -->
     <description>Defines rectangular door.</description>
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="unknown0" type="Uint16" />
@@ -950,7 +950,7 @@
     <!-- usage: room1010 -->
     <description>*MAYBE* Reset object state</description>
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="aot_params" type="union" switch="type" />
@@ -959,7 +959,7 @@
     <!-- usage: room1010 -->
     <description>*MAYBE* Enable object</description>
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
   </inst>
   <inst name="Super_set" id="0x48">
     <!-- usage: room1090 -->
@@ -1008,7 +1008,7 @@
   <inst name="Item_aot_set" id="0x4e"><!-- Define rectangular item -->
     <!-- usage: room1010 -->
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="unknown0" type="Uint16" />
@@ -1177,7 +1177,7 @@
   <inst name="Aot_set_4p" id="0x67"><!-- Define non-rectangular zone -->
   <!-- usage: room1000 -->
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="unknown0" type="Uint16" />
@@ -1195,7 +1195,7 @@
     <!-- usage: room60b0 -->
     <description>Defines non-rectangular door.</description>
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="unknown0" type="Uint16" />
@@ -1225,7 +1225,7 @@
   <inst name="Item_aot_set_4p" id="0x69"><!-- Define non-rectangular item -->
     <!-- usage: room1080 -->
     <field name="opcode" type="Uint8" />
-    <field name="id" type="Uint8" />
+    <field name="aot" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
     <field name="trigger" type="Uint8" enum="aot_trigger" />
     <field name="unknown0" type="Uint16" />
