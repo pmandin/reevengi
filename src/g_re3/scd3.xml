@@ -4,16 +4,26 @@
   <enum name="calc">
     <value name="Add" id="0x00" />
     <value name="Sub" id="0x01" />
-    <!-- <value name="Mul" id="0x02" />
-    <value name="Div" id="0x03" /> -->
+    <value name="Mul" id="0x02" />
+    <value name="Div" id="0x03" />
     <value name="Mod" id="0x04" />
     <value name="Or" id="0x05" />
     <value name="And" id="0x06" />
     <value name="Xor" id="0x07" />
-    <!-- <value name="Not" id="0x08" />
-    <value name="Lsr" id="0x09" />
-    <value name="Lsl" id="0x0a" />
-    <value name="Asr" id="0x0b" /> -->
+    <value name="Not" id="0x08" />
+    <value name="Lsl" id="0x09" />
+    <value name="Lsr" id="0x0a" />
+    <value name="Asr" id="0x0b" />
+  </enum>
+
+  <enum name="compare">
+    <value name="EQ" id="0x00" />
+    <value name="GT" id="0x01" />
+    <value name="GE" id="0x02" />
+    <value name="LT" id="0x03" />
+    <value name="LE" id="0x04" />
+    <value name="NE" id="0x05" />
+    <value name="??" id="0x06" /><!-- true if (op1 & op2) != 0-->
   </enum>
 
   <enum name="model">
@@ -494,15 +504,23 @@
   </inst>
   <inst name="Memb_cmp" id="0x43">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="5" />
+    <field name="dummy" type="Uint8" />
+    <field name="compare" type="Uint8" enum="compare" />
+    <field name="varw" type="Uint8" />
+    <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Memb_calc" id="0x44">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="5" />
+    <field name="dummy" type="Uint8" />
+    <field name="operation" type="Uint8" enum="calc" />
+    <field name="varw" type="Uint8" />
+    <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Memb_calc2" id="0x45">
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="3" />
+    <field name="operation" type="Uint8" enum="calc" />
+    <field name="varw" type="Uint8" />
+    <field name="src" type="Uint8" />
   </inst>
   <inst name="Fade_set" id="0x46">
     <field name="opcode" type="Uint8" />
