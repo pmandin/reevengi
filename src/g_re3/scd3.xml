@@ -231,7 +231,9 @@
     <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="cond" type="Uint8" />
-    <field name="ex_opcode" type="Uint8" /><!-- 0x19: Gosub -->
+    <field name="ex_opcode" type="Uint8" >
+      <value name="Gosub" id="0x19" />
+    </field>
     <field name="event" type="Uint8" />
   </inst>
   <inst name="Evt_kill" id="0x05">
@@ -536,8 +538,11 @@
   </inst>
   <inst name="Sel_evt_on" id="0x3d">
     <!-- room110 -->
+    <description>Quick event screen</description>
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" />
+    <field name="question" type="Uint8">
+      <description>Message id of the question the player must answer</description>
+    </field>
   </inst>
   <inst name="Item_lost" id="0x3e">
     <!-- room203 -->

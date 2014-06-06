@@ -55,6 +55,7 @@ void rdt3_scd_scriptDump(room_t *this, int num_script)
 
 static char strBuf[512];
 static char tmpBuf[512];
+/*static char tmpFuncs[256];*/
 
 /*--- Functions prototypes ---*/
 
@@ -105,6 +106,8 @@ void rdt3_scd_scriptDump(room_t *this, int num_script)
 	 */
 	functionArrayPtr = (Uint16 *) (& ((Uint8 *) this->file)[offset]);
 
+/*	memset(tmpFuncs, 0, sizeof(tmpFuncs));*/
+
 	logMsg(1, "rdt3: Dumping script %d\n", num_script);
 	num_funcs = SDL_SwapLE16(functionArrayPtr[0]) >> 1;
 	for (i=0; i<num_funcs; i++) {
@@ -120,6 +123,56 @@ void rdt3_scd_scriptDump(room_t *this, int num_script)
 		scriptDumpBlock(this, startInst, func_offset, func_len, 1);
 		logMsg(1, "          : END_FUNC\n\n");
 	}
+
+#if 0
+	/* Dump used functions */
+	for (i=0; i<sizeof(tmpFuncs); i++) {
+		if (i<0x10) {
+			if ((i==0x0e))
+				goto dump_print_inst;
+		}
+		/*if (i<0x20) {
+			if ((i==0x1a))
+				goto dump_print_inst;
+		}*/
+		if (i<0x30) {
+			if ((i==0x23) || (i==0x26))
+				goto dump_print_inst;
+		}
+		/*if (i<0x40) {
+			if ((i==0x34))
+				goto dump_print_inst;
+		}*/
+		/*if (i<0x50) {
+			if ((i==0x44))
+				goto dump_print_inst;
+		}*/
+		/*if (i<0x60) {
+			if ((i==0x5c))
+				goto dump_print_inst;
+		}*/
+		/*if (i<0x70) {
+			if ((i==0x6b))
+				goto dump_print_inst;
+		}*/
+		/*if (i<0x80) {
+			if ((i==0x7e))
+				goto dump_print_inst;
+		}*/
+		if (i<0x90) {
+			if ((i==0x85) || (i==0x86))
+				goto dump_print_inst;
+		}
+
+		/*logMsg(1, "Function 0x%02x not dumped\n", i);*/
+		continue;
+
+dump_print_inst:
+		if (tmpFuncs[i]) {
+			logMsg(1, "Function 0x%02x used\n", i);
+		}
+	}
+#endif
 }
 
 static void reindent(int num_indent)
@@ -168,8 +221,15 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 #include "rdt_scd_dumps.gen.c"
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
+/*		tmpFuncs[inst->opcode] = 1;*/
 
 		switch(inst->opcode) {
+			case INST_SEL_EVT_ON:
+				{
+					this->getText(this, 0, inst->i_sel_evt_on.question, tmpBuf, sizeof(tmpBuf));
+					logMsg(1, "0x%08x: #\tL0\t%s\n", offset, tmpBuf);
+				}
+				break;
 			case INST_MESSAGE_ON:
 				{
 					this->getText(this, 0, inst->i_message_on.id, tmpBuf, sizeof(tmpBuf));
