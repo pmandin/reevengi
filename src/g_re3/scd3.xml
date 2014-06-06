@@ -211,6 +211,7 @@
 
   <!-- 0x00-0x0f --> 
   <inst name="Nop" id="0x00">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Evt_end" id="0x01">
@@ -234,6 +235,7 @@
     <field name="event" type="Uint8" />
   </inst>
   <inst name="Evt_kill" id="0x05">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="event" type="Uint8" />
   </inst>
@@ -265,19 +267,25 @@
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Wsleep" id="0x0b">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Wsleeping" id="0x0c">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="For" id="0x0d">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
     <field name="count" type="Uint16" base="10" />
   </inst>
+  <inst name="0E" id="0x0e">
     <!-- /* continue for, exit for 0x0e ? */ -->
+  </inst>
   <inst name="Next" id="0x0f">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
@@ -295,11 +303,13 @@
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Do" id="0x12">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="block_length" type="Uint16" />
   </inst>
   <inst name="Edwhile" id="0x13">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
   </inst>
@@ -329,6 +339,7 @@
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Goto" id="0x18">
+    <!-- room102 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
@@ -341,6 +352,7 @@
     <field name="event" type="Uint8" />
   </inst>
   <inst name="Return" id="0x1a">
+    <!-- room504 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -350,17 +362,21 @@
     <field name="dummy" type="Uint8" />
   </inst>
   <inst name="Break_point" id="0x1c">
+    <!-- room11c -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Eval_cc" id="0x1d">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Set1e" id="0x1e">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Set1f" id="0x1f">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -375,6 +391,7 @@
     <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="21" id="0x21">
+    <!-- room108 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -389,10 +406,12 @@
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Chaser_evt_clr" id="0x24">
+    <!-- room107 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Map_open" id="0x25">
+    <!-- room502 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -401,50 +420,62 @@
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Door_ck" id="0x27">
+    <!-- room108 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Diedemo_on" id="0x28">
+    <!-- room30d -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Dir_ck" id="0x29">
+    <!-- room20c -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="7" />
   </inst>
   <inst name="Parts_set" id="0x2a">
+    <!-- room10e -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Vloop_set" id="0x2b">
+    <!-- room316 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Ota_be_set" id="0x2c">
+    <!-- room208 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Line_start" id="0x2d">
+    <!-- room11b -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Line_main" id="0x2e">
+    <!-- room11b -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Line_end" id="0x2f">
+    <!-- room11b -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
 
   <!-- 0x30-0x3f --> 
   <inst name="Light_pos_set" id="0x30">
+    <!-- room10d -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Light_kido_set" id="0x31">
+    <!-- room217 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Light_color_set" id="0x32">
+    <!-- room109 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown" type="Uint8" />
@@ -453,55 +484,68 @@
     <field name="b" type="Uint8" />
   </inst>
   <inst name="Ahead_room_set" id="0x33">
+    <!-- room107 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Espr_ctr" id="0x34">
+    <!-- room50e -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="9" />
   </inst>
   <inst name="Bgm_tbl_ck" id="0x35">
+    <!-- room107 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Item_get_ck" id="0x36">
+    <!-- room307 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="2" />
   </inst>
   <inst name="Om_rev" id="0x37">
+    <!-- room304 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Chaser_life_init" id="0x38">
+    <!-- room110 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Parts_bomb" id="0x39">
+    <!-- room504 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="7" />
   </inst>
   <inst name="Parts_down" id="0x3a">
+    <!-- room207 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="7" />
   </inst>
   <inst name="Chaser_item_set" id="0x3b">
+    <!-- room107 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="2" />
   </inst>
   <inst name="Weapon_chg_old" id="0x3c">
+    <!-- room201 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Sel_evt_on" id="0x3d">
+    <!-- room110 -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="2" />
+    <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Item_lost" id="0x3e">
+    <!-- room203 -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="2" />
+    <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Flr_set" id="0x3f">
+    <!-- room108 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="2" />
   </inst>
@@ -524,6 +568,7 @@
     <field name="unknown" type="Uint8" array="2" />
   </inst>
   <inst name="Memb_cmp" id="0x43">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="compare" type="Uint8" enum="compare" />
@@ -531,6 +576,7 @@
     <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Memb_calc" id="0x44">
+    <!-- room20e -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="operation" type="Uint8" enum="calc" />
@@ -538,6 +584,7 @@
     <field name="value" type="Uint16" base="10"/>
   </inst>
   <inst name="Memb_calc2" id="0x45">
+    <!-- room200 -->
     <field name="opcode" type="Uint8" />
     <field name="operation" type="Uint8" enum="calc" />
     <field name="varw" type="Uint8" />
@@ -555,17 +602,21 @@
     <field name="object" type="Uint8" enum="workset_object" />
   </inst>
   <inst name="Spd_set" id="0x48">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="2" />
     <field name="value" type="Sint8" base="10" />
   </inst>
   <inst name="Add_spd" id="0x49">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Add_aspd" id="0x4a">
+    <!-- room105 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Add_vspd" id="0x4b">
+    <!-- room20c -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Ck" id="0x4c">
@@ -584,6 +635,7 @@
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Rnd" id="0x4f">
+    <!-- room10e -->
     <field name="opcode" type="Uint8" />
   </inst>
 
@@ -594,6 +646,7 @@
     <field name="camera" type="Uint8" />
   </inst>
   <inst name="Cut_old" id="0x51">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Cut_auto" id="0x52">
@@ -608,6 +661,7 @@
     <field name="camera1" type="Uint8" />
   </inst>
   <inst name="Cut_be_set" id="0x54">
+    <!-- room105 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -625,10 +679,12 @@
     <field name="unknown" type="Uint8" array="7" />
   </inst>
   <inst name="Set_vib0" id="0x57">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Set_vib1" id="0x58">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="5" />
   </inst>
@@ -649,23 +705,28 @@
     <field name="unknown" type="Uint16" array="2" />
   </inst>
   <inst name="Rain_set" id="0x5c">
+    <!-- room400 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Message_off" id="0x5d">
+    <!-- room110 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Shake_on" id="0x5e">
+    <!-- room20c -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="2" />
   </inst>
   <inst name="Weapon_chg" id="0x5f">
+    <!-- room201 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
 
   <!-- 0x60-0x6f --> 
   <inst name="60" id="0x60">
+    <!-- room217 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="10" />
@@ -695,6 +756,7 @@
     <field name="unknown4" type="Uint8" />
   </inst>
   <inst name="Door_aot_set_4p" id="0x62">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" array="2" />
@@ -728,6 +790,7 @@
     <field name="unknown1" type="Uint16" array="3" />
   </inst>
   <inst name="Aot_set_4p" id="0x64">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="unknown0" type="Uint16" array="2" />
@@ -742,6 +805,7 @@
     <field name="unknown1" type="Uint16" array="3" />
   </inst>
   <inst name="Aot_reset" id="0x65">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
     <field name="type" type="Uint8" enum="aot_type" />
@@ -749,6 +813,7 @@
     <field name="aot_params" type="union" switch="type" />
   </inst>
   <inst name="Aot_on" id="0x66">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
   </inst>
@@ -764,6 +829,7 @@
     <field name="unknown2" type="Uint16" array="4" />
   </inst>
   <inst name="Item_aot_set_4p" id="0x68">
+    <!-- room104 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="14" />
@@ -775,19 +841,23 @@
     <field name="unknown1" type="Uint16" array="6" />
   </inst>
   <inst name="Super_set" id="0x6a">
+    <!-- room11b -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="7" />
   </inst>
   <inst name="Keep_item_ck" id="0x6b">
+    <!-- room111 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Key_ck" id="0x6c">
+    <!-- room11a -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Trg_ck" id="0x6d">
+    <!-- room11a -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -797,12 +867,14 @@
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Om_bomb" id="0x6f">
+    <!-- room20b -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
 
   <!-- 0x70-0x7f --> 
   <inst name="Espr_on" id="0x70">
+    <!-- room103 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="3" />
@@ -812,6 +884,7 @@
     <field name="unknown2" type="Uint16" />
   </inst>
   <inst name="Espr_on2" id="0x71">
+    <!-- room108 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="8" />
@@ -827,6 +900,7 @@
     <field name="unknown2" type="Uint16" array="4" />
   </inst>
   <inst name="Espr3d_on2" id="0x73">
+    <!-- room113 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="id" type="Uint8" />
@@ -838,18 +912,22 @@
     <field name="unknown2" type="Uint16" array="4"/>
   </inst>
   <inst name="Espr_kill" id="0x74">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="4" />
   </inst>
   <inst name="Espr_kill2" id="0x75">
+    <!-- room108 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" />
   </inst>
   <inst name="Espr_kill_all" id="0x76">
+    <!-- room10d -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="2" />
   </inst>
   <inst name="Se_on" id="0x77">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint16" array="5" />
@@ -865,6 +943,7 @@
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Movie_on" id="0x7a">
+    <!-- room110 -->
     <field name="opcode" type="Uint8" />
     <field name="id" type="Uint8" enum="movie" />
   </inst>
@@ -874,6 +953,7 @@
     <field name="unknown" type="Uint8" array="5" />
   </inst>
   <inst name="Status_on" id="0x7c">
+    <!-- room105 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Em_set" id="0x7d">
@@ -890,6 +970,7 @@
     <field name="unknown2" type="Uint16" array="2" />
   </inst>
   <inst name="Mizu_div" id="0x7e">
+    <!-- room201 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
@@ -913,6 +994,7 @@
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Plc_dest" id="0x81">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="x" type="Sint16" base="10" />
@@ -925,9 +1007,11 @@
     <field name="unknown" type="Uint8" array="9" />
   </inst>
   <inst name="Plc_ret" id="0x83">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Plc_flg" id="0x84">
+    <!-- room104 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
@@ -936,36 +1020,46 @@
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Plc_gun_eff" id="0x86">
+    <!-- room205, garbage in bytecodes -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Plc_stop" id="0x87">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Plc_rot" id="0x88">
+    <!-- room108 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Plc_cnt" id="0x89">
+    <!-- room101 -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
   <inst name="Splc_ret" id="0x8a">
+    <!-- room107 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Splc_sce" id="0x8b">
+    <!-- room105 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Plc_sce" id="0x8c">
+    <!-- room110 -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Spl_weapon_chg" id="0x8d">
+    <!-- room21b -->
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Plc_mot_num" id="0x8e">
+    <!-- room10d -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" array="3" />
   </inst>
   <inst name="Em_reset" id="0x8f">
+    <!-- room10d -->
     <field name="opcode" type="Uint8" />
     <field name="unknown" type="Uint8" />
   </inst>
