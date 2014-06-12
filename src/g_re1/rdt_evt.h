@@ -57,11 +57,22 @@ fc:variable
 fd:script bytescodes, variable
 fe:1:nop
 ff:0:exit event: return value in eax[2] ?
+
+0xf6	1		process stuff, continue with 0xf7 stuff
+0xf7	1		on condition, continue with 0xfe stuff
+0xf8	?		continue with 0xf9 stuff
+0xf9	3		on condition, continue with 0xfe stuff
+0xfa 	4		process stuff
+0xfb 	1		can jump to other address
+0xfc	ptr[1].b	process stuff, use ptr[2].w, add ptr[1].b, store curptr
+0xfd	1		execute SCD stuff, jump to other address
 */
 
 /*--- Defines ---*/
 
 /*--- External types ---*/
+
+struct room_s;
 
 /*--- Types ---*/
 

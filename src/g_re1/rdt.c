@@ -36,6 +36,8 @@
 #include "rdt_pri.h"
 #include "rdt_scd.h"
 #include "rdt_scd_dump.h"
+#include "rdt_evt.h"
+#include "rdt_evt_dump.h"
 
 /*--- Functions prototypes ---*/
 
@@ -111,6 +113,8 @@ static void postLoad(room_t *this)
 	if (params.dump_script) {
 		this->scriptDump(this, ROOM_SCRIPT_INIT);
 		this->scriptDump(this, ROOM_SCRIPT_RUN);
+
+		rdt1_evt_scriptDump(this);	/* FIXME: move to this->scriptDump */
 	}
 }
 
