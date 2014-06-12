@@ -99,6 +99,20 @@ int rdt1_scd_scriptGetInstLen(room_t *this, Uint8 *curInstPtr)
 
 	/* Variable length instructions */
 	switch(curInstPtr[0]) {
+		case INST_17:
+			switch(curInstPtr[4]) {
+				case 0:
+					/* fields used */
+					return 6+4;
+				case 1:
+				case 2:
+				case 3:
+					/* fields not used */
+					return 6+4;
+				default:
+					return 6;
+			}
+			break;
 		case INST_28:
 			switch(curInstPtr[2]) {
 				case 0:

@@ -67,6 +67,7 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 
 static char strBuf[512];
 static char tmpBuf[512];
+/*static char tmpFuncs[256];*/
 
 /*--- Functions prototypes ---*/
 
@@ -80,7 +81,7 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 	rdt1_header_t *rdt_header;
 	Uint32 offset, script_length;
 	Uint8 *scriptPtr;
-	int room_script = RDT1_OFFSET_INIT_SCRIPT;
+	int i, room_script = RDT1_OFFSET_INIT_SCRIPT;
 
 	if (num_script == ROOM_SCRIPT_RUN) {
 		room_script = RDT1_OFFSET_ROOM_SCRIPT;
@@ -96,9 +97,54 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 	scriptPtr = & (((Uint8 *) this->file)[offset]);
 	script_length = SDL_SwapLE16(*((Uint16 *) scriptPtr));
 
+/*	memset(tmpFuncs, 0, sizeof(tmpFuncs));*/
+
 	logMsg(1, "0x%08x: BEGIN_EVENT event00\n", offset+2);
 	scriptDumpBlock(this, (script_inst_t *) &scriptPtr[2], offset+2, script_length-2, 1);
 	logMsg(1, "          : END_EVENT\n\n");
+
+#if 0
+	/* Dump used functions */
+	for (i=0; i<sizeof(tmpFuncs); i++) {
+		if (i<0x10) {
+			if ((i==0x0e))
+				goto dump_print_inst;
+			continue;
+		}
+		if (i<0x20) {
+			if ((i==0x1c) || (i==0x1d))
+				goto dump_print_inst;
+			continue;
+		}
+		if (i<0x30) {
+			if ((i==0x24) || (i==0x26) || (i==0x29) || (i==0x2d) || (i==0x2e))
+				goto dump_print_inst;
+			continue;
+		}
+		if (i<0x40) {
+			if ((i==0x31) || (i==0x32) || (i==0x34) || (i==0x38) || (i==0x39) || (i==0x3a) || (i==0x3c) || (i==0x3d) || (i==0x3e) || (i==0x3f))
+				goto dump_print_inst;
+			continue;
+		}
+		if (i<0x50) {
+			if ((i==0x42) || (i==0x45) || (i>=0x4a))
+				goto dump_print_inst;
+			continue;
+		}
+
+
+		if (i<0x51) {
+				goto dump_print_inst;
+		}
+
+		continue;
+
+dump_print_inst:
+		if (tmpFuncs[i]) {
+			logMsg(1, "Function 0x%02x used\n", i);
+		}
+	}
+#endif
 }
 
 static void reindent(int num_indent)
@@ -147,6 +193,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 #include "rdt_scd_dumps.gen.c"
 
 		logMsg(1, "0x%08x: %s", offset, strBuf);
+/*		tmpFuncs[inst->opcode] = 1;*/
 
 		if (block_ptr) {
 			int next_len = block_len - inst_len;
