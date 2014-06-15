@@ -46,9 +46,61 @@ void rdt1_evt_scriptDump(room_t *this)
 
 typedef struct {
 	Uint8 opcode;
+	Uint8 id;
+	Uint8 dummy;
+} event_inst04_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 unknown[2];
+	Uint8 dummy;
+} event_inst05_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+	/*Uint8 scd_file[];*/	/* embedded scd file */
+} event_inst06_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 block_length;
+	/*Uint8 instruction[];*/	/* bytecode instruction to execute */
+} event_inst07_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 dummy;
+	Uint16 offset;
+} event_instfa_t;
+
+typedef struct {
+	Uint8 opcode;
+	Uint8 flag;
+} event_instfe_t;
+
+typedef union {
+	Uint8 opcode;
+
+	event_inst04_t inst04;
+	event_inst05_t inst05;
+	event_inst06_t inst06;
+	event_inst07_t inst07;
+
+	event_instfa_t instfa;
+	event_instfe_t instfe;
 } event_inst_t;
 
+/*--- Variables ---*/
+
+static int event_mode;
+
+static char strBuf[512];
+static char tmpBuf[512];
+
 /*--- Functions prototypes ---*/
+
+static int rdt1_evt_eventGetInstLen(room_t *this, Uint8 *curInstPtr);
 
 static void eventDumpBlock(room_t *this, event_inst_t *inst, Uint32 offset, int length, int indent);
 
@@ -91,11 +143,20 @@ void rdt1_evt_scriptDump(room_t *this)
 	logMsg(1, "rdt: Dumping events\n");
 	num_funcs = SDL_SwapLE32(functionArrayPtr[0]) >> 2;
 	for (i=0; i<num_funcs; i++) {
-		Uint16 func_offset = SDL_SwapLE32(functionArrayPtr[i]);
-		Uint32 func_len = script_length - func_offset;
-		event_inst_t *startInst = (event_inst_t *) (& ((Uint8 *) this->file)[offset + func_offset]);
+		Uint16 func_offset;
+		Uint32 func_len;
+		event_inst_t *startInst;
 
-		if (i<num_funcs-1) {
+		/* NULL terminates list */
+		func_offset = SDL_SwapLE32(functionArrayPtr[i]);
+		if (!func_offset) {
+			break;
+		}
+
+		func_len = script_length - func_offset;
+		startInst = (event_inst_t *) (& ((Uint8 *) this->file)[offset + func_offset]);
+
+		if (i<num_funcs-2) {
 			func_len = SDL_SwapLE32(functionArrayPtr[i+1]) - func_offset;
 		}
 
@@ -105,8 +166,191 @@ void rdt1_evt_scriptDump(room_t *this)
 	}
 }
 
+static int rdt1_evt_eventGetInstLen(room_t *this, Uint8 *curInstPtr)
+{
+	int i;
+
+	assert(curInstPtr);
+
+	switch(curInstPtr[0]) {
+		/* All modes */
+		case 0xf6:
+			return 1;	/* continue with 0xf7 */
+		case 0xf7:
+			/* 1 or 0, conditionnal */
+			return 1;	/* continue with 0xfe, part 2 */
+		case 0xf8:
+			/* write inside event script */
+			return 1;	/* continue with 0xf9 */
+		case 0xf9:
+			/* 3 or 0, conditionnal */
+			return 3;	/* continue with 0xfe, part 2 */
+		case 0xfa:
+			return 4;
+		case 0xfb:
+			/* 1 or variable */
+			return 1;
+		case 0xfc:
+			return curInstPtr[1];	/* followed by single script bytecode instruction */
+		case 0xfd:
+			/* 1 or jump */
+			return 1;
+		case 0xfe:
+			/* Disable event if following byte is 0xff */
+			return 2;	/* skipped if coming from 0xf7, 0xf9 */
+		case 0xff:
+			/* Disable event */
+			return 1;	/* continue with 0xfe */
+
+		default:
+			switch(event_mode) {
+				case 0:
+					switch(curInstPtr[0]) {
+						case 0x00:
+							return 1;	/* nop */
+						case 0x01:
+							event_mode = 1;
+							return 1;
+						case 0x02:
+							event_mode = 2;
+							/* and other stuff */
+							return 1;
+						case 0x03:
+							event_mode = 2;
+							return 1;
+						case 0x04:
+							return 3;
+						case 0x05:
+							return 4;
+						case 0x06:
+							return curInstPtr[1]+1;	/* embedded SCD */
+						case 0x07:
+							return curInstPtr[1];	/* followed by single script bytecode instruction */
+						case 0x08:
+							return 1;	/* continue with 0xfe, part 2 */
+						case 0x09:
+							/* write some stuff */
+							return 2;
+						default:
+							break;
+					}
+					break;
+				case 1:
+					switch(curInstPtr[0]) {
+						case 0x80:
+							return 1;	/* continue with 0x8b */
+						case 0x81:
+							return 2+8;	/* 2 or 10, conditionnal */
+						case 0x82:
+							return 1;
+						case 0x83:
+							return 7;
+						case 0x84:
+							return 4;
+						case 0x85:
+							return 2;
+						case 0x86:
+							return 1;
+						case 0x87:
+							return 2;
+						case 0x88:
+							return 4;
+						case 0x89:
+							return 2;
+						case 0x8a:
+							return 2;
+						case 0x8b:
+							event_mode = 0;
+							return 1;
+						default:
+							break;
+					}
+					break;
+				case 2:
+					switch(curInstPtr[0]) {
+						case 0x00:
+							return 1;	/* nop */
+						case 1:
+							event_mode = 0;
+							return 1;
+						case 2:
+							return 1;
+						case 3:
+							return 1;
+						case 4:
+							return 1;
+						case 5:
+							return 4;
+						case 6:
+							return 4;
+						case 7:
+							return 8;
+						case 8:
+							return 3;
+						case 9:
+							return 2;
+						case 10:
+							return 4;
+						case 11:
+							return 8;
+						default:
+							break;
+					}
+					break;
+				case 3:
+					/* mode 3 does not seem to be used */
+					return 2;
+			}
+			break;
+	}
+
+	return 1;
+}
+
 static void eventDumpBlock(room_t *this, event_inst_t *inst, Uint32 offset, int length, int indent)
 {
+	event_inst_t *block_ptr;
+	int inst_len, block_len;
+	
+	event_mode = 0;
+
+	while (length>0) {
+		block_ptr = NULL;
+
+		memset(strBuf, 0, sizeof(strBuf));
+
+		inst_len = rdt1_evt_eventGetInstLen(this, (Uint8 *) inst);
+
+		if (params.verbose>=2) {
+			int i;
+			Uint8 *curInst = (Uint8 *) inst;
+
+			sprintf(tmpBuf, "0x%08x: #", offset);
+			strcat(strBuf, tmpBuf);
+			for (i=0; i<inst_len; i++) {
+				sprintf(tmpBuf, " 0x%02x", curInst[i]);
+				strcat(strBuf, tmpBuf);
+			}
+			strcat(strBuf, "\n");
+			logMsg(2, strBuf);
+
+			memset(strBuf, 0, sizeof(strBuf));
+		}
+		/*reindent(indent);*/
+
+		sprintf(tmpBuf, "INST_%02x\n", inst->opcode);
+		strcat(strBuf, tmpBuf);
+
+		logMsg(1, "0x%08x: %s", offset, strBuf);
+
+		if (inst_len==0) {
+			break;
+		}
+
+		length -= inst_len;
+		offset += inst_len;
+		inst = (event_inst_t *) (&((Uint8 *) inst)[inst_len]);
+	}
 }
 
 #endif /* ENABLE_SCRIPT_DISASM */
