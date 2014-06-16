@@ -779,10 +779,10 @@
   </inst>
   <inst name="Dir_set" id="0x33">
     <field name="opcode" type="Uint8" />
-    <field name="unknown0" type="Uint8" />
-    <field name="value0" type="Sint16" />
-    <field name="value1" type="Sint16" />
-    <field name="value2" type="Sint16" />
+    <field name="dummy" type="Uint8" />
+    <field name="cdir_x" type="Sint16" />
+    <field name="cdir_y" type="Sint16" />
+    <field name="cdir_z" type="Sint16" />
   </inst>
   <inst name="Member_set" id="0x34">
     <!-- usage: room1000 -->
