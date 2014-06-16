@@ -26,8 +26,12 @@
 
 struct room_s;
 
+union script_inst_u;
+
 /*--- Functions ---*/
 
 void rdt1_scd_scriptDump(struct room_s *this, int num_script);
+
+void rdt1_scd_DumpBlock(room_t *this, union script_inst_u *inst, Uint32 offset, int length, int indent);
 
 #endif /* RDT_SCD_DUMP_H */

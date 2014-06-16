@@ -71,8 +71,9 @@ static char tmpBuf[512];
 
 /*--- Functions prototypes ---*/
 
+void rdt1_scd_DumpBlock(room_t *this, union script_inst_u *inst, Uint32 offset, int length, int indent);
+
 static void reindent(int num_indent);
-static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent);
 
 /*--- Functions ---*/
 
@@ -100,7 +101,7 @@ void rdt1_scd_scriptDump(room_t *this, int num_script)
 /*	memset(tmpFuncs, 0, sizeof(tmpFuncs));*/
 
 	logMsg(1, "0x%08x: BEGIN_EVENT event00\n", offset+2);
-	scriptDumpBlock(this, (script_inst_t *) &scriptPtr[2], offset+2, script_length-2, 1);
+	rdt1_scd_DumpBlock(this, (script_inst_t *) &scriptPtr[2], offset+2, script_length-2, 1);
 	logMsg(1, "          : END_EVENT\n\n");
 
 #if 0
@@ -161,7 +162,7 @@ static void reindent(int num_indent)
 	strncat(strBuf, tmpBuf, sizeof(strBuf)-1);
 }
 
-static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, int length, int indent)
+void rdt1_scd_DumpBlock(room_t *this, union script_inst_u *inst, Uint32 offset, int length, int indent)
 {
 	script_inst_t *block_ptr;
 	int inst_len, block_len;
@@ -198,7 +199,7 @@ static void scriptDumpBlock(room_t *this, script_inst_t *inst, Uint32 offset, in
 		if (block_ptr) {
 			int next_len = block_len - inst_len;
 
-			scriptDumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
+			rdt1_scd_DumpBlock(this, (script_inst_t *) block_ptr, offset+inst_len, next_len, indent+1);
 
 			inst_len += next_len;
 		}
