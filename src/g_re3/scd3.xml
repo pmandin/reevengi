@@ -681,7 +681,10 @@
   <inst name="Dir_set" id="0x56">
     <!-- room101 -->
     <field name="opcode" type="Uint8" />
-    <field name="unknown" type="Uint8" array="7" />
+    <field name="dummy" type="Uint8" />
+    <field name="cdir_x" type="Sint16" />
+    <field name="cdir_y" type="Sint16" />
+    <field name="cdir_z" type="Sint16" />
   </inst>
   <inst name="Set_vib0" id="0x57">
     <!-- room101 -->
