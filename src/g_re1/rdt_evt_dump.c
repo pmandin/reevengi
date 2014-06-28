@@ -43,6 +43,15 @@ void rdt1_evt_scriptDump(room_t *this)
 
 #else
 
+/*--- Defines ---*/
+
+#define EVENT_FOR	0xfa
+#define EVENT_NEXT	0xfb
+#define EVENT_SET_INST	0xfc
+#define EVENT_EXEC_INST	0xfd
+#define EVENT_SLEEP	0xfe
+#define EVENT_END	0xff
+
 /*--- Types ---*/
 
 typedef struct {
@@ -70,15 +79,32 @@ typedef struct {
 } event_inst07_t;
 
 typedef struct {
-	Uint8 opcode;
+	Uint8 opcode;	/* 0xfa */
 	Uint8 dummy;
-	Uint16 offset;
-} event_instfa_t;
+	Uint16 count;
+} event_for_t;
 
 typedef struct {
-	Uint8 opcode;
-	Uint8 flag;
-} event_instfe_t;
+	Uint8 opcode;	/* 0xfb */
+} event_next_t;
+
+typedef struct {
+	Uint8 opcode;	/* 0xfc */
+	Uint8 block_length;
+	/*Uint8 instruction[];*/	/* bytecode instruction to execute */
+} event_set_inst_t;
+
+typedef struct {
+	Uint8 opcode;	/* 0xfd */
+} event_exec_inst_t;
+
+typedef struct {
+	Uint8 opcode;	/* 0xfe */
+} event_sleep_t;
+
+typedef struct {
+	Uint8 opcode;	/* 0xff */
+} event_end_t;
 
 typedef union {
 	Uint8 opcode;
@@ -88,8 +114,12 @@ typedef union {
 	event_inst06_t inst06;
 	event_inst07_t inst07;
 
-	event_instfa_t instfa;
-	event_instfe_t instfe;
+	event_for_t	e_for;
+	event_next_t	e_next;
+	event_set_inst_t	e_set_inst;
+	event_exec_inst_t	e_exec_inst;
+	event_sleep_t	e_sleep;
+	event_end_t	e_end;
 } event_inst_t;
 
 /*--- Variables ---*/
@@ -186,22 +216,18 @@ static int rdt1_evt_eventGetInstLen(room_t *this, Uint8 *curInstPtr)
 		case 0xf9:
 			/* 3 or 0, conditionnal */
 			return 3;	/* continue with 0xfe, part 2 */
-		case 0xfa:
-			return 4;
-		case 0xfb:
-			/* 1 or variable */
-			return 1;
-		case 0xfc:
+		case EVENT_FOR:
+			return sizeof(event_for_t);
+		case EVENT_NEXT:
+			return sizeof(event_next_t);
+		case EVENT_SET_INST:
 			return curInstPtr[1];	/* followed by single script bytecode instruction */
-		case 0xfd:
-			/* 1 or jump */
-			return 1;
-		case 0xfe:
-			/* Disable event if following byte is 0xff */
-			return 2;	/* skipped if coming from 0xf7, 0xf9 */
-		case 0xff:
-			/* Disable event */
-			return 1;	/* continue with 0xfe */
+		case EVENT_EXEC_INST:
+			return sizeof(event_exec_inst_t);
+		case EVENT_SLEEP:
+			return sizeof(event_sleep_t);
+		case EVENT_END:
+			return sizeof(event_end_t);
 
 		default:
 			switch(event_mode) {
@@ -339,8 +365,30 @@ static void eventDumpBlock(room_t *this, event_inst_t *inst, Uint32 offset, int 
 		}
 		/*reindent(indent);*/
 
-		sprintf(tmpBuf, "INST_%02x\n", inst->opcode);
-		strcat(strBuf, tmpBuf);
+		switch(inst->opcode) {
+			case EVENT_FOR:
+				sprintf(tmpBuf, "For %d\n", inst->opcode, SDL_SwapLE16(inst->e_for.count));
+				strcat(strBuf, tmpBuf);
+				break;
+			case EVENT_NEXT:
+				strcat(strBuf, "Next\n");
+				break;
+			case EVENT_SET_INST:
+				strcat(strBuf, "Set_Inst\n");
+				break;
+			case EVENT_EXEC_INST:
+				strcat(strBuf, "Exec_Inst\n");
+				break;
+			case EVENT_SLEEP:
+				strcat(strBuf, "Evt_Sleep\n");
+				break;
+			case EVENT_END:
+				strcat(strBuf, "Evt_End\n");
+				break;
+			default:
+				sprintf(tmpBuf, "INST_%02x\n", inst->opcode);
+				strcat(strBuf, tmpBuf);
+		}
 
 		logMsg(1, "0x%08x: M%d %s", offset, event_mode, strBuf);
 
