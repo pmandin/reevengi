@@ -1012,15 +1012,15 @@ static void draw_poly_sbuffer(draw_t *this, vertexf_t *vtx, int num_vtx)
 
 		num_array = 1; /* max */
 
-		x1 = vtx[p1].pos[0] / vtx[p1].pos[3];
-		y1 = vtx[p1].pos[1] / vtx[p1].pos[3];
 		/*w1 = (vtx[p1].pos[2]==0.0f ? 1.0f : vtx[p1].pos[3] / vtx[p1].pos[2]);*/
 		w1 = 1.0f / vtx[p1].pos[3];
+		x1 = vtx[p1].pos[0] * w1;
+		y1 = vtx[p1].pos[1] * w1;
 
-		x2 = vtx[p2].pos[0] / vtx[p2].pos[3];
-		y2 = vtx[p2].pos[1] / vtx[p2].pos[3];
 		/*w2 = (vtx[p2].pos[2]==0.0f ? 1.0f : vtx[p2].pos[3] / vtx[p2].pos[2]);*/
 		w2 = 1.0f / vtx[p2].pos[3];
+		x2 = vtx[p2].pos[0] * w2;
+		y2 = vtx[p2].pos[1] * w2;
 
 		/* Swap if p1 lower than p2 */
 		if (y1 > y2) {
