@@ -72,9 +72,10 @@ esac
 
 # Math
 
-if test "x$ac_cv_func_pow" = "xno"; then
-	LIBS="$LIBS -lm"
-fi
+#if test "x$ac_cv_func_pow" = "xno"; then
+#	LIBS="$LIBS -lm"
+#fi
+MATH_LIBS="-lm"
 
 # SDL
 
@@ -184,6 +185,7 @@ if test "x$WANT_MOVIES" = "xyes"; then
 	PKG_CHECK_MODULES([AVCODEC], [libavcodec])
 	PKG_CHECK_MODULES([AVFORMAT], [libavformat])
 	PKG_CHECK_MODULES([SWSCALE], [libswscale])
+	PKG_CHECK_MODULES([AVUTIL], [libavutil])
 
 	AC_DEFINE(ENABLE_MOVIES, 1, [Define if you want movie player])
 fi
@@ -207,6 +209,7 @@ if test "x$enable_assert" = "xno"; then
 fi
 
 # Outputs
+AC_SUBST(MATH_LIBS)
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDL_IMAGE_CFLAGS)

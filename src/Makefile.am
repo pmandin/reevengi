@@ -8,7 +8,8 @@ AM_CXXFLAGS = $(SDL_CFLAGS) $(AVCODEC_CFLAGS) $(AVFORMAT_CFLAGS) \
 	$(SWSCALE_CFLAGS) $(PHYSFS_CFLAGS)
 
 LIBS = $(SDL_LIBS) $(SDL_IMAGE_LIBS) $(PHYSFS_LIBS) $(ZLIB_LIBS) \
-	$(AVCODEC_LIBS) $(AVFORMAT_LIBS) $(SWSCALE_LIBS)
+	$(AVCODEC_LIBS) $(AVFORMAT_LIBS) $(SWSCALE_LIBS) $(AVUTIL_LIBS) \
+	$(MATH_LIBS)
 
 reevengi_SOURCES = background_bss.c background_tim.c clock.c \
 	depack_mdec.c depack_vlc.c \
