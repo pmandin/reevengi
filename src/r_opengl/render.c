@@ -141,6 +141,10 @@ void render_opengl_init(render_t *this)
 
 static void startFrame(void)
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderClear(renderer);*/
+#endif
+
 	gl.ClearColor(0.0,0.0,0.0,0.0);
 	gl.ClearDepth(1.0f);
 	gl.Clear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -156,6 +160,10 @@ static void endFrame(void)
 	if (render.render_depth) {
 		render.copyDepthToColor();
 	}
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderPresent(renderer);*/
+#endif
 }
 
 static void set_viewport(int x, int y, int w, int h)

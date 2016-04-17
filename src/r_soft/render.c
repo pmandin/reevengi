@@ -179,6 +179,10 @@ static void render_resize(int w, int h, int bpp)
 
 static void render_startFrame(void)
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderClear(renderer);*/
+#endif
+
 	draw.startFrame(&draw);
 }
 
@@ -189,6 +193,10 @@ static void render_endFrame(void)
 	}
 
 	draw.endFrame(&draw);
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderPresent(renderer);*/
+#endif
 }
 
 /* Recalculate frustum matrix = modelview*projection */

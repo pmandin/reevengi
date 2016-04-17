@@ -150,10 +150,16 @@ static void resize(int w, int h, int bpp)
 
 static void startFrame(void)
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderClear(renderer);*/
+#endif
 }
 
 static void endFrame(void)
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderPresent(renderer);*/
+#endif
 }
 
 static void set_viewport(int x, int y, int w, int h)
