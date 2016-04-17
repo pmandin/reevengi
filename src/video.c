@@ -217,7 +217,12 @@ static void setVideoMode(int width, int height, int bpp)
 		logMsg(1, "video: found nearest %dx%d\n", width, height);
 	}
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED, width, height, video.flags);
+#else
 	video.screen = SDL_SetVideoMode(width, height, bpp, video.flags);
+#endif
 	if (!video.screen) {
 		/* Try 8 bpp if failed in true color */
 		video.screen = SDL_SetVideoMode(width, height, 8, video.flags);
@@ -420,6 +425,9 @@ static void setPalette(SDL_Surface *surf)
 	
 	surf_palette = surf->format->palette;
 
-	/*SDL_SetColors(video.screen, &(surf_palette->colors[0]), 0, surf_palette->ncolors);*/
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_SetSurfacePalette(video.screen, surf_palette);*/
+#else
 	SDL_SetPalette(video.screen, SDL_LOGPAL|SDL_PHYSPAL, &(surf_palette->colors[0]), 0, surf_palette->ncolors);
+#endif
 }

@@ -70,7 +70,11 @@ void video_opengl_init(video_t *this)
 	this->width = (params.width ? params.width : 640);
 	this->height = (params.height ? params.height : 480);
 	this->bpp = 0;
+#if SDL_VERSION_ATLEAST(2,0,0)
+	this->flags = SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE;
+#else
 	this->flags = SDL_OPENGL|SDL_RESIZABLE;
+#endif
 
 	this->setVideoMode = setVideoMode;
 	this->swapBuffers = swapBuffers;

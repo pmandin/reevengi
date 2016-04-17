@@ -30,6 +30,7 @@ struct video_s {
 	int fps, start_tick;
 	SDL_Surface *screen;
 #if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_Window *window;
 	SDL_Renderer *renderer;
 #endif
 	int num_screenshot;

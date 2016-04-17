@@ -155,7 +155,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+#else
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
+#endif
 
 	/* Force a mode switch */
 	new_width = video.width;
@@ -237,7 +240,11 @@ static int viewer_loop(void)
 						break;
 					case SDLK_RETURN:
 						if (event.key.keysym.mod & KMOD_ALT) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+							video.flags ^= SDL_WINDOW_FULLSCREEN;
+#else
 							video.flags ^= SDL_FULLSCREEN;
+#endif
 							new_width = video.width;
 							new_height = video.height;
 							switch_mode=1;
