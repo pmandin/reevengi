@@ -98,7 +98,11 @@ static int fps_num = 1, fps_den = 1;
 static int emul_cd;
 static int emul_cd_pos;
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+static SDL_Texture *overlay = NULL;
+#else
 static SDL_Overlay *overlay = NULL;
+#endif
 static Uint32 start_tic, current_tic;
 
 render_texture_t *vid_texture = NULL;
@@ -157,7 +161,11 @@ static void movie_refresh_soft(SDL_Surface *screen)
 {
 #ifdef ENABLE_MOVIES
 	if (overlay) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+		SDL_FreeTexture(overlay);
+#else
 		SDL_FreeYUVOverlay(overlay);
+#endif
 		overlay=NULL;
 	}
 
@@ -165,8 +173,13 @@ static void movie_refresh_soft(SDL_Surface *screen)
 		return;
 	}
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	overlay = SDL_CreateTexture(NULL, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STATIC,
+		vCodecCtx->width, vCodecCtx->height);
+#else
 	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
 		SDL_YV12_OVERLAY, screen);
+#endif
 	if (!overlay) {
 		fprintf(stderr, "Can not create overlay\n");
 	}
@@ -211,15 +224,15 @@ int view_movie_input(SDL_Event *event)
 			case KEY_MOVIE_DOWN:
 				game->prev_movie(game);
 				restart_movie = 1;
-				break;						
+				break;
 			case KEY_MOVIE_UP:
 				game->next_movie(game);
 				restart_movie = 1;
-				break;						
+				break;
 			case KEY_MOVIE_RESET:
 				game->reset_movie(game);
 				restart_movie = 1;
-				break;						
+				break;
 			default:
 				break;
 		}
@@ -319,7 +332,6 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		return 1;
 	}
 
-
 	if (!tmpbuf) {
 		tmpbuf = (char *) av_malloc(BUFSIZE);
 	}
@@ -386,7 +398,8 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 	}
 
 	logMsg(2, "movie: avcodec_alloc_frame\n");
-	decoded_frame = avcodec_alloc_frame();
+	/*decoded_frame = avcodec_alloc_frame();*/
+	decoded_frame = av_frame_alloc();
 	if (!decoded_frame) {
 		fprintf(stderr, "Can not alloc decoded frame\n");
 		return 1;
@@ -472,7 +485,11 @@ void movie_stop(void)
 static void movie_stop_soft(void)
 {
 	if (overlay) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+		SDL_FreeTexture(overlay);
+#else
 		SDL_FreeYUVOverlay(overlay);
+#endif
 		overlay=NULL;
 	}
 }
@@ -759,6 +776,12 @@ static void movie_scale_frame_soft(void)
 #ifdef ENABLE_MOVIES
 	AVPicture pict;
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_UpdateYUVTexture(overlay, NULL,
+		decoded_frame->data, decoded_frame->linesize,
+		decoded_frame->data, decoded_frame->linesize,
+		decoded_frame->data, decoded_frame->linesize);*/
+#else
 	SDL_LockYUVOverlay(overlay);
 
 	pict.data[0] = overlay->pixels[0];
@@ -776,12 +799,20 @@ static void movie_scale_frame_soft(void)
 
 	SDL_UnlockYUVOverlay(overlay);
 #endif
+
+#endif
 }
 
 static void movie_update_frame_soft(SDL_Rect *rect)
 {
 #ifdef ENABLE_MOVIES
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/*SDL_RenderCopy(renderer, overlay, NULL, NULL);*/
+#else
 	SDL_DisplayYUVOverlay(overlay, rect);
+#endif
+
 #endif
 }
 
