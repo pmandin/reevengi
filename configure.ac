@@ -77,9 +77,16 @@ esac
 #fi
 MATH_LIBS="-lm"
 
+# SDL2
+
+HAVE_SDL2="no"
+AM_PATH_SDL2(2.0.0, HAVE_SDL2="yes")
+
 # SDL
 
-AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
+if test "x$HAVE_SDL2" = "xno"; then
+	AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
+fi
 
 # Zlib
 
