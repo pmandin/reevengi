@@ -80,7 +80,7 @@ MATH_LIBS="-lm"
 # SDL2
 
 HAVE_SDL2="no"
-AM_PATH_SDL2(2.0.0, HAVE_SDL2="yes")
+AM_PATH_SDL2(2.0.1, HAVE_SDL2="yes")
 
 # SDL
 
