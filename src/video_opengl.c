@@ -109,20 +109,40 @@ static void setVideoMode(int width, int height, int bpp)
 
 	/* Try with default bpp */
 	for (i=0;i<4;i++) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+		video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED, width, height, video.flags);
+		if (video.window) {
+			video.gl_ctx = SDL_GL_CreateContext(video.window);
+			break;
+		}
+#else
 		screen = SDL_SetVideoMode(width, height, gl_bpp[i], video.flags);
 		if (screen) {
 			break;
 		}
+#endif
 	}
+
 	if (screen==NULL) {
 		/* Try with default resolution */
 		for (i=0;i<4;i++) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+			video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
+				SDL_WINDOWPOS_UNDEFINED, 0, 0, video.flags);
+			if (video.window) {
+				video.gl_ctx = SDL_GL_CreateContext(video.window);
+				break;
+			}
+#else
 			screen = SDL_SetVideoMode(0, 0, gl_bpp[i], video.flags);
 			if (screen) {
 				break;
 			}
+#endif
 		}
 	}
+
 	video.screen = screen;
 	if (screen==NULL) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
@@ -228,7 +248,11 @@ static void swapBuffers(void)
 		logMsg(1, "OpenGL error %d\n", errCode);
 	}
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_GL_SwapWindow(video.window);
+#else
 	SDL_GL_SwapBuffers();
+#endif
 }
 
 static void screenShot(void)
