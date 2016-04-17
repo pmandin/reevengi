@@ -29,6 +29,9 @@ struct video_s {
 	int width, height, bpp, flags, numfb;
 	int fps, start_tick;
 	SDL_Surface *screen;
+#if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_Renderer *renderer;
+#endif
 	int num_screenshot;
 
 	SDL_Rect viewport;
