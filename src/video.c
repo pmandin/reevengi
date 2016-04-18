@@ -211,6 +211,42 @@ static void findNearestMode(int *width, int *height, int bpp)
 	SDL_PixelFormat pixelFormat;
 	int i, j=-1, pixcount, minpixcount, pixcount2, w=*width, h=*height;
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	int dw, dh;
+
+	pixcount = w*h;
+	minpixcount = 2000000000;
+	for(i=0; i<SDL_GetNumDisplayModes(0); i++) {
+		SDL_DisplayMode displayMode;
+
+		if (SDL_GetDisplayMode(0, i, &displayMode) != 0) {
+			continue;
+		}
+
+		logMsg(2, "video: check nearest %dx%d\n", displayMode.w, displayMode.h);
+
+		/* Mode in list */
+		if ((displayMode.w=w) && (displayMode.h=h)) {
+			return;
+		}
+
+		/* Stop at first mode bigger than needed */
+		pixcount2 = displayMode.w * displayMode.h;
+		if (pixcount2 >= pixcount) {
+			if (pixcount2<=minpixcount) {
+				minpixcount = pixcount2;
+				j = i;
+				dw = displayMode.w;
+				dh = displayMode.h;
+			}
+		}
+	}
+
+	if (j>=0) {
+		*width = dw;
+		*height = dh;
+	}
+#else
 	memset(&pixelFormat, 0, sizeof(SDL_PixelFormat));
 	pixelFormat.BitsPerPixel = bpp;
 
@@ -249,6 +285,7 @@ static void findNearestMode(int *width, int *height, int bpp)
 		*width = modes[j]->w;
 		*height = modes[j]->h;
 	}
+#endif
 }
 
 static void setVideoMode(int width, int height, int bpp)
@@ -256,7 +293,12 @@ static void setVideoMode(int width, int height, int bpp)
 	int i;
 
 	/* Search nearest fullscreen mode */
-	if (video.flags & SDL_FULLSCREEN) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (video.flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP))
+#else
+	if (video.flags & SDL_FULLSCREEN)
+#endif
+	{
 		findNearestMode(&width, &height, bpp);
 		logMsg(1, "video: found nearest %dx%d\n", width, height);
 	}
