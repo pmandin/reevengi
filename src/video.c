@@ -24,6 +24,10 @@
 #include <SDL.h>
 #include <stdio.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "parameters.h"
 #include "video.h"
 #include "log.h"
@@ -60,7 +64,11 @@ void video_soft_init(video_t *this)
 	this->height = (params.height ? params.height : 240);
 	this->bpp = (params.bpp ? params.bpp : 16);
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	this->flags = SDL_WINDOW_RESIZABLE;
+#else
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
+#endif
 	this->start_tick = SDL_GetTicks();
 
 	this->shutDown = shutDown;
@@ -105,6 +113,25 @@ static void shutDown(void)
 		video.list_rects = NULL;
 		video.num_list_rects = 0;
 	}
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (video.screen) {
+		SDL_FreeSurface(video.screen);
+		video.screen=NULL;
+	}
+	if (video.texture) {
+		SDL_DestroyTexture(video.texture);
+		video.texture = NULL;
+	}
+	if (video.renderer) {
+		SDL_DestroyRenderer(video.renderer);
+		video.renderer=NULL;
+	}
+	if (video.window) {
+		SDL_DestroyWindow(video.window);
+		video.window=NULL;
+	}
+#endif
 }
 
 /* Search biggest video mode, calculate its ratio */
@@ -116,7 +143,23 @@ void video_detect_aspect(void)
 	int i, j, max_w = 0, max_h = 0, ratio_w[4];
 	const int bpps[5]={32,24,16,15,8};
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	for(i=0; i<SDL_GetNumDisplayModes(0); i++) {
+		SDL_DisplayMode displayMode;
+
+		if (SDL_GetDisplayMode(0, i, &displayMode) != 0) {
+			continue;
+		}
+
+		logMsg(3, "video: checking mode %dx%d\n", displayMode.w, displayMode.h);
+		if ((displayMode.w>=max_w) && (displayMode.h>=max_h)) {
+			max_w = displayMode.w;
+			max_h = displayMode.h;
+		}
+	}
+#else
 	memset(&pixelFormat, 0, sizeof(SDL_PixelFormat));
+
 	for (j=0; j<5; j++) {
 		pixelFormat.BitsPerPixel = bpps[j];
 
@@ -138,6 +181,7 @@ void video_detect_aspect(void)
 			}
 		}
 	}
+#endif
 
 	logMsg(2,"Biggest video mode: %dx%d\n", max_w, max_h);
 	if ((max_w == 0) && (max_h == 0)) {
@@ -218,15 +262,43 @@ static void setVideoMode(int width, int height, int bpp)
 	}
 
 #if SDL_VERSION_ATLEAST(2,0,0)
+	if (video.screen) {
+		SDL_FreeSurface(video.screen);
+		video.screen=NULL;
+	}
+	if (video.texture) {
+		SDL_DestroyTexture(video.texture);
+		video.texture = NULL;
+	}
+	if (video.renderer) {
+		SDL_DestroyRenderer(video.renderer);
+		video.renderer=NULL;
+	}
+	if (video.window) {
+		SDL_DestroyWindow(video.window);
+		video.window=NULL;
+	}
+
 	video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, width, height, video.flags);
+	if (video.window) {
+		video.renderer = SDL_CreateRenderer(video.window, -1, SDL_RENDERER_PRESENTVSYNC);
+	}
+	if (video.renderer) {
+		video.screen = SDL_CreateRGBSurface(0, width, height, bpp, 0, 0, 0, 0);
+	}
+	if (video.screen) {
+		video.texture = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_ARGB8888,
+			SDL_TEXTUREACCESS_STREAMING, width, height);
+	}
 #else
 	video.screen = SDL_SetVideoMode(width, height, bpp, video.flags);
-#endif
 	if (!video.screen) {
 		/* Try 8 bpp if failed in true color */
 		video.screen = SDL_SetVideoMode(width, height, 8, video.flags);
 	}
+#endif
+
 	if (!video.screen) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
 		return;
@@ -279,11 +351,15 @@ static void swapBuffers(void)
 {
 	int i, x, y;
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_RenderPresent(video.renderer);
+#else
 	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		video.numfb ^= 1;
 		SDL_Flip(video.screen);
 		return;
 	}
+#endif
 
 #ifdef DIRTY_RECTS
 	/* Update background from rectangle list */
@@ -367,7 +443,12 @@ static void initViewport(void)
 	int pos_x, pos_y, scr_w, scr_h;
 
 	/* Only keep non 5:4 ratio in fullscreen */
-	if ((video.flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if ((video.flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
+#else
+	if ((video.flags & SDL_FULLSCREEN) == SDL_FULLSCREEN)
+#endif
+	{
 		if ((params.aspect_x != 5) || (params.aspect_y != 4)) {
 			cur_asp_w = params.aspect_x * 3;
 			cur_asp_h = params.aspect_y * 4;
@@ -426,7 +507,7 @@ static void setPalette(SDL_Surface *surf)
 	surf_palette = surf->format->palette;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	/*SDL_SetSurfacePalette(video.screen, surf_palette);*/
+	SDL_SetPaletteColors(video.screen->format->palette, &(surf_palette->colors[0]), 0, surf_palette->ncolors);
 #else
 	SDL_SetPalette(video.screen, SDL_LOGPAL|SDL_PHYSPAL, &(surf_palette->colors[0]), 0, surf_palette->ncolors);
 #endif

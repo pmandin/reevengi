@@ -31,8 +31,9 @@ struct video_s {
 	SDL_Surface *screen;
 #if SDL_VERSION_ATLEAST(2,0,0)
 	SDL_Window *window;
-	SDL_GLContext gl_ctx;
 	SDL_Renderer *renderer;
+	SDL_Texture *texture;
+	SDL_GLContext gl_ctx;
 #endif
 	int num_screenshot;
 
