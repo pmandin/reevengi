@@ -808,7 +808,7 @@ static void movie_update_frame_soft(SDL_Rect *rect)
 #ifdef ENABLE_MOVIES
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	/*SDL_RenderCopy(renderer, overlay, NULL, NULL);*/
+	SDL_RenderCopy(video.renderer, overlay, NULL, NULL);
 #else
 	SDL_DisplayYUVOverlay(overlay, rect);
 #endif
