@@ -262,11 +262,20 @@ static int viewer_loop(void)
 						break;
 				}
 				break;
+#if SDL_VERSION_ATLEAST(2,0,0)
+			case SDL_WINDOWEVENT_RESIZED:
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				new_width = event.window.data1;
+				new_height = event.window.data2;
+				switch_mode = 1;
+				break;
+#else
 			case SDL_VIDEORESIZE:
 				new_width = event.resize.w;
 				new_height = event.resize.h;
 				switch_mode = 1;
 				break;
+#endif
 			default:
 				switch(params.viewmode) {
 					case VIEWMODE_BACKGROUND:
