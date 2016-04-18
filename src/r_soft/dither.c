@@ -63,7 +63,11 @@ void dither_setpalette(SDL_Surface *src)
 		}
 	}		
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_SetPaletteColors(src->format->palette, palette, 16, 216);
+#else
 	SDL_SetPalette(src, SDL_LOGPAL|SDL_PHYSPAL, palette, 16, 216);
+#endif
 }
 
 int dither_nearest_index(int r, int g, int b)
