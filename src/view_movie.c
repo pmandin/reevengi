@@ -162,7 +162,7 @@ static void movie_refresh_soft(SDL_Surface *screen)
 #ifdef ENABLE_MOVIES
 	if (overlay) {
 #if SDL_VERSION_ATLEAST(2,0,0)
-		SDL_FreeTexture(overlay);
+		SDL_DestroyTexture(overlay);
 #else
 		SDL_FreeYUVOverlay(overlay);
 #endif
@@ -173,8 +173,10 @@ static void movie_refresh_soft(SDL_Surface *screen)
 		return;
 	}
 
+	logMsg(1, "movie: create overlay %dx%d\n", vCodecCtx->width, vCodecCtx->height);
 #if SDL_VERSION_ATLEAST(2,0,0)
-	overlay = SDL_CreateTexture(NULL, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STATIC,
+	overlay = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_YV12,
+		SDL_TEXTUREACCESS_STATIC,
 		vCodecCtx->width, vCodecCtx->height);
 #else
 	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
@@ -486,7 +488,7 @@ static void movie_stop_soft(void)
 {
 	if (overlay) {
 #if SDL_VERSION_ATLEAST(2,0,0)
-		SDL_FreeTexture(overlay);
+		SDL_DestroyTexture(overlay);
 #else
 		SDL_FreeYUVOverlay(overlay);
 #endif
@@ -757,7 +759,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		rect.w = w2;
 		rect.h = h2;
 
-/*		logMsg(2, "movie: update frame\n");*/
+		/*logMsg(2, "movie: update frame to %d,%d %dx%d\n",rect.x,rect.y,rect.w,rect.h);*/
 		if (params.use_opengl) {
 			movie_update_frame_opengl(&rect);
 		} else {
@@ -777,10 +779,10 @@ static void movie_scale_frame_soft(void)
 	AVPicture pict;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	/*SDL_UpdateYUVTexture(overlay, NULL,
-		decoded_frame->data, decoded_frame->linesize,
-		decoded_frame->data, decoded_frame->linesize,
-		decoded_frame->data, decoded_frame->linesize);*/
+	SDL_UpdateYUVTexture(overlay, NULL,
+		decoded_frame->data[0], decoded_frame->linesize[0],
+		decoded_frame->data[1], decoded_frame->linesize[1],
+		decoded_frame->data[2], decoded_frame->linesize[2]);
 #else
 	SDL_LockYUVOverlay(overlay);
 
@@ -808,7 +810,7 @@ static void movie_update_frame_soft(SDL_Rect *rect)
 #ifdef ENABLE_MOVIES
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_RenderCopy(video.renderer, overlay, NULL, NULL);
+	SDL_RenderCopy(video.renderer, overlay, NULL, rect);
 #else
 	SDL_DisplayYUVOverlay(overlay, rect);
 #endif
