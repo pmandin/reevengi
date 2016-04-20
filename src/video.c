@@ -207,11 +207,14 @@ void video_detect_aspect(void)
 
 static void findNearestMode(int *width, int *height, int bpp)
 {
-	SDL_Rect **modes;
-	SDL_PixelFormat pixelFormat;
-	int i, j=-1, pixcount, minpixcount, pixcount2, w=*width, h=*height;
-
 #if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_DisplayMode dwmode;
+
+	SDL_GetDesktopDisplayMode(0, &dwmode);
+	*width = dwmode.w;
+	*height = dwmode.h;
+	
+# if 0
 	int dw, dh;
 
 	pixcount = w*h;
@@ -246,7 +249,13 @@ static void findNearestMode(int *width, int *height, int bpp)
 		*width = dw;
 		*height = dh;
 	}
+# endif
+
 #else
+	SDL_Rect **modes;
+	SDL_PixelFormat pixelFormat;
+	int i, j=-1, pixcount, minpixcount, pixcount2, w=*width, h=*height;
+
 	memset(&pixelFormat, 0, sizeof(SDL_PixelFormat));
 	pixelFormat.BitsPerPixel = bpp;
 
