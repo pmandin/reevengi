@@ -96,7 +96,12 @@ static void setVideoMode(int width, int height, int bpp)
 	SDL_Surface *screen;
 	const char *extensions;
 
-	if (video.flags & SDL_FULLSCREEN) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+#else
+	if (video.flags & SDL_FULLSCREEN)
+#endif
+	{
 		video.findNearestMode(&width, &height, bpp);
 	}
 
@@ -110,8 +115,8 @@ static void setVideoMode(int width, int height, int bpp)
 	/* Try with default bpp */
 	for (i=0;i<4;i++) {
 #if SDL_VERSION_ATLEAST(2,0,0)
-		video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED, width, height, video.flags);
+		video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
+			SDL_WINDOWPOS_CENTERED, width, height, video.flags);
 		if (video.window) {
 			video.gl_ctx = SDL_GL_CreateContext(video.window);
 			break;
@@ -128,8 +133,8 @@ static void setVideoMode(int width, int height, int bpp)
 		/* Try with default resolution */
 		for (i=0;i<4;i++) {
 #if SDL_VERSION_ATLEAST(2,0,0)
-			video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
-				SDL_WINDOWPOS_UNDEFINED, 0, 0, video.flags);
+			video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
+				SDL_WINDOWPOS_CENTERED, 0, 0, video.flags);
 			if (video.window) {
 				video.gl_ctx = SDL_GL_CreateContext(video.window);
 				break;
@@ -143,6 +148,24 @@ static void setVideoMode(int width, int height, int bpp)
 		}
 	}
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (video.window==NULL) {
+		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
+		return;
+	}
+
+	SDL_GL_SetSwapInterval(1);
+
+	SDL_GetWindowSize(video.window, &video.width, &video.height);
+
+	{
+		SDL_DisplayMode mode;
+
+		SDL_GetCurrentDisplayMode(0, &mode);
+		video.bpp = SDL_BITSPERPIXEL(mode.format);
+	}
+	/*video.flags = video.window->flags;*/
+#else
 	video.screen = screen;
 	if (screen==NULL) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
@@ -153,6 +176,7 @@ static void setVideoMode(int width, int height, int bpp)
 	video.height = video.screen->h;
 	video.bpp = video.screen->format->BitsPerPixel;
 	video.flags = video.screen->flags;
+#endif
 
 	dirty_rects[video.numfb]->resize(dirty_rects[video.numfb], video.width, video.height);
 	logMsg(1, "video_ogl: switched to %dx%d\n", video.width, video.height);
