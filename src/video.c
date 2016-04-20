@@ -119,10 +119,10 @@ static void shutDown(void)
 		SDL_FreeSurface(video.screen);
 		video.screen=NULL;
 	}
-	if (video.texture) {
+	/*if (video.texture) {
 		SDL_DestroyTexture(video.texture);
 		video.texture = NULL;
-	}
+	}*/
 	if (video.renderer) {
 		SDL_DestroyRenderer(video.renderer);
 		video.renderer=NULL;
@@ -294,7 +294,7 @@ static void setVideoMode(int width, int height, int bpp)
 
 	/* Search nearest fullscreen mode */
 #if SDL_VERSION_ATLEAST(2,0,0)
-	if (video.flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP))
+	if (video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
 #else
 	if (video.flags & SDL_FULLSCREEN)
 #endif
@@ -308,10 +308,10 @@ static void setVideoMode(int width, int height, int bpp)
 		SDL_FreeSurface(video.screen);
 		video.screen=NULL;
 	}
-	if (video.texture) {
+	/*if (video.texture) {
 		SDL_DestroyTexture(video.texture);
 		video.texture = NULL;
-	}
+	}*/
 	if (video.renderer) {
 		SDL_DestroyRenderer(video.renderer);
 		video.renderer=NULL;
@@ -321,18 +321,21 @@ static void setVideoMode(int width, int height, int bpp)
 		video.window=NULL;
 	}
 
-	video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED, width, height, video.flags);
+	logMsg(1, "video: create window\n");
+	video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED, width, height, video.flags);
 	if (video.window) {
+		logMsg(1, "video: create renderer\n");
 		video.renderer = SDL_CreateRenderer(video.window, -1, SDL_RENDERER_PRESENTVSYNC);
 	}
 	if (video.renderer) {
+		logMsg(1, "video: get surface\n");
 		video.screen = SDL_CreateRGBSurface(0, width, height, bpp, 0, 0, 0, 0);
 	}
-	if (video.screen) {
+	/*if (video.screen) {
 		video.texture = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_ARGB8888,
 			SDL_TEXTUREACCESS_STREAMING, width, height);
-	}
+	}*/
 #else
 	video.screen = SDL_SetVideoMode(width, height, bpp, video.flags);
 	if (!video.screen) {
@@ -457,7 +460,11 @@ static void swapBuffers(void)
 		}
 	}
 
+# if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_UpdateWindowSurfaceRects(video.window, video.list_rects, i);
+# else
 	SDL_UpdateRects(video.screen, i, video.list_rects);
+# endif
 	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
 #else
 	SDL_UpdateRect(video.screen, 0,0,0,0);
@@ -486,7 +493,7 @@ static void initViewport(void)
 
 	/* Only keep non 5:4 ratio in fullscreen */
 #if SDL_VERSION_ATLEAST(2,0,0)
-	if ((video.flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
+	if ((video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 #else
 	if ((video.flags & SDL_FULLSCREEN) == SDL_FULLSCREEN)
 #endif
