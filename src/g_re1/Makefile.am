@@ -4,8 +4,8 @@ libg_re1_a_SOURCES = emd.c pak.c game_re1.c game_re1_pc.c \
 	game_re1_ps1.c rdt.c rdt_rvd.c rdt_rid.c rdt_pri.c rdt_scd.c \
 	rdt_scd_dump.c rdt_sca.c rdt_msg.c rdt_evt_dump.c
 
-AM_CFLAGS = $(SDL_CFLAGS)
-AM_CXXFLAGS = $(SDL_CFLAGS)
+AM_CFLAGS = $(SDL_CFLAGS) $(PHYSFS_CFLAGS)
+AM_CXXFLAGS = $(SDL_CFLAGS) $(PHYSFS_CFLAGS)
 
 XML2SCD = $(top_builddir)/extra/xml2scd
 

@@ -4,8 +4,8 @@ libg_re3_a_SOURCES = emd.c sld.c game_re3.c game_re3_pc.c \
 	game_re3_ps1_game.c rdt_scd.c rdt_scd_dump.c rdt_sca.c \
 	rdt.c ard.c
 
-AM_CFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
-AM_CXXFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
+AM_CFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS) $(PHYSFS_CFLAGS) $(LIBXML_CFLAGS)
+AM_CXXFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS) $(PHYSFS_CFLAGS) $(LIBXML_CFLAGS)
 
 XML2SCD = $(top_builddir)/extra/xml2scd
 
