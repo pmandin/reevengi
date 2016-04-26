@@ -100,6 +100,7 @@ static int emul_cd_pos;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
 static SDL_Texture *overlay = NULL;
+static Uint8 *yPlane = NULL, *uPlane = NULL, *vPlane = NULL;
 #else
 static SDL_Overlay *overlay = NULL;
 #endif
@@ -176,7 +177,7 @@ static void movie_refresh_soft(SDL_Surface *screen)
 	logMsg(1, "movie: create overlay %dx%d\n", vCodecCtx->width, vCodecCtx->height);
 #if SDL_VERSION_ATLEAST(2,0,0)
 	overlay = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_YV12,
-		SDL_TEXTUREACCESS_STATIC,
+		SDL_TEXTUREACCESS_STATIC/*STREAMING*/,
 		vCodecCtx->width, vCodecCtx->height);
 #else
 	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
@@ -314,6 +315,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 	int i, err;
 	int dstFormat;
 /*	AVPixelFormat dstFormat;*/
+	int create_sws_scaler = 1;
 
 	logMsg(2, "movie: init\n");
 
@@ -421,14 +423,33 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 #  endif
 	}
 
-	logMsg(2, "movie: sws_getContext\n");
-    	img_convert_ctx = sws_getContext(
-		vCodecCtx->width, vCodecCtx->height, vCodecCtx->pix_fmt,
-		vCodecCtx->width, vCodecCtx->height, dstFormat,
-		SWS_POINT, NULL, NULL, NULL);
-	if (!img_convert_ctx) {
-		fprintf(stderr, "Could not create sws scaling context\n");
-		return 1;
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (vCodecCtx->pix_fmt == AV_PIX_FMT_YUV420P) {
+		create_sws_scaler = 0;
+	} else {
+		int yPlaneSz, uvPlaneSz;
+
+		yPlaneSz = vCodecCtx->width * vCodecCtx->height;
+		uvPlaneSz = vCodecCtx->width * vCodecCtx->height / 4;
+
+		yPlane = (Uint8*) realloc(yPlane, yPlaneSz + uvPlaneSz*2);
+		if (yPlane) {
+			uPlane = &yPlane[yPlaneSz];
+			vPlane = &yPlane[yPlaneSz+uvPlaneSz];
+		}
+	}
+#endif
+
+	if (create_sws_scaler) {
+		logMsg(2, "movie: sws_getContext\n");
+		img_convert_ctx = sws_getContext(
+			vCodecCtx->width, vCodecCtx->height, vCodecCtx->pix_fmt,
+			vCodecCtx->width, vCodecCtx->height, dstFormat,
+			SWS_POINT, NULL, NULL, NULL);
+		if (!img_convert_ctx) {
+			fprintf(stderr, "Could not create sws scaling context\n");
+			return 1;
+		}
 	}
 
 	movie_refresh(screen);
@@ -473,7 +494,7 @@ void movie_stop(void)
 	}
 
 	if (img_convert_ctx) {
-	        sws_freeContext(img_convert_ctx);
+		sws_freeContext(img_convert_ctx);
 		img_convert_ctx = NULL;
 	}
 #endif
@@ -486,6 +507,13 @@ void movie_stop(void)
 
 static void movie_stop_soft(void)
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (yPlane) {
+		free(yPlane);
+		yPlane = NULL;
+	}
+#endif
+
 	if (overlay) {
 #if SDL_VERSION_ATLEAST(2,0,0)
 		SDL_DestroyTexture(overlay);
@@ -556,6 +584,9 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 		/* TODO: detect audio sectors */
 
 		logMsg(2, "cd: pos %d, read %d\n", emul_cd_pos, buf_size);
+		if (emul_cd_pos<0)
+			return -1;
+
 		while (buf_size>0) {
 			int sector_pos = emul_cd_pos % RAW_CD_SECTOR_SIZE;
 			int max_size;
@@ -583,7 +614,7 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 			while ((sector_pos<CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE) && (buf_size>0)) {
 				max_size = CD_SYNC_SIZE+CD_SEC_SIZE+CD_XA_SIZE+CD_DATA_SIZE-sector_pos;
 				max_size = (max_size>buf_size) ? buf_size : max_size;
-				logMsg(2, "cd: reading real data at 0x%08x in file, %d\n", SDL_RWtell((SDL_RWops *)opaque), max_size);
+				logMsg(3, "cd: reading real data at 0x%08x in file, %d\n", SDL_RWtell((SDL_RWops *)opaque), max_size);
 				if (SDL_RWread((SDL_RWops *)opaque, &buf[size_read], max_size, 1)<1) {
 					return -1;
 				}
@@ -607,10 +638,10 @@ static int movie_ioread( void *opaque, uint8_t *buf, int buf_size )
 			/* set data type */
 			if (pos_data_type>=0) {
 				if (is_video) {
-					logMsg(2, "cd: generate video\n");
+					logMsg(3, "cd: generate video\n");
 					buf[pos_data_type] = 0x08;
 				} else {
-					logMsg(2, "cd: generate audio\n");
+					logMsg(3, "cd: generate audio\n");
 					buf[pos_data_type] = 0x04;
 				}
 			}
@@ -779,10 +810,30 @@ static void movie_scale_frame_soft(void)
 	AVPicture pict;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_UpdateYUVTexture(overlay, NULL,
-		decoded_frame->data[0], decoded_frame->linesize[0],
-		decoded_frame->data[1], decoded_frame->linesize[1],
-		decoded_frame->data[2], decoded_frame->linesize[2]);
+	if (!img_convert_ctx) {
+		SDL_UpdateYUVTexture(overlay, NULL,
+			decoded_frame->data[0], decoded_frame->linesize[0],
+			decoded_frame->data[1], decoded_frame->linesize[1],
+			decoded_frame->data[2], decoded_frame->linesize[2]);
+	} else {
+		pict.data[0] = yPlane;
+		pict.data[1] = uPlane;
+		pict.data[2] = vPlane;
+
+		pict.linesize[0] = vCodecCtx->width;
+		pict.linesize[1] = vCodecCtx->width >> 2;
+		pict.linesize[2] = vCodecCtx->width >> 2;
+
+		sws_scale(img_convert_ctx,
+			(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
+			0, vCodecCtx->height,
+			pict.data, pict.linesize);
+
+		SDL_UpdateYUVTexture(overlay, NULL,
+			pict.data[0], pict.linesize[0],
+			pict.data[1], pict.linesize[1],
+			pict.data[2], pict.linesize[2]);
+	}
 #else
 	SDL_LockYUVOverlay(overlay);
 
