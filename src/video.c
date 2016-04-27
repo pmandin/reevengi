@@ -213,44 +213,6 @@ static void findNearestMode(int *width, int *height, int bpp)
 	SDL_GetDesktopDisplayMode(0, &dwmode);
 	*width = dwmode.w;
 	*height = dwmode.h;
-	
-# if 0
-	int dw, dh;
-
-	pixcount = w*h;
-	minpixcount = 2000000000;
-	for(i=0; i<SDL_GetNumDisplayModes(0); i++) {
-		SDL_DisplayMode displayMode;
-
-		if (SDL_GetDisplayMode(0, i, &displayMode) != 0) {
-			continue;
-		}
-
-		logMsg(2, "video: check nearest %dx%d\n", displayMode.w, displayMode.h);
-
-		/* Mode in list */
-		if ((displayMode.w=w) && (displayMode.h=h)) {
-			return;
-		}
-
-		/* Stop at first mode bigger than needed */
-		pixcount2 = displayMode.w * displayMode.h;
-		if (pixcount2 >= pixcount) {
-			if (pixcount2<=minpixcount) {
-				minpixcount = pixcount2;
-				j = i;
-				dw = displayMode.w;
-				dh = displayMode.h;
-			}
-		}
-	}
-
-	if (j>=0) {
-		*width = dw;
-		*height = dh;
-	}
-# endif
-
 #else
 	SDL_Rect **modes;
 	SDL_PixelFormat pixelFormat;
@@ -321,22 +283,31 @@ static void setVideoMode(int width, int height, int bpp)
 		SDL_DestroyTexture(video.texture);
 		video.texture = NULL;
 	}*/
-	if (video.renderer) {
-		SDL_DestroyRenderer(video.renderer);
-		video.renderer=NULL;
-	}
-	if (video.window) {
-		SDL_DestroyWindow(video.window);
-		video.window=NULL;
+
+	/* Resize window ? */
+	if (video.renderer && video.window) {
+		logMsg(1, "video: resize window to %dx%d\n", width, height);
+		SDL_SetWindowSize(video.window, width, height);
+		SDL_RenderSetViewport(video.renderer, NULL);
+	} else {
+		if (video.renderer) {
+			SDL_DestroyRenderer(video.renderer);
+			video.renderer=NULL;
+		}
+		if (video.window) {
+			SDL_DestroyWindow(video.window);
+			video.window=NULL;
+		}
+
+		logMsg(1, "video: create window %dx%d\n", width, height);
+		video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
+			SDL_WINDOWPOS_CENTERED, width, height, video.flags);
+		if (video.window) {
+			logMsg(1, "video: create renderer\n");
+			video.renderer = SDL_CreateRenderer(video.window, -1, SDL_RENDERER_PRESENTVSYNC);
+		}
 	}
 
-	logMsg(1, "video: create window\n");
-	video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED, width, height, video.flags);
-	if (video.window) {
-		logMsg(1, "video: create renderer\n");
-		video.renderer = SDL_CreateRenderer(video.window, -1, SDL_RENDERER_PRESENTVSYNC);
-	}
 	if (video.renderer) {
 		logMsg(1, "video: get surface\n");
 		video.screen = SDL_CreateRGBSurface(0, width, height, bpp, 0, 0, 0, 0);
@@ -361,7 +332,10 @@ static void setVideoMode(int width, int height, int bpp)
 	video.width = video.screen->w;
 	video.height = video.screen->h;
 	video.bpp = video.screen->format->BitsPerPixel;
+#if SDL_VERSION_ATLEAST(2,0,0)
+#else
 	video.flags = video.screen->flags;
+#endif
 
 	/* Set 216 color palette */
 	if (video.bpp==8) {

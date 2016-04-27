@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	if (params.viewmode == VIEWMODE_MOVIE) {	
+	if (params.viewmode == VIEWMODE_MOVIE) {
 #ifdef ENABLE_MOVIES
 		game->switch_movie(game);
 		/*params.use_opengl = 0;*/
@@ -241,7 +241,7 @@ static int viewer_loop(void)
 					case SDLK_RETURN:
 						if (event.key.keysym.mod & KMOD_ALT) {
 #if SDL_VERSION_ATLEAST(2,0,0)
-							video.flags ^= SDL_WINDOW_FULLSCREEN;
+							video.flags ^= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #else
 							video.flags ^= SDL_FULLSCREEN;
 #endif
@@ -263,11 +263,12 @@ static int viewer_loop(void)
 				}
 				break;
 #if SDL_VERSION_ATLEAST(2,0,0)
-			case SDL_WINDOWEVENT_RESIZED:
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				new_width = event.window.data1;
-				new_height = event.window.data2;
-				switch_mode = 1;
+			case SDL_WINDOWEVENT:
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+					new_width = event.window.data1;
+					new_height = event.window.data2;
+					switch_mode = 1;
+				}
 				break;
 #else
 			case SDL_VIDEORESIZE:
