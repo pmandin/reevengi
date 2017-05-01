@@ -7,7 +7,7 @@ AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([autotools])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 PKG_PROG_PKG_CONFIG
@@ -44,7 +44,7 @@ AC_CHECK_HEADERS([fcntl.h])
 
 # Checks for library functions.
 #AC_FUNC_MALLOC
-AC_CHECK_FUNCS([memset pow])
+AC_CHECK_FUNCS([memset pow sqrtf])
 
 case "$host" in
 	m68k*)
@@ -55,7 +55,7 @@ case "$host" in
 		;;
 	*)
 		;;
-esac	
+esac
 
 # Checks for target
 
@@ -66,72 +66,50 @@ case "$host" in
 	*-*-mint*)
 		SYS_SDLIMAGE_ADDLIBS="-ltiff -ljpeg -lpng"
 	;;
-esac	
+esac
 
 # Checks for libraries.
 
 # Math
 
-#if test "x$ac_cv_func_pow" = "xno"; then
-#	LIBS="$LIBS -lm"
-#fi
-MATH_LIBS="-lm"
-
-# SDL2
-
-HAVE_SDL2="no"
-AM_PATH_SDL2(2.0.1, HAVE_SDL2="yes")
+if test "x$ac_cv_func_pow" = "xno" -o "x$ac_cv_func_sqrtf" = "xno"; then
+	MATH_LIBS="-lm"
+fi
 
 # SDL
 
-if test "x$HAVE_SDL2" = "xno"; then
-	AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
-fi
+AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
 
 # Zlib
 
 CHECK_ZLIB()
 
-# SDL2_image
-
-if test "x$HAVE_SDL2" = "xyes"; then
-	PKG_CHECK_MODULES([SDL2_IMAGE], [SDL2_image], [have_sdl2image=yes], [have_sdl2image=no])
-	if [[ "x$have_sdl2image" = "xyes" ]]; then
-		# Copy to SDL_image values
-		AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
-		SDL_IMAGE_LIBS=$SDL2_IMAGE_LIBS
-		SDL_IMAGE_CFLAGS=$SDL2_IMAGE_CFLAGS
-	fi
-fi
-
 # SDL_image
 
-if test "x$HAVE_SDL2" = "xno"; then
-	if test "x$PKG_CONFIG" != "x"; then
-		PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image], [have_sdlimage=yes], [have_sdlimage=no])
-		if [[ "x$have_sdlimage" = "xyes" ]]; then
-			AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
-		fi
-	else
-		TMP_CFLAGS=$CFLAGS
-		TMP_CPPFLAGS=$CPPFLAGS
-		CFLAGS="$CFLAGS $SDL_CFLAGS"
-		CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
-		AC_CHECK_HEADER(SDL_image.h,
-			have_sdlimage_h=yes, havesdlimage_h=no)
-		AC_CHECK_LIB(SDL_image, IMG_isJPG,
-			have_sdlimage_lib=yes, have_sdlimage_lib=no,
-			$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
-		if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
-			SDL_IMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
-			SDL_IMAGE_CFLAGS=""
-			AC_DEFINE(HAVE_SDLIMAGE, 1, [Define if you have SDL_image])
-		else
-			AC_MSG_WARN([*** SDL_image not found!])
-		fi
-		CFLAGS=$TMP_CFLAGS
-		CPPFLAGS=$TMP_CPPFLAGS
+if test "x$PKG_CONFIG" != "x"; then
+	PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image], [have_sdlimage=yes], [have_sdlimage=no])
+	if [[ "x$have_sdlimage" = "xyes" ]]; then
+		AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
 	fi
+else
+	TMP_CFLAGS=$CFLAGS
+	TMP_CPPFLAGS=$CPPFLAGS
+	CFLAGS="$CFLAGS $SDL_CFLAGS"
+	CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
+	AC_CHECK_HEADER(SDL_image.h,
+		have_sdlimage_h=yes, havesdlimage_h=no)
+	AC_CHECK_LIB(SDL_image, IMG_isJPG,
+		have_sdlimage_lib=yes, have_sdlimage_lib=no,
+		$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
+	if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
+		SDL_IMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
+		SDL_IMAGE_CFLAGS=""
+		AC_DEFINE(HAVE_SDLIMAGE, 1, [Define if you have SDL_image])
+	else
+		AC_MSG_WARN([*** SDL_image not found!])
+	fi
+	CFLAGS=$TMP_CFLAGS
+	CPPFLAGS=$TMP_CPPFLAGS
 fi
 
 # physfs
@@ -163,7 +141,7 @@ TMP_PKG_CONFIG=$PKG_CONFIG
 PKG_CONFIG="pkg-config"
 PKG_CHECK_MODULES([LIBXML], [libxml-2.0],
 	[AC_DEFINE([HAVE_LIBXML], [1], [Use libxml])]
-) 
+)
 PKG_CONFIG=$TMP_PKG_CONFIG
 
 # OpenGL renderer
@@ -209,6 +187,9 @@ if test "x$WANT_MOVIES" = "xyes"; then
 	PKG_CHECK_MODULES([AVUTIL], [libavutil])
 
 	AC_DEFINE(ENABLE_MOVIES, 1, [Define if you want movie player])
+
+	AC_CHECK_HEADER(libavutil/pixfmt.h,
+		AC_DEFINE(HAVE_LIBAVUTIL_PIXFMT_H, 1, [Define if libavutil provides pixfmt.h]))
 fi
 
 # Game script disassembly
@@ -230,13 +211,13 @@ if test "x$enable_assert" = "xno"; then
 fi
 
 # Outputs
-AC_SUBST(MATH_LIBS)
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
 AC_SUBST(SDL_IMAGE_CFLAGS)
 AC_SUBST(SDL_IMAGE_LIBS)
 AC_SUBST(PHYSFS_CFLAGS)
 AC_SUBST(PHYSFS_LIBS)
+AC_SUBST(MATH_LIBS)
 
 AC_CONFIG_FILES([
 Makefile
