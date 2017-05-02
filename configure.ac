@@ -76,13 +76,32 @@ if test "x$ac_cv_func_pow" = "xno" -o "x$ac_cv_func_sqrtf" = "xno"; then
 	MATH_LIBS="-lm"
 fi
 
+# SDL2
+
+HAVE_SDL2="no"
+AM_PATH_SDL2(2.0.1, HAVE_SDL2="yes")
+
 # SDL
 
-AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
+if test "x$HAVE_SDL2" = "xno"; then
+	AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
+fi
 
 # Zlib
 
 CHECK_ZLIB()
+
+# SDL2_image
+
+if test "x$HAVE_SDL2" = "xyes"; then
+	PKG_CHECK_MODULES([SDL2_IMAGE], [SDL2_image], [have_sdl2image=yes], [have_sdl2image=no])
+	if [[ "x$have_sdl2image" = "xyes" ]]; then
+		# Copy to SDL_image values
+		AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
+		SDL_IMAGE_LIBS=$SDL2_IMAGE_LIBS
+		SDL_IMAGE_CFLAGS=$SDL2_IMAGE_CFLAGS
+	fi
+fi
 
 # SDL_image
 
