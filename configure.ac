@@ -105,30 +105,32 @@ fi
 
 # SDL_image
 
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image], [have_sdlimage=yes], [have_sdlimage=no])
-	if [[ "x$have_sdlimage" = "xyes" ]]; then
-		AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
-	fi
-else
-	TMP_CFLAGS=$CFLAGS
-	TMP_CPPFLAGS=$CPPFLAGS
-	CFLAGS="$CFLAGS $SDL_CFLAGS"
-	CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
-	AC_CHECK_HEADER(SDL_image.h,
-		have_sdlimage_h=yes, havesdlimage_h=no)
-	AC_CHECK_LIB(SDL_image, IMG_isJPG,
-		have_sdlimage_lib=yes, have_sdlimage_lib=no,
-		$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
-	if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
-		SDL_IMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
-		SDL_IMAGE_CFLAGS=""
-		AC_DEFINE(HAVE_SDLIMAGE, 1, [Define if you have SDL_image])
+if test "x$HAVE_SDL2" = "xno"; then
+	if test "x$PKG_CONFIG" != "x"; then
+		PKG_CHECK_MODULES([SDL_IMAGE], [SDL_image], [have_sdlimage=yes], [have_sdlimage=no])
+		if [[ "x$have_sdlimage" = "xyes" ]]; then
+			AC_DEFINE([HAVE_SDLIMAGE], 1, [Define if SDL_image enabled])
+		fi
 	else
-		AC_MSG_WARN([*** SDL_image not found!])
+		TMP_CFLAGS=$CFLAGS
+		TMP_CPPFLAGS=$CPPFLAGS
+		CFLAGS="$CFLAGS $SDL_CFLAGS"
+		CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
+		AC_CHECK_HEADER(SDL_image.h,
+			have_sdlimage_h=yes, havesdlimage_h=no)
+		AC_CHECK_LIB(SDL_image, IMG_isJPG,
+			have_sdlimage_lib=yes, have_sdlimage_lib=no,
+			$SDL_LIBS $SYS_SDLIMAGE_ADDLIBS)
+		if test "x$have_sdlimage_h" = "xyes" -a "x$have_sdlimage_lib" = "xyes"; then
+			SDL_IMAGE_LIBS="-lSDL_image $SYS_SDLIMAGE_ADDLIBS $ZLIB_LIBS -lm"
+			SDL_IMAGE_CFLAGS=""
+			AC_DEFINE(HAVE_SDLIMAGE, 1, [Define if you have SDL_image])
+		else
+			AC_MSG_WARN([*** SDL_image not found!])
+		fi
+		CFLAGS=$TMP_CFLAGS
+		CPPFLAGS=$TMP_CPPFLAGS
 	fi
-	CFLAGS=$TMP_CFLAGS
-	CPPFLAGS=$TMP_CPPFLAGS
 fi
 
 # physfs
