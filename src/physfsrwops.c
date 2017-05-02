@@ -20,13 +20,33 @@
  *  This file was written by Ryan C. Gordon. (icculus@icculus.org).
  */
 
+/*--- Includes ---*/
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>  /* used for SEEK_SET, SEEK_CUR, SEEK_END ... */
+#include <SDL.h>
+
 #include "physfsrwops.h"
 
-static int physfsrwops_seek(SDL_RWops *rw, int offset, int whence)
+/*--- Defines ---*/
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define	REEVENGI_PHYSFS_SEEKTYPE	Sint64
+#define	REEVENGI_PHYSFS_READTYPE	size_t
+#define	REEVENGI_PHYSFS_WRITETYPE	size_t
+#else
+#define	REEVENGI_PHYSFS_SEEKTYPE	int
+#define	REEVENGI_PHYSFS_READTYPE	int
+#define	REEVENGI_PHYSFS_WRITETYPE	int
+#endif
+
+static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_SEEKTYPE offset, int whence)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
-    int pos = 0;
+    REEVENGI_PHYSFS_SEEKTYPE pos = 0;
 
     if (whence == SEEK_SET)
     {
@@ -86,7 +106,7 @@ static int physfsrwops_seek(SDL_RWops *rw, int offset, int whence)
         SDL_SetError("Attempt to seek past start of file.");
         return(-1);
     } /* if */
-    
+
     if (!PHYSFS_seek(handle, (PHYSFS_uint64) pos))
     {
         SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
@@ -97,7 +117,7 @@ static int physfsrwops_seek(SDL_RWops *rw, int offset, int whence)
 } /* physfsrwops_seek */
 
 
-static int physfsrwops_read(SDL_RWops *rw, void *ptr, int size, int maxnum)
+static REEVENGI_PHYSFS_READTYPE physfsrwops_read(SDL_RWops *rw, void *ptr, REEVENGI_PHYSFS_READTYPE size, REEVENGI_PHYSFS_READTYPE maxnum)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
     PHYSFS_sint64 rc = PHYSFS_read(handle, ptr, size, maxnum);
@@ -107,18 +127,18 @@ static int physfsrwops_read(SDL_RWops *rw, void *ptr, int size, int maxnum)
             SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
     } /* if */
 
-    return((int) rc);
+    return((REEVENGI_PHYSFS_READTYPE) rc);
 } /* physfsrwops_read */
 
 
-static int physfsrwops_write(SDL_RWops *rw, const void *ptr, int size, int num)
+static REEVENGI_PHYSFS_WRITETYPE physfsrwops_write(SDL_RWops *rw, const void *ptr, REEVENGI_PHYSFS_WRITETYPE size, REEVENGI_PHYSFS_WRITETYPE num)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
     PHYSFS_sint64 rc = PHYSFS_write(handle, ptr, size, num);
     if (rc != num)
         SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
 
-    return((int) rc);
+    return((REEVENGI_PHYSFS_WRITETYPE) rc);
 } /* physfsrwops_write */
 
 
