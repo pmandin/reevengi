@@ -21,6 +21,25 @@
 #ifndef VIEW_MOVIE_H
 #define VIEW_MOVIE_H 1
 
+/*--- Structures ---*/
+
+typedef struct view_movie_s view_movie_t;
+
+struct view_movie_s {
+	void *vCodecCtx;	/* AVCodecContext * */
+	void *img_convert_ctx;	/* struct SwsContext * */
+	void *decoded_frame; /* AVFrame * */
+
+	void (*movie_refresh)(SDL_Surface *screen);
+	void (*movie_stop)(void);
+	void (*movie_scale_frame)(void);
+	void (*movie_update_frame)(SDL_Rect *rect);
+};
+
+/*--- Variables ---*/
+
+extern view_movie_t view_movie;
+
 /*--- Function prototypes ---*/
 
 int view_movie_input(SDL_Event *event);

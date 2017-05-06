@@ -35,6 +35,9 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avio.h>
 #include <libavutil/pixdesc.h>
+#	ifdef HAVE_LIBAVUTIL_PIXFMT_H
+#	include <libavutil/pixfmt.h>
+#	endif
 #include <libswscale/swscale.h>
 #endif
 
@@ -76,6 +79,27 @@
 
 #define STR_MAGIC 0x60010180
 
+/* Pixel formats */
+
+#ifdef ENABLE_MOVIES
+#	ifdef HAVE_LIBAVUTIL_PIXFMT_H
+#		define REEVENGI_RGBA_FORMAT	AV_PIX_FMT_RGBA
+#		define REEVENGI_YUV_FORMAT	AV_PIX_FMT_YUV420P
+#	else
+#		ifdef AV_PIX_FMT_RGBA
+#			define REEVENGI_RGBA_FORMAT	AV_PIX_FMT_RGBA
+#			define REEVENGI_YUV_FORMAT	AV_PIX_FMT_YUV420P
+#		else
+#			define REEVENGI_RGBA_FORMAT	PIX_FMT_RGBA
+#			define REEVENGI_YUV_FORMAT	PIX_FMT_YUV420P
+#		endif
+#  endif
+#endif
+
+/*--- Global variables ---*/
+
+view_movie_t view_movie;
+
 /*--- Variables ---*/
 
 static int restart_movie = 1;
@@ -84,8 +108,8 @@ static int first_time = 1;
 #ifdef ENABLE_MOVIES
 static AVInputFormat input_fmt;
 static AVFormatContext *fmt_ctx = NULL;
-static AVFrame *decoded_frame = NULL;
-static AVCodecContext *vCodecCtx = NULL;
+/*static AVFrame *decoded_frame = NULL;*/
+/*static AVCodecContext *vCodecCtx = NULL;*/
 static AVIOContext *avio_ctx;
 struct SwsContext *img_convert_ctx = NULL;
 static AVPicture pict;
@@ -134,6 +158,10 @@ static void movie_scale_frame_opengl(void);
 static void movie_update_frame_soft(SDL_Rect *rect);
 static void movie_update_frame_opengl(SDL_Rect *rect);
 
+/* view_movie_sdl2.c */
+
+void view_movie_init_sdl2(void);
+
 /*--- Functions ---*/
 
 void movie_init(void)
@@ -141,12 +169,23 @@ void movie_init(void)
 #ifdef ENABLE_MOVIES
 	logMsg(2, "movie: av_register_all\n");
 	av_register_all();
+
+	memset(&view_movie, 0, sizeof(view_movie));
+
+#	if SDL_VERSION_ATLEAST(2,0,0)
+	view_movie_init_sdl2();
+#	else
+	view_movie.movie_refresh = movie_refresh_soft;
+	view_movie.movie_stop = movie_stop_soft;
+	view_movie.movie_update_frame = movie_update_frame_soft;
+#	endif
+
 #endif
 }
 
 void movie_shutdown(void)
 {
-	movie_stop();
+	view_movie.movie_stop();
 }
 
 void movie_refresh(SDL_Surface *screen)
@@ -154,19 +193,17 @@ void movie_refresh(SDL_Surface *screen)
 	if (params.use_opengl) {
 		movie_refresh_opengl(screen);
 	} else {
-		movie_refresh_soft(screen);
+		view_movie.movie_refresh(screen);
 	}
 }
 
 static void movie_refresh_soft(SDL_Surface *screen)
 {
-#ifdef ENABLE_MOVIES
+#if defined(ENABLE_MOVIES) && (!SDL_VERSION_ATLEAST(2,0,0))
+	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
+
 	if (overlay) {
-#if SDL_VERSION_ATLEAST(2,0,0)
-		SDL_DestroyTexture(overlay);
-#else
 		SDL_FreeYUVOverlay(overlay);
-#endif
 		overlay=NULL;
 	}
 
@@ -175,14 +212,9 @@ static void movie_refresh_soft(SDL_Surface *screen)
 	}
 
 	logMsg(1, "movie: create overlay %dx%d\n", vCodecCtx->width, vCodecCtx->height);
-#if SDL_VERSION_ATLEAST(2,0,0)
-	overlay = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_YV12,
-		SDL_TEXTUREACCESS_STATIC/*STREAMING*/,
-		vCodecCtx->width, vCodecCtx->height);
-#else
 	overlay = SDL_CreateYUVOverlay(vCodecCtx->width, vCodecCtx->height,
 		SDL_YV12_OVERLAY, screen);
-#endif
+
 	if (!overlay) {
 		fprintf(stderr, "Can not create overlay\n");
 	}
@@ -192,6 +224,8 @@ static void movie_refresh_soft(SDL_Surface *screen)
 static void movie_refresh_opengl(SDL_Surface *screen)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
+	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
+
 	if (!vCodecCtx) {
 		return;
 	}
@@ -214,7 +248,7 @@ static void movie_refresh_opengl(SDL_Surface *screen)
 
 	if (!vid_texture) {
 		return;
-	}		
+	}
 
 	vid_texture->upload(vid_texture, 0);
 #endif
@@ -316,6 +350,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 	int dstFormat;
 /*	AVPixelFormat dstFormat;*/
 	int create_sws_scaler = 1;
+	AVCodecContext *vCodecCtx = NULL;
 
 	logMsg(2, "movie: init\n");
 
@@ -388,7 +423,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		switch(cc->codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
 				vidstream = i;
-				vCodecCtx = cc;
+				view_movie.vCodecCtx = vCodecCtx = cc;
 				fps_num = fmt_ctx->streams[i]->time_base.num;
 				fps_den = fmt_ctx->streams[i]->time_base.den;
 				logMsg(1, "movie: fps: %d\n", fps_den/fps_num);
@@ -403,28 +438,20 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 
 	logMsg(2, "movie: avcodec_alloc_frame\n");
 	/*decoded_frame = avcodec_alloc_frame();*/
-	decoded_frame = av_frame_alloc();
-	if (!decoded_frame) {
+	view_movie.decoded_frame = av_frame_alloc();
+	if (!view_movie.decoded_frame) {
 		fprintf(stderr, "Can not alloc decoded frame\n");
 		return 1;
 	}
 
 	if (params.use_opengl) {
-#  ifdef AV_PIX_FMT_RGBA
-		dstFormat = AV_PIX_FMT_RGBA;
-#  else
-		dstFormat = PIX_FMT_RGBA;
-#  endif
+		dstFormat = REEVENGI_RGBA_FORMAT;
 	} else {
-#  ifdef AV_PIX_FMT_YUV420P
-		dstFormat = AV_PIX_FMT_YUV420P;
-#  else
-		dstFormat = PIX_FMT_YUV420P;
-#  endif
+		dstFormat = REEVENGI_YUV_FORMAT;
 	}
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	if (vCodecCtx->pix_fmt == AV_PIX_FMT_YUV420P) {
+	if (vCodecCtx->pix_fmt == REEVENGI_YUV_FORMAT) {
 		create_sws_scaler = 0;
 	} else {
 		int yPlaneSz, uvPlaneSz;
@@ -442,11 +469,11 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 
 	if (create_sws_scaler) {
 		logMsg(2, "movie: sws_getContext\n");
-		img_convert_ctx = sws_getContext(
+		view_movie.img_convert_ctx = sws_getContext(
 			vCodecCtx->width, vCodecCtx->height, vCodecCtx->pix_fmt,
 			vCodecCtx->width, vCodecCtx->height, dstFormat,
 			SWS_POINT, NULL, NULL, NULL);
-		if (!img_convert_ctx) {
+		if (!view_movie.img_convert_ctx) {
 			fprintf(stderr, "Could not create sws scaling context\n");
 			return 1;
 		}
@@ -473,14 +500,14 @@ void movie_stop(void)
 	}
 
 #ifdef ENABLE_MOVIES
-	if (decoded_frame) {
-		av_free(decoded_frame);
-		decoded_frame = NULL;
+	if (view_movie.decoded_frame) {
+		av_free((AVFrame *) view_movie.decoded_frame);
+		view_movie.decoded_frame = NULL;
 	}
 
-	if (vCodecCtx) {
-		avcodec_close(vCodecCtx);
-		vCodecCtx = NULL;
+	if (view_movie.vCodecCtx) {
+		avcodec_close(view_movie.vCodecCtx);
+		view_movie.vCodecCtx = NULL;
 	}
 
 	if (fmt_ctx) {
@@ -493,9 +520,9 @@ void movie_stop(void)
 		tmpbuf=NULL;
 	}
 
-	if (img_convert_ctx) {
-		sws_freeContext(img_convert_ctx);
-		img_convert_ctx = NULL;
+	if (view_movie.img_convert_ctx) {
+		sws_freeContext(view_movie.img_convert_ctx);
+		view_movie.img_convert_ctx = NULL;
 	}
 #endif
 
@@ -507,21 +534,12 @@ void movie_stop(void)
 
 static void movie_stop_soft(void)
 {
-#if SDL_VERSION_ATLEAST(2,0,0)
-	if (yPlane) {
-		free(yPlane);
-		yPlane = NULL;
-	}
-#endif
-
+#if defined(ENABLE_MOVIES) && (!SDL_VERSION_ATLEAST(2,0,0))
 	if (overlay) {
-#if SDL_VERSION_ATLEAST(2,0,0)
-		SDL_DestroyTexture(overlay);
-#else
 		SDL_FreeYUVOverlay(overlay);
-#endif
 		overlay=NULL;
 	}
+#endif
 }
 
 static void movie_stop_opengl(void)
@@ -538,7 +556,7 @@ static void movie_stop_opengl(void)
 
 static int probe_movie(const char *filename)
 {
-	int retval = 1;	
+	int retval = 1;
 #ifdef ENABLE_MOVIES
 	SDL_RWops	*src;
 	AVProbeData	pd;
@@ -706,6 +724,8 @@ static int movie_decode_video(SDL_Surface *screen)
 {
 	int retval = 0;
 #ifdef ENABLE_MOVIES
+	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
+	AVFrame *decoded_frame = (AVFrame *) view_movie.decoded_frame;
 	AVPacket pkt;
 	int err, got_pic = 0;
 	int current_frame;
@@ -766,7 +786,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		if (params.use_opengl) {
 			movie_scale_frame_opengl();
 		} else {
-			movie_scale_frame_soft();
+			view_movie.movie_scale_frame();
 		}
 	}
 
@@ -794,7 +814,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		if (params.use_opengl) {
 			movie_update_frame_opengl(&rect);
 		} else {
-			movie_update_frame_soft(&rect);
+			view_movie.movie_update_frame(&rect);
 		}
 	}
 
@@ -806,35 +826,12 @@ static int movie_decode_video(SDL_Surface *screen)
 
 static void movie_scale_frame_soft(void)
 {
-#ifdef ENABLE_MOVIES
+#if defined(ENABLE_MOVIES) && (!SDL_VERSION_ATLEAST(2,0,0))
+	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
+	struct SwsContext *img_convert_ctx = (struct SwsContext *) view_movie.img_convert_ctx;
+	AVFrame *decoded_frame = (AVFrame *) view_movie.decoded_frame;
 	AVPicture pict;
 
-#if SDL_VERSION_ATLEAST(2,0,0)
-	if (!img_convert_ctx) {
-		SDL_UpdateYUVTexture(overlay, NULL,
-			decoded_frame->data[0], decoded_frame->linesize[0],
-			decoded_frame->data[1], decoded_frame->linesize[1],
-			decoded_frame->data[2], decoded_frame->linesize[2]);
-	} else {
-		pict.data[0] = yPlane;
-		pict.data[1] = uPlane;
-		pict.data[2] = vPlane;
-
-		pict.linesize[0] = vCodecCtx->width;
-		pict.linesize[1] = vCodecCtx->width >> 2;
-		pict.linesize[2] = vCodecCtx->width >> 2;
-
-		sws_scale(img_convert_ctx,
-			(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
-			0, vCodecCtx->height,
-			pict.data, pict.linesize);
-
-		SDL_UpdateYUVTexture(overlay, NULL,
-			pict.data[0], pict.linesize[0],
-			pict.data[1], pict.linesize[1],
-			pict.data[2], pict.linesize[2]);
-	}
-#else
 	SDL_LockYUVOverlay(overlay);
 
 	pict.data[0] = overlay->pixels[0];
@@ -852,26 +849,22 @@ static void movie_scale_frame_soft(void)
 
 	SDL_UnlockYUVOverlay(overlay);
 #endif
-
-#endif
 }
 
 static void movie_update_frame_soft(SDL_Rect *rect)
 {
-#ifdef ENABLE_MOVIES
-
-#if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_RenderCopy(video.renderer, overlay, NULL, rect);
-#else
+#if defined(ENABLE_MOVIES) && (!SDL_VERSION_ATLEAST(2,0,0))
 	SDL_DisplayYUVOverlay(overlay, rect);
-#endif
-
 #endif
 }
 
 static void movie_scale_frame_opengl(void)
 {
 #if defined(ENABLE_MOVIES) && defined(ENABLE_OPENGL)
+	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
+	struct SwsContext *img_convert_ctx = (struct SwsContext *) view_movie.img_convert_ctx;
+	AVFrame *decoded_frame = (AVFrame *) view_movie.decoded_frame;
+
 	pict.data[0] = vid_texture->pixels;
 	pict.linesize[0] = vid_texture->pitch;
 
