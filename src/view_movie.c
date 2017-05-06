@@ -172,29 +172,33 @@ void movie_init(void)
 
 	memset(&view_movie, 0, sizeof(view_movie));
 
+	if (params.use_opengl) {
+		view_movie.refresh = movie_refresh_opengl;
+		view_movie.stop = movie_stop_opengl;
+		view_movie.scale_frame = movie_scale_frame_opengl;
+		view_movie.update_frame = movie_update_frame_opengl;
+	} else {
 #	if SDL_VERSION_ATLEAST(2,0,0)
-	view_movie_init_sdl2();
+		view_movie_init_sdl2();
 #	else
-	view_movie.movie_refresh = movie_refresh_soft;
-	view_movie.movie_stop = movie_stop_soft;
-	view_movie.movie_update_frame = movie_update_frame_soft;
+		view_movie.refresh = movie_refresh_soft;
+		view_movie.stop = movie_stop_soft;
+		view_movie.scale_frame = movie_scale_frame_soft;
+		view_movie.update_frame = movie_update_frame_soft;
 #	endif
+	}
 
 #endif
 }
 
 void movie_shutdown(void)
 {
-	view_movie.movie_stop();
+	view_movie.stop();
 }
 
 void movie_refresh(SDL_Surface *screen)
 {
-	if (params.use_opengl) {
-		movie_refresh_opengl(screen);
-	} else {
-		view_movie.movie_refresh(screen);
-	}
+	view_movie.refresh(screen);
 }
 
 static void movie_refresh_soft(SDL_Surface *screen)
@@ -479,7 +483,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		}
 	}
 
-	movie_refresh(screen);
+	view_movie.refresh(screen);
 
 	start_tic = 0;
 #endif
@@ -493,11 +497,7 @@ void movie_stop(void)
 	audstream = vidstream = -1;
 	emul_cd = 0;
 
-	if (params.use_opengl) {
-		movie_stop_opengl();
-	} else {
-		movie_stop_soft();
-	}
+	view_movie.stop();
 
 #ifdef ENABLE_MOVIES
 	if (view_movie.decoded_frame) {
@@ -783,11 +783,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		}
 
 		logMsg(2, "movie: decode and scale frame\n");
-		if (params.use_opengl) {
-			movie_scale_frame_opengl();
-		} else {
-			view_movie.movie_scale_frame();
-		}
+		view_movie.scale_frame();
 	}
 
 	/* Display current decoded frame */
@@ -811,11 +807,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		rect.h = h2;
 
 		/*logMsg(2, "movie: update frame to %d,%d %dx%d\n",rect.x,rect.y,rect.w,rect.h);*/
-		if (params.use_opengl) {
-			movie_update_frame_opengl(&rect);
-		} else {
-			view_movie.movie_update_frame(&rect);
-		}
+		view_movie.update_frame(&rect);
 	}
 
 	av_free_packet(&pkt);

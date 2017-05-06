@@ -33,10 +33,10 @@ struct view_movie_s {
 	/*SDL2*/
 	Uint8 *yPlane, *uPlane, *vPlane;
 
-	void (*movie_refresh)(SDL_Surface *screen);
-	void (*movie_stop)(void);
-	void (*movie_scale_frame)(void);
-	void (*movie_update_frame)(SDL_Rect *rect);
+	void (*refresh)(SDL_Surface *screen);
+	void (*stop)(void);
+	void (*scale_frame)(void);
+	void (*update_frame)(SDL_Rect *rect);
 };
 
 /*--- Variables ---*/

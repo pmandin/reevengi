@@ -66,10 +66,10 @@ static void movie_update_frame_soft_sdl2(SDL_Rect *rect);
 
 void view_movie_init_sdl2(void)
 {
-	view_movie.movie_refresh = movie_refresh_soft_sdl2;
-	view_movie.movie_stop = movie_stop_soft_sdl2;
-	view_movie.movie_scale_frame = movie_scale_frame_soft_sdl2;
-	view_movie.movie_update_frame = movie_update_frame_soft_sdl2;
+	view_movie.refresh = movie_refresh_soft_sdl2;
+	view_movie.stop = movie_stop_soft_sdl2;
+	view_movie.scale_frame = movie_scale_frame_soft_sdl2;
+	view_movie.update_frame = movie_update_frame_soft_sdl2;
 }
 
 static void movie_refresh_soft_sdl2(SDL_Surface *screen)
