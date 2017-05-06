@@ -123,8 +123,8 @@ static int emul_cd;
 static int emul_cd_pos;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-static SDL_Texture *overlay = NULL;
-static Uint8 *yPlane = NULL, *uPlane = NULL, *vPlane = NULL;
+/*static SDL_Texture *overlay = NULL;
+static Uint8 *yPlane = NULL, *uPlane = NULL, *vPlane = NULL;*/
 #else
 static SDL_Overlay *overlay = NULL;
 #endif
@@ -459,10 +459,10 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		yPlaneSz = vCodecCtx->width * vCodecCtx->height;
 		uvPlaneSz = vCodecCtx->width * vCodecCtx->height / 4;
 
-		yPlane = (Uint8*) realloc(yPlane, yPlaneSz + uvPlaneSz*2);
-		if (yPlane) {
-			uPlane = &yPlane[yPlaneSz];
-			vPlane = &yPlane[yPlaneSz+uvPlaneSz];
+		view_movie.yPlane = (Uint8*) realloc(view_movie.yPlane, yPlaneSz + uvPlaneSz*2);
+		if (view_movie.yPlane) {
+			view_movie.uPlane = &view_movie.yPlane[yPlaneSz];
+			view_movie.vPlane = &view_movie.yPlane[yPlaneSz+uvPlaneSz];
 		}
 	}
 #endif

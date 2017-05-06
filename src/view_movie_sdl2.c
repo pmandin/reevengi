@@ -54,7 +54,6 @@
 /*--- Variables ---*/
 
 static SDL_Texture *overlay = NULL;
-static Uint8 *yPlane = NULL, *uPlane = NULL, *vPlane = NULL;
 
 /*--- Functions prototypes ---*/
 
@@ -98,9 +97,9 @@ static void movie_refresh_soft_sdl2(SDL_Surface *screen)
 
 static void movie_stop_soft_sdl2(void)
 {
-	if (yPlane) {
-		free(yPlane);
-		yPlane = NULL;
+	if (view_movie.yPlane) {
+		free(view_movie.yPlane);
+		view_movie.yPlane = view_movie.uPlane = view_movie.vPlane = NULL;
 	}
 
 	if (overlay) {
@@ -122,9 +121,9 @@ static void movie_scale_frame_soft_sdl2(void)
 			decoded_frame->data[1], decoded_frame->linesize[1],
 			decoded_frame->data[2], decoded_frame->linesize[2]);
 	} else {
-		pict.data[0] = yPlane;
-		pict.data[1] = uPlane;
-		pict.data[2] = vPlane;
+		pict.data[0] = view_movie.yPlane;
+		pict.data[1] = view_movie.uPlane;
+		pict.data[2] = view_movie.vPlane;
 
 		pict.linesize[0] = vCodecCtx->width;
 		pict.linesize[1] = vCodecCtx->width >> 2;

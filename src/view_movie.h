@@ -30,6 +30,9 @@ struct view_movie_s {
 	void *img_convert_ctx;	/* struct SwsContext * */
 	void *decoded_frame; /* AVFrame * */
 
+	/*SDL2*/
+	Uint8 *yPlane, *uPlane, *vPlane;
+
 	void (*movie_refresh)(SDL_Surface *screen);
 	void (*movie_stop)(void);
 	void (*movie_scale_frame)(void);
