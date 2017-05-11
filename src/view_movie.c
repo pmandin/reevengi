@@ -407,12 +407,31 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 	av_dump_format(fmt_ctx, 0, filename, 0);
 
 	for (i=0; i<fmt_ctx->nb_streams; i++) {
+		AVCodecContext *cc;
 		AVCodec *codec;
-		AVCodecContext *cc = fmt_ctx->streams[i]->codec;
+		AVStream *stream;
+		int ret;
+
+		cc = avcodec_alloc_context3(NULL);
+		if (!cc) {
+			fprintf(stderr, "Out of memory\n");
+			continue;
+		}
+
+		stream = fmt_ctx->streams[i];
+
+		ret = avcodec_parameters_to_context(cc, stream->codecpar);
+		if (ret < 0) {
+			avcodec_free_context(&cc);
+			fprintf(stderr, "Can not read stream parameters\n");
+			continue;
+		}
+		av_codec_set_pkt_timebase(cc, stream->time_base);
 
 		logMsg(2, "movie: avcodec_find_decoder 0x%08x\n", cc->codec_id);
 		codec = avcodec_find_decoder(cc->codec_id);
 		if (!codec) {
+			avcodec_free_context(&cc);
 			fprintf(stderr, "Can not find codec for stream %d\n", i);
 			continue;
 		}
@@ -420,6 +439,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 		logMsg(2, "movie: avcodec_open2 %p %p\n", cc, codec);
 		err = avcodec_open2(cc, codec, NULL);
 		if (err<0) {
+			avcodec_free_context(&cc);
 			fprintf(stderr, "Can not open codec for stream %d\n", i);
 			continue;
 		}
@@ -428,8 +448,8 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 			case AVMEDIA_TYPE_VIDEO:
 				vidstream = i;
 				view_movie.vCodecCtx = vCodecCtx = cc;
-				fps_num = fmt_ctx->streams[i]->time_base.num;
-				fps_den = fmt_ctx->streams[i]->time_base.den;
+				fps_num = stream->time_base.num;
+				fps_den = stream->time_base.den;
 				logMsg(1, "movie: fps: %d\n", fps_den/fps_num);
 				break;
 			case AVMEDIA_TYPE_AUDIO:
@@ -506,7 +526,9 @@ void movie_stop(void)
 	}
 
 	if (view_movie.vCodecCtx) {
-		avcodec_close(view_movie.vCodecCtx);
+		AVCodecContext *cc = (AVCodecContext *) view_movie.vCodecCtx;
+
+		avcodec_free_context(&cc);
 		view_movie.vCodecCtx = NULL;
 	}
 
