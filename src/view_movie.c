@@ -774,17 +774,16 @@ static int movie_decode_video(SDL_Surface *screen)
 
 	if (pkt.stream_index == vidstream) {
 		/* Decode video packet */
-		logMsg(2, "movie: avcodec_decode_video2 %p %p %p\n", vCodecCtx, decoded_frame, &pkt);
-		err = avcodec_decode_video2(
-			vCodecCtx,
-			decoded_frame,
-			&got_pic,
-			&pkt);
+		logMsg(2, "movie: avcodec_send_packet %p %p\n", vCodecCtx, &pkt);
+		err = avcodec_send_packet(vCodecCtx, &pkt);
 
 		if (err<0) {
 			fprintf(stderr, "Error decoding frame: %d\n", err);
-		} else if (got_pic) {
-
+		} else {
+			err = avcodec_receive_frame(vCodecCtx, decoded_frame);
+			if (err==0) {
+				got_pic=1;
+			}
 			retval = 1;
 		}
 	} else if (pkt.stream_index == audstream) {
