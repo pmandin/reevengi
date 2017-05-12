@@ -794,8 +794,8 @@ static int movie_decode_video(SDL_Surface *screen)
 
 	/* Scale and decode frame */
 	if (got_pic) {
-		if (current_frame < decoded_frame->pkt_pts) {
-			int delay_frame = decoded_frame->pkt_pts - current_frame;
+		if (current_frame < decoded_frame->pts) {
+			int delay_frame = decoded_frame->pts - current_frame;
 			int delay_ms = (delay_frame * 1000 * fps_num) / fps_den;
 			if (delay_ms>0) {
 				/*logMsg(2, "movie: wait %d\n", delay_ms);*/
@@ -831,7 +831,7 @@ static int movie_decode_video(SDL_Surface *screen)
 		view_movie.update_frame(&rect);
 	}
 
-	av_free_packet(&pkt);
+	av_packet_unref(&pkt);
 #endif
 
 	return retval;
