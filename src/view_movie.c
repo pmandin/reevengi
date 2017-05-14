@@ -112,7 +112,7 @@ static AVFormatContext *fmt_ctx = NULL;
 /*static AVCodecContext *vCodecCtx = NULL;*/
 static AVIOContext *avio_ctx;
 struct SwsContext *img_convert_ctx = NULL;
-static AVPicture pict;
+/*static AVPicture pict;*/
 #endif
 static char *tmpbuf = NULL;
 static SDL_RWops *movie_src = NULL;
@@ -843,22 +843,23 @@ static void movie_scale_frame_soft(void)
 	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
 	struct SwsContext *img_convert_ctx = (struct SwsContext *) view_movie.img_convert_ctx;
 	AVFrame *decoded_frame = (AVFrame *) view_movie.decoded_frame;
-	AVPicture pict;
+	uint8_t *pixels[4]={NULL,NULL,NULL,NULL};
+	int linesize[4]={0,0,0,0};
 
 	SDL_LockYUVOverlay(overlay);
 
-	pict.data[0] = overlay->pixels[0];
-	pict.data[1] = overlay->pixels[2];
-	pict.data[2] = overlay->pixels[1];
+	pixels[0] = overlay->pixels[0];
+	pixels[1] = overlay->pixels[2];
+	pixels[2] = overlay->pixels[1];
 
-	pict.linesize[0] = overlay->pitches[0];
-	pict.linesize[1] = overlay->pitches[2];
-	pict.linesize[2] = overlay->pitches[1];
+	linesize[0] = overlay->pitches[0];
+	linesize[1] = overlay->pitches[2];
+	linesize[2] = overlay->pitches[1];
 
 	sws_scale(img_convert_ctx,
 		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
 		0, vCodecCtx->height,
-		pict.data, pict.linesize);
+		pixels, linesize);
 
 	SDL_UnlockYUVOverlay(overlay);
 #endif
@@ -877,16 +878,17 @@ static void movie_scale_frame_opengl(void)
 	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
 	struct SwsContext *img_convert_ctx = (struct SwsContext *) view_movie.img_convert_ctx;
 	AVFrame *decoded_frame = (AVFrame *) view_movie.decoded_frame;
+	uint8_t *pixels[4]={NULL,NULL,NULL,NULL};
+	int linesize[4]={0,0,0,0};
 
-	pict.data[0] = vid_texture->pixels;
-	pict.linesize[0] = vid_texture->pitch;
+	pixels[0] = vid_texture->pixels;
+	linesize[0] = vid_texture->pitch;
 
 	sws_scale(img_convert_ctx,
 		(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
 		0, vCodecCtx->height,
-		pict.data, pict.linesize);
+		pixels, linesize);
 
-/*	vid_texture->upload(vid_texture, 0);*/
 	vid_texture->update(vid_texture, 0);
 #endif
 }
