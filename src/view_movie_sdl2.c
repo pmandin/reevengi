@@ -113,7 +113,8 @@ static void movie_scale_frame_soft_sdl2(void)
 	AVCodecContext *vCodecCtx = (AVCodecContext *) view_movie.vCodecCtx;
 	struct SwsContext *img_convert_ctx = (struct SwsContext *) view_movie.img_convert_ctx;
 	AVFrame *decoded_frame = (AVFrame *) view_movie.decoded_frame;
-	AVPicture pict;
+	uint8_t *pixels[4]={NULL,NULL,NULL,NULL};
+	int linesize[4]={0,0,0,0};
 
 	if (!img_convert_ctx) {
 		SDL_UpdateYUVTexture(overlay, NULL,
@@ -121,23 +122,23 @@ static void movie_scale_frame_soft_sdl2(void)
 			decoded_frame->data[1], decoded_frame->linesize[1],
 			decoded_frame->data[2], decoded_frame->linesize[2]);
 	} else {
-		pict.data[0] = view_movie.yPlane;
-		pict.data[1] = view_movie.uPlane;
-		pict.data[2] = view_movie.vPlane;
+		pixels[0] = view_movie.yPlane;
+		pixels[1] = view_movie.uPlane;
+		pixels[2] = view_movie.vPlane;
 
-		pict.linesize[0] = vCodecCtx->width;
-		pict.linesize[1] = vCodecCtx->width >> 2;
-		pict.linesize[2] = vCodecCtx->width >> 2;
+		linesize[0] = vCodecCtx->width;
+		linesize[1] = vCodecCtx->width >> 1;
+		linesize[2] = vCodecCtx->width >> 1;
 
 		sws_scale(img_convert_ctx,
 			(const uint8_t * const*) decoded_frame->data, decoded_frame->linesize,
 			0, vCodecCtx->height,
-			pict.data, pict.linesize);
+			pixels, linesize);
 
 		SDL_UpdateYUVTexture(overlay, NULL,
-			pict.data[0], pict.linesize[0],
-			pict.data[1], pict.linesize[1],
-			pict.data[2], pict.linesize[2]);
+			pixels[0], linesize[0],
+			pixels[1], linesize[1],
+			pixels[2], linesize[2]);
 	}
 }
 
