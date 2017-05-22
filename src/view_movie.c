@@ -193,12 +193,16 @@ void movie_init(void)
 
 void movie_shutdown(void)
 {
+#ifdef ENABLE_MOVIES
 	view_movie.stop();
+#endif
 }
 
 void movie_refresh(SDL_Surface *screen)
 {
+#ifdef ENABLE_MOVIES
 	view_movie.refresh(screen);
+#endif
 }
 
 static void movie_refresh_soft(SDL_Surface *screen)
