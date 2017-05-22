@@ -157,7 +157,7 @@ int main(int argc, char **argv)
 
 #if SDL_VERSION_ATLEAST(2,0,0)
 #else
-	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME); 
+	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME);
 #endif
 
 	/* Force a mode switch */
@@ -299,7 +299,9 @@ static void viewer_update(void)
 		list_render_texture_download();
 		list_render_skel_download();
 		video.setVideoMode(new_width, new_height, video.bpp);
-		movie_refresh(video.screen);
+		if (params.viewmode==VIEWMODE_MOVIE) {
+			movie_refresh(video.screen);
+		}
 	}
 
 	render.startFrame();
