@@ -289,6 +289,11 @@ static void setVideoMode(int width, int height, int bpp)
 	/* Resize window ? */
 	if (video.renderer && video.window) {
 		logMsg(1, "video: resize window to %dx%d\n", width, height);
+		SDL_SetWindowFullscreen(video.window,
+			(video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP ?
+			SDL_WINDOW_FULLSCREEN_DESKTOP :
+			SDL_FALSE
+		);
 		SDL_SetWindowSize(video.window, width, height);
 		SDL_RenderSetViewport(video.renderer, NULL);
 	} else {
