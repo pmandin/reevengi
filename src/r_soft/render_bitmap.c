@@ -473,6 +473,7 @@ static void refresh_scaled_version(render_texture_t *texture, int new_w, int new
 {
 	int create_scaled = 0, new_bpp;
 	SDL_Surface *screen = video.screen;
+	Uint32 rmask=0,gmask=0,bmask=0,amask=0;
 
 	/* Generate a cached version of texture scaled/dithered or both */
 	if (texture->scaled) {
@@ -513,13 +514,18 @@ static void refresh_scaled_version(render_texture_t *texture, int new_w, int new
 			new_bpp = 32;
 			break;
 	}
+	if (new_bpp>8) {
+		rmask = texture->format.Rmask;
+		gmask = texture->format.Gmask;
+		bmask = texture->format.Bmask;
+		amask = texture->format.Amask;
+	}
 
 	texture->scaled = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS, new_w,new_h,new_bpp,
-		texture->format.Rmask, texture->format.Gmask,
-		texture->format.Bmask, texture->format.Amask);
+		rmask,gmask,bmask,amask);
 
 	if (!texture->scaled) {
-		fprintf(stderr, "bitmap: could not create scaled texture\n");
+		fprintf(stderr, "bitmap: could not create scaled texture %dx%dx%d: %s\n", new_w,new_h,new_bpp, SDL_GetError());
 		return;
 	}
 
