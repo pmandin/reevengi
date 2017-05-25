@@ -60,13 +60,15 @@ void video_soft_init(video_t *this)
 
 	memset(this, 0, sizeof(video_t));
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	this->width = (params.width ? params.width : 640);
+	this->height = (params.height ? params.height : 480);
+	this->bpp = (params.bpp ? params.bpp : 32);
+	this->flags = SDL_WINDOW_RESIZABLE;
+#else
 	this->width = (params.width ? params.width : 320);
 	this->height = (params.height ? params.height : 240);
 	this->bpp = (params.bpp ? params.bpp : 16);
-
-#if SDL_VERSION_ATLEAST(2,0,0)
-	this->flags = SDL_WINDOW_RESIZABLE;
-#else
 	this->flags = SDL_DOUBLEBUF|SDL_RESIZABLE;
 #endif
 	this->start_tick = SDL_GetTicks();
@@ -119,10 +121,10 @@ static void shutDown(void)
 		SDL_FreeSurface(video.screen);
 		video.screen=NULL;
 	}
-	/*if (video.texture) {
+	if (video.texture) {
 		SDL_DestroyTexture(video.texture);
 		video.texture = NULL;
-	}*/
+	}
 	if (video.renderer) {
 		SDL_DestroyRenderer(video.renderer);
 		video.renderer=NULL;
@@ -279,10 +281,10 @@ static void setVideoMode(int width, int height, int bpp)
 		SDL_FreeSurface(video.screen);
 		video.screen=NULL;
 	}
-	/*if (video.texture) {
+	if (video.texture) {
 		SDL_DestroyTexture(video.texture);
 		video.texture = NULL;
-	}*/
+	}
 
 	/* Resize window ? */
 	if (video.renderer && video.window) {
@@ -310,12 +312,13 @@ static void setVideoMode(int width, int height, int bpp)
 
 	if (video.renderer) {
 		logMsg(1, "video: get surface\n");
-		video.screen = SDL_CreateRGBSurface(0, width, height, bpp, 0, 0, 0, 0);
+		video.screen = SDL_CreateRGBSurface(0, width, height, 32, 255<<16,255<<8,255,255<24);
 	}
-	/*if (video.screen) {
+	if (video.screen) {
+		logMsg(1, "video: get texture\n");
 		video.texture = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_ARGB8888,
 			SDL_TEXTUREACCESS_STREAMING, width, height);
-	}*/
+	}
 #else
 	video.screen = SDL_SetVideoMode(width, height, bpp, video.flags);
 	if (!video.screen) {
@@ -380,7 +383,11 @@ static void swapBuffers(void)
 	int i, x, y;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_UpdateTexture(video.texture, NULL, video.screen->pixels, video.screen->pitch);
+	SDL_RenderCopy(video.renderer, video.texture, NULL, NULL);
 	SDL_RenderPresent(video.renderer);
+
+	SDL_RenderClear(video.renderer);
 #else
 	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
 		video.numfb ^= 1;
@@ -535,7 +542,7 @@ static void setPalette(SDL_Surface *surf)
 
 	if (video.bpp>8)
 		return;
-	
+
 	surf_palette = surf->format->palette;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
