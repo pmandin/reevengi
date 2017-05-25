@@ -33,6 +33,12 @@
 
 /*--- Defines ---*/
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define REEVENGI_SDLSURF_FLAGS 0
+#else
+#define REEVENGI_SDLSURF_FLAGS SDL_SWSURFACE
+#endif
+
 #define VLC_ID		0x3800
 #define	EOB		0xfe00
 #define	DCTSIZE2	64
@@ -131,7 +137,7 @@ void rl2blk(bs_context_t *ctxt, BLOCK *blk)
 		}
 
 		IDCT(blk,k+1);
-		
+
 		blk+=DCTSIZE2;
 	}
 }
@@ -256,7 +262,7 @@ void mdec_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength,
 		free(image);
 		return;
 	}
-	
+
 	iqtab_init(&ctxt);
 	bs_init();
 
@@ -300,7 +306,7 @@ SDL_Surface *mdec_surface(Uint8 *source, int width, int height, int row_offset)
 	bmask = 0xff << 16;
 #endif
 
-	surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,24,rmask,gmask,bmask,0);
+	surface = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS,width,height,24,rmask,gmask,bmask,0);
 	if (!surface) {
 		return NULL;
 	}

@@ -38,6 +38,12 @@
 /*#define BILINEAR_FILTER(start,end,coef)	\
 	(start) + ((((end)-(start)) * ((coef) & 65535)) >> 16)*/
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define REEVENGI_SDLSURF_FLAGS 0
+#else
+#define REEVENGI_SDLSURF_FLAGS SDL_SWSURFACE
+#endif
+
 /*--- Functions prototypes ---*/
 
 static void shutdown(render_bitmap_t *this);
@@ -470,7 +476,7 @@ static void refresh_scaled_version(render_texture_t *texture, int new_w, int new
 
 	/* Generate a cached version of texture scaled/dithered or both */
 	if (texture->scaled) {
-		/* Recreate if different target size */		
+		/* Recreate if different target size */
 		if ((texture->scaled->w != new_w) || (texture->scaled->h != new_h)) {
 			create_scaled = 1;
 		}
@@ -508,7 +514,7 @@ static void refresh_scaled_version(render_texture_t *texture, int new_w, int new
 			break;
 	}
 
-	texture->scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, new_w,new_h,new_bpp,
+	texture->scaled = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS, new_w,new_h,new_bpp,
 		texture->format.Rmask, texture->format.Gmask,
 		texture->format.Bmask, texture->format.Amask);
 
@@ -543,13 +549,13 @@ static void refresh_scaled_version(render_texture_t *texture, int new_w, int new
 
 	/* Dither if needed */
 	if (video.bpp == 8) {
-		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(SDL_SWSURFACE,
+		SDL_Surface *dithered_surf = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS,
 			texture->scaled->w,texture->scaled->h,8, 0,0,0,0);
 		if (!dithered_surf) {
 			fprintf(stderr, "bitmap: can not create dithered texture\n");
 			return;
 		}
-		
+
 		dither_setpalette(dithered_surf);
 		if (render.dithering) {
 			logMsg(2, "bitmap: creating dithered version of texture\n");

@@ -23,6 +23,16 @@
 
 #include <SDL.h>
 
+/*--- Defines ---*/
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define REEVENGI_SDLSURF_FLAGS 0
+#else
+#define REEVENGI_SDLSURF_FLAGS SDL_SWSURFACE
+#endif
+
+/*--- Variables */
+
 static Uint8 *dstPointer;
 static int dstBufLen;
 static int dstOffset;
@@ -80,7 +90,7 @@ static void initTmpArray(unpackArray_t *array, int start, int length)
 static void initTmpArrayData(unpackArray_t *array)
 {
 	int i;
-		
+
 	for (i=0; i<array->length; i++) {
 		array->ptr4[i] =
 		array->ptr8[i].start =
@@ -376,7 +386,7 @@ void adt_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 		tmpBufLen = initUnpackBlockArray2(&array2);
 		tmpBufLen1 = initUnpackBlockArray2(&array3);
 
-		curBlockLength = 0;		
+		curBlockLength = 0;
 		while (curBlockLength < blockLength) {
 			int curBitfield = readSrcBitfieldArray(src, &array2, tmpBufLen);
 
@@ -409,7 +419,7 @@ void adt_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 
 				startOffset = (tmp16kOffset-curBitfield-1) & 0x3fff;
 				for (i=0; i<numValues; i++) {
-					dstPointer[dstOffset++] = tmp16k[tmp16kOffset++] = 
+					dstPointer[dstOffset++] = tmp16k[tmp16kOffset++] =
 						tmp16k[startOffset++];
 					startOffset &= 0x3fff;
 					tmp16kOffset &= 0x3fff;
@@ -436,7 +446,7 @@ SDL_Surface *adt_surface(Uint16 *source, int reorganize)
 	Uint16 *surface_line, *src_line;
 	int x,y;
 
-	surface = SDL_CreateRGBSurface(SDL_SWSURFACE,320,240,16,31,31<<5,31<<10,0);
+	surface = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS,320,240,16,31,31<<5,31<<10,0);
 	if (!surface) {
 		return NULL;
 	}

@@ -23,6 +23,14 @@
 
 #include "background_tim.h"
 
+/*--- Defines ---*/
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define REEVENGI_SDLSURF_FLAGS 0
+#else
+#define REEVENGI_SDLSURF_FLAGS SDL_SWSURFACE
+#endif
+
 /*--- Functions ---*/
 
 SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
@@ -43,13 +51,13 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 		error = "Can not load header";
 		goto done;
 	}
-	tim_header.magic = SDL_SwapLE32(tim_header.magic);	
+	tim_header.magic = SDL_SwapLE32(tim_header.magic);
 	if (tim_header.magic != MAGIC_TIM) {
 		error = "Unknown header";
 		goto done;
 	}
-	tim_header.type = SDL_SwapLE32(tim_header.type);	
-	tim_header.offset = SDL_SwapLE32(tim_header.offset);	
+	tim_header.type = SDL_SwapLE32(tim_header.type);
+	tim_header.offset = SDL_SwapLE32(tim_header.offset);
 	tim_header.nb_palettes = SDL_SwapLE16(tim_header.nb_palettes);
 
 	scale_width = 1;
@@ -118,7 +126,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 	h = tim_size.height;
 	dblpitch = (w*dblpitch)>>1;
 
-	surface = SDL_CreateRGBSurface(SDL_SWSURFACE,w,h,bpp,rmask,gmask,bmask,0);
+	surface = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS,w,h,bpp,rmask,gmask,bmask,0);
 	if (!surface) {
 		error = "Can not create surface for image";
 		goto done;

@@ -32,6 +32,14 @@
 
 #include "../r_soft/dither.h"
 
+/*--- Defines ---*/
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define REEVENGI_SDLSURF_FLAGS 0
+#else
+#define REEVENGI_SDLSURF_FLAGS SDL_SWSURFACE
+#endif
+
 /*--- Functions prototypes ---*/
 
 static void shutdown(render_texture_t *this);
@@ -397,7 +405,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 									color = SDL_SwapLE16(color);
 
 									read_rgba(color, &r,&g,&b,&a);
-									
+
 									*tex_line++ = SDL_MapRGBA(fmt, r,g,b,a);
 								}
 								tex_pixels += this->pitch>>1;
@@ -405,7 +413,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 						}
 						break;
 				}
-				
+
 			}
 			break;
 	}
@@ -555,7 +563,7 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 
 	/* Set bpp from texture, before resize */
 	this->bpp = surf->format->BytesPerPixel;
-	if (this->bpp>1) { 
+	if (this->bpp>1) {
 		this->bpp = (fmt->BytesPerPixel==3 ? 4 : fmt->BytesPerPixel);
 	}
 	this->resize(this, surf->w,surf->h);
@@ -598,7 +606,7 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 			}
 		} else {
 			/* Convert to dithered surface */
-			tmp_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w,surf->h,8, 0,0,0,0);
+			tmp_surf = SDL_CreateRGBSurface(REEVENGI_SDLSURF_FLAGS, surf->w,surf->h,8, 0,0,0,0);
 			if (tmp_surf) {
 				dither_setpalette(tmp_surf);
 				if (render.dithering) {
