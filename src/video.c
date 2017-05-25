@@ -286,14 +286,23 @@ static void setVideoMode(int width, int height, int bpp)
 		video.texture = NULL;
 	}
 
+	/* Toggle fullscreen ? */
+	if (video.window) {
+		Uint32 flags = SDL_GetWindowFlags(video.window);
+
+		if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != (video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+			logMsg(1, "video: toggle fullscreen\n");
+			SDL_SetWindowFullscreen(video.window,
+				(video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP ?
+				SDL_WINDOW_FULLSCREEN_DESKTOP :
+				SDL_FALSE
+			);
+		}
+	}
+
 	/* Resize window ? */
 	if (video.renderer && video.window) {
 		logMsg(1, "video: resize window to %dx%d\n", width, height);
-		SDL_SetWindowFullscreen(video.window,
-			(video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP ?
-			SDL_WINDOW_FULLSCREEN_DESKTOP :
-			SDL_FALSE
-		);
 		SDL_SetWindowSize(video.window, width, height);
 		SDL_RenderSetViewport(video.renderer, NULL);
 	} else {
