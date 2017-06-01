@@ -34,6 +34,7 @@
 
 #include "r_common/render.h"
 #include "r_common/render_text.h"
+#include "r_common/r_misc.h"
 #include "r_soft/dirty_rects.h"
 #include "r_soft/dither.h"
 
@@ -47,6 +48,7 @@ static void shutDown(void);
 static void findNearestMode(int *width, int *height, int bpp);
 static void setVideoMode(int width, int height, int bpp);
 static void swapBuffers(void);
+static int updateDirtyRects(void);
 static void countFps(void);
 static void screenShot(void);
 static void initViewport(void);
@@ -263,7 +265,7 @@ static void findNearestMode(int *width, int *height, int bpp)
 
 static void setVideoMode(int width, int height, int bpp)
 {
-	int i;
+	int i, sw,sh;
 
 	/* Search nearest fullscreen mode */
 #if SDL_VERSION_ATLEAST(2,0,0)
@@ -324,14 +326,16 @@ static void setVideoMode(int width, int height, int bpp)
 		}
 	}
 
+	sw = MAX(320, width);
+	sh = MAX(240, height);
 	if (video.renderer) {
 		logMsg(1, "video: get surface\n");
-		video.screen = SDL_CreateRGBSurface(0, width, height, 32, 255<<16,255<<8,255,255<24);
+		video.screen = SDL_CreateRGBSurface(0, sw, sh, 32, 255<<16,255<<8,255,255<24);
 	}
 	if (video.screen) {
 		logMsg(1, "video: get texture\n");
 		video.texture = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_ARGB8888,
-			SDL_TEXTUREACCESS_STREAMING, width, height);
+			SDL_TEXTUREACCESS_STREAMING, sw, sh);
 	}
 #else
 	video.screen = SDL_SetVideoMode(width, height, bpp, video.flags);
@@ -394,7 +398,7 @@ static void countFps(void)
 
 static void swapBuffers(void)
 {
-	int i, x, y;
+	int i;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
 	SDL_UpdateTexture(video.texture, NULL, video.screen->pixels, video.screen->pitch);
@@ -411,7 +415,24 @@ static void swapBuffers(void)
 #endif
 
 #ifdef DIRTY_RECTS
-	/* Update background from rectangle list */
+	i = updateDirtyRects();
+
+# if SDL_VERSION_ATLEAST(2,0,0)
+	SDL_UpdateWindowSurfaceRects(video.window, video.list_rects, i);
+# else
+	SDL_UpdateRects(video.screen, i, video.list_rects);
+# endif
+	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
+#else
+	SDL_UpdateRect(video.screen, 0,0,0,0);
+#endif
+}
+
+/* Update background from rectangle list */
+static int updateDirtyRects(void)
+{
+	int i, x, y;
+
 	i = upload_rects[video.numfb]->width * upload_rects[video.numfb]->height;
 	if (i>video.num_list_rects) {
 		video.list_rects = (SDL_Rect *) realloc(video.list_rects, i * sizeof(SDL_Rect));
@@ -464,15 +485,7 @@ static void swapBuffers(void)
 		}
 	}
 
-# if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_UpdateWindowSurfaceRects(video.window, video.list_rects, i);
-# else
-	SDL_UpdateRects(video.screen, i, video.list_rects);
-# endif
-	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
-#else
-	SDL_UpdateRect(video.screen, 0,0,0,0);
-#endif
+	return i;
 }
 
 static void screenShot(void)
