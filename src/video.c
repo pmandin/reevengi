@@ -279,15 +279,6 @@ static void setVideoMode(int width, int height, int bpp)
 	}
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	if (video.screen) {
-		SDL_FreeSurface(video.screen);
-		video.screen=NULL;
-	}
-	if (video.texture) {
-		SDL_DestroyTexture(video.texture);
-		video.texture = NULL;
-	}
-
 	/* Toggle fullscreen ? */
 	if (video.window) {
 		Uint32 flags = SDL_GetWindowFlags(video.window);
@@ -328,6 +319,21 @@ static void setVideoMode(int width, int height, int bpp)
 
 	sw = MAX(320, width);
 	sh = MAX(240, height);
+	/* Recreate video surface if bigger is needed */
+	if (video.screen) {
+		if ((sw>video.screen->w) || (sh>video.screen->h)) {
+			SDL_FreeSurface(video.screen);
+			video.screen=NULL;
+		}
+	}
+	/* And then the texture */
+	if (!video.screen || !video.texture) {
+		if (video.texture) {
+			SDL_DestroyTexture(video.texture);
+			video.texture = NULL;
+		}
+	}
+
 	if (video.renderer) {
 		logMsg(1, "video: get surface\n");
 		video.screen = SDL_CreateRGBSurface(0, sw, sh, 32, 255<<16,255<<8,255,255<24);
