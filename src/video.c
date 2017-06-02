@@ -334,11 +334,11 @@ static void setVideoMode(int width, int height, int bpp)
 		}
 	}
 
-	if (video.renderer) {
+	if (!video.screen) {
 		logMsg(1, "video: get surface\n");
 		video.screen = SDL_CreateRGBSurface(0, sw, sh, 32, 255<<16,255<<8,255,255<24);
 	}
-	if (video.screen) {
+	if (!video.texture && video.renderer) {
 		logMsg(1, "video: get texture\n");
 		video.texture = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_ARGB8888,
 			SDL_TEXTUREACCESS_STREAMING, sw, sh);
