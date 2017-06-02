@@ -71,6 +71,7 @@ static void copy_pixels(render_texture_t *this, SDL_Surface *surf);
 render_texture_t *render_texture_create(int flags)
 {
 	render_texture_t *tex;
+	int bpp;
 
 	tex = calloc(1, sizeof(render_texture_t));
 	if (!tex) {
@@ -92,9 +93,22 @@ render_texture_t *render_texture_create(int flags)
 	tex->cacheable = flags & RENDER_TEXTURE_CACHEABLE;
 	tex->keep_palette = flags & RENDER_TEXTURE_KEEPPALETTE;
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	tex->bpp = tex->format.BytesPerPixel = 4;
+	tex->format.format = SDL_PIXELFORMAT_RGBA8888;
+	SDL_PixelFormatEnumToMasks(tex->format.format,
+		&bpp,
+		&(tex->format.Rmask),
+		&(tex->format.Gmask),
+		&(tex->format.Bmask),
+		&(tex->format.Amask)
+	);
+	tex->format.BitsPerPixel = bpp;
+#else
 	tex->bpp = video.screen->format->BytesPerPixel;
 	/* FIXME: copy palette from format elsewhere */
 	memcpy(&(tex->format), video.screen->format, sizeof(SDL_PixelFormat));
+#endif
 	tex->format.palette = NULL;
 
 	memset(tex->palettes, 0, sizeof(tex->palettes));
@@ -228,8 +242,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	int num_colors, num_palettes, i,j, paletted, img_offset;
 	int w,h, tim_type;
 	tim_size_t *tim_size;
-	SDL_PixelFormat *fmt = video.screen->format /*&(this->format)*/;
-/*	int bytes_per_pixel;*/
+	SDL_PixelFormat *fmt = NULL;
 
 	if (!this || !tim_ptr) {
 		return;
@@ -283,6 +296,9 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 	}
 
 	logMsg(2, "texture: %dx%d, %d palettes * %d colors\n", w,h, num_palettes, num_colors);
+	if (video.screen && !params.use_opengl) {
+		fmt = video.screen->format;
+	}
 
 	/* Fill palettes */
 	this->paletted = paletted;
@@ -299,7 +315,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 
 				read_rgba(color, &r,&g,&b,&a);
 
-				if (params.use_opengl) {
+				if (!fmt) {
 					this->palettes[i][j] = (a<<24)|(r<<16)|(g<<8)|b;
 				} else {
 					this->palettes[i][j] = SDL_MapRGBA(fmt, r,g,b,a);
@@ -360,13 +376,14 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 			break;
 		case TIM_TYPE_16:
 			{
-				int bytesPerPixel = fmt->BytesPerPixel;
-				int r,g,b,a, color;
+				int r,g,b,a, color, bytesPerPixel;
 				Uint16 *src_pixels = (Uint16 *) (&((Uint8 *) tim_ptr)[img_offset]);
 
 				/* With OpenGL, we can keep source in its proper format */
-				if (params.use_opengl) {
+				if (!fmt) {
 					bytesPerPixel = 2;
+				} else {
+					bytesPerPixel = fmt->BytesPerPixel;
 				}
 
 				switch(bytesPerPixel) {
@@ -529,12 +546,16 @@ static void convert_tex_palette(render_texture_t *this, SDL_Surface *surf)
 {
 	int i, r,g,b,a;
 	SDL_Palette *surf_palette;
-	SDL_PixelFormat *fmt = video.screen->format;
+	SDL_PixelFormat *fmt = NULL;
 
 	this->num_palettes = this->paletted = ((surf->format->BitsPerPixel==8) && surf->format->palette);
 
 	if (!this->paletted)
 		return;
+
+	if (video.screen && !params.use_opengl) {
+		fmt = video.screen->format;
+	}
 
 	surf_palette = surf->format->palette;
 
@@ -546,7 +567,7 @@ static void convert_tex_palette(render_texture_t *this, SDL_Surface *surf)
 		b = color->b;
 		a = 0xff;
 
-		if (params.use_opengl) {
+		if (!fmt) {
 			this->palettes[0][i] = (a<<24)|(r<<16)|(g<<8)|b;
 		} else {
 			this->palettes[0][i] = SDL_MapRGBA(fmt, r,g,b,a);
@@ -557,14 +578,21 @@ static void convert_tex_palette(render_texture_t *this, SDL_Surface *surf)
 
 static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 {
-	SDL_PixelFormat *fmt = video.screen->format;
+	SDL_PixelFormat *fmt = NULL;
 	SDL_Surface *tmp_surf;
 	int i,j;
+
+	if (video.screen && !params.use_opengl) {
+		fmt = video.screen->format;
+	}
 
 	/* Set bpp from texture, before resize */
 	this->bpp = surf->format->BytesPerPixel;
 	if (this->bpp>1) {
-		this->bpp = (fmt->BytesPerPixel==3 ? 4 : fmt->BytesPerPixel);
+		this->bpp = 4;
+		if (fmt) {
+			this->bpp = (fmt->BytesPerPixel==3 ? 4 : fmt->BytesPerPixel);
+		}
 	}
 	this->resize(this, surf->w,surf->h);
 
@@ -636,11 +664,15 @@ static void convert_surf_to_tex(render_texture_t *this, SDL_Surface *surf)
 		} else {
 			SDL_PixelFormat tmpFmt;
 
-			memcpy(&tmpFmt, fmt, sizeof(SDL_PixelFormat));
-			if (tmpFmt.BytesPerPixel == 3) {
-				/* Convert textures to 32bits, for 24bits video mode */
-				tmpFmt.BytesPerPixel = 4;
-				tmpFmt.BitsPerPixel = 32;
+			tmpFmt.BytesPerPixel = 4;
+			tmpFmt.BitsPerPixel = 32;
+			if (fmt) {
+				memcpy(&tmpFmt, fmt, sizeof(SDL_PixelFormat));
+				if (tmpFmt.BytesPerPixel == 3) {
+					/* Convert textures to 32bits, for 24bits video mode */
+					tmpFmt.BytesPerPixel = 4;
+					tmpFmt.BitsPerPixel = 32;
+				}
 			}
 
 			if (params.use_opengl) {
