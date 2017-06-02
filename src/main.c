@@ -149,14 +149,20 @@ int main(int argc, char **argv)
 	logMsg(1,"Calculated aspect ratio %d:%d\n", params.aspect_x, params.aspect_y);
 
 	video.setVideoMode(video.width, video.height, video.bpp);
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+	if (!video.window) {
+		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
+		FS_Shutdown();
+		exit(1);
+	}
+#else
 	if (!video.screen) {
 		fprintf(stderr, "Unable to create screen: %s\n", SDL_GetError());
 		FS_Shutdown();
 		exit(1);
 	}
 
-#if SDL_VERSION_ATLEAST(2,0,0)
-#else
 	SDL_WM_SetCaption(PACKAGE_STRING, PACKAGE_NAME);
 #endif
 
