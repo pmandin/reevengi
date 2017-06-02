@@ -92,7 +92,7 @@ void video_opengl_init(video_t *this)
 static void setVideoMode(int width, int height, int bpp)
 {
 	const int gl_bpp[4]={0,16,24,32};
-	int i;
+	int i, mode_found=0;
 	SDL_Surface *screen;
 	const char *extensions;
 
@@ -113,23 +113,26 @@ static void setVideoMode(int width, int height, int bpp)
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
 	/* Try with default bpp */
+	logMsg(3, "video_ogl: query %dx%d mode\n", width, height);
 	for (i=0;i<4;i++) {
 #if SDL_VERSION_ATLEAST(2,0,0)
 		video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED, width, height, video.flags);
 		if (video.window) {
 			video.gl_ctx = SDL_GL_CreateContext(video.window);
+			mode_found=1;
 			break;
 		}
 #else
 		screen = SDL_SetVideoMode(width, height, gl_bpp[i], video.flags);
 		if (screen) {
+			mode_found=1;
 			break;
 		}
 #endif
 	}
 
-	if (screen==NULL) {
+	if (!mode_found) {
 		/* Try with default resolution */
 		for (i=0;i<4;i++) {
 #if SDL_VERSION_ATLEAST(2,0,0)
