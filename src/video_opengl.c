@@ -112,10 +112,21 @@ static void setVideoMode(int width, int height, int bpp)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+	/* Resize window ? */
+	if (video.window && video.gl_ctx) {
+		logMsg(1, "video: resize window to %dx%d\n", width, height);
+		SDL_SetWindowSize(video.window, width, height);
+	}
+#endif
+
 	/* Try with default bpp */
 	logMsg(3, "video_ogl: query %dx%d mode\n", width, height);
 	for (i=0;i<4;i++) {
 #if SDL_VERSION_ATLEAST(2,0,0)
+		if (video.window && video.gl_ctx) {
+			break;
+		}
 		video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED, width, height, video.flags);
 		if (video.window) {
@@ -136,6 +147,9 @@ static void setVideoMode(int width, int height, int bpp)
 		/* Try with default resolution */
 		for (i=0;i<4;i++) {
 #if SDL_VERSION_ATLEAST(2,0,0)
+			if (video.window && video.gl_ctx) {
+				break;
+			}
 			video.window = SDL_CreateWindow(PACKAGE_STRING, SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED, 0, 0, video.flags);
 			if (video.window) {
@@ -152,7 +166,7 @@ static void setVideoMode(int width, int height, int bpp)
 	}
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-	if (video.window==NULL) {
+	if (!video.window) {
 		fprintf(stderr, "Can not set %dx%dx%d mode\n", width, height, bpp);
 		return;
 	}
