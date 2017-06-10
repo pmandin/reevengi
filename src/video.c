@@ -45,6 +45,10 @@
 /*--- Function prototypes ---*/
 
 static void shutDown(void);
+
+static void shutDown_sdl2(void);
+static void searchBiggestMode(int *w, int *h);
+
 static void findNearestMode(int *width, int *height, int bpp);
 static void setVideoMode(int width, int height, int bpp);
 static void swapBuffers(void);
@@ -118,7 +122,13 @@ static void shutDown(void)
 		video.num_list_rects = 0;
 	}
 
+	shutDown_sdl2();
+}
+
 #if SDL_VERSION_ATLEAST(2,0,0)
+
+static void shutDown_sdl2(void)
+{
 	if (video.screen) {
 		SDL_FreeSurface(video.screen);
 		video.screen=NULL;
@@ -135,19 +145,12 @@ static void shutDown(void)
 		SDL_DestroyWindow(video.window);
 		video.window=NULL;
 	}
-#endif
 }
 
-/* Search biggest video mode, calculate its ratio */
-
-void video_detect_aspect(void)
+static void searchBiggestMode(int *w, int *h)
 {
-	SDL_Rect **modes;
-	SDL_PixelFormat pixelFormat;
-	int i, j, max_w = 0, max_h = 0, ratio_w[4];
-	const int bpps[5]={32,24,16,15,8};
+	int i;
 
-#if SDL_VERSION_ATLEAST(2,0,0)
 	for(i=0; i<SDL_GetNumDisplayModes(0); i++) {
 		SDL_DisplayMode displayMode;
 
@@ -156,12 +159,36 @@ void video_detect_aspect(void)
 		}
 
 		logMsg(3, "video: checking mode %dx%d\n", displayMode.w, displayMode.h);
-		if ((displayMode.w>=max_w) && (displayMode.h>=max_h)) {
-			max_w = displayMode.w;
-			max_h = displayMode.h;
+		if ((displayMode.w>=*w) && (displayMode.h>=*h)) {
+			*w = displayMode.w;
+			*h = displayMode.h;
 		}
 	}
-#else
+}
+
+static void findNearestMode(int *width, int *height, int bpp)
+{
+	SDL_DisplayMode dwmode;
+
+	SDL_GetDesktopDisplayMode(0, &dwmode);
+	*width = dwmode.w;
+	*height = dwmode.h;
+}
+
+#else	/* SDL 1 */
+
+static void shutDown_sdl2(void)
+{
+}
+
+static void searchBiggestMode(int *w, int *h)
+{
+	const int bpps[5]={32,24,16,15,8};
+
+	int i, j;
+	SDL_Rect **modes;
+	SDL_PixelFormat pixelFormat;
+
 	memset(&pixelFormat, 0, sizeof(SDL_PixelFormat));
 
 	for (j=0; j<5; j++) {
@@ -179,45 +206,16 @@ void video_detect_aspect(void)
 		logMsg(3, "video: checking modes for %d bpp\n", bpps[j]);
 		for (i=0; modes[i]; ++i) {
 			logMsg(3, "video: checking mode %dx%d\n", modes[i]->w, modes[i]->h);
-			if ((modes[i]->w>=max_w) && (modes[i]->h>=max_h)) {
-				max_w = modes[i]->w;
-				max_h = modes[i]->h;
+			if ((modes[i]->w>=*w) && (modes[i]->h>=*h)) {
+				*w = modes[i]->w;
+				*h = modes[i]->h;
 			}
 		}
-	}
-#endif
-
-	logMsg(2,"Biggest video mode: %dx%d\n", max_w, max_h);
-	if ((max_w == 0) && (max_h == 0)) {
-		return;
-	}
-
-	/* Calculate nearest aspect ratio */
-	ratio_w[0] = (max_h * 5) / 4;
-	ratio_w[1] = (max_h * 4) / 3;
-	ratio_w[2] = (max_h * 16) / 10;
-	ratio_w[3] = (max_h * 16) / 9;
-
-	if (max_w < (ratio_w[0]+ratio_w[1])>>1) {
-		params.aspect_x = 5; params.aspect_y = 4;
-	} else if (max_w < (ratio_w[1]+ratio_w[2])>>1) {
-		params.aspect_x = 4; params.aspect_y = 3;
-	} else if (max_w < (ratio_w[2]+ratio_w[3])>>1) {
-		params.aspect_x = 16; params.aspect_y = 10;
-	} else {
-		params.aspect_x = 16; params.aspect_y = 9;
 	}
 }
 
 static void findNearestMode(int *width, int *height, int bpp)
 {
-#if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_DisplayMode dwmode;
-
-	SDL_GetDesktopDisplayMode(0, &dwmode);
-	*width = dwmode.w;
-	*height = dwmode.h;
-#else
 	SDL_Rect **modes;
 	SDL_PixelFormat pixelFormat;
 	int i, j=-1, pixcount, minpixcount, pixcount2, w=*width, h=*height;
@@ -260,7 +258,38 @@ static void findNearestMode(int *width, int *height, int bpp)
 		*width = modes[j]->w;
 		*height = modes[j]->h;
 	}
+}
+
 #endif
+
+/* Search biggest video mode, calculate its ratio */
+
+void video_detect_aspect(void)
+{
+	int max_w=0, max_h=0, ratio_w[4];
+
+	searchBiggestMode(&max_w, &max_h);
+
+	logMsg(2,"Biggest video mode: %dx%d\n", max_w, max_h);
+	if ((max_w == 0) && (max_h == 0)) {
+		return;
+	}
+
+	/* Calculate nearest aspect ratio */
+	ratio_w[0] = (max_h * 5) / 4;
+	ratio_w[1] = (max_h * 4) / 3;
+	ratio_w[2] = (max_h * 16) / 10;
+	ratio_w[3] = (max_h * 16) / 9;
+
+	if (max_w < (ratio_w[0]+ratio_w[1])>>1) {
+		params.aspect_x = 5; params.aspect_y = 4;
+	} else if (max_w < (ratio_w[1]+ratio_w[2])>>1) {
+		params.aspect_x = 4; params.aspect_y = 3;
+	} else if (max_w < (ratio_w[2]+ratio_w[3])>>1) {
+		params.aspect_x = 16; params.aspect_y = 10;
+	} else {
+		params.aspect_x = 16; params.aspect_y = 9;
+	}
 }
 
 static void setVideoMode(int width, int height, int bpp)
