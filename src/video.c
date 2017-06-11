@@ -42,6 +42,12 @@
 
 /*#undef DIRTY_RECTS*/
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define REEVENGI_SDLFULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
+#else
+#define REEVENGI_SDLFULLSCREEN_FLAG SDL_FULLSCREEN
+#endif
+
 /*--- Function prototypes ---*/
 
 static void shutDown(void);
@@ -297,12 +303,7 @@ static void setVideoMode(int width, int height, int bpp)
 	int i, sw,sh;
 
 	/* Search nearest fullscreen mode */
-#if SDL_VERSION_ATLEAST(2,0,0)
-	if (video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
-#else
-	if (video.flags & SDL_FULLSCREEN)
-#endif
-	{
+	if (video.flags & REEVENGI_SDLFULLSCREEN_FLAG) {
 		findNearestMode(&width, &height, bpp);
 		logMsg(1, "video: found nearest %dx%d\n", width, height);
 	}
@@ -544,11 +545,7 @@ static void initViewport(void)
 	int pos_x, pos_y, scr_w, scr_h;
 
 	/* Only keep non 5:4 ratio in fullscreen */
-#if SDL_VERSION_ATLEAST(2,0,0)
-	if ((video.flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
-#else
-	if ((video.flags & SDL_FULLSCREEN) == SDL_FULLSCREEN)
-#endif
+	if ((video.flags & REEVENGI_SDLFULLSCREEN_FLAG) == REEVENGI_SDLFULLSCREEN_FLAG)
 	{
 		if ((params.aspect_x != 5) || (params.aspect_y != 4)) {
 			cur_asp_w = params.aspect_x * 3;
