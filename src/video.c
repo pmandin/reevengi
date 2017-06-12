@@ -181,6 +181,26 @@ static void findNearestMode(int *width, int *height, int bpp)
 	*height = dwmode.h;
 }
 
+static void swapBuffers(void)
+{
+	int i;
+
+	SDL_UpdateTexture(video.texture, NULL, video.screen->pixels, video.screen->pitch);
+	SDL_RenderCopy(video.renderer, video.texture, NULL, NULL);
+	SDL_RenderPresent(video.renderer);
+
+	SDL_RenderClear(video.renderer);
+
+#ifdef DIRTY_RECTS
+	i = updateDirtyRects();
+
+	SDL_UpdateWindowSurfaceRects(video.window, video.list_rects, i);
+	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
+#else
+	SDL_UpdateRect(video.screen, 0,0,0,0);
+#endif
+}
+
 #else	/* SDL 1 */
 
 static void shutDown_sdl2(void)
@@ -264,6 +284,26 @@ static void findNearestMode(int *width, int *height, int bpp)
 		*width = modes[j]->w;
 		*height = modes[j]->h;
 	}
+}
+
+static void swapBuffers(void)
+{
+	int i;
+
+	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
+		video.numfb ^= 1;
+		SDL_Flip(video.screen);
+		return;
+	}
+
+#ifdef DIRTY_RECTS
+	i = updateDirtyRects();
+
+	SDL_UpdateRects(video.screen, i, video.list_rects);
+	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
+#else
+	SDL_UpdateRect(video.screen, 0,0,0,0);
+#endif
 }
 
 #endif
@@ -430,38 +470,6 @@ static void countFps(void)
 		sprintf(fps_fmt, "fps: %d", cur_fps);
 		render_text(fps_fmt, video.viewport.w-8*8, 0);
 	}
-}
-
-static void swapBuffers(void)
-{
-	int i;
-
-#if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_UpdateTexture(video.texture, NULL, video.screen->pixels, video.screen->pitch);
-	SDL_RenderCopy(video.renderer, video.texture, NULL, NULL);
-	SDL_RenderPresent(video.renderer);
-
-	SDL_RenderClear(video.renderer);
-#else
-	if ((video.flags & SDL_DOUBLEBUF)==SDL_DOUBLEBUF) {
-		video.numfb ^= 1;
-		SDL_Flip(video.screen);
-		return;
-	}
-#endif
-
-#ifdef DIRTY_RECTS
-	i = updateDirtyRects();
-
-# if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_UpdateWindowSurfaceRects(video.window, video.list_rects, i);
-# else
-	SDL_UpdateRects(video.screen, i, video.list_rects);
-# endif
-	upload_rects[video.numfb]->clear(upload_rects[video.numfb]);
-#else
-	SDL_UpdateRect(video.screen, 0,0,0,0);
-#endif
 }
 
 /* Update background from rectangle list */
