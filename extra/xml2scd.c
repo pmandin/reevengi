@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <libxml/xmlversion.h>
 #include <libxml/xmlreader.h>
@@ -198,7 +199,8 @@ void generateTypes(xmlDocPtr doc)
 			++j;
 		}
 
-		printf("\n" "typedef struct {\n");
+		printf(	"\n"
+			"typedef struct {\n");
 		generateTypeFields(node);		
 		printf("} script_inst_%s_t;\n", inst_name_low);
 
@@ -206,8 +208,10 @@ void generateTypes(xmlDocPtr doc)
 	}
 
 	/* Union containing all instructions */
-	printf("\n"
-		"typedef union {\n"
+	printf(	"\n"
+		"typedef union script_inst_u script_inst_t;\n"
+		"\n"
+		"union script_inst_u {\n"
 		"\tUint8\topcode;\n");
 
 	nodeset = path->nodesetval;
@@ -230,7 +234,7 @@ void generateTypes(xmlDocPtr doc)
 		free(inst_name_low);
 	}
 
-	printf("} script_inst_t;\n");
+	printf("};\n");
 
 	xmlXPathFreeObject(path);
 }
