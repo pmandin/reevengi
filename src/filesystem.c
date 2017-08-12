@@ -39,6 +39,12 @@
 
 /*--- Defines ---*/
 
+#if ((PHYSFS_VER_MAJOR==2) && (PHYSFS_VER_MINOR>=1)) || (PHYSFS_VER_MAJOR>2)
+#define REEVENGI_PHYSFS_21	1
+#else
+#define REEVENGI_PHYSFS_21	0
+#endif
+
 /*--- Global variables ---*/
 
 /*---- Variables ---*/
@@ -92,7 +98,12 @@ int FS_Init(char *argv0)
 int FS_AddArchive(const char *filename)
 {
 	int result = 1;
-	if (PHYSFS_addToSearchPath(filename, 1)) {
+#if (PHYSFS_VER_MAJOR>=2)
+	if (PHYSFS_mount(filename, NULL, 1))
+#else
+	if (PHYSFS_addToSearchPath(filename, 1))
+#endif
+	{
 		logMsg(1,"fs: Added %s\n", filename);
 		result = 0;
 	} else {
@@ -161,14 +172,14 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 			free(lo_filename);
 		}
 	}
-	if (curfile==NULL) {
-/*		fprintf(stderr, "fs: can not open %s\n", filename);*/
-		return NULL;
-	}
 #else
 	curfile=PHYSFS_openRead(filename2);
 #endif
-	
+	if (curfile==NULL) {
+		fprintf(stderr, "fs: can not open %s\n", filename);
+		return NULL;
+	}
+
 	curlength = PHYSFS_fileLength(curfile);
 	if (filelength!=NULL) {
 		*filelength = curlength;
@@ -176,13 +187,17 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 
 	buffer = malloc(curlength);
 	if (buffer == NULL) {
-/*		fprintf(stderr,"fs: not enough memory for %s\n",filename);*/
+		fprintf(stderr,"fs: not enough memory for %s\n",filename);
 		PHYSFS_close(curfile);
 		free(filename2);
 		return NULL;
 	}
 
-	PHYSFS_read(curfile, buffer, curlength, 1);
+#ifdef REEVENGI_PHYSFS_21
+    PHYSFS_readBytes(curfile, buffer, curlength * 1);
+#else
+    PHYSFS_read(curfile, buffer, curlength, 1);
+#endif
 	PHYSFS_close(curfile);
 
 	free(filename2);
@@ -216,7 +231,12 @@ int FS_Save(const char *filename, void *buffer, PHYSFS_sint64 length)
 		return 0;
 	}
 
-	if (PHYSFS_write(curfile, buffer, length, 1) != 1) {
+#ifdef REEVENGI_PHYSFS_21
+	if (PHYSFS_writeBytes(curfile, buffer, length * 1) != length *1)
+#else
+	if (PHYSFS_write(curfile, buffer, length, 1) != 1)
+#endif
+	{
 		/*fprintf(stderr, "Unable to write %d bytes\n", length);*/
 		return 0;
 	}
