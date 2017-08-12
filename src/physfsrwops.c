@@ -43,6 +43,12 @@
 #define	REEVENGI_PHYSFS_WRITETYPE	int
 #endif
 
+#if ((PHYSFS_VER_MAJOR==2) && (PHYSFS_VER_MINOR>=1)) || (PHYSFS_VER_MAJOR>2)
+#define REEVENGI_PHYSFS_21	1
+#else
+#define REEVENGI_PHYSFS_21	0
+#endif
+
 static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_SEEKTYPE offset, int whence)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
@@ -120,7 +126,11 @@ static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_
 static REEVENGI_PHYSFS_READTYPE physfsrwops_read(SDL_RWops *rw, void *ptr, REEVENGI_PHYSFS_READTYPE size, REEVENGI_PHYSFS_READTYPE maxnum)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
+#ifdef REEVENGI_PHYSFS_21
+    PHYSFS_sint64 rc = PHYSFS_readBytes(handle, ptr, size * maxnum);
+#else
     PHYSFS_sint64 rc = PHYSFS_read(handle, ptr, size, maxnum);
+#endif
     if (rc != maxnum)
     {
         if (!PHYSFS_eof(handle)) /* not EOF? Must be an error. */
@@ -134,8 +144,12 @@ static REEVENGI_PHYSFS_READTYPE physfsrwops_read(SDL_RWops *rw, void *ptr, REEVE
 static REEVENGI_PHYSFS_WRITETYPE physfsrwops_write(SDL_RWops *rw, const void *ptr, REEVENGI_PHYSFS_WRITETYPE size, REEVENGI_PHYSFS_WRITETYPE num)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
+#ifdef REEVENGI_PHYSFS_21
+    PHYSFS_sint64 rc = PHYSFS_writeBytes(handle, ptr, size * num);
+#else
     PHYSFS_sint64 rc = PHYSFS_write(handle, ptr, size, num);
-    if (rc != num)
+#endif
+	if (rc != num)
         SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
 
     return((REEVENGI_PHYSFS_WRITETYPE) rc);
