@@ -126,7 +126,7 @@ static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_
 static REEVENGI_PHYSFS_READTYPE physfsrwops_read(SDL_RWops *rw, void *ptr, REEVENGI_PHYSFS_READTYPE size, REEVENGI_PHYSFS_READTYPE maxnum)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
-#ifdef REEVENGI_PHYSFS_21
+#if (REEVENGI_PHYSFS_21 == 1)
     PHYSFS_sint64 rc = PHYSFS_readBytes(handle, ptr, size * maxnum);
 #else
     PHYSFS_sint64 rc = PHYSFS_read(handle, ptr, size, maxnum);
@@ -144,7 +144,7 @@ static REEVENGI_PHYSFS_READTYPE physfsrwops_read(SDL_RWops *rw, void *ptr, REEVE
 static REEVENGI_PHYSFS_WRITETYPE physfsrwops_write(SDL_RWops *rw, const void *ptr, REEVENGI_PHYSFS_WRITETYPE size, REEVENGI_PHYSFS_WRITETYPE num)
 {
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
-#ifdef REEVENGI_PHYSFS_21
+#if (REEVENGI_PHYSFS_21 == 1)
     PHYSFS_sint64 rc = PHYSFS_writeBytes(handle, ptr, size * num);
 #else
     PHYSFS_sint64 rc = PHYSFS_write(handle, ptr, size, num);

@@ -160,7 +160,7 @@ void *FS_Load(const char *filename, PHYSFS_sint64 *filelength)
 		return NULL;
 	}
 
-#ifdef REEVENGI_PHYSFS_21
+#if (REEVENGI_PHYSFS_21 == 1)
     PHYSFS_readBytes(curfile, buffer, curlength * 1);
 #else
     PHYSFS_read(curfile, buffer, curlength, 1);
@@ -198,7 +198,7 @@ int FS_Save(const char *filename, void *buffer, PHYSFS_sint64 length)
 		return 0;
 	}
 
-#ifdef REEVENGI_PHYSFS_21
+#if (REEVENGI_PHYSFS_21 == 1)
 	if (PHYSFS_writeBytes(curfile, buffer, length * 1) != length *1)
 #else
 	if (PHYSFS_write(curfile, buffer, length, 1) != 1)
