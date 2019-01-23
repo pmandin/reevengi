@@ -187,7 +187,7 @@ void generateTypes(xmlDocPtr doc)
 	nodeset = path->nodesetval;
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
-				
+
 		node = nodeset->nodeTab[i];
 		inst_name = xmlGetProp(node, "name");
 
@@ -201,7 +201,7 @@ void generateTypes(xmlDocPtr doc)
 
 		printf(	"\n"
 			"typedef struct {\n");
-		generateTypeFields(node);		
+		generateTypeFields(node);
 		printf("} script_inst_%s_t;\n", inst_name_low);
 
 		free(inst_name_low);
@@ -217,7 +217,7 @@ void generateTypes(xmlDocPtr doc)
 	nodeset = path->nodesetval;
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
-				
+
 		node = nodeset->nodeTab[i];
 		inst_name = xmlGetProp(node, "name");
 
@@ -265,7 +265,7 @@ void generateEnums(xmlDocPtr doc)
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
 		xmlChar *enum_name;
-	
+
 		node = nodeset->nodeTab[i];
 		enum_name = xmlGetProp(node, "name");
 
@@ -323,7 +323,7 @@ void generateTypeUnions(xmlDocPtr doc)
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
 		xmlChar *union_name;
-	
+
 		node = nodeset->nodeTab[i];
 		union_name = xmlGetProp(node, "name");
 
@@ -365,7 +365,7 @@ void generateTypeUnionStructs(xmlNodePtr node, int gentype /* 0: complete, 1: on
 		} else {
 			printf(	"\n"
 				"typedef struct {\n");
-			generateTypeFields(child);		
+			generateTypeFields(child);
 			printf(	"} %s_%s_t;\n", union_name, struct_name);
 		}
 	}
@@ -573,7 +573,7 @@ void generateDumpFields(xmlDocPtr doc, xmlNodePtr node, char *name_low, int *has
 
 		if (strcmp(field_type, "union")==0) {
 			xmlChar *switch_name;
-			
+
 			switch_name = xmlGetProp(child, "switch");
 			if (switch_name) {
 				sprintf(swapValue, "%s->i_%s.%s", DUMP_INST_PTR, name_low, switch_name);
@@ -734,13 +734,13 @@ void generateDumpFieldUnions(xmlDocPtr doc, xmlNodePtr node, char *name_low, cha
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr child;
 		xmlChar *child_name;
-		
+
 		child = nodeset->nodeTab[i];
 
 		child_name = xmlGetProp(child, "name");
 		if (strcmp(child_name, union_name)!=0) {
 			continue;
-		}		
+		}
 
 		sprintf(swapValue, "%s.%s", name_low, child_name);
 
@@ -815,7 +815,7 @@ void generateLengths(xmlDocPtr doc)
 	nodeset = path->nodesetval;
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
-				
+
 		node = nodeset->nodeTab[i];
 
 		inst_name = xmlGetProp(node, "name");
@@ -855,10 +855,34 @@ void generateLengths(xmlDocPtr doc)
 	xmlXPathFreeObject(path);
 }
 
+void generateDescription(xmlDocPtr doc, xmlNodePtr node)
+{
+	xmlChar *content;
+	xmlNodePtr child;
+
+	for (child = node->children; child; child = child->next) {
+		xmlChar *struct_name, *struct_id;
+
+		if (child->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+
+		if (strcmp(child->name, "description")!=0) {
+			continue;
+		}
+
+		content = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
+		printf("%s", content);
+		xmlFree(content);
+
+		break;
+	}
+}
+
 void generateRewiki(xmlDocPtr doc)
 {
 	xmlXPathObjectPtr path;
-	xmlChar *inst_name, *inst_id;
+	xmlChar *inst_name, *inst_id, *inst_desc;
 	char *inst_name_up, *inst_name_low;
 	xmlNodeSetPtr nodeset;
 	int i, j;
@@ -875,7 +899,7 @@ void generateRewiki(xmlDocPtr doc)
 	nodeset = path->nodesetval;
 	for (i=0; i < nodeset->nodeNr; i++) {
 		xmlNodePtr node;
-				
+
 		node = nodeset->nodeTab[i];
 
 		inst_name = xmlGetProp(node, "name");
@@ -890,11 +914,13 @@ void generateRewiki(xmlDocPtr doc)
 		}
 
 		printf(	"|-\n"
-			"|%s||%s||-||%s\n", inst_id, inst_name, "description");
+			"|%s||%s||-||", inst_id, inst_name);
+		generateDescription(doc, node);
+		printf("\n");
 
 		printf(	"<pre><nowiki>\n"
 			"typedef struct {\n");
-		generateTypeFields(node);		
+		generateTypeFields(node);
 		printf(	"} script_inst_%s_t;\n"
 			"</nowiki></pre>\n",
 			inst_name_low);
