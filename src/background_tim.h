@@ -24,9 +24,12 @@
 /*--- Defines ---*/
 
 #define MAGIC_TIM	0x10
-#define TIM_TYPE_4	8
-#define TIM_TYPE_8	9
-#define TIM_TYPE_16	2
+
+#define TIM_TYPE_WITHPAL	(1<<3)
+#define TIM_TYPE_BPP4		(0 | TIM_TYPE_WITHPAL)
+#define TIM_TYPE_BPP8		(1 | TIM_TYPE_WITHPAL)
+#define TIM_TYPE_BPP15		2
+#define TIM_TYPE_BPP24		3
 
 /*--- Types ---*/
 

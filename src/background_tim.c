@@ -69,7 +69,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 	dblpitch = 4;
 	image_offset = 16;
 	switch (tim_header.type) {
-		case TIM_TYPE_4:
+		case TIM_TYPE_BPP4:
 			scale_width = 4;
 			palette_size = 16;
 			bpp = 8;
@@ -77,7 +77,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 			dblpitch = 1;
 			image_offset = tim_header.offset + 16;
 			break;
-		case TIM_TYPE_8:
+		case TIM_TYPE_BPP8:
 			scale_width = 2;
 			palette_size = 256;
 			bpp = 8;
@@ -85,7 +85,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 			dblpitch = 2;
 			image_offset = tim_header.offset + 16;
 			break;
-		case TIM_TYPE_16:
+		case TIM_TYPE_BPP15:
 		default:
 			break;
 	}
@@ -154,7 +154,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 	}
 
 	switch(tim_header.type) {
-		case TIM_TYPE_4:
+		case TIM_TYPE_BPP4:
 			{
 				Uint8 *src, *dst;
 				int src_pitch = (w>>1) + row_offset;
@@ -181,7 +181,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 				}
 			}
 			break;
-		case TIM_TYPE_8:
+		case TIM_TYPE_BPP8:
 			{
 				Uint8 *src, *dst;
 				int src_pitch = w + row_offset;
@@ -201,7 +201,7 @@ SDL_Surface *background_tim_load(SDL_RWops *src, int row_offset)
 				}
 			}
 			break;
-		case TIM_TYPE_16:
+		case TIM_TYPE_BPP15:
 			{
 				Uint16 *src, *dst;
 				int src_pitch = w + row_offset;

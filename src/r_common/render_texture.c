@@ -273,15 +273,15 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 /*	bytes_per_pixel = 1;*/
 	paletted = 1;
 	switch(tim_type) {
-		case TIM_TYPE_4:
+		case TIM_TYPE_BPP4:
 			logMsg(3, "texture: 4 bits source\n");
 			w <<= 2;
 			break;
-		case TIM_TYPE_8:
+		case TIM_TYPE_BPP8:
 			logMsg(3, "texture: 8 bits source\n");
 			w <<= 1;
 			break;
-		case TIM_TYPE_16:
+		case TIM_TYPE_BPP15:
 			logMsg(3, "texture: 16 bits source\n");
 			paletted = 0;
 /*			bytes_per_pixel=2;
@@ -327,11 +327,11 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 
 	/* Set bpp from texture, before resize */
 	switch(tim_type) {
-		case TIM_TYPE_4:
-		case TIM_TYPE_8:
+		case TIM_TYPE_BPP4:
+		case TIM_TYPE_BPP8:
 			this->bpp = 1;
 			break;
-		case TIM_TYPE_16:
+		case TIM_TYPE_BPP15:
 			if (params.use_opengl) {
 				this->bpp = 2;
 			}
@@ -345,7 +345,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 
 	/* Copy data */
 	switch(tim_type) {
-		case TIM_TYPE_4:
+		case TIM_TYPE_BPP4:
 			{
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
 				Uint8 *tex_pixels = this->pixels;
@@ -361,7 +361,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				}
 			}
 			break;
-		case TIM_TYPE_8:
+		case TIM_TYPE_BPP8:
 			{
 				Uint8 *src_pixels = &((Uint8 *) tim_ptr)[img_offset];
 				Uint8 *tex_pixels = this->pixels;
@@ -374,7 +374,7 @@ static void load_from_tim(render_texture_t *this, void *tim_ptr)
 				}
 			}
 			break;
-		case TIM_TYPE_16:
+		case TIM_TYPE_BPP15:
 			{
 				int r,g,b,a, color, bytesPerPixel;
 				Uint16 *src_pixels = (Uint16 *) (&((Uint8 *) tim_ptr)[img_offset]);
