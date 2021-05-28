@@ -167,8 +167,7 @@ void view_movie_init_sdl2(void);
 void movie_init(void)
 {
 #ifdef ENABLE_MOVIES
-	logMsg(2, "movie: av_register_all\n");
-	av_register_all();
+	logMsg(2, "movie: init\n");
 
 	memset(&view_movie, 0, sizeof(view_movie));
 
@@ -430,7 +429,7 @@ static int movie_start(const char *filename, SDL_Surface *screen)
 			fprintf(stderr, "Can not read stream parameters\n");
 			continue;
 		}
-		av_codec_set_pkt_timebase(cc, stream->time_base);
+		cc->pkt_timebase = stream->time_base;
 
 		logMsg(2, "movie: avcodec_find_decoder 0x%08x\n", cc->codec_id);
 		codec = avcodec_find_decoder(cc->codec_id);
