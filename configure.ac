@@ -239,6 +239,12 @@ if test "x$enable_assert" = "xno"; then
 	AC_DEFINE(NDEBUG, 1, [Define if you do not want debugging with assert])
 fi
 
+# Unless the user specified ARFLAGS, force it to be cr
+AC_ARG_VAR(ARFLAGS, [Flags for the archiver, defaults to <cr> if not set])
+if test "x${ARFLAGS}" != "xset"; then
+  ARFLAGS="cr"
+fi
+
 # Outputs
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
