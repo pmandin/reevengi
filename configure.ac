@@ -91,6 +91,7 @@ fi
 
 if test "x$HAVE_SDL2" = "xno"; then
 	AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
+	SDL_CFLAGS="$SDL_CFLAGS -DNO_SDL_GLEXT=1"
 fi
 
 # Zlib
