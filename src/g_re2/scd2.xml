@@ -368,7 +368,7 @@
     </struct>
   </union>
 
-  <!-- 0x00-0x0f --> 
+  <!-- 0x00-0x0f -->
   <inst name="Nop" id="0x00">
     <!-- usage: room1000 -->
     <description>NO Operation.
@@ -378,16 +378,17 @@
   </inst>
   <inst name="Evt_end" id="0x01">
     <!-- usage: room1000 -->
-    <description>*MAYBE* Terminate and disable current event execution.</description>
+    <description>Exit current function and return a value.</description>
     <field name="opcode" type="Uint8" />
-    <field name="dummy" type="Uint8" />
+    <field name="ret_value" type="Uint8" />
   </inst>
   <inst name="Evt_next" id="0x02">
     <!-- usage: room1000 -->
-    <description>*MAYBE* Skip temporarily further execution of current event (equivalent to Sleep 1).</description>
+    <description>Wait for any player input (for example to answer a Yes/No question), before executing further script instructions.</description>
     <field name="opcode" type="Uint8" />
   </inst>
   <inst name="Evt_chain" id="0x03">
+    <description>Reinitialize script execution data before executing new function ?</description>
     <field name="opcode" type="Uint8" />
     <field name="unknown0" type="Uint8" />
     <field name="unknown1" type="Uint8" />
@@ -395,7 +396,11 @@
   </inst>
   <inst name="Evt_exec" id="0x04">
     <!-- usage: room1000 -->
-    <description>*MAYBE* Add another event to be executed regulary.</description>
+    <description>
+      This instruction will execute the embedded two-byte instruction if the condition is true.
+      When condition is 0xff, instruction is executed whenever there is a camera switch.
+      Several instructions can be defined to be called when condition is true.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="cond" type="Uint8" />
     <field name="ex_opcode" type="Uint8"><!-- 2-bytes instruction to execute -->
@@ -422,6 +427,7 @@
     <!-- usage: room1000 -->
     <description>ELSE block instruction start.
       Block to execute if precedent IF block must be stopped if some condition evaluated to FALSE.
+      Note: it's either IF/ENDIF, or IF/ELSE; there is no IF/ELSE/ENDIF sequence.
     </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
@@ -436,12 +442,16 @@
   </inst>
   <inst name="Sleep" id="0x09">
     <!-- usage: room1000 -->
-    <description>Initialize Sleep.</description>
+    <description>Initialize Sleep.
+      In the bytecode, you will find bytes 09 0a NN NN,
+      and the script will only add 1 to current bytecode position for instruction 0x09,
+      to get to instruction 0x0a, and process the sleep loop.
+    </description>
     <field name="opcode" type="Uint8" />
     <field name="dummy" type="Uint8" />
     <field name="count" type="Uint16" base="10">
       <description>Number of game ticks to sleep.
-	Game logic runs at 30 Hz, so 30 ticks per second.
+        Game logic runs at 30 Hz, so 30 ticks per second.
       </description>
     </field>
   </inst>
