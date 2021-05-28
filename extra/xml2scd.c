@@ -893,7 +893,7 @@ void generateRewiki(xmlDocPtr doc)
 	}
 
 	printf(	"{|\n"
-		"!Byte!!Instruction!!Length!!Description\n");
+		"!Byte!!Instruction!!Description\n");
 
 	/* Each instruction */
 	nodeset = path->nodesetval;
@@ -914,7 +914,7 @@ void generateRewiki(xmlDocPtr doc)
 		}
 
 		printf(	"|-\n"
-			"|%s||%s||-||", inst_id, inst_name);
+			"|%s||%s||", inst_id, inst_name);
 		generateDescription(doc, node);
 		printf("\n");
 
