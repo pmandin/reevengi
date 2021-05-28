@@ -78,8 +78,14 @@ fi
 
 # SDL2
 
+AC_ARG_ENABLE(sdl2,
+	[  --enable-sdl2           Use SDL2 instead of SDL1 (default=yes)],
+	[WANT_SDL2=$withval], [WANT_SDL2=yes])
+
 HAVE_SDL2="no"
-AM_PATH_SDL2(2.0.1, HAVE_SDL2="yes")
+if test "x$WANT_SDL2" = "xyes"; then
+	AM_PATH_SDL2(2.0.1, HAVE_SDL2="yes")
+fi
 
 # SDL
 
