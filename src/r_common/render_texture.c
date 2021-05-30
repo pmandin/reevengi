@@ -96,6 +96,7 @@ render_texture_t *render_texture_create(int flags)
 #if SDL_VERSION_ATLEAST(2,0,0)
 	tex->bpp = tex->format.BytesPerPixel = 4;
 	tex->format.format = SDL_PIXELFORMAT_RGBA8888;
+	tex->format.palette = NULL;
 	SDL_PixelFormatEnumToMasks(tex->format.format,
 		&bpp,
 		&(tex->format.Rmask),
