@@ -65,7 +65,12 @@ static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_
         if (current == -1)
         {
             SDL_SetError("Can't find position in file: %s",
-                          PHYSFS_getLastError());
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                         PHYSFS_getLastError()
+#endif
+            );
             return(-1);
         } /* if */
 
@@ -87,7 +92,13 @@ static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_
         PHYSFS_sint64 len = PHYSFS_fileLength(handle);
         if (len == -1)
         {
-            SDL_SetError("Can't find end of file: %s", PHYSFS_getLastError());
+            SDL_SetError("Can't find end of file: %s",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                         PHYSFS_getLastError()
+#endif
+            );
             return(-1);
         } /* if */
 
@@ -115,7 +126,13 @@ static REEVENGI_PHYSFS_SEEKTYPE physfsrwops_seek(SDL_RWops *rw, REEVENGI_PHYSFS_
 
     if (!PHYSFS_seek(handle, (PHYSFS_uint64) pos))
     {
-        SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
+        SDL_SetError("PhysicsFS error: %s",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                     PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                     PHYSFS_getLastError()
+#endif
+        );
         return(-1);
     } /* if */
 
@@ -133,8 +150,15 @@ static REEVENGI_PHYSFS_READTYPE physfsrwops_read(SDL_RWops *rw, void *ptr, REEVE
 #endif
     if (rc != maxnum)
     {
-        if (!PHYSFS_eof(handle)) /* not EOF? Must be an error. */
-            SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
+        if (!PHYSFS_eof(handle)) { /* not EOF? Must be an error. */
+            SDL_SetError("PhysicsFS error: %s",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                     PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                     PHYSFS_getLastError()
+#endif
+            );
+        }
     } /* if */
 
     return((REEVENGI_PHYSFS_READTYPE) rc);
@@ -149,8 +173,15 @@ static REEVENGI_PHYSFS_WRITETYPE physfsrwops_write(SDL_RWops *rw, const void *pt
 #else
     PHYSFS_sint64 rc = PHYSFS_write(handle, ptr, size, num);
 #endif
-	if (rc != num)
-        SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
+	if (rc != num) {
+        SDL_SetError("PhysicsFS error: %s",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                     PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                     PHYSFS_getLastError()
+#endif
+        );
+    }
 
     return((REEVENGI_PHYSFS_WRITETYPE) rc);
 } /* physfsrwops_write */
@@ -161,7 +192,13 @@ static int physfsrwops_close(SDL_RWops *rw)
     PHYSFS_File *handle = (PHYSFS_File *) rw->hidden.unknown.data1;
     if (!PHYSFS_close(handle))
     {
-        SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
+        SDL_SetError("PhysicsFS error: %s",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                     PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                     PHYSFS_getLastError()
+#endif
+        );
         return(-1);
     } /* if */
 
@@ -174,9 +211,15 @@ static SDL_RWops *create_rwops(PHYSFS_File *handle)
 {
     SDL_RWops *retval = NULL;
 
-    if (handle == NULL)
-        SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
-    else
+    if (handle == NULL) {
+        SDL_SetError("PhysicsFS error: %s",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+                     PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+                     PHYSFS_getLastError()
+#endif
+        );
+    } else
     {
         retval = SDL_AllocRW();
         if (retval != NULL)

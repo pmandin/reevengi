@@ -142,27 +142,40 @@ fi
 
 # physfs
 
-TMP_LIBS=$LIBS
-TMP_CFLAGS=$CFLAGS
-LIBS="$LIBS $ZLIB_LIBS"
-AC_ARG_WITH([physfs-prefix],
-	[  --with-physfs-prefix=PFX Prefix where Physfs is installed (optional)],
-	[WITH_PHYSFS_PFX="$withval"],
-	[WITH_PHYSFS_PFX="/usr"])
-if test "x$WITH_PHYSFS_PFX"  != "x"; then
-	CFLAGS="$CFLAGS -I${WITH_PHYSFS_PFX}/include"
-	LIBS="$LIBS -L${WITH_PHYSFS_PFX}/lib"
-fi
-AC_CHECK_HEADER(physfs.h, have_physfs_h=yes, have_physfs_h=no)
-AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
-if test "x$have_physfs_h" = "xyes" -a "x$have_physfs_lib" = "xyes"; then
-	PHYSFS_CFLAGS="-I${WITH_PHYSFS_PFX}/include"
-	PHYSFS_LIBS="-L${WITH_PHYSFS_PFX}/lib -lphysfs"
+if test "x$PKG_CONFIG" != "x"; then
+	PKG_CHECK_MODULES([PHYSFS], [physfs], [have_physfs=yes], [have_physfs=no])
+	if [[ "x$have_physfs" = "xyes" ]]; then
+		AC_DEFINE([HAVE_PHYSFS], 1, [Define if Physfs enabled])
+		AC_CHECK_LIB(physfs, PHYSFS_getLastErrorCode,
+			AC_DEFINE(HAVE_PHYSFS_GETLASTERRORCODE, 1, [Define if physfs provides PHYSFS_getLastErrorCode]),
+			[],
+			$ZLIB_LIBS)
+	else
+		AC_MSG_ERROR([*** PhysicsFS not found! (pkg-config check)])
+	fi
 else
-	AC_MSG_ERROR([*** PhysicsFS not found!])
+	TMP_LIBS=$LIBS
+	TMP_CFLAGS=$CFLAGS
+	LIBS="$LIBS $ZLIB_LIBS"
+	AC_ARG_WITH([physfs-prefix],
+		[  --with-physfs-prefix=PFX Prefix where Physfs is installed (optional)],
+		[WITH_PHYSFS_PFX="$withval"],
+		[WITH_PHYSFS_PFX="/usr"])
+	if test "x$WITH_PHYSFS_PFX"  != "x"; then
+		CFLAGS="$CFLAGS -I${WITH_PHYSFS_PFX}/include"
+		LIBS="$LIBS -L${WITH_PHYSFS_PFX}/lib"
+	fi
+	AC_CHECK_HEADER(physfs.h, have_physfs_h=yes, have_physfs_h=no)
+	AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
+	if test "x$have_physfs_h" = "xyes" -a "x$have_physfs_lib" = "xyes"; then
+		PHYSFS_CFLAGS="-I${WITH_PHYSFS_PFX}/include"
+		PHYSFS_LIBS="-L${WITH_PHYSFS_PFX}/lib -lphysfs"
+	else
+		AC_MSG_ERROR([*** PhysicsFS not found!])
+	fi
+	LIBS=$TMP_LIBS
+	CFLAGS=$TMP_CFLAGS
 fi
-LIBS=$TMP_LIBS
-CFLAGS=$TMP_CFLAGS
 
 # LibXml (native)
 TMP_PKG_CONFIG=$PKG_CONFIG
