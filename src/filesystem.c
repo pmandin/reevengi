@@ -62,7 +62,13 @@ int FS_Init(char *argv0)
 #endif
 
 	if (!PHYSFS_init(argv0)) {
-		fprintf(stderr,"fs: PHYSFS_init() failed.\n  reason: %s.\n", PHYSFS_getLastError());
+		fprintf(stderr,"fs: PHYSFS_init() failed.\n  reason: %s.\n",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+						PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+						PHYSFS_getLastError()
+#endif
+		);
 		return 0;
 	}
 
@@ -117,7 +123,13 @@ int FS_AddArchive(const char *filename)
 int FS_Shutdown(void)
 {
 	if (!PHYSFS_deinit()) {
-		fprintf(stderr,"fs: PHYSFS_deinit() failed!\n  reason: %s.\n", PHYSFS_getLastError());
+		fprintf(stderr,"fs: PHYSFS_deinit() failed!\n  reason: %s.\n",
+#if HAVE_PHYSFS_GETLASTERRORCODE
+						PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+#else
+						PHYSFS_getLastError()
+#endif
+		);
 		return 0;
 	}
 
