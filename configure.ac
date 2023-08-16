@@ -4,9 +4,9 @@
 AC_PREREQ(2.59)
 AC_INIT(reevengi, 0.19, patmandin@gmail.com)
 AC_CONFIG_SRCDIR([src/main.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([autotools])
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
@@ -37,7 +37,6 @@ AC_ARG_VAR(CFLAGS_FOR_BUILD,[build system C compiler arguments])
 AC_ARG_VAR(LDFLAGS_FOR_BUILD,[build system C linker frontend arguments])
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
